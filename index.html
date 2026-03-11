@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Missing Thorn - Distributor Performance Report</title>
+    <title>CRM Platform - Distributor Performance Report</title>
     <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -739,7 +739,7 @@
     <div id="loginOverlay" style="display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg, #6C312E 0%, #4A2220 60%, #3A1A18 100%);z-index:9999;justify-content:center;align-items:center;">
       <div style="background:#fff;border-radius:16px;padding:40px;width:380px;max-width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
         <div style="text-align:center;margin-bottom:28px;">
-          <div style="font-size:28px;font-weight:800;color:#6C312E;font-family:'Catamaran',sans-serif;">Missing Thorn</div>
+          <div id="brandName" style="font-size:28px;font-weight:800;color:#6C312E;font-family:'Catamaran',sans-serif;">Missing Thorn</div>
           <div style="font-size:14px;color:#7A6E66;margin-top:4px;">Account Login</div>
         </div>
         <div id="loginError" style="display:none;background:#FEE2E2;color:#DC2626;padding:8px 12px;border-radius:8px;font-size:13px;margin-bottom:16px;"></div>
@@ -800,7 +800,7 @@
 
     <div class="container">
         <header>
-            <img src="https://missingthorn.com/cdn/shop/files/MT_Logo_Horiz_Red.png?v=1755630325&width=600" alt="Missing Thorn">
+            <img id="brandLogo" src="https://missingthorn.com/cdn/shop/files/MT_Logo_Horiz_Red.png?v=1755630325&width=600" alt="Company Logo">
             <div class="header-text">
                 <h1 id="headerTitle">Distributor Performance Report</h1>
                 <p>Real-time sales rep opportunity tracking • Data through <span id="dataThrough">2/14</span></p>
@@ -1587,11 +1587,62 @@
 
     <script>
         // __DATA_START__
-const stateNames = {
-  AZ:'Arizona',CA:'California',CT:'Connecticut',FL:'Florida',GA:'Georgia',ME:'Maine',NC:'North Carolina',NJ:'New Jersey',NV:'Nevada',PA:'Pennsylvania',SC:'South Carolina',TX:'Texas'
+// ==================== TENANT CONFIGURATION ====================
+// This object holds ALL tenant-specific settings.
+// Currently loaded inline (Missing Thorn defaults).
+// Phase 2: loaded from Firestore at tenants/{tenantId}/config
+const TENANT_CONFIG = {
+    tenantId: 'missing-thorn',
+    companyName: 'Missing Thorn',
+    logo: 'https://missingthorn.com/cdn/shop/files/MT_Logo_Horiz_Red.png?v=1755630325&width=600',
+    primaryColor: '#6C312E',
+    accentColor: '#B8860B',
+    stateNames: {
+        AZ:'Arizona',CA:'California',CT:'Connecticut',FL:'Florida',GA:'Georgia',
+        ME:'Maine',NC:'North Carolina',NJ:'New Jersey',NV:'Nevada',NY:'New York',
+        PA:'Pennsylvania',SC:'South Carolina',TX:'Texas'
+    },
+    regionMap: {
+        "NJ":"East","FL":"East","PA":"East","NC":"East","GA":"East",
+        "CT":"East","ME":"East","SC":"East","TX":"West","AZ":"West",
+        "NV":"West","CA":"West"
+    },
+    channels: ['On-Premise', 'Off-Premise'],
+    pipelineStages: ['Lead','Contacted','Sample Sent','Tasting Scheduled','Order Pending','Won','Lost','Closed Lost'],
+    pipelineTiers: ['Tier 1','Tier 2','Tier 3'],
+    scoringWeights: {
+        velocity: 0.30,
+        momentum: 0.20,
+        sellThru: 0.15,
+        accountCount: 0.15,
+        inventoryHealth: 0.20
+    },
+    tags: ['VIP','At Risk','Hot Lead','Needs Visit','New','Inactive','Priority','Seasonal','Key Account','Expansion Target'],
+    nextActions: ['Call','Email','Visit','Send Samples','Follow Up','Reorder Check'],
+    features: {
+        fileAttachments: true,
+        emailLogging: true,
+        activityTimeline: true,
+        pipeline: true,
+        distributorHealth: true,
+        reorderForecast: true
+    }
 };
 
-const regionMap = {"NJ": "East", "FL": "East", "PA": "East", "NC": "East", "GA": "East", "CT": "East", "ME": "East", "SC": "East", "TX": "West", "AZ": "West", "NV": "West", "CA": "West"};
+// Expose config values as top-level references for backward compatibility
+// (so we don't have to rewrite every function that uses regionMap, stateNames, etc.)
+const stateNames = TENANT_CONFIG.stateNames;
+const regionMap = TENANT_CONFIG.regionMap;
+
+// Apply tenant branding on page load
+function applyTenantBranding() {
+    const logo = document.getElementById('brandLogo');
+    if (logo && TENANT_CONFIG.logo) logo.src = TENANT_CONFIG.logo;
+    const brandName = document.getElementById('brandName');
+    if (brandName) brandName.textContent = TENANT_CONFIG.companyName;
+    document.title = TENANT_CONFIG.companyName + ' - Distributor Performance Report';
+}
+document.addEventListener('DOMContentLoaded', applyTenantBranding);
 
 // ==================== DEPLETION SCORECARD ====================
 const distScorecard = [
@@ -3138,8 +3189,8 @@ const dataThrough = '3/8/2026';
             const terrLabel = isAdmin ? 'All Territories' : (terrIsArray ? terr.join(', ') : (regionMap[terr] ? terr + ' (' + regionMap[terr] + ')' : (terr === 'East' || terr === 'West' ? terr + ' Region' : terr)));
             document.getElementById('userName').textContent = currentUser.name;
             document.getElementById('userAvatar').textContent = currentUser.initials;
-            document.getElementById('headerTitle').textContent = isAdmin ? 'Missing Thorn - ' + currentUser.name + ' (Admin)' : 'Missing Thorn - ' + currentUser.name;
-            document.title = 'Missing Thorn - ' + currentUser.name;
+            document.getElementById('headerTitle').textContent = isAdmin ? TENANT_CONFIG.companyName + ' - ' + currentUser.name + ' (Admin)' : TENANT_CONFIG.companyName + ' - ' + currentUser.name;
+            document.title = TENANT_CONFIG.companyName + ' - ' + currentUser.name;
             document.getElementById('filterBarUser').textContent = isAdmin ? currentUser.name + ' - Admin View' : currentUser.name + ' - ' + terrLabel;
             // Auto-set global region/state filters for reps
             if (!isAdmin) {
@@ -3224,7 +3275,7 @@ const dataThrough = '3/8/2026';
             document.getElementById('userBar').style.display = 'none';
             document.getElementById('headerTitle').textContent = 'Distributor Performance Report';
             document.getElementById('filterBarUser').textContent = '';
-            document.title = 'Missing Thorn - Distributor Performance Report';
+            document.title = TENANT_CONFIG.companyName + ' - Distributor Performance Report';
         }
 
         // User Management functions - Firebase-backed
