@@ -572,6 +572,76 @@
             .tab {
                 padding: 10px 14px;
                 font-size: 12px;
+                white-space: nowrap;
+            }
+
+            .container {
+                padding: 0 8px;
+            }
+
+            /* User bar mobile */
+            #userBar {
+                top: 4px;
+                right: 8px;
+                padding: 3px 10px 3px 8px;
+                font-size: 11px;
+            }
+
+            /* KPI cards stacking */
+            .card {
+                padding: 16px;
+            }
+
+            /* Table horizontal scroll */
+            .table-container, .card {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Charts */
+            canvas {
+                max-width: 100%;
+                height: auto !important;
+            }
+
+            /* Pipeline cards */
+            .pipeline-board {
+                flex-direction: column;
+            }
+
+            /* Settings panel mobile */
+            #settingsPanel {
+                padding: 16px;
+            }
+
+            /* Modals */
+            #settUserModal > div,
+            #userMgmtOverlay > div {
+                width: 95%;
+                max-height: 90vh;
+                padding: 20px;
+            }
+
+            /* Login card mobile */
+            #loginOverlay > div {
+                width: 90%;
+                padding: 28px 20px;
+            }
+
+            /* Setup wizard mobile */
+            #setupWizard > div {
+                width: 95%;
+                padding: 24px 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .kpi-row {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h1, .header-text h1 {
+                font-size: 18px;
             }
         }
 
@@ -783,8 +853,13 @@
             <input id="setupAdminInitials" type="text" placeholder="e.g. RD" maxlength="3" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
           </div>
           <div style="margin-bottom:14px;">
-            <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Set Your PIN *</label>
-            <input id="setupAdminPin" type="password" placeholder="4+ digit PIN" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+            <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Email Address *</label>
+            <input id="setupAdminEmail" type="email" placeholder="you@company.com" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          </div>
+          <div style="margin-bottom:14px;">
+            <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Password *</label>
+            <input id="setupAdminPassword" type="password" placeholder="At least 6 characters" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+            <div style="font-size:11px;color:#9CA3AF;margin-top:4px;">This will be your login password.</div>
           </div>
           <div style="display:flex;gap:8px;margin-top:8px;">
             <button id="setupBack2" style="flex:1;padding:12px;background:#F3F4F6;color:#374151;border:none;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;">Back</button>
@@ -824,15 +899,51 @@
           <div id="loginCompanyName" style="font-size:14px;color:#6B7280;margin-top:4px;">Sign in to your workspace</div>
         </div>
         <div id="loginError" style="display:none;background:#FEE2E2;color:#DC2626;padding:8px 12px;border-radius:8px;font-size:13px;margin-bottom:16px;"></div>
-        <div style="margin-bottom:16px;">
-          <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Name</label>
-          <input id="loginEmail" type="text" placeholder="Enter your name" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+        <div id="loginSuccess" style="display:none;background:#D1FAE5;color:#059669;padding:8px 12px;border-radius:8px;font-size:13px;margin-bottom:16px;"></div>
+
+        <!-- Sign In Form -->
+        <div id="signinForm">
+          <div style="margin-bottom:16px;">
+            <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Email</label>
+            <input id="loginEmail" type="email" placeholder="you@company.com" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          </div>
+          <div style="margin-bottom:20px;">
+            <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Password</label>
+            <input id="loginPassword" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          </div>
+          <button onclick="doLogin()" id="loginBtn" style="width:100%;padding:12px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Catamaran',sans-serif;">Sign In</button>
+          <div style="text-align:center;margin-top:14px;">
+            <button onclick="toggleAuthMode('signup')" style="background:none;border:none;color:#2563EB;font-size:13px;cursor:pointer;text-decoration:underline;">Don't have an account? Sign up</button>
+          </div>
+          <div style="text-align:center;margin-top:6px;">
+            <button onclick="doPasswordReset()" style="background:none;border:none;color:#6B7280;font-size:12px;cursor:pointer;text-decoration:underline;">Forgot password?</button>
+          </div>
         </div>
-        <div style="margin-bottom:20px;">
-          <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">PIN</label>
-          <input id="loginPassword" type="password" placeholder="Enter PIN" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+
+        <!-- Sign Up Form (hidden by default) -->
+        <div id="signupForm" style="display:none;">
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Full Name</label>
+            <input id="signupName" type="text" placeholder="Your full name" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Email</label>
+            <input id="signupEmail" type="email" placeholder="you@company.com" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Password</label>
+            <input id="signupPassword" type="password" placeholder="At least 6 characters" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          </div>
+          <div style="margin-bottom:20px;">
+            <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Confirm Password</label>
+            <input id="signupPasswordConfirm" type="password" placeholder="Confirm password" onkeydown="if(event.key==='Enter')doSignUp()" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          </div>
+          <button onclick="doSignUp()" id="signupBtn" style="width:100%;padding:12px;background:#059669;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Catamaran',sans-serif;">Create Account</button>
+          <div style="text-align:center;margin-top:14px;">
+            <button onclick="toggleAuthMode('signin')" style="background:none;border:none;color:#2563EB;font-size:13px;cursor:pointer;text-decoration:underline;">Already have an account? Sign in</button>
+          </div>
         </div>
-        <button onclick="doLogin()" id="loginBtn" style="width:100%;padding:12px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Catamaran',sans-serif;">Sign In</button>
+
         <div style="text-align:center;margin-top:16px;font-size:11px;color:#9ca3af;">Powered by Sidekick BI</div>
       </div>
     </div>
@@ -850,10 +961,11 @@
       <div style="background:#fff;border-radius:12px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;padding:28px;position:relative;">
         <button onclick="closeUserMgmt()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#6B7280;">x</button>
         <h3 style="margin:0 0 6px 0;color:#1a1a2e;">Manage Users</h3>
-        <p style="font-size:12px;color:#6B7280;margin:0 0 20px 0;">Add, remove, or update user PINs. Changes save to this browser.</p>
+        <p style="font-size:12px;color:#6B7280;margin:0 0 20px 0;">Manage team members. Users sign in with their email and password.</p>
         <div id="userMgmtList"></div>
         <div style="margin-top:20px;padding-top:16px;border-top:1px solid #e5e7eb;">
-          <h4 style="margin:0 0 12px 0;font-size:14px;color:#1a1a2e;">Add New User</h4>
+          <h4 style="margin:0 0 4px 0;font-size:14px;color:#1a1a2e;">Invite a Team Member</h4>
+          <p style="font-size:11px;color:#9CA3AF;margin:0 0 12px 0;">Add their info here, then share the login page URL. They'll create their own password on sign-up.</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
             <div>
               <label style="font-size:11px;font-weight:600;color:#6B7280;">Name</label>
@@ -866,15 +978,15 @@
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
             <div>
+              <label style="font-size:11px;font-weight:600;color:#6B7280;">Email Address *</label>
+              <input id="newUserEmail" type="email" placeholder="jake@company.com" style="display:block;width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;margin-top:2px;box-sizing:border-box;font-size:13px;">
+            </div>
+            <div>
               <label style="font-size:11px;font-weight:600;color:#6B7280;">Pipeline Owner Name</label>
               <input id="newUserOwner" type="text" placeholder="Match pipeline owner" style="display:block;width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;margin-top:2px;box-sizing:border-box;font-size:13px;">
             </div>
-            <div>
-              <label style="font-size:11px;font-weight:600;color:#6B7280;">PIN</label>
-              <input id="newUserPin" type="text" placeholder="e.g. 2026" style="display:block;width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;margin-top:2px;box-sizing:border-box;font-size:13px;">
-            </div>
           </div>
-          <button onclick="addNewUser()" style="width:100%;padding:10px;background:#10b981;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">Add User</button>
+          <button onclick="addNewUser()" style="width:100%;padding:10px;background:#10b981;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">Add Team Member</button>
         </div>
       </div>
     </div>
@@ -3420,6 +3532,10 @@ const dataThrough = '3/8/2026';
         }
 
         function checkSavedLogin() {
+            // Firebase Auth handles persistent login via onAuthStateChanged
+            // This is a no-op now but kept for backward compat with setup wizard
+            if (currentUser) return;
+            // Fallback: check localStorage for legacy sessions
             const saved = localStorage.getItem('sk_user');
             if (saved && REP_CREDENTIALS[saved]) {
                 currentUser = {...REP_CREDENTIALS[saved]};
@@ -3427,49 +3543,176 @@ const dataThrough = '3/8/2026';
             }
         }
 
-        function doLogin() {
-            const nameInput = document.getElementById('loginEmail').value.trim().toLowerCase();
-            const pin = document.getElementById('loginPassword').value;
+        function toggleAuthMode(mode) {
+            const errDiv = document.getElementById('loginError');
+            const successDiv = document.getElementById('loginSuccess');
+            errDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            if (mode === 'signup') {
+                document.getElementById('signinForm').style.display = 'none';
+                document.getElementById('signupForm').style.display = 'block';
+            } else {
+                document.getElementById('signinForm').style.display = 'block';
+                document.getElementById('signupForm').style.display = 'none';
+            }
+        }
+
+        function showLoginError(msg) {
+            const errDiv = document.getElementById('loginError');
+            errDiv.textContent = msg;
+            errDiv.style.display = 'block';
+            document.getElementById('loginSuccess').style.display = 'none';
+        }
+
+        function showLoginSuccess(msg) {
+            const successDiv = document.getElementById('loginSuccess');
+            successDiv.textContent = msg;
+            successDiv.style.display = 'block';
+            document.getElementById('loginError').style.display = 'none';
+        }
+
+        async function doLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
             const errDiv = document.getElementById('loginError');
             errDiv.style.display = 'none';
 
-            if (!nameInput || !pin) {
-                errDiv.textContent = 'Please enter your name and PIN';
-                errDiv.style.display = 'block';
+            if (!email || !password) {
+                showLoginError('Please enter your email and password.');
                 return;
             }
 
-            const key = Object.keys(REP_CREDENTIALS).find(k =>
-                k === nameInput ||
-                REP_CREDENTIALS[k].name.toLowerCase() === nameInput ||
-                nameInput.includes(k)
-            );
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
 
-            if (!key) {
-                errDiv.textContent = 'Name not recognized. Available: ' + Object.values(REP_CREDENTIALS).map(u => u.name).join(', ');
-                errDiv.style.display = 'block';
-                return;
+            try {
+                if (auth) {
+                    await auth.signInWithEmailAndPassword(email, password);
+                    // onAuthStateChanged will handle the rest
+                } else {
+                    // Fallback: legacy PIN login for offline/no-auth scenarios
+                    const key = Object.keys(REP_CREDENTIALS).find(k =>
+                        REP_CREDENTIALS[k].email && REP_CREDENTIALS[k].email.toLowerCase() === email.toLowerCase()
+                    );
+                    if (!key) { showLoginError('Account not found.'); btn.disabled = false; btn.textContent = 'Sign In'; return; }
+                    if (password !== REP_CREDENTIALS[key].pin) { showLoginError('Incorrect password.'); btn.disabled = false; btn.textContent = 'Sign In'; return; }
+                    currentUser = {...REP_CREDENTIALS[key]};
+                    localStorage.setItem('sk_user', key);
+                    setLoggedInUI(key);
+                }
+            } catch(e) {
+                console.error('Login error:', e);
+                let msg = 'Login failed. Please try again.';
+                if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential') msg = 'No account found with that email/password.';
+                else if (e.code === 'auth/wrong-password') msg = 'Incorrect password.';
+                else if (e.code === 'auth/invalid-email') msg = 'Please enter a valid email address.';
+                else if (e.code === 'auth/too-many-requests') msg = 'Too many attempts. Please try again later.';
+                showLoginError(msg);
             }
-
-            if (pin !== REP_CREDENTIALS[key].pin) {
-                errDiv.textContent = 'Incorrect PIN.';
-                errDiv.style.display = 'block';
-                return;
-            }
-
-            currentUser = {...REP_CREDENTIALS[key]};
-            localStorage.setItem('sk_user', key);
-            setLoggedInUI(key);
+            btn.disabled = false;
+            btn.textContent = 'Sign In';
         }
 
-        function doLogout() {
+        async function doSignUp() {
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupPasswordConfirm').value;
+
+            if (!name || !email || !password) {
+                showLoginError('Please fill in all fields.');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showLoginError('Passwords do not match.');
+                return;
+            }
+            if (password.length < 6) {
+                showLoginError('Password must be at least 6 characters.');
+                return;
+            }
+
+            const btn = document.getElementById('signupBtn');
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+
+            try {
+                if (auth) {
+                    const cred = await auth.createUserWithEmailAndPassword(email, password);
+                    // Save user profile to Firestore
+                    const uid = cred.user.uid;
+                    const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().substring(0,2);
+                    const userKey = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const userProfile = {
+                        name: name,
+                        initials: initials,
+                        owner: name,
+                        email: email,
+                        uid: uid,
+                        role: 'rep',  // Default role; admin promotes via settings
+                        territory: 'all',
+                        createdAt: Date.now()
+                    };
+                    // Save to Firestore users collection
+                    if (firebaseReady && db) {
+                        await db.collection('users').doc(uid).set(userProfile);
+                    }
+                    // Update local credentials
+                    REP_CREDENTIALS[uid] = userProfile;
+                    localStorage.setItem('sk_users', JSON.stringify(REP_CREDENTIALS));
+                    // onAuthStateChanged will handle login
+                } else {
+                    showLoginError('Firebase Auth not available. Contact your admin.');
+                }
+            } catch(e) {
+                console.error('Signup error:', e);
+                let msg = 'Account creation failed. Please try again.';
+                if (e.code === 'auth/email-already-in-use') msg = 'An account with this email already exists.';
+                else if (e.code === 'auth/weak-password') msg = 'Password is too weak. Use at least 6 characters.';
+                else if (e.code === 'auth/invalid-email') msg = 'Please enter a valid email address.';
+                showLoginError(msg);
+            }
+            btn.disabled = false;
+            btn.textContent = 'Create Account';
+        }
+
+        async function doPasswordReset() {
+            const email = document.getElementById('loginEmail').value.trim();
+            if (!email) {
+                showLoginError('Enter your email address first, then click Forgot Password.');
+                return;
+            }
+            try {
+                if (auth) {
+                    await auth.sendPasswordResetEmail(email);
+                    showLoginSuccess('Password reset email sent! Check your inbox.');
+                }
+            } catch(e) {
+                console.error('Password reset error:', e);
+                if (e.code === 'auth/user-not-found') showLoginError('No account found with that email.');
+                else showLoginError('Could not send reset email. Try again.');
+            }
+        }
+
+        async function doLogout() {
+            try {
+                if (auth) await auth.signOut();
+            } catch(e) {
+                console.warn('Auth signout error:', e);
+            }
             currentUser = null;
+            firebaseAuthUser = null;
             localStorage.removeItem('sk_user');
             document.getElementById('loginOverlay').style.display = 'flex';
             document.getElementById('userBar').style.display = 'none';
             document.getElementById('headerTitle').textContent = 'Distributor Performance Report';
             document.getElementById('filterBarUser').textContent = '';
             document.title = TENANT_CONFIG.companyName + ' - Distributor Performance Report';
+            // Reset form
+            toggleAuthMode('signin');
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
         }
 
         // User Management functions - Firebase-backed
@@ -3513,33 +3756,40 @@ const dataThrough = '3/8/2026';
             const list = document.getElementById('userMgmtList');
             let html = '';
             Object.entries(REP_CREDENTIALS).forEach(([key, u]) => {
-                const isCurrent = currentUser && currentUser.name === u.name;
+                const isCurrent = currentUser && (currentUser.uid === key || currentUser.name === u.name);
+                const roleLabel = u.role === 'admin' ? '<span style="background:#DBEAFE;color:#2563EB;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;">ADMIN</span>' :
+                                  u.role === 'manager' ? '<span style="background:#D1FAE5;color:#059669;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;">MANAGER</span>' :
+                                  '<span style="background:#F3F4F6;color:#6B7280;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;">REP</span>';
                 html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9;">' +
-                    '<div style="width:32px;height:32px;border-radius:50%;background:#2563EB;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">' + u.initials + '</div>' +
+                    '<div style="width:32px;height:32px;border-radius:50%;background:#2563EB;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">' + (u.initials || '??') + '</div>' +
                     '<div style="flex:1;">' +
-                        '<div style="font-weight:600;font-size:13px;color:#1a1a2e;">' + u.name + (isCurrent ? ' <span style="font-size:10px;color:#10b981;">(you)</span>' : '') + '</div>' +
-                        '<div style="font-size:11px;color:#9ca3af;">Login: ' + key + ' | Owner: ' + u.owner + '</div>' +
+                        '<div style="font-weight:600;font-size:13px;color:#1a1a2e;">' + u.name + (isCurrent ? ' <span style="font-size:10px;color:#10b981;">(you)</span>' : '') + ' ' + roleLabel + '</div>' +
+                        '<div style="font-size:11px;color:#9ca3af;">' + (u.email || 'No email') + (u.territory && u.territory !== 'all' ? ' | Territory: ' + (Array.isArray(u.territory) ? u.territory.join(', ') : u.territory) : '') + '</div>' +
                     '</div>' +
                     '<div style="display:flex;gap:6px;align-items:center;">' +
-                        '<input type="text" value="' + u.pin + '" style="width:60px;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;text-align:center;" onchange="updateUserPin(\'' + key + '\',this.value)" title="Change PIN">' +
-                        '<button onclick="removeUser(\'' + key + '\')" style="background:none;border:none;color:#DC2626;font-size:16px;cursor:pointer;padding:2px 6px;" title="Remove user">x</button>' +
+                        '<select onchange="updateUserRole(\'' + key + '\',this.value)" style="padding:4px;border:1px solid #d1d5db;border-radius:4px;font-size:11px;" title="Change role">' +
+                            '<option value="rep"' + (u.role === 'rep' ? ' selected' : '') + '>Rep</option>' +
+                            '<option value="manager"' + (u.role === 'manager' ? ' selected' : '') + '>Manager</option>' +
+                            '<option value="admin"' + (u.role === 'admin' ? ' selected' : '') + '>Admin</option>' +
+                        '</select>' +
+                        (isCurrent ? '' : '<button onclick="removeUser(\'' + key + '\')" style="background:none;border:none;color:#DC2626;font-size:16px;cursor:pointer;padding:2px 6px;" title="Remove user">x</button>') +
                     '</div></div>';
             });
             list.innerHTML = html || '<div style="color:#9ca3af;font-size:13px;">No users configured.</div>';
         }
 
-        function updateUserPin(key, newPin) {
-            if (!newPin.trim()) return;
-            REP_CREDENTIALS[key].pin = newPin.trim();
+        function updateUserRole(key, newRole) {
+            if (!REP_CREDENTIALS[key]) return;
+            REP_CREDENTIALS[key].role = newRole;
             saveUserToFirestore(key, REP_CREDENTIALS[key]);
         }
 
         function removeUser(key) {
-            if (currentUser && REP_CREDENTIALS[key] && currentUser.name === REP_CREDENTIALS[key].name) {
+            if (currentUser && (currentUser.uid === key || currentUser.name === REP_CREDENTIALS[key]?.name)) {
                 alert('You cannot remove yourself while logged in.');
                 return;
             }
-            if (!confirm('Remove ' + REP_CREDENTIALS[key].name + '?')) return;
+            if (!confirm('Remove ' + (REP_CREDENTIALS[key]?.name || key) + '? Note: this removes their profile data but their Firebase Auth account will still exist.')) return;
             delete REP_CREDENTIALS[key];
             deleteUserFromFirestore(key);
             renderUserList();
@@ -3549,22 +3799,33 @@ const dataThrough = '3/8/2026';
             const name = document.getElementById('newUserName').value.trim();
             const initials = document.getElementById('newUserInitials').value.trim().toUpperCase() || name.substring(0,2).toUpperCase();
             const owner = document.getElementById('newUserOwner').value.trim() || name;
-            const pin = document.getElementById('newUserPin').value.trim() || '2026';
+            const email = document.getElementById('newUserEmail')?.value?.trim() || '';
 
             if (!name) { alert('Please enter a name'); return; }
+            if (!email || !email.includes('@')) { alert('Please enter a valid email address. The user will use this to sign in.'); return; }
 
-            const key = name.toLowerCase().replace(/[^a-z]/g, '');
-            if (REP_CREDENTIALS[key]) { alert('A user with that name already exists.'); return; }
+            // Use a generated key; the real key will be the Firebase Auth UID when they sign up
+            const key = 'pending_' + name.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Date.now();
+            const userProfile = {
+                name: name,
+                initials: initials,
+                owner: owner,
+                email: email,
+                role: 'rep',
+                territory: 'all',
+                pendingSetup: true,  // Flag: user hasn't created their Firebase Auth account yet
+                createdAt: Date.now()
+            };
 
-            REP_CREDENTIALS[key] = {name, initials, owner, pin};
-            saveUserToFirestore(key, REP_CREDENTIALS[key]);
+            REP_CREDENTIALS[key] = userProfile;
+            saveUserToFirestore(key, userProfile);
             renderUserList();
 
             // Clear form
             document.getElementById('newUserName').value = '';
             document.getElementById('newUserInitials').value = '';
             document.getElementById('newUserOwner').value = '';
-            document.getElementById('newUserPin').value = '';
+            if (document.getElementById('newUserEmail')) document.getElementById('newUserEmail').value = '';
         }
 
         // Modal and unified activity functions
@@ -5123,6 +5384,7 @@ const dataThrough = '3/8/2026';
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
         <script>
     // Firebase Configuration - Sidekick BI Platform
@@ -5136,9 +5398,11 @@ const dataThrough = '3/8/2026';
     };
 
     let db = null;
+    let auth = null;
     let firebaseReady = false;
-    let currentUser = null;
-    // Users loaded from Firestore or setup wizard. Default admin for first-time setup.
+    let currentUser = null;      // App-level user object {name, initials, role, territory, email, uid}
+    let firebaseAuthUser = null; // Firebase Auth user object
+    // Users loaded from Firestore. Default admin for first-time setup.
     const REP_CREDENTIALS = {
         'admin': {name:'Admin', initials:'AD', owner:'Admin', pin:'1234', role:'admin', territory:'all'}
     };
@@ -5146,8 +5410,9 @@ const dataThrough = '3/8/2026';
     try {
         firebase.initializeApp(FIREBASE_CONFIG);
         db = firebase.firestore();
+        auth = firebase.auth();
         firebaseReady = true;
-        console.log('Firebase connected');
+        console.log('Firebase connected (Firestore + Auth)');
     } catch(e) {
         console.warn('Firebase not configured - using local storage fallback. Set up Firebase for cloud sync.');
         firebaseReady = false;
@@ -5171,58 +5436,120 @@ const dataThrough = '3/8/2026';
         }
     } catch(e) {}
 
-    // Check for saved login session
-    checkSavedLogin();
+    // Firebase Auth state listener - handles persistent login
+    if (auth) {
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                firebaseAuthUser = user;
+                console.log('Auth state: signed in as', user.email, 'uid:', user.uid);
+                // Load user profile from Firestore
+                try {
+                    let profile = null;
+                    if (firebaseReady && db) {
+                        // Try UID-based lookup first (new accounts)
+                        const doc = await db.collection('users').doc(user.uid).get();
+                        if (doc.exists) {
+                            profile = doc.data();
+                        } else {
+                            // Fallback: search by email (for migrated/legacy accounts)
+                            const snap = await db.collection('users').where('email', '==', user.email).limit(1).get();
+                            if (!snap.empty) {
+                                profile = snap.docs[0].data();
+                                // Migrate: copy to UID-keyed doc
+                                await db.collection('users').doc(user.uid).set({...profile, uid: user.uid});
+                            }
+                        }
+                    }
+                    // Also check for a pending profile created by admin (matched by email)
+                    if (!profile) {
+                        const allUsers = await db.collection('users').where('email', '==', user.email).limit(1).get();
+                        if (!allUsers.empty) {
+                            const pendingDoc = allUsers.docs[0];
+                            profile = pendingDoc.data();
+                            // Migrate pending profile to UID-keyed doc
+                            profile.uid = user.uid;
+                            profile.pendingSetup = false;
+                            await db.collection('users').doc(user.uid).set(profile);
+                            // Clean up old pending doc
+                            if (pendingDoc.id !== user.uid) {
+                                await db.collection('users').doc(pendingDoc.id).delete();
+                                delete REP_CREDENTIALS[pendingDoc.id];
+                            }
+                        }
+                    }
 
-    // Sync users from Firestore in the background
+                    if (profile) {
+                        currentUser = {
+                            ...profile,
+                            uid: user.uid,
+                            email: user.email
+                        };
+                        REP_CREDENTIALS[user.uid] = currentUser;
+                        localStorage.setItem('sk_user', user.uid);
+                        localStorage.setItem('sk_users', JSON.stringify(REP_CREDENTIALS));
+                        setLoggedInUI(user.uid);
+                    } else {
+                        // New user with no profile yet - create a basic one
+                        const initials = (user.displayName || user.email.split('@')[0]).split(' ').map(w => w[0]).join('').toUpperCase().substring(0,2);
+                        const name = user.displayName || user.email.split('@')[0];
+                        const newProfile = {
+                            name: name,
+                            initials: initials,
+                            owner: name,
+                            email: user.email,
+                            uid: user.uid,
+                            role: 'rep',
+                            territory: 'all',
+                            createdAt: Date.now()
+                        };
+                        if (firebaseReady && db) {
+                            await db.collection('users').doc(user.uid).set(newProfile);
+                        }
+                        currentUser = newProfile;
+                        REP_CREDENTIALS[user.uid] = currentUser;
+                        localStorage.setItem('sk_user', user.uid);
+                        localStorage.setItem('sk_users', JSON.stringify(REP_CREDENTIALS));
+                        setLoggedInUI(user.uid);
+                    }
+                } catch(e) {
+                    console.warn('Failed to load user profile:', e);
+                    // Minimal fallback
+                    currentUser = {
+                        name: user.displayName || user.email.split('@')[0],
+                        initials: (user.email || '??').substring(0,2).toUpperCase(),
+                        email: user.email,
+                        uid: user.uid,
+                        role: 'rep',
+                        territory: 'all'
+                    };
+                    setLoggedInUI(user.uid);
+                }
+            } else {
+                firebaseAuthUser = null;
+                // Not signed in - show login screen (unless setup wizard is showing)
+                if (!currentUser) {
+                    document.getElementById('loginOverlay').style.display = 'flex';
+                }
+                console.log('Auth state: signed out');
+            }
+        });
+    } else {
+        // No Firebase Auth - fallback to legacy login
+        checkSavedLogin();
+    }
+
+    // Sync all users from Firestore in the background (for admin user management)
     (async function syncUsersFromFirestore() {
         if (!firebaseReady) return;
-        const defaults = {
-            'admin': {name:'Admin', initials:'AD', owner:'Admin', pin:'1234', role:'admin', territory:'all'}
-        };
         try {
             const snap = await db.collection('users').get();
-            // Start with defaults, then overlay whatever Firestore has
-            const merged = {...defaults};
-            let needsSeed = false;
             if (!snap.empty) {
                 snap.docs.forEach(doc => {
-                    merged[doc.id] = doc.data();
+                    REP_CREDENTIALS[doc.id] = doc.data();
                 });
+                console.log('Users synced from Firestore:', Object.keys(REP_CREDENTIALS).length);
+                localStorage.setItem('sk_users', JSON.stringify(REP_CREDENTIALS));
             }
-            // Ensure all defaults exist in Firestore and sync role/territory
-            const existingIds = new Set(snap.docs.map(d => d.id));
-            const batch = db.batch();
-            Object.entries(defaults).forEach(([key, u]) => {
-                if (!existingIds.has(key)) {
-                    batch.set(db.collection('users').doc(key), u);
-                    needsSeed = true;
-                } else {
-                    // Always sync role + territory from code defaults to Firestore
-                    const existing = snap.docs.find(d => d.id === key)?.data() || {};
-                    if (existing.role !== u.role || JSON.stringify(existing.territory) !== JSON.stringify(u.territory)) {
-                        batch.update(db.collection('users').doc(key), {role: u.role, territory: u.territory});
-                        needsSeed = true;
-                    }
-                }
-            });
-            if (needsSeed) {
-                await batch.commit();
-                console.log('Users synced to Firestore');
-            }
-            // Update in-memory credentials
-            Object.keys(REP_CREDENTIALS).forEach(k => delete REP_CREDENTIALS[k]);
-            Object.assign(REP_CREDENTIALS, merged);
-            // Force role/territory from hardcoded defaults (not stored in Firestore)
-            Object.entries(defaults).forEach(([k, def]) => {
-                if (REP_CREDENTIALS[k]) {
-                    REP_CREDENTIALS[k].role = def.role;
-                    REP_CREDENTIALS[k].territory = def.territory;
-                }
-            });
-            console.log('Users synced from Firestore:', Object.keys(REP_CREDENTIALS).length);
-            localStorage.setItem('sk_users', JSON.stringify(REP_CREDENTIALS));
-            if (!currentUser) checkSavedLogin();
         } catch(e) {
             console.warn('Firestore users sync failed (using local cache):', e);
         }
@@ -7288,7 +7615,7 @@ const dataThrough = '3/8/2026';
         let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
         html += '<thead><tr style="border-bottom:2px solid #E5E7EB;">';
         html += '<th style="text-align:left;padding:8px;color:#6B7280;">Name</th>';
-        html += '<th style="text-align:left;padding:8px;color:#6B7280;">Initials</th>';
+        html += '<th style="text-align:left;padding:8px;color:#6B7280;">Email</th>';
         html += '<th style="text-align:left;padding:8px;color:#6B7280;">Role</th>';
         html += '<th style="text-align:left;padding:8px;color:#6B7280;">Territory</th>';
         html += '<th style="text-align:center;padding:8px;color:#6B7280;">Actions</th>';
@@ -7299,8 +7626,8 @@ const dataThrough = '3/8/2026';
                 ? '<span style="background:#EDE9FE;color:#7C3AED;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">Admin</span>'
                 : '<span style="background:#DBEAFE;color:#2563EB;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">Rep</span>';
             html += '<tr style="border-bottom:1px solid #F3F4F6;">';
-            html += '<td style="padding:8px;font-weight:600;">' + (u.name || key) + '</td>';
-            html += '<td style="padding:8px;">' + (u.initials || '--') + '</td>';
+            html += '<td style="padding:8px;font-weight:600;">' + (u.name || key) + (u.pendingSetup ? ' <span style="font-size:10px;color:#F59E0B;">(pending)</span>' : '') + '</td>';
+            html += '<td style="padding:8px;font-size:12px;color:#6B7280;">' + (u.email || '--') + '</td>';
             html += '<td style="padding:8px;">' + roleBadge + '</td>';
             html += '<td style="padding:8px;font-family:monospace;font-size:12px;">' + terrDisplay + '</td>';
             html += '<td style="padding:8px;text-align:center;">';
@@ -7353,10 +7680,10 @@ const dataThrough = '3/8/2026';
         html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Territory</label>';
         html += '<p style="font-size:11px;color:#9CA3AF;margin-bottom:4px;">Use "all" for full access, a region name (East/West), a state code (FL), or comma-separated states (FL,NJ)</p>';
         html += '<input id="editUserTerritory" type="text" value="' + terrVal + '" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:monospace;"></div>';
-        html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">PIN</label>';
-        html += '<input id="editUserPin" type="text" value="' + (u.pin || '') + '" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;"></div>';
+        html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Email</label>';
+        html += '<input id="editUserEmail" type="email" value="' + (u.email || '') + '" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;" ' + (u.uid ? 'disabled title="Email is managed by Firebase Auth"' : '') + '></div>';
         html += '<div style="display:flex;gap:8px;margin-top:16px;">';
-        html += '<button id="saveEditUser" style="flex:1;padding:10px;background:#6C312E;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Save</button>';
+        html += '<button id="saveEditUser" style="flex:1;padding:10px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Save</button>';
         html += '<button id="cancelEditUser" style="flex:1;padding:10px;background:#F3F4F6;color:#374151;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>';
         html += '</div></div></div>';
 
@@ -7367,14 +7694,14 @@ const dataThrough = '3/8/2026';
             const name = document.getElementById('editUserName').value.trim();
             const initials = document.getElementById('editUserInitials').value.trim().toUpperCase();
             const role = document.getElementById('editUserRole').value;
-            const pin = document.getElementById('editUserPin').value.trim();
+            const email = document.getElementById('editUserEmail').value.trim();
             let terrRaw = document.getElementById('editUserTerritory').value.trim();
             let territory;
             if (terrRaw === 'all' || terrRaw === '') territory = 'all';
             else if (terrRaw.includes(',')) territory = terrRaw.split(',').map(s => s.trim().toUpperCase());
             else territory = terrRaw;
 
-            REP_CREDENTIALS[key] = { ...REP_CREDENTIALS[key], name, initials, owner: name, role, territory, pin };
+            REP_CREDENTIALS[key] = { ...REP_CREDENTIALS[key], name, initials, owner: name, role, territory, email: email || REP_CREDENTIALS[key].email };
             if (firebaseReady && db) {
                 try { db.collection('users').doc(key).set(REP_CREDENTIALS[key], {merge:true}); } catch(e) {}
             }
@@ -7398,8 +7725,9 @@ const dataThrough = '3/8/2026';
         html += '<option value="rep">Rep</option><option value="admin">Admin</option></select></div>';
         html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Territory</label>';
         html += '<input id="addUserTerritory" type="text" placeholder="all, East, FL, or FL,NJ" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:monospace;"></div>';
-        html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">PIN</label>';
-        html += '<input id="addUserPin" type="text" placeholder="4-digit PIN" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;"></div>';
+        html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Email *</label>';
+        html += '<input id="addUserEmail" type="email" placeholder="user@company.com" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;">';
+        html += '<p style="font-size:11px;color:#9CA3AF;margin-top:4px;">They will use this email to create their account on the sign-up page.</p></div>';
         html += '<div style="display:flex;gap:8px;margin-top:16px;">';
         html += '<button id="saveAddUser" style="flex:1;padding:10px;background:#059669;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Add User</button>';
         html += '<button id="cancelAddUser" style="flex:1;padding:10px;background:#F3F4F6;color:#374151;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>';
@@ -7412,7 +7740,7 @@ const dataThrough = '3/8/2026';
             const name = document.getElementById('addUserName').value.trim();
             const initials = document.getElementById('addUserInitials').value.trim().toUpperCase();
             const role = document.getElementById('addUserRole').value;
-            const pin = document.getElementById('addUserPin').value.trim();
+            const email = document.getElementById('addUserEmail').value.trim();
             let terrRaw = document.getElementById('addUserTerritory').value.trim() || 'all';
             let territory;
             if (terrRaw === 'all') territory = 'all';
@@ -7420,10 +7748,10 @@ const dataThrough = '3/8/2026';
             else territory = terrRaw;
 
             if (!name) { alert('Name is required.'); return; }
-            const key = name.toLowerCase().replace(/[^a-z0-9]/g,'');
-            if (REP_CREDENTIALS[key]) { alert('A user with that name already exists.'); return; }
+            if (!email || !email.includes('@')) { alert('Email is required. The user will sign up with this email.'); return; }
+            const key = 'pending_' + name.toLowerCase().replace(/[^a-z0-9]/g,'') + '_' + Date.now();
 
-            REP_CREDENTIALS[key] = { name, initials: initials || name.substring(0,2).toUpperCase(), owner: name, pin: pin || '1234', role, territory };
+            REP_CREDENTIALS[key] = { name, initials: initials || name.substring(0,2).toUpperCase(), owner: name, email, role, territory, pendingSetup: true, createdAt: Date.now() };
             if (firebaseReady && db) {
                 try { db.collection('users').doc(key).set(REP_CREDENTIALS[key], {merge:true}); } catch(e) {}
             }
@@ -7685,9 +8013,11 @@ const dataThrough = '3/8/2026';
 
         document.getElementById('setupNext2').addEventListener('click', function() {
             const name = document.getElementById('setupAdminName').value.trim();
-            const pin = document.getElementById('setupAdminPin').value.trim();
+            const email = document.getElementById('setupAdminEmail').value.trim();
+            const password = document.getElementById('setupAdminPassword').value.trim();
             if (!name) { alert('Please enter your name.'); return; }
-            if (!pin || pin.length < 4) { alert('Please enter a PIN of at least 4 digits.'); return; }
+            if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
+            if (!password || password.length < 6) { alert('Password must be at least 6 characters.'); return; }
             document.getElementById('setupStep2').style.display = 'none';
             document.getElementById('setupStep3').style.display = 'block';
         });
@@ -7707,10 +8037,25 @@ const dataThrough = '3/8/2026';
             const industry = document.getElementById('setupIndustry').value;
             const adminName = document.getElementById('setupAdminName').value.trim();
             const adminInitials = document.getElementById('setupAdminInitials').value.trim().toUpperCase() || adminName.substring(0,2).toUpperCase();
-            const adminPin = document.getElementById('setupAdminPin').value.trim();
+            const adminEmail = document.getElementById('setupAdminEmail').value.trim();
+            const adminPassword = document.getElementById('setupAdminPassword').value.trim();
             const channelsRaw = document.getElementById('setupChannels').value.trim();
             const statesRaw = document.getElementById('setupStates').value.trim();
             const regionsRaw = document.getElementById('setupRegions').value.trim();
+
+            // Validate email and password
+            if (!adminEmail || !adminEmail.includes('@')) {
+                alert('Please enter a valid email address.');
+                this.disabled = false;
+                this.textContent = 'Finish Setup';
+                return;
+            }
+            if (!adminPassword || adminPassword.length < 6) {
+                alert('Password must be at least 6 characters.');
+                this.disabled = false;
+                this.textContent = 'Finish Setup';
+                return;
+            }
 
             // Build tenant config
             const tenantId = companyName.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 40);
@@ -7734,7 +8079,6 @@ const dataThrough = '3/8/2026';
                         TENANT_CONFIG.stateNames[code] = US_STATE_NAMES[code];
                         stateNames[code] = US_STATE_NAMES[code];
                     }
-                    // If regions provided, assign first region by default (user can edit later)
                     if (regions.length > 0) {
                         TENANT_CONFIG.regionMap[code] = regions[0];
                         regionMap[code] = regions[0];
@@ -7742,39 +8086,67 @@ const dataThrough = '3/8/2026';
                 });
             }
 
-            // Create admin user
-            const adminKey = adminName.toLowerCase().replace(/[^a-z0-9]/g, '');
-            REP_CREDENTIALS[adminKey] = {
-                name: adminName,
-                initials: adminInitials,
-                owner: adminName,
-                pin: adminPin,
-                role: 'admin',
-                territory: 'all'
-            };
-            // Remove default admin if it's still there
-            if (adminKey !== 'admin') delete REP_CREDENTIALS['admin'];
+            // Create Firebase Auth account for admin
+            try {
+                let uid = null;
+                if (auth) {
+                    const cred = await auth.createUserWithEmailAndPassword(adminEmail, adminPassword);
+                    uid = cred.user.uid;
+                    // Update display name
+                    await cred.user.updateProfile({ displayName: adminName });
+                }
 
-            // Save everything
-            await saveTenantConfig();
-            if (firebaseReady && db) {
-                try {
-                    await db.collection('users').doc(adminKey).set(REP_CREDENTIALS[adminKey]);
-                } catch(e) {}
+                const adminKey = uid || adminName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const adminProfile = {
+                    name: adminName,
+                    initials: adminInitials,
+                    owner: adminName,
+                    email: adminEmail,
+                    uid: uid || adminKey,
+                    role: 'admin',
+                    territory: 'all',
+                    createdAt: Date.now()
+                };
+
+                REP_CREDENTIALS[adminKey] = adminProfile;
+                // Remove default admin if it's still there
+                if (adminKey !== 'admin') delete REP_CREDENTIALS['admin'];
+
+                // Save everything
+                await saveTenantConfig();
+                if (firebaseReady && db) {
+                    try {
+                        await db.collection('users').doc(adminKey).set(adminProfile);
+                    } catch(e) { console.warn('Failed to save admin to Firestore:', e); }
+                }
+                localStorage.setItem('sk_users', JSON.stringify(REP_CREDENTIALS));
+
+                // Apply branding
+                applyTenantBranding();
+                document.getElementById('setupWizard').style.display = 'none';
+
+                // Firebase Auth's onAuthStateChanged will auto-login
+                // But if auth is not available, do it manually
+                if (!auth) {
+                    document.getElementById('loginOverlay').style.display = 'flex';
+                    const loginCompany = document.getElementById('loginCompanyName');
+                    if (loginCompany) loginCompany.textContent = companyName;
+                    currentUser = { ...adminProfile };
+                    localStorage.setItem('sk_user', adminKey);
+                    setLoggedInUI(adminKey);
+                }
+                // If auth is available, onAuthStateChanged fires from createUserWithEmailAndPassword
+            } catch(e) {
+                console.error('Setup error:', e);
+                let msg = 'Setup failed: ';
+                if (e.code === 'auth/email-already-in-use') msg += 'An account with this email already exists. Try signing in instead.';
+                else if (e.code === 'auth/weak-password') msg += 'Password is too weak. Use at least 6 characters.';
+                else if (e.code === 'auth/invalid-email') msg += 'Invalid email address.';
+                else msg += e.message || 'Please try again.';
+                alert(msg);
+                this.disabled = false;
+                this.textContent = 'Finish Setup';
             }
-            localStorage.setItem('sk_users', JSON.stringify(REP_CREDENTIALS));
-
-            // Apply branding and switch to login
-            applyTenantBranding();
-            document.getElementById('setupWizard').style.display = 'none';
-            document.getElementById('loginOverlay').style.display = 'flex';
-            const loginCompany = document.getElementById('loginCompanyName');
-            if (loginCompany) loginCompany.textContent = companyName;
-
-            // Auto-login the admin who just set up
-            currentUser = { ...REP_CREDENTIALS[adminKey] };
-            localStorage.setItem('sk_user', adminKey);
-            setLoggedInUI(adminKey);
         });
     }
 
