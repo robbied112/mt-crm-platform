@@ -850,6 +850,7 @@
             <button class="tab" data-tab="opportunities">Opportunities</button>
             <button class="tab" data-tab="reorder">Reorder Forecast</button>
             <button class="tab tab-accent-blue" data-tab="pipeline">Customer Pipeline</button>
+            <button class="tab" data-tab="admin-settings" id="adminSettingsTab" style="display:none;">Settings</button>
             <button id="helpIconBtn" style="background:none;border:none;font-size:18px;cursor:pointer;color:#6B7280;padding:8px 12px;margin-left:auto;" title="Help & Legend">?</button>
         </div>
 
@@ -1581,8 +1582,118 @@
         </div>
     </div>
 
+        <!-- Tab: Admin Settings (admin only) -->
+        <div id="admin-settings" class="tab-content">
+            <div style="max-width:1000px;margin:0 auto;">
+                <h2 style="font-size:22px;font-weight:700;margin-bottom:20px;color:#1F2937;">Platform Settings</h2>
+
+                <!-- Company Branding Section -->
+                <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                    <h3 style="font-size:16px;font-weight:700;color:#374151;margin-bottom:16px;">Company Branding</h3>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                        <div>
+                            <label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Company Name</label>
+                            <input id="settCompanyName" type="text" style="width:100%;padding:8px 12px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;" />
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Logo URL</label>
+                            <input id="settLogoUrl" type="text" style="width:100%;padding:8px 12px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;" />
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Primary Color</label>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input id="settPrimaryColor" type="color" style="width:40px;height:36px;border:1px solid #D1D5DB;border-radius:6px;cursor:pointer;" />
+                                <span id="settPrimaryColorHex" style="font-size:13px;color:#6B7280;font-family:monospace;"></span>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Accent Color</label>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input id="settAccentColor" type="color" style="width:40px;height:36px;border:1px solid #D1D5DB;border-radius:6px;cursor:pointer;" />
+                                <span id="settAccentColorHex" style="font-size:13px;color:#6B7280;font-family:monospace;"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="saveBrandingBtn" style="margin-top:16px;padding:8px 20px;background:#6C312E;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Save Branding</button>
+                    <span id="brandingSaveStatus" style="margin-left:12px;font-size:13px;color:#059669;display:none;">Saved!</span>
+                </div>
+
+                <!-- User Management Section -->
+                <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <h3 style="font-size:16px;font-weight:700;color:#374151;margin:0;">User Management</h3>
+                        <button id="addUserBtn" style="padding:6px 14px;background:#059669;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">+ Add User</button>
+                    </div>
+                    <div id="settUsersTable" style="overflow-x:auto;"></div>
+                </div>
+
+                <!-- Territory / Region Management -->
+                <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <h3 style="font-size:16px;font-weight:700;color:#374151;margin:0;">Regions & States</h3>
+                        <button id="addRegionStateBtn" style="padding:6px 14px;background:#059669;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">+ Add State</button>
+                    </div>
+                    <div id="settRegionTable" style="overflow-x:auto;"></div>
+                </div>
+
+                <!-- Pipeline Stage Management -->
+                <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <h3 style="font-size:16px;font-weight:700;color:#374151;margin:0;">Pipeline Stages</h3>
+                        <button id="addStageBtn" style="padding:6px 14px;background:#059669;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">+ Add Stage</button>
+                    </div>
+                    <div id="settStagesContainer" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                </div>
+
+                <!-- Channel Types -->
+                <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <h3 style="font-size:16px;font-weight:700;color:#374151;margin:0;">Channel Types</h3>
+                        <button id="addChannelBtn" style="padding:6px 14px;background:#059669;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">+ Add Channel</button>
+                    </div>
+                    <div id="settChannelsContainer" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                </div>
+
+                <!-- Account Tags -->
+                <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <h3 style="font-size:16px;font-weight:700;color:#374151;margin:0;">Account Tags</h3>
+                        <button id="addTagBtn" style="padding:6px 14px;background:#059669;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">+ Add Tag</button>
+                    </div>
+                    <div id="settTagsContainer" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                </div>
+
+                <!-- Feature Toggles -->
+                <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                    <h3 style="font-size:16px;font-weight:700;color:#374151;margin-bottom:16px;">Features</h3>
+                    <div id="settFeaturesContainer" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;"></div>
+                </div>
+
+                <!-- Data Upload Section -->
+                <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                    <h3 style="font-size:16px;font-weight:700;color:#374151;margin-bottom:8px;">Data Upload</h3>
+                    <p style="font-size:13px;color:#6B7280;margin-bottom:16px;">Upload your distributor and sales data files. Supported formats: VIP depletion exports, QuickBooks sales reports (.xlsx)</p>
+                    <div id="dataUploadZone" style="border:2px dashed #D1D5DB;border-radius:12px;padding:40px;text-align:center;cursor:pointer;transition:all 0.2s;">
+                        <div style="font-size:32px;margin-bottom:8px;">📊</div>
+                        <div style="font-size:14px;font-weight:600;color:#374151;">Drop Excel files here or click to browse</div>
+                        <div style="font-size:12px;color:#9CA3AF;margin-top:4px;">Supports .xlsx files up to 10MB</div>
+                        <input id="dataFileInput" type="file" accept=".xlsx,.xls,.csv" multiple style="display:none;" />
+                    </div>
+                    <div id="dataUploadList" style="margin-top:12px;"></div>
+                </div>
+
+                <!-- Danger Zone -->
+                <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:24px;margin-bottom:20px;">
+                    <h3 style="font-size:16px;font-weight:700;color:#991B1B;margin-bottom:12px;">Danger Zone</h3>
+                    <p style="font-size:13px;color:#7F1D1D;margin-bottom:12px;">These actions cannot be undone.</p>
+                    <button id="resetTenantBtn" style="padding:8px 16px;background:#DC2626;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Reset All Settings to Defaults</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer>
-        Missing Thorn - Distributor Performance Report - Generated <span id="generatedDate">February 24, 2026</span> - Data source: VIP Depletion Report
+        <span id="footerBrand">Missing Thorn</span> - Distributor Performance Report - Generated <span id="generatedDate">February 24, 2026</span> - Data source: VIP Depletion Report
     </footer>
 
     <script>
@@ -1640,7 +1751,15 @@ function applyTenantBranding() {
     if (logo && TENANT_CONFIG.logo) logo.src = TENANT_CONFIG.logo;
     const brandName = document.getElementById('brandName');
     if (brandName) brandName.textContent = TENANT_CONFIG.companyName;
+    const footerBrand = document.getElementById('footerBrand');
+    if (footerBrand) footerBrand.textContent = TENANT_CONFIG.companyName;
     document.title = TENANT_CONFIG.companyName + ' - Distributor Performance Report';
+    // Apply primary color to key elements
+    if (TENANT_CONFIG.primaryColor) {
+        document.querySelectorAll('header, .tabs .tab.active').forEach(el => {
+            if (el.tagName === 'HEADER') el.style.borderBottomColor = TENANT_CONFIG.primaryColor;
+        });
+    }
 }
 document.addEventListener('DOMContentLoaded', applyTenantBranding);
 
@@ -3223,6 +3342,8 @@ const dataThrough = '3/8/2026';
             }
             if (typeof getCurrentRepName === 'function') currentRepName = getCurrentRepName();
             renderMyTerritory();
+            // Show admin settings tab if admin
+            if (typeof initAdminSettings === 'function') setTimeout(initAdminSettings, 100);
         }
 
         function checkSavedLogin() {
@@ -4930,14 +5051,14 @@ const dataThrough = '3/8/2026';
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
         <script>
-    // Firebase Configuration - REPLACE with your project's config
+    // Firebase Configuration - MT CRM Platform (separate from Missing Thorn production)
     const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyC958VfAkRbtxFHXlmtTONtyvTJWUlq83g",
-        authDomain: "mt-dashboard-dab8e.firebaseapp.com",
-        projectId: "mt-dashboard-dab8e",
-        storageBucket: "mt-dashboard-dab8e.firebasestorage.app",
-        messagingSenderId: "252962457560",
-        appId: "1:252962457560:web:06475f8801ff2ed50a54ad"
+        apiKey: "AIzaSyBA0VgDHjcbY77Qdfw8tFZqjNkmPD-5Jao",
+        authDomain: "mt-crm-platform.firebaseapp.com",
+        projectId: "mt-crm-platform",
+        storageBucket: "mt-crm-platform.firebasestorage.app",
+        messagingSenderId: "111526186820",
+        appId: "1:111526186820:web:6e5b8d60acc80a2f75d111"
     };
 
     let db = null;
@@ -6991,6 +7112,471 @@ const dataThrough = '3/8/2026';
     document.getElementById('pipelineDetailOverlay')?.addEventListener('click', function(e) {
         if (e.target === this) closePipelineDetail();
     });
+
+    // ==================== ADMIN SETTINGS PANEL ====================
+
+    // Show settings tab for admins only
+    function initAdminSettings() {
+        const tab = document.getElementById('adminSettingsTab');
+        if (tab && currentUser && currentUser.role === 'admin') {
+            tab.style.display = '';
+        } else if (tab) {
+            tab.style.display = 'none';
+        }
+    }
+
+    // Load current config into settings form
+    function loadSettingsForm() {
+        // Branding
+        const nameInput = document.getElementById('settCompanyName');
+        const logoInput = document.getElementById('settLogoUrl');
+        const primaryInput = document.getElementById('settPrimaryColor');
+        const accentInput = document.getElementById('settAccentColor');
+        if (nameInput) nameInput.value = TENANT_CONFIG.companyName || '';
+        if (logoInput) logoInput.value = TENANT_CONFIG.logo || '';
+        if (primaryInput) {
+            primaryInput.value = TENANT_CONFIG.primaryColor || '#6C312E';
+            document.getElementById('settPrimaryColorHex').textContent = primaryInput.value;
+            primaryInput.addEventListener('input', function() {
+                document.getElementById('settPrimaryColorHex').textContent = this.value;
+            });
+        }
+        if (accentInput) {
+            accentInput.value = TENANT_CONFIG.accentColor || '#B8860B';
+            document.getElementById('settAccentColorHex').textContent = accentInput.value;
+            accentInput.addEventListener('input', function() {
+                document.getElementById('settAccentColorHex').textContent = this.value;
+            });
+        }
+
+        // Branding save
+        document.getElementById('saveBrandingBtn')?.addEventListener('click', async function() {
+            TENANT_CONFIG.companyName = nameInput.value.trim();
+            TENANT_CONFIG.logo = logoInput.value.trim();
+            TENANT_CONFIG.primaryColor = primaryInput.value;
+            TENANT_CONFIG.accentColor = accentInput.value;
+            applyTenantBranding();
+            await saveTenantConfig();
+            const status = document.getElementById('brandingSaveStatus');
+            if (status) { status.style.display = 'inline'; setTimeout(() => status.style.display = 'none', 2000); }
+        });
+
+        // Users table
+        renderSettUsersTable();
+        document.getElementById('addUserBtn')?.addEventListener('click', showAddUserModal);
+
+        // Region/State table
+        renderSettRegionTable();
+        document.getElementById('addRegionStateBtn')?.addEventListener('click', showAddStateModal);
+
+        // Pipeline stages
+        renderSettPills('settStagesContainer', TENANT_CONFIG.pipelineStages, 'stage');
+        document.getElementById('addStageBtn')?.addEventListener('click', function() {
+            const val = prompt('Enter new pipeline stage name:');
+            if (val && val.trim() && !TENANT_CONFIG.pipelineStages.includes(val.trim())) {
+                TENANT_CONFIG.pipelineStages.push(val.trim());
+                renderSettPills('settStagesContainer', TENANT_CONFIG.pipelineStages, 'stage');
+                saveTenantConfig();
+            }
+        });
+
+        // Channels
+        renderSettPills('settChannelsContainer', TENANT_CONFIG.channels, 'channel');
+        document.getElementById('addChannelBtn')?.addEventListener('click', function() {
+            const val = prompt('Enter new channel type:');
+            if (val && val.trim() && !TENANT_CONFIG.channels.includes(val.trim())) {
+                TENANT_CONFIG.channels.push(val.trim());
+                renderSettPills('settChannelsContainer', TENANT_CONFIG.channels, 'channel');
+                saveTenantConfig();
+            }
+        });
+
+        // Tags
+        renderSettPills('settTagsContainer', TENANT_CONFIG.tags, 'tag');
+        document.getElementById('addTagBtn')?.addEventListener('click', function() {
+            const val = prompt('Enter new account tag:');
+            if (val && val.trim() && !TENANT_CONFIG.tags.includes(val.trim())) {
+                TENANT_CONFIG.tags.push(val.trim());
+                renderSettPills('settTagsContainer', TENANT_CONFIG.tags, 'tag');
+                saveTenantConfig();
+            }
+        });
+
+        // Features
+        renderSettFeatures();
+
+        // Reset
+        document.getElementById('resetTenantBtn')?.addEventListener('click', async function() {
+            if (!confirm('This will reset ALL settings to defaults. Are you sure?')) return;
+            if (!confirm('This is irreversible. Type "RESET" to confirm... (Cancel to abort)')) return;
+            if (firebaseReady && db) {
+                try { await db.collection('tenants').doc(TENANT_CONFIG.tenantId).delete(); } catch(e) {}
+            }
+            localStorage.removeItem('mt_tenant_config');
+            location.reload();
+        });
+    }
+
+    // Render users table in settings
+    function renderSettUsersTable() {
+        const container = document.getElementById('settUsersTable');
+        if (!container) return;
+        const users = Object.entries(REP_CREDENTIALS);
+        let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+        html += '<thead><tr style="border-bottom:2px solid #E5E7EB;">';
+        html += '<th style="text-align:left;padding:8px;color:#6B7280;">Name</th>';
+        html += '<th style="text-align:left;padding:8px;color:#6B7280;">Initials</th>';
+        html += '<th style="text-align:left;padding:8px;color:#6B7280;">Role</th>';
+        html += '<th style="text-align:left;padding:8px;color:#6B7280;">Territory</th>';
+        html += '<th style="text-align:center;padding:8px;color:#6B7280;">Actions</th>';
+        html += '</tr></thead><tbody>';
+        users.forEach(([key, u]) => {
+            const terrDisplay = Array.isArray(u.territory) ? u.territory.join(', ') : (u.territory || 'all');
+            const roleBadge = u.role === 'admin'
+                ? '<span style="background:#EDE9FE;color:#7C3AED;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">Admin</span>'
+                : '<span style="background:#DBEAFE;color:#2563EB;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">Rep</span>';
+            html += '<tr style="border-bottom:1px solid #F3F4F6;">';
+            html += '<td style="padding:8px;font-weight:600;">' + (u.name || key) + '</td>';
+            html += '<td style="padding:8px;">' + (u.initials || '--') + '</td>';
+            html += '<td style="padding:8px;">' + roleBadge + '</td>';
+            html += '<td style="padding:8px;font-family:monospace;font-size:12px;">' + terrDisplay + '</td>';
+            html += '<td style="padding:8px;text-align:center;">';
+            html += '<button data-edituser="' + key + '" style="background:none;border:1px solid #D1D5DB;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px;">Edit</button>';
+            html += '<button data-deleteuser="' + key + '" style="background:none;border:1px solid #FECACA;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#DC2626;">Remove</button>';
+            html += '</td></tr>';
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+
+        // Attach edit/delete handlers
+        container.querySelectorAll('[data-edituser]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const key = this.dataset.edituser;
+                showEditUserModal(key);
+            });
+        });
+        container.querySelectorAll('[data-deleteuser]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const key = this.dataset.deleteuser;
+                if (REP_CREDENTIALS[key] && confirm('Remove ' + REP_CREDENTIALS[key].name + '?')) {
+                    delete REP_CREDENTIALS[key];
+                    renderSettUsersTable();
+                    saveTenantConfig();
+                }
+            });
+        });
+    }
+
+    // Edit user modal
+    function showEditUserModal(key) {
+        const u = REP_CREDENTIALS[key];
+        if (!u) return;
+        const terrVal = Array.isArray(u.territory) ? u.territory.join(',') : (u.territory || 'all');
+        const regions = [...new Set(Object.values(TENANT_CONFIG.regionMap))];
+        const states = Object.keys(TENANT_CONFIG.regionMap);
+
+        let html = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;" id="settUserModal">';
+        html += '<div style="background:#fff;border-radius:16px;padding:28px;max-width:450px;width:90%;max-height:80vh;overflow-y:auto;">';
+        html += '<h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Edit User: ' + u.name + '</h3>';
+        html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Name</label>';
+        html += '<input id="editUserName" type="text" value="' + (u.name || '') + '" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;"></div>';
+        html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Initials</label>';
+        html += '<input id="editUserInitials" type="text" value="' + (u.initials || '') + '" maxlength="3" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;"></div>';
+        html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Role</label>';
+        html += '<select id="editUserRole" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;">';
+        html += '<option value="admin"' + (u.role === 'admin' ? ' selected' : '') + '>Admin</option>';
+        html += '<option value="rep"' + (u.role === 'rep' ? ' selected' : '') + '>Rep</option>';
+        html += '</select></div>';
+        html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Territory</label>';
+        html += '<p style="font-size:11px;color:#9CA3AF;margin-bottom:4px;">Use "all" for full access, a region name (East/West), a state code (FL), or comma-separated states (FL,NJ)</p>';
+        html += '<input id="editUserTerritory" type="text" value="' + terrVal + '" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:monospace;"></div>';
+        html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">PIN</label>';
+        html += '<input id="editUserPin" type="text" value="' + (u.pin || '') + '" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;"></div>';
+        html += '<div style="display:flex;gap:8px;margin-top:16px;">';
+        html += '<button id="saveEditUser" style="flex:1;padding:10px;background:#6C312E;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Save</button>';
+        html += '<button id="cancelEditUser" style="flex:1;padding:10px;background:#F3F4F6;color:#374151;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>';
+        html += '</div></div></div>';
+
+        document.body.insertAdjacentHTML('beforeend', html);
+        document.getElementById('cancelEditUser').addEventListener('click', () => document.getElementById('settUserModal')?.remove());
+        document.getElementById('settUserModal').addEventListener('click', function(e) { if (e.target === this) this.remove(); });
+        document.getElementById('saveEditUser').addEventListener('click', function() {
+            const name = document.getElementById('editUserName').value.trim();
+            const initials = document.getElementById('editUserInitials').value.trim().toUpperCase();
+            const role = document.getElementById('editUserRole').value;
+            const pin = document.getElementById('editUserPin').value.trim();
+            let terrRaw = document.getElementById('editUserTerritory').value.trim();
+            let territory;
+            if (terrRaw === 'all' || terrRaw === '') territory = 'all';
+            else if (terrRaw.includes(',')) territory = terrRaw.split(',').map(s => s.trim().toUpperCase());
+            else territory = terrRaw;
+
+            REP_CREDENTIALS[key] = { ...REP_CREDENTIALS[key], name, initials, owner: name, role, territory, pin };
+            if (firebaseReady && db) {
+                try { db.collection('users').doc(key).set(REP_CREDENTIALS[key], {merge:true}); } catch(e) {}
+            }
+            localStorage.setItem('mt_rep_custom_users', JSON.stringify(REP_CREDENTIALS));
+            document.getElementById('settUserModal')?.remove();
+            renderSettUsersTable();
+        });
+    }
+
+    // Add user modal
+    function showAddUserModal() {
+        let html = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;" id="settUserModal">';
+        html += '<div style="background:#fff;border-radius:16px;padding:28px;max-width:450px;width:90%;max-height:80vh;overflow-y:auto;">';
+        html += '<h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Add New User</h3>';
+        html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Name</label>';
+        html += '<input id="addUserName" type="text" placeholder="e.g. Sarah" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;"></div>';
+        html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Initials</label>';
+        html += '<input id="addUserInitials" type="text" placeholder="e.g. SH" maxlength="3" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;"></div>';
+        html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Role</label>';
+        html += '<select id="addUserRole" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;">';
+        html += '<option value="rep">Rep</option><option value="admin">Admin</option></select></div>';
+        html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Territory</label>';
+        html += '<input id="addUserTerritory" type="text" placeholder="all, East, FL, or FL,NJ" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:monospace;"></div>';
+        html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">PIN</label>';
+        html += '<input id="addUserPin" type="text" placeholder="4-digit PIN" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;"></div>';
+        html += '<div style="display:flex;gap:8px;margin-top:16px;">';
+        html += '<button id="saveAddUser" style="flex:1;padding:10px;background:#059669;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Add User</button>';
+        html += '<button id="cancelAddUser" style="flex:1;padding:10px;background:#F3F4F6;color:#374151;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>';
+        html += '</div></div></div>';
+
+        document.body.insertAdjacentHTML('beforeend', html);
+        document.getElementById('cancelAddUser').addEventListener('click', () => document.getElementById('settUserModal')?.remove());
+        document.getElementById('settUserModal').addEventListener('click', function(e) { if (e.target === this) this.remove(); });
+        document.getElementById('saveAddUser').addEventListener('click', function() {
+            const name = document.getElementById('addUserName').value.trim();
+            const initials = document.getElementById('addUserInitials').value.trim().toUpperCase();
+            const role = document.getElementById('addUserRole').value;
+            const pin = document.getElementById('addUserPin').value.trim();
+            let terrRaw = document.getElementById('addUserTerritory').value.trim() || 'all';
+            let territory;
+            if (terrRaw === 'all') territory = 'all';
+            else if (terrRaw.includes(',')) territory = terrRaw.split(',').map(s => s.trim().toUpperCase());
+            else territory = terrRaw;
+
+            if (!name) { alert('Name is required.'); return; }
+            const key = name.toLowerCase().replace(/[^a-z0-9]/g,'');
+            if (REP_CREDENTIALS[key]) { alert('A user with that name already exists.'); return; }
+
+            REP_CREDENTIALS[key] = { name, initials: initials || name.substring(0,2).toUpperCase(), owner: name, pin: pin || '1234', role, territory };
+            if (firebaseReady && db) {
+                try { db.collection('users').doc(key).set(REP_CREDENTIALS[key], {merge:true}); } catch(e) {}
+            }
+            localStorage.setItem('mt_rep_custom_users', JSON.stringify(REP_CREDENTIALS));
+            document.getElementById('settUserModal')?.remove();
+            renderSettUsersTable();
+        });
+    }
+
+    // Render region/state table
+    function renderSettRegionTable() {
+        const container = document.getElementById('settRegionTable');
+        if (!container) return;
+        const entries = Object.entries(TENANT_CONFIG.regionMap);
+        let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+        html += '<thead><tr style="border-bottom:2px solid #E5E7EB;">';
+        html += '<th style="text-align:left;padding:8px;color:#6B7280;">State Code</th>';
+        html += '<th style="text-align:left;padding:8px;color:#6B7280;">State Name</th>';
+        html += '<th style="text-align:left;padding:8px;color:#6B7280;">Region</th>';
+        html += '<th style="text-align:center;padding:8px;color:#6B7280;">Actions</th>';
+        html += '</tr></thead><tbody>';
+        entries.sort((a,b) => a[1].localeCompare(b[1]) || a[0].localeCompare(b[0])).forEach(([st, region]) => {
+            html += '<tr style="border-bottom:1px solid #F3F4F6;">';
+            html += '<td style="padding:8px;font-family:monospace;font-weight:600;">' + st + '</td>';
+            html += '<td style="padding:8px;">' + (TENANT_CONFIG.stateNames[st] || st) + '</td>';
+            html += '<td style="padding:8px;">' + region + '</td>';
+            html += '<td style="padding:8px;text-align:center;">';
+            html += '<button data-editstate="' + st + '" style="background:none;border:1px solid #D1D5DB;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px;">Edit</button>';
+            html += '<button data-deletestate="' + st + '" style="background:none;border:1px solid #FECACA;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#DC2626;">Remove</button>';
+            html += '</td></tr>';
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+
+        container.querySelectorAll('[data-editstate]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const st = this.dataset.editstate;
+                const newRegion = prompt('Enter region for ' + st + ' (currently: ' + TENANT_CONFIG.regionMap[st] + '):', TENANT_CONFIG.regionMap[st]);
+                if (newRegion && newRegion.trim()) {
+                    TENANT_CONFIG.regionMap[st] = newRegion.trim();
+                    regionMap[st] = newRegion.trim();
+                    renderSettRegionTable();
+                    saveTenantConfig();
+                }
+            });
+        });
+        container.querySelectorAll('[data-deletestate]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const st = this.dataset.deletestate;
+                if (confirm('Remove ' + st + ' (' + (TENANT_CONFIG.stateNames[st] || st) + ') from regions?')) {
+                    delete TENANT_CONFIG.regionMap[st];
+                    delete regionMap[st];
+                    delete TENANT_CONFIG.stateNames[st];
+                    delete stateNames[st];
+                    renderSettRegionTable();
+                    saveTenantConfig();
+                }
+            });
+        });
+    }
+
+    // Add state modal
+    function showAddStateModal() {
+        const code = prompt('Enter 2-letter state code (e.g. NY):');
+        if (!code || !code.trim()) return;
+        const upper = code.trim().toUpperCase();
+        if (TENANT_CONFIG.regionMap[upper]) { alert(upper + ' already exists.'); return; }
+        const name = prompt('Enter full state name:');
+        const region = prompt('Enter region (e.g. East, West):');
+        if (!region || !region.trim()) return;
+        TENANT_CONFIG.regionMap[upper] = region.trim();
+        regionMap[upper] = region.trim();
+        if (name && name.trim()) {
+            TENANT_CONFIG.stateNames[upper] = name.trim();
+            stateNames[upper] = name.trim();
+        }
+        renderSettRegionTable();
+        saveTenantConfig();
+    }
+
+    // Render removable pill items (stages, channels, tags)
+    function renderSettPills(containerId, items, type) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = items.map((item, i) =>
+            '<div style="display:inline-flex;align-items:center;gap:6px;background:#F3F4F6;padding:6px 12px;border-radius:20px;font-size:13px;">' +
+            '<span>' + item + '</span>' +
+            '<button data-removepill="' + i + '" data-pilltype="' + type + '" style="background:none;border:none;color:#9CA3AF;cursor:pointer;font-size:16px;line-height:1;padding:0;">&times;</button>' +
+            '</div>'
+        ).join('');
+
+        container.querySelectorAll('[data-removepill]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const idx = parseInt(this.dataset.removepill);
+                const ptype = this.dataset.pilltype;
+                const arr = ptype === 'stage' ? TENANT_CONFIG.pipelineStages :
+                            ptype === 'channel' ? TENANT_CONFIG.channels : TENANT_CONFIG.tags;
+                if (confirm('Remove "' + arr[idx] + '"?')) {
+                    arr.splice(idx, 1);
+                    renderSettPills(containerId, arr, type);
+                    saveTenantConfig();
+                }
+            });
+        });
+    }
+
+    // Render feature toggles
+    function renderSettFeatures() {
+        const container = document.getElementById('settFeaturesContainer');
+        if (!container) return;
+        const features = TENANT_CONFIG.features || {};
+        const featureLabels = {
+            fileAttachments: 'File Attachments',
+            emailLogging: 'Email Logging',
+            activityTimeline: 'Activity Timeline',
+            pipeline: 'Customer Pipeline',
+            distributorHealth: 'Distributor Health',
+            reorderForecast: 'Reorder Forecast'
+        };
+        container.innerHTML = Object.entries(featureLabels).map(([key, label]) => {
+            const checked = features[key] !== false ? 'checked' : '';
+            return '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px;background:#F9FAFB;border-radius:8px;">' +
+                '<input type="checkbox" data-feature="' + key + '" ' + checked + ' style="width:16px;height:16px;cursor:pointer;">' +
+                '<span style="font-size:13px;font-weight:500;">' + label + '</span></label>';
+        }).join('');
+
+        container.querySelectorAll('[data-feature]').forEach(cb => {
+            cb.addEventListener('change', function() {
+                TENANT_CONFIG.features[this.dataset.feature] = this.checked;
+                saveTenantConfig();
+            });
+        });
+    }
+
+    // Save tenant config to Firestore and localStorage
+    async function saveTenantConfig() {
+        const configToSave = {
+            tenantId: TENANT_CONFIG.tenantId,
+            companyName: TENANT_CONFIG.companyName,
+            logo: TENANT_CONFIG.logo,
+            primaryColor: TENANT_CONFIG.primaryColor,
+            accentColor: TENANT_CONFIG.accentColor,
+            stateNames: TENANT_CONFIG.stateNames,
+            regionMap: TENANT_CONFIG.regionMap,
+            channels: TENANT_CONFIG.channels,
+            pipelineStages: TENANT_CONFIG.pipelineStages,
+            scoringWeights: TENANT_CONFIG.scoringWeights,
+            tags: TENANT_CONFIG.tags,
+            nextActions: TENANT_CONFIG.nextActions,
+            features: TENANT_CONFIG.features,
+            updatedAt: Date.now()
+        };
+        localStorage.setItem('mt_tenant_config', JSON.stringify(configToSave));
+        if (firebaseReady && db) {
+            try {
+                await db.collection('tenants').doc(TENANT_CONFIG.tenantId).set(configToSave, {merge:true});
+                console.log('Tenant config saved to Firestore');
+            } catch(e) {
+                console.warn('Failed to save tenant config to Firestore:', e);
+            }
+        }
+    }
+
+    // Load tenant config from Firestore (overrides defaults)
+    async function loadTenantConfig() {
+        // Try localStorage first for instant load
+        try {
+            const cached = JSON.parse(localStorage.getItem('mt_tenant_config') || '{}');
+            if (cached.tenantId) {
+                Object.assign(TENANT_CONFIG, cached);
+                // Update backward-compat refs
+                Object.keys(TENANT_CONFIG.regionMap).forEach(k => { regionMap[k] = TENANT_CONFIG.regionMap[k]; });
+                Object.keys(TENANT_CONFIG.stateNames).forEach(k => { stateNames[k] = TENANT_CONFIG.stateNames[k]; });
+                applyTenantBranding();
+            }
+        } catch(e) {}
+
+        // Then sync from Firestore
+        if (firebaseReady && db) {
+            try {
+                const doc = await db.collection('tenants').doc(TENANT_CONFIG.tenantId).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    Object.assign(TENANT_CONFIG, data);
+                    Object.keys(TENANT_CONFIG.regionMap).forEach(k => { regionMap[k] = TENANT_CONFIG.regionMap[k]; });
+                    Object.keys(TENANT_CONFIG.stateNames).forEach(k => { stateNames[k] = TENANT_CONFIG.stateNames[k]; });
+                    localStorage.setItem('mt_tenant_config', JSON.stringify(data));
+                    applyTenantBranding();
+                    console.log('Tenant config loaded from Firestore');
+                }
+            } catch(e) {
+                console.warn('Failed to load tenant config from Firestore:', e);
+            }
+        }
+    }
+
+    // Hook into the existing tab switch to load settings form when admin settings tab is clicked
+    const _origTabLogic = document.querySelectorAll('.tabs .tab');
+    _origTabLogic.forEach(tab => {
+        tab.addEventListener('click', function() {
+            if (this.dataset.tab === 'admin-settings') {
+                loadSettingsForm();
+            }
+        });
+    });
+
+    // Hook into login to show/hide admin settings tab
+    const _origSetLoggedIn = typeof setLoggedInUI === 'function' ? setLoggedInUI : null;
+    if (_origSetLoggedIn) {
+        const _wrappedSetLoggedIn = setLoggedInUI;
+        // We can't easily override, so just call initAdminSettings after a short delay
+        setTimeout(initAdminSettings, 500);
+    }
+
+    // Load tenant config on startup
+    loadTenantConfig();
     </script>
 
     <div class="account-panel-overlay" id="apOverlay" onclick="closeAccountPanel()"></div>
