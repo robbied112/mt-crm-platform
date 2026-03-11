@@ -5050,6 +5050,7 @@ const dataThrough = '3/8/2026';
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
         <script>
     // Firebase Configuration - MT CRM Platform (separate from Missing Thorn production)
     const FIREBASE_CONFIG = {
@@ -7577,6 +7578,247 @@ const dataThrough = '3/8/2026';
 
     // Load tenant config on startup
     loadTenantConfig();
+
+    // ==================== DATA UPLOAD & EXCEL PARSING ENGINE ====================
+
+    // Known file types and their parsers
+    const DATA_FILE_TYPES = {
+        'velocity': { label: 'Distributor SKU Velocity (13-week)', match: /velocity|13w|depletion/i },
+        'scorecard': { label: 'Distributor Scorecard / Rolling Period', match: /rolling|4m|scorecard/i },
+        'w4comparison': { label: '4-Week vs Prior 4-Week', match: /4w.*vs.*prior|w4.*prior/i },
+        'inventory': { label: 'Inventory / Days on Hand', match: /inventory|days.*hand|doh/i },
+        'newplacements': { label: 'New Placements', match: /new.*placement/i },
+        'lostplacements': { label: 'Lost Placements', match: /lost.*placement/i },
+        'qbrevenue': { label: 'QuickBooks Revenue / Sales', match: /sales.*customer|quickbooks|qb|revenue|yolo/i },
+        'warehouse': { label: 'Warehouse Inventory Tracker', match: /warehouse|tracker.*live/i },
+        'products': { label: 'Product Details', match: /product.*detail/i }
+    };
+
+    // Detect file type from filename
+    function detectFileType(filename) {
+        for (const [key, config] of Object.entries(DATA_FILE_TYPES)) {
+            if (config.match.test(filename)) return key;
+        }
+        return null;
+    }
+
+    // Initialize the data upload zone in admin settings
+    function initDataUploadZone() {
+        const zone = document.getElementById('dataUploadZone');
+        const input = document.getElementById('dataFileInput');
+        if (!zone || !input) return;
+
+        zone.addEventListener('click', () => input.click());
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            zone.style.borderColor = '#059669';
+            zone.style.background = '#F0FDF4';
+        });
+        zone.addEventListener('dragleave', () => {
+            zone.style.borderColor = '#D1D5DB';
+            zone.style.background = '';
+        });
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            zone.style.borderColor = '#D1D5DB';
+            zone.style.background = '';
+            if (e.dataTransfer.files.length > 0) processDataUploads(e.dataTransfer.files);
+        });
+        input.addEventListener('change', () => {
+            if (input.files.length > 0) processDataUploads(input.files);
+            input.value = '';
+        });
+
+        // Load and show existing uploads
+        loadUploadedFilesList();
+    }
+
+    // Process uploaded data files
+    async function processDataUploads(files) {
+        const listEl = document.getElementById('dataUploadList');
+        if (!listEl) return;
+
+        for (const file of files) {
+            const fileType = detectFileType(file.name);
+            const statusId = 'upload_' + Date.now() + '_' + Math.random().toString(36).substr(2,4);
+
+            // Show processing status
+            listEl.insertAdjacentHTML('afterbegin',
+                '<div id="' + statusId + '" style="display:flex;align-items:center;gap:12px;padding:12px;background:#F9FAFB;border-radius:8px;margin-bottom:8px;">' +
+                '<div style="font-size:20px;">&#9203;</div>' +
+                '<div style="flex:1;">' +
+                '<div style="font-size:13px;font-weight:600;color:#374151;">' + file.name + '</div>' +
+                '<div style="font-size:11px;color:#6B7280;">Processing...</div>' +
+                '</div></div>'
+            );
+
+            try {
+                const data = await readExcelFile(file);
+                const rowCount = data ? data.length : 0;
+
+                // Store in Firestore
+                if (firebaseReady && db && data && data.length > 0) {
+                    const docId = fileType || file.name.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50);
+                    await db.collection('tenants').doc(TENANT_CONFIG.tenantId).collection('data').doc(docId).set({
+                        filename: file.name,
+                        fileType: fileType,
+                        label: fileType ? DATA_FILE_TYPES[fileType].label : 'Unknown',
+                        rows: rowCount,
+                        headers: data.length > 0 ? Object.keys(data[0]) : [],
+                        uploadedAt: Date.now(),
+                        uploadedBy: currentUser ? currentUser.name : 'unknown'
+                    });
+
+                    // Store actual data in chunks (Firestore has 1MB doc limit)
+                    const chunkSize = 200;
+                    for (let i = 0; i < data.length; i += chunkSize) {
+                        const chunk = data.slice(i, i + chunkSize);
+                        await db.collection('tenants').doc(TENANT_CONFIG.tenantId)
+                            .collection('data').doc(docId)
+                            .collection('rows').doc('chunk_' + Math.floor(i / chunkSize))
+                            .set({ rows: chunk, startIndex: i, count: chunk.length });
+                    }
+                }
+
+                // Also cache in localStorage for offline use
+                try {
+                    const cacheKey = 'mt_data_' + (fileType || 'unknown');
+                    localStorage.setItem(cacheKey, JSON.stringify(data));
+                } catch(e) { /* localStorage might be full for large datasets */ }
+
+                // Update status
+                const statusEl = document.getElementById(statusId);
+                if (statusEl) {
+                    const typeLabel = fileType ? DATA_FILE_TYPES[fileType].label : 'Unknown file type';
+                    statusEl.innerHTML =
+                        '<div style="font-size:20px;">&#9989;</div>' +
+                        '<div style="flex:1;">' +
+                        '<div style="font-size:13px;font-weight:600;color:#374151;">' + file.name + '</div>' +
+                        '<div style="font-size:11px;color:#059669;">' + typeLabel + ' - ' + rowCount + ' rows parsed and saved</div>' +
+                        '</div>' +
+                        '<button data-removefile="' + (fileType || file.name) + '" style="background:none;border:1px solid #FECACA;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#DC2626;">Remove</button>';
+
+                    statusEl.querySelector('[data-removefile]')?.addEventListener('click', async function() {
+                        const docId = this.dataset.removefile.replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 50);
+                        if (confirm('Remove this uploaded data?')) {
+                            if (firebaseReady && db) {
+                                try { await db.collection('tenants').doc(TENANT_CONFIG.tenantId).collection('data').doc(docId).delete(); } catch(e) {}
+                            }
+                            localStorage.removeItem('mt_data_' + docId);
+                            statusEl.remove();
+                        }
+                    });
+                }
+
+            } catch(err) {
+                const statusEl = document.getElementById(statusId);
+                if (statusEl) {
+                    statusEl.innerHTML =
+                        '<div style="font-size:20px;">&#10060;</div>' +
+                        '<div style="flex:1;">' +
+                        '<div style="font-size:13px;font-weight:600;color:#374151;">' + file.name + '</div>' +
+                        '<div style="font-size:11px;color:#DC2626;">Error: ' + (err.message || 'Failed to parse file') + '</div>' +
+                        '</div>';
+                }
+            }
+        }
+    }
+
+    // Read an Excel file and return array of row objects
+    function readExcelFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+
+                    // Pick the right sheet
+                    let sheetName = workbook.SheetNames[0];
+
+                    // For warehouse tracker files, find the most recent dated tab (M.D.YY format)
+                    if (detectFileType(file.name) === 'warehouse') {
+                        let bestDate = null;
+                        let bestSheet = null;
+                        workbook.SheetNames.forEach(name => {
+                            const match = name.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})$/);
+                            if (match) {
+                                const m = parseInt(match[1]);
+                                const d = parseInt(match[2]);
+                                let y = parseInt(match[3]);
+                                if (y < 100) y += 2000;
+                                const dt = new Date(y, m - 1, d);
+                                if (!bestDate || dt > bestDate) {
+                                    bestDate = dt;
+                                    bestSheet = name;
+                                }
+                            }
+                        });
+                        if (bestSheet) sheetName = bestSheet;
+                    }
+
+                    const sheet = workbook.Sheets[sheetName];
+                    const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+                    resolve(json);
+                } catch(err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    // Load list of previously uploaded files from Firestore
+    async function loadUploadedFilesList() {
+        const listEl = document.getElementById('dataUploadList');
+        if (!listEl || !firebaseReady || !db) return;
+
+        try {
+            const snap = await db.collection('tenants').doc(TENANT_CONFIG.tenantId).collection('data').get();
+            if (snap.empty) {
+                listEl.innerHTML = '<div style="text-align:center;padding:16px;color:#9CA3AF;font-size:13px;">No data files uploaded yet</div>';
+                return;
+            }
+
+            let html = '<div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Uploaded Data Files</div>';
+            snap.docs.forEach(doc => {
+                const d = doc.data();
+                const dateStr = d.uploadedAt ? new Date(d.uploadedAt).toLocaleDateString() : 'Unknown';
+                html += '<div style="display:flex;align-items:center;gap:12px;padding:10px;background:#F9FAFB;border-radius:8px;margin-bottom:6px;">' +
+                    '<div style="font-size:18px;">&#128202;</div>' +
+                    '<div style="flex:1;">' +
+                    '<div style="font-size:13px;font-weight:600;color:#374151;">' + (d.filename || doc.id) + '</div>' +
+                    '<div style="font-size:11px;color:#6B7280;">' + (d.label || 'Data') + ' - ' + (d.rows || 0) + ' rows - Uploaded ' + dateStr + ' by ' + (d.uploadedBy || 'unknown') + '</div>' +
+                    '</div>' +
+                    '<button data-removefile="' + doc.id + '" style="background:none;border:1px solid #FECACA;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#DC2626;">Remove</button>' +
+                    '</div>';
+            });
+            listEl.innerHTML = html;
+
+            listEl.querySelectorAll('[data-removefile]').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const docId = this.dataset.removefile;
+                    if (confirm('Remove this uploaded data?')) {
+                        if (firebaseReady && db) {
+                            try { await db.collection('tenants').doc(TENANT_CONFIG.tenantId).collection('data').doc(docId).delete(); } catch(e) {}
+                        }
+                        this.closest('div[style*="display:flex"]').remove();
+                    }
+                });
+            });
+        } catch(e) {
+            console.warn('Failed to load uploaded files list:', e);
+        }
+    }
+
+    // Hook data upload zone init into settings form load
+    const _origLoadSettings = loadSettingsForm;
+    loadSettingsForm = function() {
+        _origLoadSettings();
+        initDataUploadZone();
+    };
+
     </script>
 
     <div class="account-panel-overlay" id="apOverlay" onclick="closeAccountPanel()"></div>
