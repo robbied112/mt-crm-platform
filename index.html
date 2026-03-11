@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRM Platform - Distributor Performance Report</title>
+    <title>Sidekick BI</title>
     <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -719,7 +719,7 @@
         .mention-dropdown.visible {display:block;}
         .mention-item {padding:8px 12px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;}
         .mention-item:hover,.mention-item.active {background:#EEF2FF;color:#2563EB;}
-        .mention-item .avatar {width:24px;height:24px;border-radius:50%;background:#B13B34;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+        .mention-item .avatar {width:24px;height:24px;border-radius:50%;background:#2563EB;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
         .mention-tag {color:#2563EB;font-weight:600;background:#EEF2FF;padding:1px 4px;border-radius:4px;}
         .ap-note-input-wrapper {position:relative;flex:1;display:flex;flex-direction:column;}
         .mention-badge {display:inline-block;background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-left:6px;}
@@ -736,29 +736,110 @@
 <body>
 
     <!-- Login Overlay -->
-    <div id="loginOverlay" style="display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg, #6C312E 0%, #4A2220 60%, #3A1A18 100%);z-index:9999;justify-content:center;align-items:center;">
+    <!-- Setup Wizard (shown on first visit when no tenant is configured) -->
+    <div id="setupWizard" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg, #1E40AF 0%, #1E3A8A 60%, #172554 100%);z-index:10000;justify-content:center;align-items:center;overflow-y:auto;padding:20px;">
+      <div style="background:#fff;border-radius:20px;padding:44px;width:500px;max-width:95%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="text-align:center;margin-bottom:8px;">
+          <div style="font-size:36px;margin-bottom:8px;">&#128640;</div>
+          <div style="font-size:28px;font-weight:800;color:#1E40AF;font-family:'Catamaran',sans-serif;">Sidekick BI</div>
+          <div style="font-size:14px;color:#6B7280;margin-top:4px;">Let's get your workspace set up</div>
+        </div>
+
+        <!-- Step 1: Company Info -->
+        <div id="setupStep1" style="margin-top:24px;">
+          <div style="font-size:11px;font-weight:700;color:#2563EB;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Step 1 of 3 -- Your Company</div>
+          <div style="margin-bottom:14px;">
+            <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Company Name *</label>
+            <input id="setupCompanyName" type="text" placeholder="e.g. Acme Beverages" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          </div>
+          <div style="margin-bottom:14px;">
+            <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Logo URL (optional)</label>
+            <input id="setupLogo" type="text" placeholder="https://yoursite.com/logo.png" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          </div>
+          <div style="margin-bottom:14px;">
+            <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Industry</label>
+            <select id="setupIndustry" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+              <option value="">Select your industry...</option>
+              <option value="beverage">Beverage / Wine / Spirits</option>
+              <option value="food">Food / Snacks / CPG</option>
+              <option value="health">Health / Wellness / Supplements</option>
+              <option value="beauty">Beauty / Personal Care</option>
+              <option value="cannabis">Cannabis / Hemp</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <button id="setupNext1" style="width:100%;padding:12px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;margin-top:8px;">Continue</button>
+        </div>
+
+        <!-- Step 2: Admin Account -->
+        <div id="setupStep2" style="display:none;margin-top:24px;">
+          <div style="font-size:11px;font-weight:700;color:#2563EB;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Step 2 of 3 -- Admin Account</div>
+          <div style="margin-bottom:14px;">
+            <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Your Name *</label>
+            <input id="setupAdminName" type="text" placeholder="e.g. Robbie" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          </div>
+          <div style="margin-bottom:14px;">
+            <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Initials</label>
+            <input id="setupAdminInitials" type="text" placeholder="e.g. RD" maxlength="3" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          </div>
+          <div style="margin-bottom:14px;">
+            <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Set Your PIN *</label>
+            <input id="setupAdminPin" type="password" placeholder="4+ digit PIN" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button id="setupBack2" style="flex:1;padding:12px;background:#F3F4F6;color:#374151;border:none;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;">Back</button>
+            <button id="setupNext2" style="flex:2;padding:12px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;">Continue</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Channels & Regions -->
+        <div id="setupStep3" style="display:none;margin-top:24px;">
+          <div style="font-size:11px;font-weight:700;color:#2563EB;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Step 3 of 3 -- Your Setup</div>
+          <div style="margin-bottom:14px;">
+            <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Sales Channels (comma-separated)</label>
+            <input id="setupChannels" type="text" placeholder="e.g. On-Premise, Off-Premise, DTC" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          </div>
+          <div style="margin-bottom:14px;">
+            <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">States / Markets You Operate In (comma-separated codes)</label>
+            <input id="setupStates" type="text" placeholder="e.g. FL, NJ, CA, TX" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          </div>
+          <div style="margin-bottom:14px;">
+            <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Regions (optional, comma-separated)</label>
+            <input id="setupRegions" type="text" placeholder="e.g. East, West, Central" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+            <div style="font-size:11px;color:#9CA3AF;margin-top:4px;">You can assign states to regions later in Settings</div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button id="setupBack3" style="flex:1;padding:12px;background:#F3F4F6;color:#374151;border:none;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;">Back</button>
+            <button id="setupFinish" style="flex:2;padding:12px;background:#059669;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;">Launch Sidekick BI &#128640;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginOverlay" style="display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg, #1E40AF 0%, #1E3A8A 60%, #172554 100%);z-index:9999;justify-content:center;align-items:center;">
       <div style="background:#fff;border-radius:16px;padding:40px;width:380px;max-width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
         <div style="text-align:center;margin-bottom:28px;">
-          <div id="brandName" style="font-size:28px;font-weight:800;color:#6C312E;font-family:'Catamaran',sans-serif;">Missing Thorn</div>
-          <div style="font-size:14px;color:#7A6E66;margin-top:4px;">Account Login</div>
+          <div id="brandName" style="font-size:28px;font-weight:800;color:#2563EB;font-family:'Catamaran',sans-serif;">Sidekick BI</div>
+          <div id="loginCompanyName" style="font-size:14px;color:#6B7280;margin-top:4px;">Sign in to your workspace</div>
         </div>
         <div id="loginError" style="display:none;background:#FEE2E2;color:#DC2626;padding:8px 12px;border-radius:8px;font-size:13px;margin-bottom:16px;"></div>
         <div style="margin-bottom:16px;">
           <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Name</label>
-          <input id="loginEmail" type="text" placeholder="e.g. Robbie, Tim, Stephanie, Beth" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+          <input id="loginEmail" type="text" placeholder="Enter your name" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
         </div>
         <div style="margin-bottom:20px;">
           <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">PIN</label>
           <input id="loginPassword" type="password" placeholder="Enter PIN" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
         </div>
-        <button onclick="doLogin()" id="loginBtn" style="width:100%;padding:12px;background:#B13B34;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Catamaran',sans-serif;">Sign In</button>
-        <div style="text-align:center;margin-top:16px;font-size:11px;color:#9ca3af;">Default PIN: 2026 | Contact Robbie to change</div>
+        <button onclick="doLogin()" id="loginBtn" style="width:100%;padding:12px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Catamaran',sans-serif;">Sign In</button>
+        <div style="text-align:center;margin-top:16px;font-size:11px;color:#9ca3af;">Powered by Sidekick BI</div>
       </div>
     </div>
 
     <!-- User bar (shown when logged in) -->
     <div id="userBar" style="display:none;position:fixed;top:8px;right:16px;z-index:100;background:#fff;border-radius:20px;padding:4px 14px 4px 10px;box-shadow:0 2px 8px rgba(0,0,0,0.1);border:1px solid #e5e7eb;font-size:12px;display:none;align-items:center;gap:8px;">
-      <div style="width:24px;height:24px;border-radius:50%;background:#B13B34;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;" id="userAvatar">?</div>
+      <div style="width:24px;height:24px;border-radius:50%;background:#2563EB;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;" id="userAvatar">?</div>
       <span id="userName" style="font-weight:600;color:#374151;">--</span>
       <button onclick="openUserMgmt()" style="background:none;border:none;color:#6B7280;font-size:13px;cursor:pointer;padding:2px 4px;" title="Manage Users">&#9881;</button>
       <button onclick="doLogout()" style="background:none;border:none;color:#9ca3af;font-size:11px;cursor:pointer;padding:2px 6px;">Logout</button>
@@ -800,7 +881,7 @@
 
     <div class="container">
         <header>
-            <img id="brandLogo" src="https://missingthorn.com/cdn/shop/files/MT_Logo_Horiz_Red.png?v=1755630325&width=600" alt="Company Logo">
+            <img id="brandLogo" src="" alt="Company Logo">
             <div class="header-text">
                 <h1 id="headerTitle">Distributor Performance Report</h1>
                 <p>Real-time sales rep opportunity tracking • Data through <span id="dataThrough">2/14</span></p>
@@ -1189,7 +1270,7 @@
 
             <div class="section-header">
                 <h3>Re-Engagement Opportunities</h3>
-                <p>These accounts previously carried Missing Thorn and represent warm leads for reconnection. Focus outreach here for highest conversion probability.</p>
+                <p>These accounts previously carried Sidekick BI and represent warm leads for reconnection. Focus outreach here for highest conversion probability.</p>
             </div>
 
             <div class="table-container">
@@ -1693,33 +1774,25 @@
     </div>
 
     <footer>
-        <span id="footerBrand">Missing Thorn</span> - Distributor Performance Report - Generated <span id="generatedDate">February 24, 2026</span> - Data source: VIP Depletion Report
+        <span id="footerBrand">Sidekick BI</span> - Distributor Performance Report - Generated <span id="generatedDate">February 24, 2026</span> - Data source: VIP Depletion Report
     </footer>
 
     <script>
         // __DATA_START__
 // ==================== TENANT CONFIGURATION ====================
 // This object holds ALL tenant-specific settings.
-// Currently loaded inline (Missing Thorn defaults).
+// Currently loaded inline (Sidekick BI defaults).
 // Phase 2: loaded from Firestore at tenants/{tenantId}/config
 const TENANT_CONFIG = {
-    tenantId: 'missing-thorn',
-    companyName: 'Missing Thorn',
-    logo: 'https://missingthorn.com/cdn/shop/files/MT_Logo_Horiz_Red.png?v=1755630325&width=600',
-    primaryColor: '#6C312E',
-    accentColor: '#B8860B',
-    stateNames: {
-        AZ:'Arizona',CA:'California',CT:'Connecticut',FL:'Florida',GA:'Georgia',
-        ME:'Maine',NC:'North Carolina',NJ:'New Jersey',NV:'Nevada',NY:'New York',
-        PA:'Pennsylvania',SC:'South Carolina',TX:'Texas'
-    },
-    regionMap: {
-        "NJ":"East","FL":"East","PA":"East","NC":"East","GA":"East",
-        "CT":"East","ME":"East","SC":"East","TX":"West","AZ":"West",
-        "NV":"West","CA":"West"
-    },
-    channels: ['On-Premise', 'Off-Premise'],
-    pipelineStages: ['Lead','Contacted','Sample Sent','Tasting Scheduled','Order Pending','Won','Lost','Closed Lost'],
+    tenantId: 'default',
+    companyName: '',
+    logo: '',
+    primaryColor: '#2563EB',
+    accentColor: '#059669',
+    stateNames: {},
+    regionMap: {},
+    channels: [],
+    pipelineStages: ['Lead','Contacted','Proposal','Negotiation','Won','Lost'],
     pipelineTiers: ['Tier 1','Tier 2','Tier 3'],
     scoringWeights: {
         velocity: 0.30,
@@ -3347,7 +3420,7 @@ const dataThrough = '3/8/2026';
         }
 
         function checkSavedLogin() {
-            const saved = localStorage.getItem('mt_rep_user');
+            const saved = localStorage.getItem('sk_user');
             if (saved && REP_CREDENTIALS[saved]) {
                 currentUser = {...REP_CREDENTIALS[saved]};
                 setLoggedInUI(saved);
@@ -3385,13 +3458,13 @@ const dataThrough = '3/8/2026';
             }
 
             currentUser = {...REP_CREDENTIALS[key]};
-            localStorage.setItem('mt_rep_user', key);
+            localStorage.setItem('sk_user', key);
             setLoggedInUI(key);
         }
 
         function doLogout() {
             currentUser = null;
-            localStorage.removeItem('mt_rep_user');
+            localStorage.removeItem('sk_user');
             document.getElementById('loginOverlay').style.display = 'flex';
             document.getElementById('userBar').style.display = 'none';
             document.getElementById('headerTitle').textContent = 'Distributor Performance Report';
@@ -3411,7 +3484,7 @@ const dataThrough = '3/8/2026';
             // Always update localStorage cache
             const toSave = {};
             Object.entries(REP_CREDENTIALS).forEach(([k, v]) => { toSave[k] = v; });
-            localStorage.setItem('mt_rep_custom_users', JSON.stringify(toSave));
+            localStorage.setItem('sk_users', JSON.stringify(toSave));
         }
 
         async function deleteUserFromFirestore(key) {
@@ -3424,7 +3497,7 @@ const dataThrough = '3/8/2026';
             }
             const toSave = {};
             Object.entries(REP_CREDENTIALS).forEach(([k, v]) => { toSave[k] = v; });
-            localStorage.setItem('mt_rep_custom_users', JSON.stringify(toSave));
+            localStorage.setItem('sk_users', JSON.stringify(toSave));
         }
 
         function openUserMgmt() {
@@ -3442,7 +3515,7 @@ const dataThrough = '3/8/2026';
             Object.entries(REP_CREDENTIALS).forEach(([key, u]) => {
                 const isCurrent = currentUser && currentUser.name === u.name;
                 html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9;">' +
-                    '<div style="width:32px;height:32px;border-radius:50%;background:#B13B34;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">' + u.initials + '</div>' +
+                    '<div style="width:32px;height:32px;border-radius:50%;background:#2563EB;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">' + u.initials + '</div>' +
                     '<div style="flex:1;">' +
                         '<div style="font-weight:600;font-size:13px;color:#1a1a2e;">' + u.name + (isCurrent ? ' <span style="font-size:10px;color:#10b981;">(you)</span>' : '') + '</div>' +
                         '<div style="font-size:11px;color:#9ca3af;">Login: ' + key + ' | Owner: ' + u.owner + '</div>' +
@@ -5052,7 +5125,7 @@ const dataThrough = '3/8/2026';
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
         <script>
-    // Firebase Configuration - MT CRM Platform (separate from Missing Thorn production)
+    // Firebase Configuration - Sidekick BI Platform
     const FIREBASE_CONFIG = {
         apiKey: "AIzaSyBA0VgDHjcbY77Qdfw8tFZqjNkmPD-5Jao",
         authDomain: "mt-crm-platform.firebaseapp.com",
@@ -5065,14 +5138,9 @@ const dataThrough = '3/8/2026';
     let db = null;
     let firebaseReady = false;
     let currentUser = null;
+    // Users loaded from Firestore or setup wizard. Default admin for first-time setup.
     const REP_CREDENTIALS = {
-        'robbie': {name:'Robbie', initials:'RD', owner:'Robbie', pin:'2026', role:'admin', territory:'all'},
-        'tim': {name:'Tim', initials:'TM', owner:'Tim', pin:'2026', role:'admin', territory:'all'},
-        'stephanie': {name:'Stephanie', initials:'SB', owner:'Stephanie', pin:'2026', role:'admin', territory:'all'},
-        'mark': {name:'Mark', initials:'MK', owner:'Mark', pin:'2026', role:'admin', territory:'all'},
-        'beth': {name:'Beth', initials:'BH', owner:'Beth', pin:'2026', role:'rep', territory:'West'},
-        'jason': {name:'Jason', initials:'JN', owner:'Jason', pin:'2026', role:'rep', territory:['FL','NJ']},
-        'chris': {name:'Chris', initials:'CR', owner:'Chris', pin:'2026', role:'rep', territory:['FL','NJ']}
+        'admin': {name:'Admin', initials:'AD', owner:'Admin', pin:'1234', role:'admin', territory:'all'}
     };
 
     try {
@@ -5089,7 +5157,7 @@ const dataThrough = '3/8/2026';
     // But always preserve role/territory from hardcoded defaults (not user-editable)
     const _hardcodedDefaults = JSON.parse(JSON.stringify(REP_CREDENTIALS));
     try {
-        const cached = JSON.parse(localStorage.getItem('mt_rep_custom_users') || '{}');
+        const cached = JSON.parse(localStorage.getItem('sk_users') || '{}');
         if (Object.keys(cached).length > 0) {
             Object.keys(REP_CREDENTIALS).forEach(k => delete REP_CREDENTIALS[k]);
             Object.assign(REP_CREDENTIALS, cached);
@@ -5110,13 +5178,7 @@ const dataThrough = '3/8/2026';
     (async function syncUsersFromFirestore() {
         if (!firebaseReady) return;
         const defaults = {
-            'robbie': {name:'Robbie', initials:'RD', owner:'Robbie', pin:'2026', role:'admin', territory:'all'},
-            'tim': {name:'Tim', initials:'TM', owner:'Tim', pin:'2026', role:'admin', territory:'all'},
-            'stephanie': {name:'Stephanie', initials:'SB', owner:'Stephanie', pin:'2026', role:'admin', territory:'all'},
-            'mark': {name:'Mark', initials:'MK', owner:'Mark', pin:'2026', role:'admin', territory:'all'},
-            'beth': {name:'Beth', initials:'BH', owner:'Beth', pin:'2026', role:'rep', territory:'West'},
-            'jason': {name:'Jason', initials:'JN', owner:'Jason', pin:'2026', role:'rep', territory:['FL','NJ']},
-            'chris': {name:'Chris', initials:'CR', owner:'Chris', pin:'2026', role:'rep', territory:['FL','NJ']}
+            'admin': {name:'Admin', initials:'AD', owner:'Admin', pin:'1234', role:'admin', territory:'all'}
         };
         try {
             const snap = await db.collection('users').get();
@@ -5159,7 +5221,7 @@ const dataThrough = '3/8/2026';
                 }
             });
             console.log('Users synced from Firestore:', Object.keys(REP_CREDENTIALS).length);
-            localStorage.setItem('mt_rep_custom_users', JSON.stringify(REP_CREDENTIALS));
+            localStorage.setItem('sk_users', JSON.stringify(REP_CREDENTIALS));
             if (!currentUser) checkSavedLogin();
         } catch(e) {
             console.warn('Firestore users sync failed (using local cache):', e);
@@ -5589,7 +5651,7 @@ const dataThrough = '3/8/2026';
     // currentRepName is derived from the logged-in user
     function getCurrentRepName() {
         if (typeof currentUser !== 'undefined' && currentUser && currentUser.name) return currentUser.name;
-        return localStorage.getItem('mt_rep_name') || 'Unknown';
+        return localStorage.getItem('sk_rep_name') || 'Unknown';
     }
     let currentRepName = getCurrentRepName();
 
@@ -6347,7 +6409,7 @@ const dataThrough = '3/8/2026';
 
     // Activity Log
     function getActivityLog() {
-        try { return JSON.parse(localStorage.getItem('mt_pipeline_activity') || '[]'); } catch(e) { return []; }
+        try { return JSON.parse(localStorage.getItem('sk_pipeline_activity') || '[]'); } catch(e) { return []; }
     }
     function logActivity(acct, action) {
         const log = getActivityLog();
@@ -6356,7 +6418,7 @@ const dataThrough = '3/8/2026';
         const entry = {acct, action, by: who, date: now.toISOString().split('T')[0], time: now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}), ts: now.getTime()};
         log.unshift(entry);
         if (log.length > 200) log.length = 200;
-        localStorage.setItem('mt_pipeline_activity', JSON.stringify(log));
+        localStorage.setItem('sk_pipeline_activity', JSON.stringify(log));
         if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
             try { db.collection('pipeline_activity').add(entry); } catch(e) {}
         }
@@ -6440,7 +6502,7 @@ const dataThrough = '3/8/2026';
                 snap.forEach(doc => { pipelineMeta[doc.id] = doc.data(); });
             } catch(e) { console.warn('Pipeline Firebase load failed', e); }
         } else {
-            const stored = JSON.parse(localStorage.getItem('mt_pipeline_meta') || '{}');
+            const stored = JSON.parse(localStorage.getItem('sk_pipeline_meta') || '{}');
             Object.assign(pipelineMeta, stored);
         }
         const ownerFilter = document.getElementById('plOwnerFilter');
@@ -6467,7 +6529,7 @@ const dataThrough = '3/8/2026';
                 {acct:'Handcrafted',action:'Met Thursday - new distributor opp. Sent Safeway RFP Mon AM',by:'Robbie',date:'2026-03-06',time:'10:00 AM',ts:1741276800000},
             ];
             seedEntries.sort((a,b) => b.ts - a.ts);
-            localStorage.setItem('mt_pipeline_activity', JSON.stringify(seedEntries));
+            localStorage.setItem('sk_pipeline_activity', JSON.stringify(seedEntries));
         }
         pipelineRendered = true;
         updatePlStateOptions();
@@ -6985,7 +7047,7 @@ const dataThrough = '3/8/2026';
         if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
             try { await db.collection('pipeline').doc(id).set(data, {merge:true}); } catch(e) {}
         }
-        localStorage.setItem('mt_pipeline_meta', JSON.stringify(pipelineMeta));
+        localStorage.setItem('sk_pipeline_meta', JSON.stringify(pipelineMeta));
         // Log changes
         if (newStage !== oldStage) {
             logActivity(acctName, 'Stage changed: ' + oldStage + ' -> ' + newStage);
@@ -7102,7 +7164,7 @@ const dataThrough = '3/8/2026';
         if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
             try { await db.collection('pipeline').doc(id).set(metaData, {merge:true}); } catch(e) {}
         }
-        localStorage.setItem('mt_pipeline_meta', JSON.stringify(pipelineMeta));
+        localStorage.setItem('sk_pipeline_meta', JSON.stringify(pipelineMeta));
 
         logActivity(name, 'Added to pipeline as ' + acctType + (channel ? ' ['+channel+']' : '') + ' (' + tier + ', ' + stage + ')');
         closePipelineDetail();
@@ -7213,7 +7275,7 @@ const dataThrough = '3/8/2026';
             if (firebaseReady && db) {
                 try { await db.collection('tenants').doc(TENANT_CONFIG.tenantId).delete(); } catch(e) {}
             }
-            localStorage.removeItem('mt_tenant_config');
+            localStorage.removeItem('sk_tenant_config');
             location.reload();
         });
     }
@@ -7316,7 +7378,7 @@ const dataThrough = '3/8/2026';
             if (firebaseReady && db) {
                 try { db.collection('users').doc(key).set(REP_CREDENTIALS[key], {merge:true}); } catch(e) {}
             }
-            localStorage.setItem('mt_rep_custom_users', JSON.stringify(REP_CREDENTIALS));
+            localStorage.setItem('sk_users', JSON.stringify(REP_CREDENTIALS));
             document.getElementById('settUserModal')?.remove();
             renderSettUsersTable();
         });
@@ -7365,7 +7427,7 @@ const dataThrough = '3/8/2026';
             if (firebaseReady && db) {
                 try { db.collection('users').doc(key).set(REP_CREDENTIALS[key], {merge:true}); } catch(e) {}
             }
-            localStorage.setItem('mt_rep_custom_users', JSON.stringify(REP_CREDENTIALS));
+            localStorage.setItem('sk_users', JSON.stringify(REP_CREDENTIALS));
             document.getElementById('settUserModal')?.remove();
             renderSettUsersTable();
         });
@@ -7514,7 +7576,7 @@ const dataThrough = '3/8/2026';
             features: TENANT_CONFIG.features,
             updatedAt: Date.now()
         };
-        localStorage.setItem('mt_tenant_config', JSON.stringify(configToSave));
+        localStorage.setItem('sk_tenant_config', JSON.stringify(configToSave));
         if (firebaseReady && db) {
             try {
                 await db.collection('tenants').doc(TENANT_CONFIG.tenantId).set(configToSave, {merge:true});
@@ -7529,7 +7591,7 @@ const dataThrough = '3/8/2026';
     async function loadTenantConfig() {
         // Try localStorage first for instant load
         try {
-            const cached = JSON.parse(localStorage.getItem('mt_tenant_config') || '{}');
+            const cached = JSON.parse(localStorage.getItem('sk_tenant_config') || '{}');
             if (cached.tenantId) {
                 Object.assign(TENANT_CONFIG, cached);
                 // Update backward-compat refs
@@ -7548,7 +7610,7 @@ const dataThrough = '3/8/2026';
                     Object.assign(TENANT_CONFIG, data);
                     Object.keys(TENANT_CONFIG.regionMap).forEach(k => { regionMap[k] = TENANT_CONFIG.regionMap[k]; });
                     Object.keys(TENANT_CONFIG.stateNames).forEach(k => { stateNames[k] = TENANT_CONFIG.stateNames[k]; });
-                    localStorage.setItem('mt_tenant_config', JSON.stringify(data));
+                    localStorage.setItem('sk_tenant_config', JSON.stringify(data));
                     applyTenantBranding();
                     console.log('Tenant config loaded from Firestore');
                 }
@@ -7576,8 +7638,163 @@ const dataThrough = '3/8/2026';
         setTimeout(initAdminSettings, 500);
     }
 
-    // Load tenant config on startup
-    loadTenantConfig();
+    // ==================== SETUP WIZARD ====================
+
+    const US_STATE_NAMES = {
+        AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',CO:'Colorado',
+        CT:'Connecticut',DE:'Delaware',FL:'Florida',GA:'Georgia',HI:'Hawaii',ID:'Idaho',
+        IL:'Illinois',IN:'Indiana',IA:'Iowa',KS:'Kansas',KY:'Kentucky',LA:'Louisiana',
+        ME:'Maine',MD:'Maryland',MA:'Massachusetts',MI:'Michigan',MN:'Minnesota',MS:'Mississippi',
+        MO:'Missouri',MT:'Montana',NE:'Nebraska',NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',
+        NM:'New Mexico',NY:'New York',NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',
+        OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',SD:'South Dakota',
+        TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',VA:'Virginia',WA:'Washington',
+        WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming'
+    };
+
+    function checkFirstTimeSetup() {
+        // If tenant has a company name saved, skip wizard
+        const cached = localStorage.getItem('sk_tenant_config');
+        if (cached) {
+            try {
+                const c = JSON.parse(cached);
+                if (c.companyName && c.companyName.trim()) return false;
+            } catch(e) {}
+        }
+        // Also check TENANT_CONFIG directly
+        if (TENANT_CONFIG.companyName && TENANT_CONFIG.companyName.trim()) return false;
+        return true;
+    }
+
+    function showSetupWizard() {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('setupWizard').style.display = 'flex';
+
+        // Step navigation
+        document.getElementById('setupNext1').addEventListener('click', function() {
+            const name = document.getElementById('setupCompanyName').value.trim();
+            if (!name) { alert('Please enter your company name.'); return; }
+            document.getElementById('setupStep1').style.display = 'none';
+            document.getElementById('setupStep2').style.display = 'block';
+        });
+
+        document.getElementById('setupBack2').addEventListener('click', function() {
+            document.getElementById('setupStep2').style.display = 'none';
+            document.getElementById('setupStep1').style.display = 'block';
+        });
+
+        document.getElementById('setupNext2').addEventListener('click', function() {
+            const name = document.getElementById('setupAdminName').value.trim();
+            const pin = document.getElementById('setupAdminPin').value.trim();
+            if (!name) { alert('Please enter your name.'); return; }
+            if (!pin || pin.length < 4) { alert('Please enter a PIN of at least 4 digits.'); return; }
+            document.getElementById('setupStep2').style.display = 'none';
+            document.getElementById('setupStep3').style.display = 'block';
+        });
+
+        document.getElementById('setupBack3').addEventListener('click', function() {
+            document.getElementById('setupStep3').style.display = 'none';
+            document.getElementById('setupStep2').style.display = 'block';
+        });
+
+        document.getElementById('setupFinish').addEventListener('click', async function() {
+            this.disabled = true;
+            this.textContent = 'Setting up...';
+
+            // Gather all inputs
+            const companyName = document.getElementById('setupCompanyName').value.trim();
+            const logo = document.getElementById('setupLogo').value.trim();
+            const industry = document.getElementById('setupIndustry').value;
+            const adminName = document.getElementById('setupAdminName').value.trim();
+            const adminInitials = document.getElementById('setupAdminInitials').value.trim().toUpperCase() || adminName.substring(0,2).toUpperCase();
+            const adminPin = document.getElementById('setupAdminPin').value.trim();
+            const channelsRaw = document.getElementById('setupChannels').value.trim();
+            const statesRaw = document.getElementById('setupStates').value.trim();
+            const regionsRaw = document.getElementById('setupRegions').value.trim();
+
+            // Build tenant config
+            const tenantId = companyName.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 40);
+            TENANT_CONFIG.tenantId = tenantId;
+            TENANT_CONFIG.companyName = companyName;
+            TENANT_CONFIG.logo = logo;
+            TENANT_CONFIG.industry = industry;
+
+            // Channels
+            if (channelsRaw) {
+                TENANT_CONFIG.channels = channelsRaw.split(',').map(c => c.trim()).filter(Boolean);
+            }
+
+            // States and regions
+            if (statesRaw) {
+                const stateCodes = statesRaw.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+                const regions = regionsRaw ? regionsRaw.split(',').map(r => r.trim()).filter(Boolean) : [];
+
+                stateCodes.forEach(code => {
+                    if (US_STATE_NAMES[code]) {
+                        TENANT_CONFIG.stateNames[code] = US_STATE_NAMES[code];
+                        stateNames[code] = US_STATE_NAMES[code];
+                    }
+                    // If regions provided, assign first region by default (user can edit later)
+                    if (regions.length > 0) {
+                        TENANT_CONFIG.regionMap[code] = regions[0];
+                        regionMap[code] = regions[0];
+                    }
+                });
+            }
+
+            // Create admin user
+            const adminKey = adminName.toLowerCase().replace(/[^a-z0-9]/g, '');
+            REP_CREDENTIALS[adminKey] = {
+                name: adminName,
+                initials: adminInitials,
+                owner: adminName,
+                pin: adminPin,
+                role: 'admin',
+                territory: 'all'
+            };
+            // Remove default admin if it's still there
+            if (adminKey !== 'admin') delete REP_CREDENTIALS['admin'];
+
+            // Save everything
+            await saveTenantConfig();
+            if (firebaseReady && db) {
+                try {
+                    await db.collection('users').doc(adminKey).set(REP_CREDENTIALS[adminKey]);
+                } catch(e) {}
+            }
+            localStorage.setItem('sk_users', JSON.stringify(REP_CREDENTIALS));
+
+            // Apply branding and switch to login
+            applyTenantBranding();
+            document.getElementById('setupWizard').style.display = 'none';
+            document.getElementById('loginOverlay').style.display = 'flex';
+            const loginCompany = document.getElementById('loginCompanyName');
+            if (loginCompany) loginCompany.textContent = companyName;
+
+            // Auto-login the admin who just set up
+            currentUser = { ...REP_CREDENTIALS[adminKey] };
+            localStorage.setItem('sk_user', adminKey);
+            setLoggedInUI(adminKey);
+        });
+    }
+
+    // Load tenant config on startup, then check if wizard is needed
+    loadTenantConfig().then ? loadTenantConfig().then(() => {
+        if (checkFirstTimeSetup()) showSetupWizard();
+        else {
+            const loginCompany = document.getElementById('loginCompanyName');
+            if (loginCompany && TENANT_CONFIG.companyName) loginCompany.textContent = TENANT_CONFIG.companyName;
+        }
+    }) : (function() {
+        loadTenantConfig();
+        setTimeout(() => {
+            if (checkFirstTimeSetup()) showSetupWizard();
+            else {
+                const loginCompany = document.getElementById('loginCompanyName');
+                if (loginCompany && TENANT_CONFIG.companyName) loginCompany.textContent = TENANT_CONFIG.companyName;
+            }
+        }, 500);
+    })();
 
     // ==================== DATA UPLOAD & EXCEL PARSING ENGINE ====================
 
@@ -7682,7 +7899,7 @@ const dataThrough = '3/8/2026';
 
                 // Also cache in localStorage for offline use
                 try {
-                    const cacheKey = 'mt_data_' + (fileType || 'unknown');
+                    const cacheKey = 'sk_data_' + (fileType || 'unknown');
                     localStorage.setItem(cacheKey, JSON.stringify(data));
                 } catch(e) { /* localStorage might be full for large datasets */ }
 
@@ -7704,7 +7921,7 @@ const dataThrough = '3/8/2026';
                             if (firebaseReady && db) {
                                 try { await db.collection('tenants').doc(TENANT_CONFIG.tenantId).collection('data').doc(docId).delete(); } catch(e) {}
                             }
-                            localStorage.removeItem('mt_data_' + docId);
+                            localStorage.removeItem('sk_data_' + docId);
                             statusEl.remove();
                         }
                     });
