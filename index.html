@@ -1875,6 +1875,49 @@
                     <div id="dataUploadList" style="margin-top:12px;"></div>
                 </div>
 
+                <!-- Billing & Subscription -->
+                <div id="settBillingSection" style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:24px;margin-bottom:20px;">
+                    <h3 style="font-size:16px;font-weight:700;color:#1a1a2e;margin-bottom:4px;">Billing & Subscription</h3>
+                    <p style="font-size:12px;color:#6B7280;margin-bottom:16px;">Manage your subscription plan and payment details.</p>
+
+                    <div id="billingStatus" style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:16px;margin-bottom:16px;">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                            <span style="font-size:18px;">&#9989;</span>
+                            <span style="font-weight:700;font-size:14px;color:#166534;" id="billingPlanName">Free Trial</span>
+                        </div>
+                        <div style="font-size:13px;color:#4B5563;" id="billingPlanDetail">You're on the free trial. Upgrade anytime to unlock full features.</div>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:16px;">
+                        <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:16px;text-align:center;">
+                            <div style="font-size:24px;font-weight:800;color:#2563EB;">$49</div>
+                            <div style="font-size:12px;color:#6B7280;">/month</div>
+                            <div style="font-size:13px;font-weight:600;color:#1E40AF;margin-top:4px;">Starter</div>
+                            <div style="font-size:11px;color:#6B7280;margin-top:4px;">Up to 5 users</div>
+                            <button onclick="startCheckout('starter')" style="margin-top:8px;padding:6px 16px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Select</button>
+                        </div>
+                        <div style="background:#EFF6FF;border:2px solid #2563EB;border-radius:8px;padding:16px;text-align:center;position:relative;">
+                            <div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#2563EB;color:#fff;padding:2px 10px;border-radius:10px;font-size:10px;font-weight:700;">POPULAR</div>
+                            <div style="font-size:24px;font-weight:800;color:#2563EB;">$99</div>
+                            <div style="font-size:12px;color:#6B7280;">/month</div>
+                            <div style="font-size:13px;font-weight:600;color:#1E40AF;margin-top:4px;">Growth</div>
+                            <div style="font-size:11px;color:#6B7280;margin-top:4px;">Up to 15 users</div>
+                            <button onclick="startCheckout('growth')" style="margin-top:8px;padding:6px 16px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Select</button>
+                        </div>
+                        <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:16px;text-align:center;">
+                            <div style="font-size:24px;font-weight:800;color:#374151;">Custom</div>
+                            <div style="font-size:12px;color:#6B7280;">&nbsp;</div>
+                            <div style="font-size:13px;font-weight:600;color:#374151;margin-top:4px;">Enterprise</div>
+                            <div style="font-size:11px;color:#6B7280;margin-top:4px;">Unlimited users</div>
+                            <a href="mailto:hello@sidekickbi.com" style="display:inline-block;margin-top:8px;padding:6px 16px;background:#374151;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;">Contact Us</a>
+                        </div>
+                    </div>
+
+                    <div style="text-align:center;">
+                        <button onclick="openBillingPortal()" id="billingPortalBtn" style="padding:8px 20px;background:#F3F4F6;color:#374151;border:1px solid #D1D5DB;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Manage Subscription</button>
+                    </div>
+                </div>
+
                 <!-- Danger Zone -->
                 <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:24px;margin-bottom:20px;">
                     <h3 style="font-size:16px;font-weight:700;color:#991B1B;margin-bottom:12px;">Danger Zone</h3>
@@ -1949,7 +1992,7 @@ function applyTenantBranding() {
 document.addEventListener('DOMContentLoaded', applyTenantBranding);
 
 // ==================== DEPLETION SCORECARD ====================
-const distScorecard = [
+let distScorecard = [
   {name:'Breakthru FL (Combined)',st:'FL',ce:110.2,prior:107.2,momentum:'+2.8%',w4:20.6,prior_w4:12.7,w4trend:'+62.2%',oh:87.7,doh:66,net:19,con:0.92,conLabel:'Established',invAction:'',velTrend:'down',sellThru:55.7,
    weekly:[8.8,2.1,16.4,16.2,10.8,11.1,6.8,7.1,10.6,6.7,3.6,10.3,0.0],isGroup:true,children:[{name:'Breakthru FL - Miramar, FL',st:'FL',ce:60.0,prior:53.5,momentum:'+12.2%',w4:14.0,prior_w4:10.7,w4trend:'+31.4%',oh:29.6,doh:42,net:16,con:0.85,conLabel:'Established',invAction:'Reorder Now',velTrend:'down',sellThru:67.0,weekly:[5.5,0.0,8.2,7.0,1.7,6.3,3.2,4.7,9.5,4.8,1.6,7.7,0.0]},{name:'Breakthru FL - Riverview, FL',st:'FL',ce:50.2,prior:53.7,momentum:'Opportunity: +4 CE',w4:6.6,prior_w4:2.0,w4trend:'+226.1%',oh:58.1,doh:94,net:3,con:0.92,conLabel:'Established',invAction:'Healthy',velTrend:'down',sellThru:46.3,weekly:[3.3,2.1,8.2,9.2,9.1,4.8,3.6,2.4,1.1,1.9,2.0,2.6,0.0]}]},
   {name:'RNDC TX (Combined)',st:'TX',ce:83.1,prior:0.0,momentum:'New Market',w4:12.1,prior_w4:0.0,w4trend:'New Market',oh:371.9,doh:371,net:15,con:0.69,conLabel:'Building',invAction:'',velTrend:'down',sellThru:18.3,
@@ -1982,7 +2025,7 @@ const distScorecard = [
    weekly:[0.2,0.0,0.0,0.0,0.0,0.3,0.0,0.0,0.0,0.3,0.0,0.0,0.0],isGroup:false},
 ];
 
-const inventoryData = [
+let inventoryData = [
   {name:'RNDC TX (Combined)',st:'TX',oh:371.9,rate:1.01,doh:368,dep90:90.3,status:'Dead Stock',proj:-371.9,skus:[{w:'Still Red',oh:91.6,rate:0.2,doh:458,status:'Dead Stock'},{w:'Still White',oh:100.4,rate:0.09,doh:1116,status:'Dead Stock'},{w:'Still Rose',oh:92.0,rate:0.16,doh:575,status:'Dead Stock'},{w:'Sparkling White',oh:49.9,rate:0.2,doh:249,status:'Overstocked'},{w:'Sparkling Rose',oh:38.1,rate:0.35,doh:109,status:'Healthy'}],isGroup:true,children:[{name:'Republic National Dist - Houston, TX',st:'TX',oh:137.9,rate:0.36,doh:386,dep90:32.1,status:'Dead Stock',proj:-137.9,skus:[{w:'Still Red',oh:32.1,rate:0.08,doh:411,status:'Dead Stock'},{w:'Still White',oh:38.1,rate:0.01,doh:2784,status:'Dead Stock'},{w:'Still Rose',oh:32.2,rate:0.08,doh:412,status:'Dead Stock'},{w:'Sparkling White',oh:16.8,rate:0.08,doh:212,status:'Overstocked'},{w:'Sparkling Rose',oh:18.6,rate:0.11,doh:173,status:'Healthy'}]},{name:'Republic National Dist - San Antonio, TX',st:'TX',oh:129.6,rate:0.11,doh:1183,dep90:9.9,status:'Dead Stock',proj:-129.6,skus:[{w:'Still Red',oh:34.8,rate:0.01,doh:2735,status:'Dead Stock'},{w:'Still White',oh:32.7,rate:0.01,doh:2568,status:'Dead Stock'},{w:'Still Rose',oh:30.6,rate:0.01,doh:2402,status:'Dead Stock'},{w:'Sparkling White',oh:21.0,rate:0.01,doh:1655,status:'Dead Stock'},{w:'Sparkling Rose',oh:10.6,rate:0.06,doh:180,status:'Healthy'}]},{name:'Republic National Dist - Dallas/ FTW, TX',st:'TX',oh:104.4,rate:0.54,doh:195,dep90:48.3,status:'Overstocked',proj:-104.4,skus:[{w:'Still Red',oh:24.7,rate:0.11,doh:227,status:'Overstocked'},{w:'Still White',oh:29.6,rate:0.07,doh:438,status:'Dead Stock'},{w:'Still Rose',oh:29.2,rate:0.07,doh:409,status:'Dead Stock'},{w:'Sparkling White',oh:12.1,rate:0.11,doh:110,status:'Healthy'},{w:'Sparkling Rose',oh:8.9,rate:0.18,doh:50,status:'Reorder Opportunity'}]}]},
   {name:'Republic National Dist - Atlanta, GA',st:'GA',oh:329.7,rate:0.2,doh:1660,dep90:17.9,status:'Dead Stock',proj:-329.7,skus:[{w:'Still Red',oh:64.8,rate:0.05,doh:1227,status:'Dead Stock'},{w:'Still White',oh:66.5,rate:0.03,doh:1941,status:'Dead Stock'},{w:'Still Rose',oh:67.4,rate:0.02,doh:2869,status:'Dead Stock'},{w:'Sparkling White',oh:63.8,rate:0.06,doh:1036,status:'Dead Stock'},{w:'Sparkling Rose',oh:67.2,rate:0.03,doh:2543,status:'Dead Stock'}],isGroup:false},
   {name:'Fedway Associates - Kearny, NJ',st:'NJ',oh:316.7,rate:0.71,doh:446,dep90:63.9,status:'Dead Stock',proj:-316.7,skus:[{w:'Still Red',oh:19.9,rate:0.34,doh:58,status:'Reorder Opportunity'},{w:'Still White',oh:83.2,rate:0.07,doh:1165,status:'Dead Stock'},{w:'Still Rose',oh:90.0,rate:0.13,doh:692,status:'Dead Stock'},{w:'Sparkling White',oh:61.7,rate:0.08,doh:742,status:'Dead Stock'},{w:'Sparkling Rose',oh:61.8,rate:0.08,doh:752,status:'Dead Stock'}],isGroup:false},
@@ -2004,7 +2047,7 @@ const inventoryData = [
 ];
 
 // ==================== RE-ENGAGEMENT OPPORTUNITIES ====================
-const reEngagementData = [
+let reEngagementData = [
   {name:'YOLO BRAND GROUP LLC',st:'CT',priorAccts:5,priorCE:8.5,priority:100},
   {name:'WEGMANS (ALLENTOWN) #79',st:'PA',priorAccts:4,priorCE:8.5,priority:100},
   {name:'TROON GOLF & COUNTRY CLUB',st:'AZ',priorAccts:3,priorCE:6.3,priority:100},
@@ -2220,7 +2263,7 @@ const reEngagementData = [
   {name:'CASEY GRAEF SAMPLES',st:'CA',priorAccts:1,priorCE:0.1,priority:16},
 ];
 
-const newWins = [
+let newWins = [
   {acct:'SIXTY VINES',dist:'Republic National Dist - Houston, TX',st:'TX',ce:12.7,skus:3},
   {acct:'GRP WINE',dist:'Republic National Dist - Dallas/ FTW, TX',st:'TX',ce:10.6,skus:5},
   {acct:'SIXTY VINES (FTX)',dist:'Republic National Dist - Dallas/ FTW, TX',st:'TX',ce:10.6,skus:2},
@@ -2441,7 +2484,7 @@ const newWins = [
   {acct:'ALBERTSONS 4563',dist:'Winebow - CA South, CA',st:'CA',ce:0.0,skus:1},
 ];
 
-const placementSummary = [
+let placementSummary = [
   {name:'QUAIL DISTRIBUTING -',st:'AZ',newA:13,reEngageA:19,net:-6,isGroup:false},
   {name:'Breakthru CT / CDI, ',st:'CT',newA:6,reEngageA:8,net:-2,isGroup:false},
   {name:'Breakthru NV - Reno ',st:'NV',newA:3,reEngageA:3,net:0,isGroup:false},
@@ -2460,10 +2503,10 @@ const placementSummary = [
 ];
 
 // ==================== SAMPLE / MARKETING DATA ====================
-const sampleSummary = [{dist:'Winebow - CA North, CA',st:'',ce:29.1,rev:0,accts:5,placeCE:29.1,placeCount:17},{dist:'Republic National Dist - Atlanta, GA',st:'GA',ce:6.7,rev:0,accts:11,placeCE:6.7,placeCount:35},{dist:'Tryon Distributing Co, NC',st:'NC',ce:2.6,rev:0,accts:6,placeCE:2.5,placeCount:5},{dist:'Winebow - CA South, CA',st:'',ce:0.9,rev:0,accts:2,placeCE:0.9,placeCount:4},{dist:'Tryon Distributing - Durham, NC',st:'NC',ce:0.6,rev:0,accts:6,placeCE:0.6,placeCount:7},{dist:'Fedway Associates - Kearny, NJ',st:'NJ',ce:0.5,rev:0,accts:1,placeCE:0.5,placeCount:4}];
+let sampleSummary = [{dist:'Winebow - CA North, CA',st:'',ce:29.1,rev:0,accts:5,placeCE:29.1,placeCount:17},{dist:'Republic National Dist - Atlanta, GA',st:'GA',ce:6.7,rev:0,accts:11,placeCE:6.7,placeCount:35},{dist:'Tryon Distributing Co, NC',st:'NC',ce:2.6,rev:0,accts:6,placeCE:2.5,placeCount:5},{dist:'Winebow - CA South, CA',st:'',ce:0.9,rev:0,accts:2,placeCE:0.9,placeCount:4},{dist:'Tryon Distributing - Durham, NC',st:'NC',ce:0.6,rev:0,accts:6,placeCE:0.6,placeCount:7},{dist:'Fedway Associates - Kearny, NJ',st:'NJ',ce:0.5,rev:0,accts:1,placeCE:0.5,placeCount:4}];
 
 // ==================== TOP ACCOUNTS ====================
-const accountsTop = [
+let accountsTop = [
   {rank:1,acct:'OCEAN REEF CLUB',dist:'Breakthru FL - Miramar, FL',st:'FL',ch:'ON',nov:2.1,dec:6.3,jan:2.1,feb:1.1,total:11.6,trend:'Growth Opportunity',growthPotential:5.3},
   {rank:2,acct:'SIXTY VINES',dist:'Republic National Dist - Houston, TX',st:'TX',ch:'ON',nov:6.3,dec:1.1,jan:3.2,feb:1.1,total:11.6,trend:'Growth Opportunity',growthPotential:3.2},
   {rank:3,acct:'GRP WINE',dist:'Republic National Dist - Dallas/ FTW, TX',st:'TX',ch:'OFF',nov:5.3,dec:0.0,jan:5.3,feb:0.0,total:10.6,trend:'Consistent',growthPotential:0},
@@ -2715,9 +2758,9 @@ const accountsTop = [
 ];
 
 // ==================== ACCOUNT CONCENTRATION ====================
-const acctConcentration = {total:248,top5:10.2,top10:16.8,top20:27.8,median:1.1,under1:80};
+let acctConcentration = {total:248,top5:10.2,top10:16.8,top20:27.8,median:1.1,under1:80};
 
-const reorderData = [
+let reorderData = [
   {rank:1,acct:'GRP WINE',dist:'Republic National Dist - Dallas/ FTW, TX',st:'TX',ch:'OFF',ce:10.6,purch:10,cycle:7,last:'02/20/26',days:19,priority:83,skus:[{w:'Still Red',ce:2.1,purch:2,cycle:66,last:'02/20/26',days:19,months:2},{w:'Still White',ce:2.1,purch:2,cycle:66,last:'02/20/26',days:19,months:2},{w:'Still Rose',ce:2.1,purch:2,cycle:66,last:'02/20/26',days:19,months:2},{w:'Sparkling White',ce:2.1,purch:2,cycle:66,last:'02/20/26',days:19,months:2},{w:'Sparkling Rose',ce:2.1,purch:2,cycle:66,last:'02/20/26',days:19,months:2}]},
   {rank:2,acct:'WEGMANS (ALLENTOWN) #79',dist:'Shangy Inc., PA',st:'PA',ch:'OFF',ce:8.5,purch:5,cycle:8,last:'01/16/26',days:54,priority:80,skus:[{w:'Still Red',ce:5.3,purch:2,cycle:4,last:'12/19/25',days:82,months:1},{w:'Still White',ce:1.1,purch:1,cycle:8,last:'01/16/26',days:54,months:1},{w:'Sparkling White',ce:1.1,purch:1,cycle:8,last:'12/29/25',days:72,months:1},{w:'Sparkling Rose',ce:1.1,purch:1,cycle:8,last:'12/29/25',days:72,months:1}]},
   {rank:3,acct:'#25 WEGMANS PITTSFORD',dist:'TJ Sheehan Distributing  Inc., NY',st:'NY',ch:'OFF',ce:6.3,purch:6,cycle:11,last:'02/12/26',days:27,priority:76,skus:[{w:'Still Red',ce:2.1,purch:2,cycle:56,last:'02/12/26',days:27,months:2},{w:'Still White',ce:2.1,purch:2,cycle:56,last:'02/12/26',days:27,months:2},{w:'Sparkling White',ce:1.1,purch:1,cycle:11,last:'12/18/25',days:83,months:1},{w:'Sparkling Rose',ce:1.1,purch:1,cycle:11,last:'12/18/25',days:83,months:1}]},
@@ -2969,7 +3012,7 @@ const reorderData = [
 ];
 
 // ==================== DISTRIBUTOR DETAIL ====================
-const distDetail = [
+let distDetail = [
   {dist:'TJ Sheehan Distributing  Inc., NY',st:'NY',wines:[
     {w:'Still Red',ce:28.5,prior:0.0,momentum:'New Market',w4:5.2,avg:2.19,con:0.85},
     {w:'Still White',ce:11.6,prior:0.0,momentum:'New Market',w4:2.1,avg:0.89,con:0.62},
@@ -3092,7 +3135,7 @@ const distDetail = [
 ];
 
 // ==================== DISTRIBUTOR HEALTH ====================
-const distHealth = [
+let distHealth = [
   {dist:'Breakthru FL (Combined)',st:'FL',totalSellIn:127.6,totalSellThru:110.2,totalRatio:86.0,oh:87.7,doh:76,
    skus:[{w:'Still Red',sellIn:34.7,sellThru:30.7,ratio:88.0,oh:0.0,wkSupply:0.0},{w:'Still White',sellIn:31.4,sellThru:26.8,ratio:85.0,oh:14.8,wkSupply:7.2},{w:'Still Rose',sellIn:16.3,sellThru:12.4,ratio:76.0,oh:22.2,wkSupply:23.3},{w:'Sparkling White',sellIn:18.0,sellThru:17.7,ratio:98.0,oh:27.5,wkSupply:20.2},{w:'Sparkling Rose',sellIn:27.2,sellThru:22.6,ratio:83.0,oh:23.3,wkSupply:13.4}],
    nov:37.5,dec:51.9,jan:27.9,feb:10.3,
@@ -3171,7 +3214,7 @@ const distHealth = [
 ];
 
 // ==================== QB DISTRIBUTOR ORDERS ====================
-const qbDistOrders = {
+let qbDistOrders = {
   'Breakthru FL - Miramar, FL':{date:'03/09/26',num:'100774',total:6482,items:'Red x182, Spark Rose x14, White x14',orders:2,label:'Both',classicCases:28,contemporaryCases:28},
   'Breakthru FL - Riverview, FL':{date:'03/09/26',num:'100775',total:4088,items:'Red x182, Spark Rose x11',orders:1,label:'Both',classicCases:11,contemporaryCases:14},
   'QUAIL DISTRIBUTING - AZ, AZ':{date:'02/10/26',num:'100740',total:1552,items:'White x3, Spark White x7',orders:1,label:'Classic',classicCases:10,contemporaryCases:0},
@@ -3187,7 +3230,7 @@ const qbDistOrders = {
 };
 
 // ==================== WAREHOUSE INVENTORY ====================
-const warehouseInventory = {
+let warehouseInventory = {
   classic: {
     'K+D Liquor, NY':{sw:1,sr:45,rd:1,spw:8,spr:16,total:71},
     'Zephyr Express, CA Batch 1':{sw:0,sr:44,rd:0,spw:0,spr:627,total:671},
@@ -3208,7 +3251,7 @@ const warehouseInventory = {
   batch4Est:{sw:4628,sr:1444,rd:6546,spw:3875,spr:4272,total:0},
 };
 
-const classicTracker = {
+let classicTracker = {
   trackable: 3139.9,
   totalWithBad: 3766.916666666667,
   badSpr: 627.0,
@@ -3242,8 +3285,8 @@ const classicTracker = {
 };
 
 // ==================== BUILD METADATA ====================
-const buildDate = 'March 11, 2026';
-const dataThrough = '3/8/2026';
+let buildDate = 'March 11, 2026';
+let dataThrough = '3/8/2026';
 // __DATA_END__
 
         // Global State
@@ -7515,6 +7558,74 @@ const dataThrough = '3/8/2026';
         }
     }
 
+    // ---- Stripe Billing Integration ----
+    // STRIPE_CONFIG: Set your Stripe Payment Links here once you create them in Stripe Dashboard.
+    // Payment Links are the simplest way to accept payments without a backend.
+    // Create them at: https://dashboard.stripe.com/payment-links
+    const STRIPE_CONFIG = {
+        // Replace these with your actual Stripe Payment Link URLs
+        starter: '', // e.g. 'https://buy.stripe.com/your_starter_link'
+        growth: '',  // e.g. 'https://buy.stripe.com/your_growth_link'
+        portalUrl: '', // Stripe Customer Portal URL (set up in Stripe Dashboard)
+    };
+
+    function startCheckout(plan) {
+        const url = STRIPE_CONFIG[plan];
+        if (!url) {
+            // Stripe not configured yet - show setup instructions
+            alert('Stripe billing is not configured yet.\n\nTo set up billing:\n1. Create a Stripe account at stripe.com\n2. Create Payment Links for your plans in the Stripe Dashboard\n3. Add the Payment Link URLs to STRIPE_CONFIG in your code\n\nFor now, all users have full access during the free trial.');
+            return;
+        }
+        // Append customer email as prefill
+        const email = currentUser?.email || '';
+        const tenantId = TENANT_CONFIG.tenantId || '';
+        const separator = url.includes('?') ? '&' : '?';
+        const checkoutUrl = url + separator + 'prefilled_email=' + encodeURIComponent(email) + '&client_reference_id=' + encodeURIComponent(tenantId);
+        window.open(checkoutUrl, '_blank');
+    }
+
+    function openBillingPortal() {
+        if (STRIPE_CONFIG.portalUrl) {
+            window.open(STRIPE_CONFIG.portalUrl, '_blank');
+        } else {
+            alert('Billing portal is not configured yet.\n\nTo set up the customer portal:\n1. Go to Stripe Dashboard > Settings > Customer Portal\n2. Enable and configure it\n3. Add the portal URL to STRIPE_CONFIG');
+        }
+    }
+
+    // Check and display subscription status from Firestore
+    async function loadBillingStatus() {
+        if (!firebaseReady || !db || !TENANT_CONFIG.tenantId) return;
+        try {
+            const doc = await db.collection('tenants').doc(TENANT_CONFIG.tenantId).get();
+            if (doc.exists) {
+                const data = doc.data();
+                const planName = document.getElementById('billingPlanName');
+                const planDetail = document.getElementById('billingPlanDetail');
+                const statusDiv = document.getElementById('billingStatus');
+
+                if (data.subscription && data.subscription.status === 'active') {
+                    const plan = data.subscription.plan || 'Growth';
+                    if (planName) planName.textContent = plan + ' Plan';
+                    if (planDetail) planDetail.textContent = 'Your subscription is active. Next billing date: ' + (data.subscription.nextBilling || 'N/A');
+                    if (statusDiv) {
+                        statusDiv.style.background = '#F0FDF4';
+                        statusDiv.style.borderColor = '#BBF7D0';
+                    }
+                } else if (data.subscription && data.subscription.status === 'trial') {
+                    const daysLeft = data.subscription.trialDaysLeft || 14;
+                    if (planName) planName.textContent = 'Free Trial';
+                    if (planDetail) planDetail.textContent = daysLeft + ' days remaining in your free trial. Upgrade to keep your data.';
+                    if (statusDiv) {
+                        statusDiv.style.background = '#FFFBEB';
+                        statusDiv.style.borderColor = '#FDE68A';
+                    }
+                }
+            }
+        } catch(e) {
+            console.warn('Failed to load billing status:', e);
+        }
+    }
+
     // Load current config into settings form
     function loadSettingsForm() {
         // Branding
@@ -8406,6 +8517,390 @@ const dataThrough = '3/8/2026';
     loadSettingsForm = function() {
         _origLoadSettings();
         initDataUploadZone();
+        loadBillingStatus();
+    };
+
+    // ==================== DYNAMIC DATA LOADER ====================
+    // Reads uploaded data from Firestore and maps it into dashboard arrays.
+    // Falls back to hardcoded demo data if no uploads exist.
+
+    const DataLoader = {
+        _isLoaded: false,
+        _hasTenantData: false,
+
+        // Read all row chunks for a given file type from Firestore
+        async _readChunks(tenantId, fileType) {
+            if (!firebaseReady || !db) return null;
+            try {
+                const snap = await db.collection('tenants').doc(tenantId)
+                    .collection('data').doc(fileType)
+                    .collection('rows').orderBy('startIndex').get();
+                if (snap.empty) return null;
+                let allRows = [];
+                snap.docs.forEach(doc => {
+                    const chunk = doc.data();
+                    if (chunk.rows && Array.isArray(chunk.rows)) {
+                        allRows = allRows.concat(chunk.rows);
+                    }
+                });
+                return allRows.length > 0 ? allRows : null;
+            } catch(e) {
+                console.warn('DataLoader: failed to read chunks for', fileType, e);
+                return null;
+            }
+        },
+
+        // Check if a file type has been uploaded
+        async _hasUpload(tenantId, fileType) {
+            if (!firebaseReady || !db) return false;
+            try {
+                const doc = await db.collection('tenants').doc(tenantId)
+                    .collection('data').doc(fileType).get();
+                return doc.exists;
+            } catch(e) { return false; }
+        },
+
+        // Normalize Excel column headers to lowercase with underscores
+        _normalizeKey(key) {
+            return (key || '').toString().trim().toLowerCase()
+                .replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+        },
+
+        // Smart column mapper: finds the best matching column from raw Excel headers
+        _findCol(row, ...candidates) {
+            const keys = Object.keys(row);
+            for (const candidate of candidates) {
+                // Exact match
+                if (row[candidate] !== undefined) return candidate;
+                // Case-insensitive match
+                const lower = candidate.toLowerCase();
+                const match = keys.find(k => k.toLowerCase() === lower);
+                if (match) return match;
+                // Partial match
+                const partial = keys.find(k => k.toLowerCase().includes(lower) || lower.includes(k.toLowerCase()));
+                if (partial) return partial;
+            }
+            return null;
+        },
+
+        _getVal(row, ...candidates) {
+            const col = this._findCol(row, ...candidates);
+            return col ? row[col] : undefined;
+        },
+
+        _getNum(row, ...candidates) {
+            const val = this._getVal(row, ...candidates);
+            if (val === undefined || val === null || val === '') return 0;
+            const num = parseFloat(String(val).replace(/[,$%]/g, ''));
+            return isNaN(num) ? 0 : num;
+        },
+
+        _getStr(row, ...candidates) {
+            const val = this._getVal(row, ...candidates);
+            return val !== undefined && val !== null ? String(val).trim() : '';
+        },
+
+        // ---- MAPPERS: Convert raw Excel rows into dashboard-format objects ----
+
+        mapScorecard(rows) {
+            // distScorecard format: {name, st, ce, prior, momentum, w4, prior_w4, w4trend, oh, doh, net, con, conLabel, invAction, velTrend, sellThru, weekly:[]}
+            return rows.map(r => ({
+                name: this._getStr(r, 'distributor', 'name', 'dist_name', 'distributor_name'),
+                st: this._getStr(r, 'state', 'st', 'state_code'),
+                ce: this._getNum(r, 'ce_total', 'total_ce', 'case_equivalents', 'ce', 'total'),
+                prior: this._getNum(r, 'prior_period', 'prior', 'prior_ce', 'prior_total'),
+                momentum: this._getStr(r, 'momentum', 'trend', 'growth'),
+                w4: this._getNum(r, 'w4', 'last_4_weeks', 'current_4w', '4w_current'),
+                prior_w4: this._getNum(r, 'prior_w4', 'prior_4_weeks', '4w_prior'),
+                w4trend: this._getStr(r, 'w4_trend', '4w_trend', 'w4trend'),
+                oh: this._getNum(r, 'on_hand', 'oh', 'inventory', 'cases_on_hand'),
+                doh: this._getNum(r, 'days_on_hand', 'doh', 'days_supply'),
+                net: this._getNum(r, 'net_new', 'net', 'new_accounts', 'net_accounts'),
+                con: this._getNum(r, 'concentration', 'con', 'account_concentration'),
+                conLabel: this._getStr(r, 'concentration_label', 'con_label', 'conLabel') || 'Building',
+                invAction: this._getStr(r, 'inventory_action', 'inv_action', 'invAction'),
+                velTrend: this._getStr(r, 'velocity_trend', 'vel_trend', 'velTrend') || 'flat',
+                sellThru: this._getNum(r, 'sell_through', 'sell_thru', 'sellThru'),
+                weekly: [],
+                isGroup: false
+            })).filter(r => r.name);
+        },
+
+        mapInventory(rows) {
+            // inventoryData format: {name, st, oh, rate, doh, dep90, status, proj, skus:[]}
+            return rows.map(r => ({
+                name: this._getStr(r, 'distributor', 'name', 'dist_name'),
+                st: this._getStr(r, 'state', 'st'),
+                oh: this._getNum(r, 'on_hand', 'oh', 'cases_on_hand', 'inventory'),
+                rate: this._getNum(r, 'depletion_rate', 'rate', 'weekly_rate', 'avg_weekly'),
+                doh: this._getNum(r, 'days_on_hand', 'doh', 'days_supply'),
+                dep90: this._getNum(r, 'dep_90', 'projected_90', '90_day_depletion'),
+                status: this._getStr(r, 'status', 'inventory_status', 'health') || 'Review Needed',
+                proj: this._getNum(r, 'projected', 'proj', 'projection'),
+                skus: [],
+                isGroup: false
+            })).filter(r => r.name);
+        },
+
+        mapAccountsTop(rows) {
+            // accountsTop format: {rank, acct, dist, st, ch, nov, dec, jan, feb, total, trend, growthPotential}
+            return rows.map((r, i) => ({
+                rank: this._getNum(r, 'rank') || (i + 1),
+                acct: this._getStr(r, 'account', 'acct', 'account_name', 'customer'),
+                dist: this._getStr(r, 'distributor', 'dist', 'dist_name'),
+                st: this._getStr(r, 'state', 'st'),
+                ch: this._getStr(r, 'channel', 'ch', 'trade_channel') || 'OFF',
+                nov: this._getNum(r, 'nov', 'november', 'month_1'),
+                dec: this._getNum(r, 'dec', 'december', 'month_2'),
+                jan: this._getNum(r, 'jan', 'january', 'month_3'),
+                feb: this._getNum(r, 'feb', 'february', 'month_4'),
+                total: this._getNum(r, 'total', 'total_ce', 'ce'),
+                trend: this._getStr(r, 'trend', 'account_trend') || 'Stable',
+                growthPotential: this._getNum(r, 'growth_potential', 'potential', 'growthPotential')
+            })).filter(r => r.acct);
+        },
+
+        mapReorder(rows) {
+            // reorderData format: {rank, acct, dist, st, ch, ce, purch, cycle, last, days, priority, skus:[]}
+            return rows.map((r, i) => ({
+                rank: this._getNum(r, 'rank') || (i + 1),
+                acct: this._getStr(r, 'account', 'acct', 'account_name', 'customer'),
+                dist: this._getStr(r, 'distributor', 'dist'),
+                st: this._getStr(r, 'state', 'st'),
+                ch: this._getStr(r, 'channel', 'ch') || 'OFF',
+                ce: this._getNum(r, 'ce', 'case_equivalents', 'total'),
+                purch: this._getNum(r, 'purchases', 'purch', 'purchase_count', 'orders'),
+                cycle: this._getNum(r, 'cycle', 'avg_cycle', 'purchase_cycle', 'reorder_cycle') || 30,
+                last: this._getStr(r, 'last_order', 'last', 'last_purchase', 'last_date'),
+                days: this._getNum(r, 'days_since', 'days', 'days_since_last'),
+                priority: this._getNum(r, 'priority', 'priority_score', 'score'),
+                skus: []
+            })).filter(r => r.acct);
+        },
+
+        mapNewWins(rows) {
+            // newWins format: {acct, dist, st, ce, skus}
+            return rows.map(r => ({
+                acct: this._getStr(r, 'account', 'acct', 'account_name', 'customer'),
+                dist: this._getStr(r, 'distributor', 'dist'),
+                st: this._getStr(r, 'state', 'st'),
+                ce: this._getNum(r, 'ce', 'case_equivalents', 'total'),
+                skus: this._getNum(r, 'skus', 'sku_count', 'items') || 1
+            })).filter(r => r.acct);
+        },
+
+        mapReEngagement(rows) {
+            // reEngagementData format: {acct, dist, st, ce, months, lastOrder, skus}
+            return rows.map(r => ({
+                acct: this._getStr(r, 'account', 'acct', 'account_name'),
+                dist: this._getStr(r, 'distributor', 'dist'),
+                st: this._getStr(r, 'state', 'st'),
+                ce: this._getNum(r, 'ce', 'case_equivalents', 'total'),
+                months: this._getNum(r, 'months_inactive', 'months', 'inactive_months') || 3,
+                lastOrder: this._getStr(r, 'last_order', 'lastOrder', 'last_purchase'),
+                skus: this._getNum(r, 'skus', 'sku_count') || 1
+            })).filter(r => r.acct);
+        },
+
+        mapDistHealth(rows) {
+            // distHealth format: {name, st, score, tier, velocity, momentum, sellThru, accountCount, inventoryHealth}
+            return rows.map(r => ({
+                name: this._getStr(r, 'distributor', 'name', 'dist_name'),
+                st: this._getStr(r, 'state', 'st'),
+                score: this._getNum(r, 'score', 'health_score', 'composite_score'),
+                tier: this._getStr(r, 'tier', 'health_tier') || 'Developing',
+                velocity: this._getNum(r, 'velocity', 'velocity_score'),
+                momentum: this._getNum(r, 'momentum', 'momentum_score'),
+                sellThru: this._getNum(r, 'sell_through', 'sellThru', 'sell_thru_score'),
+                accountCount: this._getNum(r, 'account_count', 'accountCount', 'accounts'),
+                inventoryHealth: this._getNum(r, 'inventory_health', 'inventoryHealth', 'inv_health')
+            })).filter(r => r.name);
+        },
+
+        mapQBRevenue(rows) {
+            // qbDistOrders format: {distributorName: {total, orders, customers, monthly:{month:amount}}}
+            const result = {};
+            rows.forEach(r => {
+                const dist = this._getStr(r, 'distributor', 'dist', 'customer', 'name');
+                const amount = this._getNum(r, 'amount', 'total', 'revenue', 'sales');
+                const month = this._getStr(r, 'month', 'period', 'date');
+                if (!dist) return;
+                if (!result[dist]) {
+                    result[dist] = { total: 0, orders: 0, customers: 1, monthly: {} };
+                }
+                result[dist].total += amount;
+                result[dist].orders += 1;
+                if (month) result[dist].monthly[month] = (result[dist].monthly[month] || 0) + amount;
+            });
+            return Object.keys(result).length > 0 ? result : null;
+        },
+
+        // Main loader: reads all available data from Firestore
+        async loadAll() {
+            if (!firebaseReady || !db || !TENANT_CONFIG.tenantId) {
+                console.log('DataLoader: skipping (no Firebase or no tenant)');
+                return;
+            }
+
+            const tenantId = TENANT_CONFIG.tenantId;
+            console.log('DataLoader: loading data for tenant', tenantId);
+            let loadedCount = 0;
+
+            // Scorecard/Velocity -> distScorecard
+            const scorecardRows = await this._readChunks(tenantId, 'scorecard') || await this._readChunks(tenantId, 'velocity');
+            if (scorecardRows) {
+                distScorecard = this.mapScorecard(scorecardRows);
+                loadedCount++;
+                console.log('DataLoader: loaded distScorecard from Firestore -', distScorecard.length, 'rows');
+            }
+
+            // Inventory -> inventoryData
+            const invRows = await this._readChunks(tenantId, 'inventory');
+            if (invRows) {
+                inventoryData = this.mapInventory(invRows);
+                loadedCount++;
+                console.log('DataLoader: loaded inventoryData -', inventoryData.length, 'rows');
+            }
+
+            // New Placements -> newWins
+            const newPlRows = await this._readChunks(tenantId, 'newplacements');
+            if (newPlRows) {
+                newWins = this.mapNewWins(newPlRows);
+                loadedCount++;
+                console.log('DataLoader: loaded newWins -', newWins.length, 'rows');
+            }
+
+            // Reorder data (from velocity or scorecard data, using purchase history)
+            const reorderRows = await this._readChunks(tenantId, 'w4comparison');
+            if (reorderRows) {
+                reorderData = this.mapReorder(reorderRows);
+                loadedCount++;
+                console.log('DataLoader: loaded reorderData -', reorderData.length, 'rows');
+            }
+
+            // QB Revenue -> qbDistOrders
+            const qbRows = await this._readChunks(tenantId, 'qbrevenue');
+            if (qbRows) {
+                const mapped = this.mapQBRevenue(qbRows);
+                if (mapped) {
+                    qbDistOrders = mapped;
+                    loadedCount++;
+                    console.log('DataLoader: loaded qbDistOrders -', Object.keys(qbDistOrders).length, 'distributors');
+                }
+            }
+
+            // Compute distHealth from scorecard data if we have it
+            if (scorecardRows && distScorecard.length > 0) {
+                distHealth = this.mapDistHealth(distScorecard.map(d => ({
+                    distributor: d.name, state: d.st,
+                    velocity_score: Math.min(100, d.ce * 0.8),
+                    momentum_score: d.momentum && d.momentum.startsWith('+') ? 75 : 50,
+                    sell_thru_score: Math.min(100, d.sellThru),
+                    account_count: d.net || 5,
+                    inv_health: d.doh < 90 ? 80 : (d.doh < 180 ? 50 : 20),
+                    score: 0, tier: ''
+                })));
+                // Calculate composite scores
+                distHealth.forEach(d => {
+                    d.score = Math.round(
+                        d.velocity * TENANT_CONFIG.scoringWeights.velocity +
+                        d.momentum * TENANT_CONFIG.scoringWeights.momentum +
+                        d.sellThru * TENANT_CONFIG.scoringWeights.sellThru +
+                        d.accountCount * TENANT_CONFIG.scoringWeights.accountCount +
+                        d.inventoryHealth * TENANT_CONFIG.scoringWeights.inventoryHealth
+                    );
+                    d.tier = d.score >= 70 ? 'Star' : d.score >= 50 ? 'Strong' : d.score >= 30 ? 'Developing' : 'At Risk';
+                });
+                loadedCount++;
+                console.log('DataLoader: computed distHealth -', distHealth.length, 'distributors');
+            }
+
+            this._hasTenantData = loadedCount > 0;
+            this._isLoaded = true;
+
+            if (loadedCount > 0) {
+                console.log('DataLoader: loaded', loadedCount, 'data sets from Firestore');
+                // Update the data date
+                dataThrough = new Date().toLocaleDateString();
+                const dtEl = document.getElementById('dataThrough');
+                if (dtEl) dtEl.textContent = dataThrough;
+
+                // Clear demo data for arrays that were NOT loaded (new tenant shouldn't see other company's data)
+                if (!scorecardRows) { distScorecard = []; }
+                if (!invRows) { inventoryData = []; }
+                if (!newPlRows) { newWins = []; reEngagementData = []; }
+                if (!reorderRows) { reorderData = []; }
+                if (!qbRows) { qbDistOrders = {}; }
+
+                // Refresh dashboard rendering
+                if (typeof renderMyTerritory === 'function') {
+                    try { renderMyTerritory(); } catch(e) { console.warn('DataLoader: renderMyTerritory error:', e); }
+                }
+            } else {
+                console.log('DataLoader: no tenant data found in Firestore, using demo/empty data');
+                // For new tenants with no uploads, clear demo data
+                if (TENANT_CONFIG.tenantId && TENANT_CONFIG.tenantId !== 'default') {
+                    distScorecard = [];
+                    inventoryData = [];
+                    reEngagementData = [];
+                    newWins = [];
+                    accountsTop = [];
+                    reorderData = [];
+                    distHealth = [];
+                    qbDistOrders = {};
+                    warehouseInventory = {};
+                    placementSummary = [];
+                    acctConcentration = {total:0,top5:0,top10:0,top20:0,median:0,under1:0};
+                    if (typeof renderMyTerritory === 'function') {
+                        try { renderMyTerritory(); } catch(e) {}
+                    }
+                }
+            }
+        }
+    };
+
+    // Trigger data load after login (when tenant config is available)
+    const _origSetLoggedInForData = setLoggedInUI;
+    const _dataLoadWrapper = function(key) {
+        _origSetLoggedInForData(key);
+        // Load tenant data from Firestore after a short delay to let UI render
+        setTimeout(async () => {
+            if (TENANT_CONFIG.tenantId) {
+                await DataLoader.loadAll();
+            }
+        }, 500);
+    };
+    // We can't easily reassign setLoggedInUI since it's in a different script scope,
+    // so we'll trigger data load after auth state change
+    if (auth) {
+        // The onAuthStateChanged handler already calls setLoggedInUI.
+        // We'll add a secondary listener just for data loading.
+        auth.onAuthStateChanged(async (user) => {
+            if (user && TENANT_CONFIG.tenantId && !DataLoader._isLoaded) {
+                // Wait for tenant config to be loaded first
+                setTimeout(async () => {
+                    await DataLoader.loadAll();
+                }, 1500);
+            }
+        });
+    } else {
+        // Legacy mode: load data on page load if user is already logged in
+        setTimeout(async () => {
+            if (currentUser && TENANT_CONFIG.tenantId) {
+                await DataLoader.loadAll();
+            }
+        }, 2000);
+    }
+
+    // Also re-load data when new files are uploaded (hook into processDataUploads)
+    const _origProcessUploads = processDataUploads;
+    processDataUploads = async function(files) {
+        await _origProcessUploads(files);
+        // After upload completes, reload data to refresh dashboard
+        if (TENANT_CONFIG.tenantId) {
+            DataLoader._isLoaded = false;
+            await DataLoader.loadAll();
+        }
     };
 
     </script>
