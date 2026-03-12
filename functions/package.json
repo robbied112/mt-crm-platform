@@ -2,7 +2,7 @@
   "name": "sidekick-bi-functions",
   "description": "Cloud Functions for Sidekick BI - Stripe webhook handler",
   "engines": {
-    "node": "18"
+    "node": "20"
   },
   "main": "index.js",
   "dependencies": {
