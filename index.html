@@ -654,6 +654,33 @@
             .hero h1, .header-text h1 {
                 font-size: 18px;
             }
+
+            /* Force all tables into horizontal scroll wrappers */
+            table {
+                font-size: 11px;
+                min-width: 600px;
+            }
+
+            th, td {
+                padding: 6px 4px;
+                white-space: nowrap;
+            }
+
+            /* Hide less important columns on very small screens */
+            .hide-mobile {
+                display: none !important;
+            }
+
+            /* Stack filter bar vertically */
+            .filter-bar {
+                flex-direction: column;
+                padding: 8px;
+            }
+
+            .filter-group {
+                width: 100%;
+                min-width: unset;
+            }
         }
 
         /* Pulse animation for Overdue */
@@ -1163,6 +1190,7 @@
                     </thead>
                     <tbody id="distScorecardBody"></tbody>
                 </table>
+                <div id="distScorecardPager"></div>
             </div>
         </div>
 
@@ -1334,6 +1362,7 @@
                     </thead>
                     <tbody id="inventoryDetailBody"></tbody>
                 </table>
+                <div id="inventoryDetailPager"></div>
             </div>
         </div>
 
@@ -1400,6 +1429,7 @@
                     </thead>
                     <tbody id="accountsBody"></tbody>
                 </table>
+                <div id="accountsPager"></div>
             </div>
         </div>
 
@@ -1535,6 +1565,7 @@
                     </thead>
                     <tbody id="reorderBody"></tbody>
                 </table>
+                <div id="reorderPager"></div>
             </div>
         </div>
 
@@ -2208,6 +2239,42 @@ function showToast(message, type = 'info') {
     toast.textContent = message;
     document.body.appendChild(toast);
     setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 4000);
+}
+
+// Reusable pagination system for tables
+const _paginators = {};
+function paginate(tableId, data, pageSize = 50) {
+    if (!_paginators[tableId]) _paginators[tableId] = {page: 1};
+    const p = _paginators[tableId];
+    p.total = data.length;
+    p.pageSize = pageSize;
+    p.totalPages = Math.ceil(data.length / pageSize);
+    if (p.page > p.totalPages) p.page = p.totalPages || 1;
+    const start = (p.page - 1) * pageSize;
+    p.pageData = data.slice(start, start + pageSize);
+    return p;
+}
+
+function renderPaginationControls(tableId, containerId, rerenderFn) {
+    const p = _paginators[tableId];
+    if (!p || p.total <= p.pageSize) {
+        const el = document.getElementById(containerId);
+        if (el) el.innerHTML = '';
+        return;
+    }
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const start = (p.page - 1) * p.pageSize + 1;
+    const end = Math.min(p.page * p.pageSize, p.total);
+    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px;font-size:12px;color:#64748b;">' +
+        '<span>Showing ' + start + '-' + end + ' of ' + p.total + '</span>' +
+        '<div style="display:flex;gap:4px;">' +
+        '<button onclick="_paginators[\'' + tableId + '\'].page=1;' + rerenderFn + '()" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;font-size:11px;"' + (p.page === 1 ? ' disabled' : '') + '>&laquo;</button>' +
+        '<button onclick="_paginators[\'' + tableId + '\'].page--;' + rerenderFn + '()" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;font-size:11px;"' + (p.page === 1 ? ' disabled' : '') + '>&lsaquo; Prev</button>' +
+        '<span style="padding:4px 8px;font-weight:600;">Page ' + p.page + ' of ' + p.totalPages + '</span>' +
+        '<button onclick="_paginators[\'' + tableId + '\'].page++;' + rerenderFn + '()" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;font-size:11px;"' + (p.page >= p.totalPages ? ' disabled' : '') + '>Next &rsaquo;</button>' +
+        '<button onclick="_paginators[\'' + tableId + '\'].page=' + p.totalPages + ';' + rerenderFn + '()" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;font-size:11px;"' + (p.page >= p.totalPages ? ' disabled' : '') + '>&raquo;</button>' +
+        '</div></div>';
 }
 
 // Retry wrapper for Firestore operations (exponential backoff)
@@ -3744,9 +3811,10 @@ let dataThrough = '3/8/2026';
                 }
             });
 
-            // Distributor Scorecard Table
+            // Distributor Scorecard Table (paginated)
+            const scPager = paginate('distScorecard', data, 50);
             let tableHtml = '';
-            data.forEach((d, idx) => {
+            scPager.pageData.forEach((d, idx) => {
                 const isGroup = d.isGroup || false;
                 if (isGroup && d.children) {
                     const gid = 'depGrp_' + idx;
@@ -3801,6 +3869,7 @@ let dataThrough = '3/8/2026';
                 }
             });
             document.getElementById('distScorecardBody').innerHTML = tableHtml;
+            renderPaginationControls('distScorecard', 'distScorecardPager', 'renderDepletions');
             initTableSorting('distScorecardTable');
         }
 
@@ -4103,10 +4172,11 @@ let dataThrough = '3/8/2026';
                 }
             });
 
-            // Inventory Details Table (with SKU filter)
+            // Inventory Details Table (with SKU filter, paginated)
             const skuFilter = document.getElementById('invSkuFilter') ? document.getElementById('invSkuFilter').value : 'all';
+            const invPager = paginate('inventoryDetail', data, 50);
             let tableHtml = '';
-            data.forEach((d, idx) => {
+            invPager.pageData.forEach((d, idx) => {
                 if (skuFilter !== 'all') {
                     const sku = (d.skus || []).find(s => s.w === skuFilter);
                     if (!sku) return;
@@ -4239,6 +4309,7 @@ let dataThrough = '3/8/2026';
                 }
             });
             document.getElementById('inventoryDetailBody').innerHTML = tableHtml;
+            renderPaginationControls('inventoryDetail', 'inventoryDetailPager', 'renderInventory');
             initTableSorting('inventoryDetailTable');
             renderWarehousePanel();
         }
@@ -4354,9 +4425,10 @@ let dataThrough = '3/8/2026';
 
         function renderAccountsTable(data) {
             const displayData = accountsViewMode === 'top' ? data.slice(0, 20) : data;
+            const acctPager = paginate('accounts', displayData, 50);
 
             let tableHtml = '';
-            displayData.forEach(a => {
+            acctPager.pageData.forEach(a => {
                 tableHtml += `<tr>
                     <td>${a.rank}</td>
                     <td><span class="acct-clickable" onclick="openAccountPanel('${escAttr(a.acct)}')">${esc(a.acct)}</span></td>
@@ -4373,6 +4445,7 @@ let dataThrough = '3/8/2026';
                 </tr>`;
             });
             document.getElementById('accountsBody').innerHTML = tableHtml;
+            renderPaginationControls('accounts', 'accountsPager', 'renderAccounts');
             initTableSorting('accountsTable');
         }
 
@@ -4530,9 +4603,10 @@ let dataThrough = '3/8/2026';
                 filteredData = data.filter(r => r.skus && r.skus.some(s => s.w === skuFilter));
             }
             const displayData = reorderViewMode === 'top' ? filteredData.slice(0, 20) : filteredData;
+            const reordPager = paginate('reorder', displayData, 50);
 
             let tableHtml = '';
-            displayData.forEach((r, idx) => {
+            reordPager.pageData.forEach((r, idx) => {
                 if (skuFilter !== 'all') {
                     const sku = r.skus.find(s => s.w === skuFilter);
                     if (!sku) return;
@@ -4614,6 +4688,7 @@ let dataThrough = '3/8/2026';
                 }
             });
             document.getElementById('reorderBody').innerHTML = tableHtml;
+            renderPaginationControls('reorder', 'reorderPager', 'renderReorder');
             initTableSorting('reorderTable');
         }
 
@@ -6771,20 +6846,19 @@ let dataThrough = '3/8/2026';
     // Payment Links are the simplest way to accept payments without a backend.
     // Create them at: https://dashboard.stripe.com/payment-links
     const STRIPE_CONFIG = {
-        // TEST MODE links (swap to live links when ready to accept real payments)
-        starter: 'https://buy.stripe.com/test_7sY3cxef5avM9z27To3Nm00',
-        growth: 'https://buy.stripe.com/test_eVqdRb6MD7jA9z2flQ3Nm01',
+        // LIVE MODE links
+        starter: 'https://buy.stripe.com/3cIaEY1wY1w19KIdQV9sk02',
+        growth: 'https://buy.stripe.com/3cIdRacbC8Yt7CA4gl9sk01',
         portalUrl: '', // Stripe Customer Portal URL (set up in Stripe Dashboard > Settings > Customer Portal)
-        // LIVE MODE links (uncomment and swap when ready):
-        // starter: 'https://buy.stripe.com/3cIaEY1wY1w19KIdQV9sk02',
-        // growth: 'https://buy.stripe.com/3cIdRacbC8Yt7CA4gl9sk01',
+        // TEST MODE links (for development/testing):
+        // starter: 'https://buy.stripe.com/test_7sY3cxef5avM9z27To3Nm00',
+        // growth: 'https://buy.stripe.com/test_eVqdRb6MD7jA9z2flQ3Nm01',
     };
 
     function startCheckout(plan) {
         const url = STRIPE_CONFIG[plan];
         if (!url) {
-            // Stripe not configured yet - show setup instructions
-            alert('Stripe billing is not configured yet.\n\nTo set up billing:\n1. Create a Stripe account at stripe.com\n2. Create Payment Links for your plans in the Stripe Dashboard\n3. Add the Payment Link URLs to STRIPE_CONFIG in your code\n\nFor now, all users have full access during the free trial.');
+            showToast('This plan is not available yet. Please contact support.', 'warning');
             return;
         }
         // Append customer email as prefill
@@ -6799,7 +6873,7 @@ let dataThrough = '3/8/2026';
         if (STRIPE_CONFIG.portalUrl) {
             window.open(STRIPE_CONFIG.portalUrl, '_blank');
         } else {
-            alert('Billing portal is not configured yet.\n\nTo set up the customer portal:\n1. Go to Stripe Dashboard > Settings > Customer Portal\n2. Enable and configure it\n3. Add the portal URL to STRIPE_CONFIG');
+            showToast('Customer portal coming soon. Contact support to manage your subscription.', 'info');
         }
     }
 
