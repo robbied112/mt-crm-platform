@@ -2181,6 +2181,71 @@ function applyTenantBranding() {
 }
 document.addEventListener('DOMContentLoaded', applyTenantBranding);
 
+// XSS protection: escape user-provided strings before inserting into HTML
+function esc(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+// Safe string for onclick="fn('...')" - escapes both HTML entities and JS single quotes
+function escAttr(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/\\/g,'\\\\').replace(/'/g, "\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Empty state placeholder for views with no data
+function emptyState(icon, title, subtitle) {
+    return '<div style="text-align:center;padding:60px 20px;color:#64748b;">' +
+        '<div style="font-size:48px;margin-bottom:16px;">' + icon + '</div>' +
+        '<div style="font-size:18px;font-weight:600;color:#334155;margin-bottom:8px;">' + esc(title) + '</div>' +
+        '<div style="font-size:14px;">' + esc(subtitle) + '</div></div>';
+}
+
+// Toast notification for user-facing feedback
+function showToast(message, type = 'info') {
+    const colors = {info: '#2563eb', success: '#16a34a', warning: '#d97706', error: '#dc2626'};
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:8px;color:#fff;font-size:14px;z-index:99999;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:opacity 0.3s;background:' + (colors[type] || colors.info);
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 4000);
+}
+
+// Retry wrapper for Firestore operations (exponential backoff)
+async function withRetry(fn, maxRetries = 3, label = 'operation') {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            return await fn();
+        } catch(e) {
+            if (attempt === maxRetries) {
+                console.error('withRetry: ' + label + ' failed after ' + (maxRetries + 1) + ' attempts:', e);
+                throw e;
+            }
+            const delay = Math.min(1000 * Math.pow(2, attempt), 8000) + Math.random() * 500;
+            console.warn('withRetry: ' + label + ' attempt ' + (attempt + 1) + ' failed, retrying in ' + Math.round(delay) + 'ms');
+            await new Promise(r => setTimeout(r, delay));
+        }
+    }
+}
+
+// Session timeout: auto-logout after inactivity
+const SESSION_TIMEOUT_MS = 60 * 60 * 1000; // 60 minutes
+let _sessionTimer = null;
+function resetSessionTimer() {
+    if (_sessionTimer) clearTimeout(_sessionTimer);
+    _sessionTimer = setTimeout(() => {
+        if (typeof auth !== 'undefined' && auth && auth.currentUser) {
+            auth.signOut().then(() => {
+                alert('Your session has expired due to inactivity. Please sign in again.');
+                location.reload();
+            });
+        }
+    }, SESSION_TIMEOUT_MS);
+}
+// Reset timer on user activity
+['click','keydown','scroll','touchstart'].forEach(evt => {
+    document.addEventListener(evt, resetSessionTimer, {passive: true});
+});
+
 // Helper to get terminology labels with fallbacks
 function t(key) {
     const terms = TENANT_CONFIG.terminology || {};
@@ -2679,6 +2744,7 @@ let dataThrough = '3/8/2026';
         // NOTE: REP_CREDENTIALS and currentUser are declared in the Firebase script block below.
         // These functions are hoisted and only called after those variables exist.
         function setLoggedInUI(key) {
+            resetSessionTimer(); // Start session timeout
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('userBar').style.display = 'flex';
             const isAdmin = currentUser.role === 'admin';
@@ -2786,15 +2852,9 @@ let dataThrough = '3/8/2026';
                     await auth.signInWithEmailAndPassword(email, password);
                     // onAuthStateChanged will handle the rest
                 } else {
-                    // Fallback: legacy PIN login for offline/no-auth scenarios
-                    const key = Object.keys(REP_CREDENTIALS).find(k =>
-                        REP_CREDENTIALS[k].email && REP_CREDENTIALS[k].email.toLowerCase() === email.toLowerCase()
-                    );
-                    if (!key) { showLoginError('Account not found.'); btn.disabled = false; btn.textContent = 'Sign In'; return; }
-                    if (password !== REP_CREDENTIALS[key].pin) { showLoginError('Incorrect password.'); btn.disabled = false; btn.textContent = 'Sign In'; return; }
-                    currentUser = {...REP_CREDENTIALS[key]};
-                    localStorage.setItem('sk_user', key);
-                    setLoggedInUI(key);
+                    showLoginError('Authentication service unavailable. Please try again later.');
+                    btn.disabled = false; btn.textContent = 'Sign In';
+                    return;
                 }
             } catch(e) {
                 console.error('Login error:', e);
@@ -3132,6 +3192,13 @@ let dataThrough = '3/8/2026';
 
             let html = '<div style="padding:0;">';
 
+            if (!distScorecard || distScorecard.length === 0) {
+                html += emptyState('📊', 'No Data Yet', 'Upload your distributor data or explore with sample data to get started.');
+                html += '</div>';
+                document.getElementById('mainContent').innerHTML = html;
+                return;
+            }
+
             // Welcome header
             html += `<div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:#fff;padding:24px 24px;border-radius:8px;margin-bottom:24px;">
                 <h2 style="margin:0 0 4px 0;font-size:24px;font-weight:700;">Welcome back, ${currentUser.name}</h2>
@@ -3282,8 +3349,8 @@ let dataThrough = '3/8/2026';
                     html += `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #FEE3B0;font-size:13px;">
                         <span style="font-size:16px;">${iconMap[item.type] || '&#8226;'}</span>
                         <div style="flex:1;">
-                            <span style="font-weight:600;color:${item.color};font-size:11px;text-transform:uppercase;">${item.type}</span><br/>
-                            <strong>${item.account}</strong> <span style="color:#6B7280;">- ${item.detail}</span>
+                            <span style="font-weight:600;color:${item.color};font-size:11px;text-transform:uppercase;">${esc(item.type)}</span><br/>
+                            <strong>${esc(item.account)}</strong> <span style="color:#6B7280;">- ${esc(item.detail)}</span>
                         </div>
                     </div>`;
                 });
@@ -3685,8 +3752,8 @@ let dataThrough = '3/8/2026';
                     const gid = 'depGrp_' + idx;
                     const grpToggle = `<span style="cursor:pointer;color:#3498db;font-size:12px;margin-right:4px;" title="Show warehouses" onclick="toggleRow(this,'${gid}')">&#9654;</span>`;
                     tableHtml += `<tr style="background-color:#f0f4f8;font-weight:600;">
-                        <td>${grpToggle}<span style="cursor:pointer;text-decoration:underline;color:#1a1a2e;" onclick="drillIntoDistributor('${d.name.replace(/'/g, "\\'")}')">${d.name}</span> <span style="font-size:10px;color:#6B7280;font-weight:400">(${d.children.length} locations)</span></td>
-                        <td>${d.st}</td>
+                        <td>${grpToggle}<span style="cursor:pointer;text-decoration:underline;color:#1a1a2e;" onclick="drillIntoDistributor('${escAttr(d.name)}')">${esc(d.name)}</span> <span style="font-size:10px;color:#6B7280;font-weight:400">(${d.children.length} locations)</span></td>
+                        <td>${esc(d.st)}</td>
                         <td><strong>${d.ce.toFixed(1)}</strong></td>
                         <td>${renderMomentum(d.momentum)}</td>
                         <td><strong>${d.w4.toFixed(1)}</strong></td>
@@ -3701,8 +3768,8 @@ let dataThrough = '3/8/2026';
                     tableHtml += `<tr id="${gid}" style="display:none"><td colspan="12" style="padding:0"><table style="width:100%;border:none;margin:0"><tbody>`;
                     d.children.forEach((child) => {
                         tableHtml += `<tr style="background-color:#f9f9f9;font-size:12px;border-left:3px solid #3498db;">
-                            <td style="padding:4px 10px 4px 28px;border-bottom:1px solid #e5e7eb">${child.name}</td>
-                            <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${child.st}</td>
+                            <td style="padding:4px 10px 4px 28px;border-bottom:1px solid #e5e7eb">${esc(child.name)}</td>
+                            <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${esc(child.st)}</td>
                             <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${child.ce.toFixed(1)}</td>
                             <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${renderMomentum(child.momentum)}</td>
                             <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${child.w4.toFixed(1)}</td>
@@ -3718,8 +3785,8 @@ let dataThrough = '3/8/2026';
                     tableHtml += `</tbody></table></td></tr>`;
                 } else {
                     tableHtml += `<tr>
-                        <td><span style="cursor:pointer;text-decoration:underline;color:#1a1a2e;" onclick="drillIntoDistributor('${d.name.replace(/'/g, "\\'")}')">${d.name}</span></td>
-                        <td>${d.st}</td>
+                        <td><span style="cursor:pointer;text-decoration:underline;color:#1a1a2e;" onclick="drillIntoDistributor('${escAttr(d.name)}')">${esc(d.name)}</span></td>
+                        <td>${esc(d.st)}</td>
                         <td><strong>${d.ce.toFixed(1)}</strong></td>
                         <td>${renderMomentum(d.momentum)}</td>
                         <td><strong>${d.w4.toFixed(1)}</strong></td>
@@ -3947,6 +4014,12 @@ let dataThrough = '3/8/2026';
         function renderInventory() {
             const data = getFilteredData(inventoryData);
 
+            if (!data || data.length === 0) {
+                const mc = document.getElementById('mainContent');
+                if (mc) mc.innerHTML = emptyState('📦', 'No Inventory Data', 'Upload inventory data to see on-hand, days-on-hand, and reorder signals.');
+                return;
+            }
+
             const totalOH = data.reduce((sum, d) => sum + d.oh, 0);
             const avgDOH = (data.reduce((sum, d) => sum + d.doh, 0) / data.length).toFixed(0);
             const reorderCount = data.filter(d => d.status === 'Reorder Opportunity').length;
@@ -4042,7 +4115,7 @@ let dataThrough = '3/8/2026';
                         const gid = 'invGrpF_' + idx;
                         const grpToggle = `<span style="cursor:pointer;color:#3498db;font-size:12px;margin-right:4px;" onclick="toggleRow(this,'${gid}')">&#9654;</span>`;
                         tableHtml += `<tr style="background-color:#f0f4f8;font-weight:600;">
-                            <td>${grpToggle}${d.name}</td><td>${d.st}</td>
+                            <td>${grpToggle}${esc(d.name)}</td><td>${esc(d.st)}</td>
                             <td>${sku.oh.toFixed(1)}</td><td>${sku.rate.toFixed(2)}</td>
                             <td>${Math.round(sku.doh)}</td><td>-</td>
                             <td>${renderInventoryStatus(sku.status)}</td><td>-</td>
@@ -4052,8 +4125,8 @@ let dataThrough = '3/8/2026';
                             const childSku = (child.skus || []).find(s => s.w === skuFilter);
                             if (childSku) {
                                 tableHtml += `<tr style="background-color:#f9f9f9;font-size:12px;border-left:3px solid #3498db;">
-                                    <td style="padding:4px 10px 4px 28px;border-bottom:1px solid #e5e7eb">${child.name}</td>
-                                    <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${child.st}</td>
+                                    <td style="padding:4px 10px 4px 28px;border-bottom:1px solid #e5e7eb">${esc(child.name)}</td>
+                                    <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${esc(child.st)}</td>
                                     <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${childSku.oh.toFixed(1)}</td>
                                     <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${childSku.rate.toFixed(2)}</td>
                                     <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${Math.round(childSku.doh)}</td>
@@ -4066,7 +4139,7 @@ let dataThrough = '3/8/2026';
                         tableHtml += `</tbody></table></td></tr>`;
                     } else {
                         tableHtml += `<tr>
-                            <td>${d.name}</td><td>${d.st}</td>
+                            <td>${esc(d.name)}</td><td>${esc(d.st)}</td>
                             <td>${sku.oh.toFixed(1)}</td><td>${sku.rate.toFixed(2)}</td>
                             <td>${Math.round(sku.doh)}</td><td>-</td>
                             <td>${renderInventoryStatus(sku.status)}</td><td>-</td>
@@ -4082,8 +4155,8 @@ let dataThrough = '3/8/2026';
                         const gid = 'invGrp_' + idx;
                         const grpToggle = `<span style="cursor:pointer;color:#3498db;font-size:12px;margin-right:4px;" title="Show warehouses" onclick="toggleRow(this,'${gid}')">&#9654;</span>`;
                         tableHtml += `<tr style="background-color:#f0f4f8;font-weight:600;">
-                            <td>${grpToggle}${d.name} <span style="font-size:10px;color:#6B7280;font-weight:400">(${d.children.length} locations)</span></td>
-                            <td>${d.st}</td>
+                            <td>${grpToggle}${esc(d.name)} <span style="font-size:10px;color:#6B7280;font-weight:400">(${d.children.length} locations)</span></td>
+                            <td>${esc(d.st)}</td>
                             <td><strong>${d.oh.toFixed(1)}</strong></td>
                             <td>${d.rate.toFixed(2)}</td>
                             <td>${Math.round(d.doh)}</td>
@@ -4098,8 +4171,8 @@ let dataThrough = '3/8/2026';
                             const childExpId = 'inv-wh-sku-' + idx + '-' + childIdx;
                             const childExpIcon = childHasSkus ? `<span style="cursor:pointer;color:#3498db;font-size:11px;margin-right:2px;" title="Show product breakdown" onclick="toggleRow(this,'${childExpId}')">&#9654;</span>` : '';
                             tableHtml += `<tr style="background-color:#f9f9f9;font-size:12px;border-left:3px solid #3498db;">
-                                <td style="padding:4px 10px 4px 28px;border-bottom:1px solid #e5e7eb;font-weight:500">${childExpIcon}${child.name}${getQbOrderBadge(child.name)}</td>
-                                <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${child.st}</td>
+                                <td style="padding:4px 10px 4px 28px;border-bottom:1px solid #e5e7eb;font-weight:500">${childExpIcon}${esc(child.name)}${getQbOrderBadge(child.name)}</td>
+                                <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${esc(child.st)}</td>
                                 <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${child.oh.toFixed(1)}</td>
                                 <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${child.rate.toFixed(2)}</td>
                                 <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${Math.round(child.doh)}</td>
@@ -4128,8 +4201,8 @@ let dataThrough = '3/8/2026';
                         // SINGLE distributor: wine toggle
                         const expIcon = hasSkus ? `<span style="cursor:pointer;color:#3498db;font-size:12px;margin-right:4px;" title="Show product breakdown" onclick="toggleRow(this,'${expId}')">&#9654;</span>` : '';
                         tableHtml += `<tr>
-                            <td>${expIcon}${d.name}${getQbOrderBadge(d.name)}</td>
-                            <td>${d.st}</td>
+                            <td>${expIcon}${esc(d.name)}${getQbOrderBadge(d.name)}</td>
+                            <td>${esc(d.st)}</td>
                             <td><strong>${d.oh.toFixed(1)}</strong></td>
                             <td>${d.rate.toFixed(2)}</td>
                             <td>${Math.round(d.doh)}</td>
@@ -4286,10 +4359,10 @@ let dataThrough = '3/8/2026';
             displayData.forEach(a => {
                 tableHtml += `<tr>
                     <td>${a.rank}</td>
-                    <td><span class="acct-clickable" onclick="openAccountPanel('${a.acct.replace(/'/g,"\\'")}')">${a.acct}</span></td>
-                    <td>${a.dist}</td>
-                    <td>${a.st}</td>
-                    <td>${a.ch}</td>
+                    <td><span class="acct-clickable" onclick="openAccountPanel('${escAttr(a.acct)}')">${esc(a.acct)}</span></td>
+                    <td>${esc(a.dist)}</td>
+                    <td>${esc(a.st)}</td>
+                    <td>${esc(a.ch)}</td>
                     <td>${a.nov ? a.nov.toFixed(1) : '-'}</td>
                     <td>${a.dec ? a.dec.toFixed(1) : '-'}</td>
                     <td>${a.jan ? a.jan.toFixed(1) : '-'}</td>
@@ -4331,8 +4404,8 @@ let dataThrough = '3/8/2026';
             let reEngHtml = '';
             reEngData.forEach(d => {
                 reEngHtml += `<tr>
-                    <td><span class="acct-clickable" onclick="openAccountPanel('${d.name.replace(/'/g,"\\'")}')">${d.name}</span></td>
-                    <td>${d.st}</td>
+                    <td><span class="acct-clickable" onclick="openAccountPanel('${d.name.replace(/'/g,"\\'")}')">${esc(d.name)}</span></td>
+                    <td>${esc(d.st)}</td>
                     <td>${d.priorAccts}</td>
                     <td>${d.priorCE.toFixed(1)}</td>
                 </tr>`;
@@ -4343,9 +4416,9 @@ let dataThrough = '3/8/2026';
             let newWinsHtml = '';
             newWinsData.forEach(w => {
                 newWinsHtml += `<tr>
-                    <td><span class="acct-clickable" onclick="openAccountPanel('${w.acct.replace(/'/g,"\\'")}')">${w.acct}</span></td>
-                    <td>${w.dist}</td>
-                    <td>${w.st}</td>
+                    <td><span class="acct-clickable" onclick="openAccountPanel('${w.acct.replace(/'/g,"\\'")}')">${esc(w.acct)}</span></td>
+                    <td>${esc(w.dist)}</td>
+                    <td>${esc(w.st)}</td>
                     <td>${w.ce.toFixed(1)}</td>
                     <td>${w.skus}</td>
                 </tr>`;
@@ -4398,6 +4471,12 @@ let dataThrough = '3/8/2026';
         // Reorder Tab
         function renderReorder() {
             const data = getFilteredData(reorderData);
+
+            if (!data || data.length === 0) {
+                const mc = document.getElementById('mainContent');
+                if (mc) mc.innerHTML = emptyState('🔄', 'No Reorder Data', 'Upload purchase history data to see reorder timing and priorities.');
+                return;
+            }
 
             const reorderWithStatus = data.map(r => ({
                 ...r,
@@ -4460,10 +4539,10 @@ let dataThrough = '3/8/2026';
                     const skuStatus = sku.days > sku.cycle && sku.cycle > 0 ? 'Overdue' : sku.days >= sku.cycle - 7 && sku.cycle > 0 ? 'Due Soon' : 'On Track';
                     tableHtml += `<tr>
                         <td>${idx+1}</td>
-                        <td><span class="acct-clickable" onclick="openAccountPanel('${r.acct.replace(/'/g,"\\'")}')">${r.acct}</span></td>
-                        <td>${r.dist}${getQbOrderBadge(r.dist)}</td>
-                        <td>${r.st}</td>
-                        <td>${r.ch}</td>
+                        <td><span class="acct-clickable" onclick="openAccountPanel('${escAttr(r.acct)}')">${esc(r.acct)}</span></td>
+                        <td>${esc(r.dist)}${getQbOrderBadge(r.dist)}</td>
+                        <td>${esc(r.st)}</td>
+                        <td>${esc(r.ch)}</td>
                         <td>${sku.ce.toFixed(1)}</td>
                         <td>${sku.purch}</td>
                         <td>${sku.cycle}</td>
@@ -4479,14 +4558,14 @@ let dataThrough = '3/8/2026';
                 const expandIcon = hasSkus ? `<span class="sku-toggle" onclick="toggleRow(this,'${expandId}')" style="cursor:pointer;color:#3498db;font-size:12px;margin-right:4px;" title="Show SKU breakdown">&#9654;</span>` : '';
                 tableHtml += `<tr>
                     <td>${r.rank}</td>
-                    <td>${expandIcon}<span class="acct-clickable" onclick="openAccountPanel('${r.acct.replace(/'/g,"\\'")}')">${r.acct}</span></td>
-                    <td>${r.dist}${getQbOrderBadge(r.dist)}</td>
-                    <td>${r.st}</td>
-                    <td>${r.ch}</td>
+                    <td>${expandIcon}<span class="acct-clickable" onclick="openAccountPanel('${escAttr(r.acct)}')">${esc(r.acct)}</span></td>
+                    <td>${esc(r.dist)}${getQbOrderBadge(r.dist)}</td>
+                    <td>${esc(r.st)}</td>
+                    <td>${esc(r.ch)}</td>
                     <td>${r.ce.toFixed(1)}</td>
                     <td>${r.purch.toFixed(1)}</td>
                     <td>${Math.round(r.cycle)}</td>
-                    <td>${r.last}</td>
+                    <td>${esc(r.last)}</td>
                     <td>${Math.round(r.days)}</td>
                     <td><div style="display:flex;align-items:center;gap:4px;"><div style="width:40px;height:6px;background:#eee;border-radius:3px;overflow:hidden;"><div style="width:${Math.min(r.priority||0,100)}%;height:100%;background:${r.priority>=70?'#ef4444':r.priority>=40?'#f59e0b':'#10b981'};"></div></div><span style="font-size:10px;color:#64748b;">${r.priority||0}</span></div></td>
                     <td>${renderReorderStatus(r.status)}</td>
@@ -4641,10 +4720,8 @@ let dataThrough = '3/8/2026';
     let firebaseReady = false;
     let currentUser = null;      // App-level user object {name, initials, role, territory, email, uid}
     let firebaseAuthUser = null; // Firebase Auth user object
-    // Users loaded from Firestore. Default admin for first-time setup.
-    const REP_CREDENTIALS = {
-        'admin': {name:'Admin', initials:'AD', owner:'Admin', pin:'1234', role:'admin', territory:'all'}
-    };
+    // Users loaded from Firestore. No default credentials - first user created via setup wizard.
+    const REP_CREDENTIALS = {};
 
     try {
         firebase.initializeApp(FIREBASE_CONFIG);
@@ -5071,7 +5148,8 @@ let dataThrough = '3/8/2026';
         const origHTML = dropZone.innerHTML;
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            if (file.size > 25 * 1024 * 1024) { alert('File too large (25MB max): ' + file.name); continue; }
+            if (file.size > 10 * 1024 * 1024) { alert('File too large (10MB max): ' + file.name); continue; }
+            if (file.size === 0) { alert('File is empty: ' + file.name); continue; }
             dropZone.innerHTML = '<div style="color:#2563EB;font-weight:600;">Uploading ' + file.name + '...</div>';
             try {
                 await FileStore.uploadFile(acctName, file, context, repName);
@@ -5807,7 +5885,7 @@ let dataThrough = '3/8/2026';
             alerts += '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;color:#991B1B;">';
             alerts += '<strong>Overdue Follow-Ups:</strong> ';
             alerts += overdueItems.slice(0, 5).map(i =>
-                '<span style="font-weight:600;cursor:pointer;text-decoration:underline;" onclick="openAccountPanel(\'' + i.acct.replace(/'/g, "\\'") + '\')">' + i.acct + '</span> (due ' + i.followUp + ')'
+                '<span style="font-weight:600;cursor:pointer;text-decoration:underline;" onclick="openAccountPanel(\'' + i.acct.replace(/'/g, "\\'") + '\')">' + esc(i.acct) + '</span> (due ' + esc(i.followUp) + ')'
             ).join(', ');
             if (overdueItems.length > 5) alerts += ' + ' + (overdueItems.length - 5) + ' more';
             alerts += '</div>';
@@ -5818,7 +5896,7 @@ let dataThrough = '3/8/2026';
             alerts += '<div style="background:#F5F3FF;border:1px solid #C4B5FD;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;color:#5B21B6;">';
             alerts += '<strong>VIP Alert:</strong> ' + vipStale.length + ' VIP account(s) with no order in 30+ days: ';
             alerts += vipStale.slice(0, 5).map(i =>
-                '<span style="font-weight:600;cursor:pointer;text-decoration:underline;" onclick="openAccountPanel(\'' + i.acct.replace(/'/g, "\\'") + '\')">' + i.acct + '</span> (' + i.daysSince + 'd)'
+                '<span style="font-weight:600;cursor:pointer;text-decoration:underline;" onclick="openAccountPanel(\'' + i.acct.replace(/'/g, "\\'") + '\')">' + esc(i.acct) + '</span> (' + i.daysSince + 'd)'
             ).join(', ');
             alerts += '</div>';
         }
@@ -6073,6 +6151,13 @@ let dataThrough = '3/8/2026';
 
     function renderPipeline() {
         if (!pipelineRendered) return;
+
+        if (!pipelineAccounts || pipelineAccounts.length === 0) {
+            const tbody = document.getElementById('pipelineBody');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:#64748b;">No pipeline accounts yet. Add accounts from the Accounts view or upload data to populate your pipeline.</td></tr>';
+            return;
+        }
+
         const stageF = document.getElementById('plStageFilter')?.value || '';
         const tierF = document.getElementById('plTierFilter')?.value || '';
         const ownerF = document.getElementById('plOwnerFilter')?.value || '';
@@ -6201,13 +6286,13 @@ let dataThrough = '3/8/2026';
             if (daysSinceStage > 30) daysColor = '#DC2626';
             else if (daysSinceStage > 14) daysColor = '#D97706';
 
-            return '<tr style="border-bottom:1px solid #f1f5f9;cursor:pointer;" onclick="openPipelineDetail(\'' + r.acct.replace(/'/g,"\\'") + '\')">' +
-                '<td style="padding:8px 12px;font-weight:600;color:#2563EB;cursor:pointer;">' + r.acct + distBadge + '</td>' +
+            return '<tr style="border-bottom:1px solid #f1f5f9;cursor:pointer;" onclick="openPipelineDetail(\'' + escAttr(r.acct) + '\')">' +
+                '<td style="padding:8px 12px;font-weight:600;color:#2563EB;cursor:pointer;">' + esc(r.acct) + distBadge + '</td>' +
                 '<td style="padding:8px;text-align:center;"><span style="padding:2px 10px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:'+plTierColors[r.tier]+';">'+r.tier+'</span></td>' +
-                '<td style="padding:8px;text-align:center;"><span style="padding:2px 10px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:'+plStageColors[r.stage]+';">'+r.stage+'</span></td>' +
+                '<td style="padding:8px;text-align:center;"><span style="padding:2px 10px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:'+plStageColors[r.stage]+';">' + esc(r.stage) + '</span></td>' +
                 '<td style="padding:8px;text-align:center;font-size:11px;font-weight:600;color:'+daysColor+';">'+daysSinceStage+'</td>' +
-                '<td style="padding:8px;font-size:12px;">'+r.owner+'</td>' +
-                '<td style="padding:8px;font-size:12px;color:#6B7280;">'+(r.source || '--')+'</td>' +
+                '<td style="padding:8px;font-size:12px;">' + esc(r.owner) + '</td>' +
+                '<td style="padding:8px;font-size:12px;color:#6B7280;">'+esc(r.source || '--')+'</td>' +
                 '<td style="padding:8px;text-align:right;font-weight:600;">'+f$pl(r.estValue)+(r.hasCustom ? '<span style="color:#10b981;font-size:9px;margin-left:2px;">*</span>' : '')+'</td>' +
                 '<td style="padding:8px;text-align:right;color:#7C3AED;font-weight:600;">'+f$pl(r.weighted)+'</td>' +
                 '<td style="padding:8px;font-size:11px;">'+(r.nextStep || '<span style="color:#d1d5db;">--</span>')+'</td>' +
@@ -7545,10 +7630,14 @@ let dataThrough = '3/8/2026';
         localStorage.setItem('sk_tenant_config', JSON.stringify(configToSave));
         if (firebaseReady && db) {
             try {
-                await db.collection('tenants').doc(TENANT_CONFIG.tenantId).set(configToSave, {merge:true});
+                await withRetry(
+                    () => db.collection('tenants').doc(TENANT_CONFIG.tenantId).set(configToSave, {merge:true}),
+                    2, 'saveTenantConfig'
+                );
                 console.log('Tenant config saved to Firestore');
             } catch(e) {
                 console.warn('Failed to save tenant config to Firestore:', e);
+                showToast && showToast('Settings saved locally but cloud sync failed. Will retry on next save.', 'warning');
             }
         }
     }
@@ -7570,7 +7659,10 @@ let dataThrough = '3/8/2026';
         // Then sync from Firestore
         if (firebaseReady && db) {
             try {
-                const doc = await db.collection('tenants').doc(TENANT_CONFIG.tenantId).get();
+                const doc = await withRetry(
+                    () => db.collection('tenants').doc(TENANT_CONFIG.tenantId).get(),
+                    2, 'loadTenantConfig'
+                );
                 if (doc.exists) {
                     const data = doc.data();
                     Object.assign(TENANT_CONFIG, data);
@@ -8338,7 +8430,25 @@ let dataThrough = '3/8/2026';
         const listEl = document.getElementById('dataUploadList');
         if (!listEl) return;
 
+        const ALLOWED_EXTENSIONS = ['.xlsx', '.xls', '.csv', '.tsv'];
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB for data files
+
         for (const file of files) {
+            // Validate file type
+            const ext = '.' + file.name.split('.').pop().toLowerCase();
+            if (!ALLOWED_EXTENSIONS.includes(ext)) {
+                alert('Unsupported file type: ' + file.name + '\n\nPlease upload Excel (.xlsx, .xls) or CSV (.csv, .tsv) files.');
+                continue;
+            }
+            // Validate file size
+            if (file.size > MAX_FILE_SIZE) {
+                alert('File too large: ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(1) + ' MB)\n\nMaximum file size is 10 MB.');
+                continue;
+            }
+            if (file.size === 0) {
+                alert('File is empty: ' + file.name);
+                continue;
+            }
             const statusId = 'upload_' + Date.now() + '_' + Math.random().toString(36).substr(2,4);
             listEl.insertAdjacentHTML('afterbegin',
                 '<div id="' + statusId + '" style="padding:12px;background:#F9FAFB;border-radius:8px;margin-bottom:8px;">' +
@@ -8868,12 +8978,16 @@ let dataThrough = '3/8/2026';
             const val = this._getVal(row, ...candidates);
             if (val === undefined || val === null || val === '') return 0;
             const num = parseFloat(String(val).replace(/[,$%]/g, ''));
-            return isNaN(num) ? 0 : num;
+            if (isNaN(num) || !isFinite(num)) return 0;
+            // Clamp to reasonable range to prevent rendering issues
+            return Math.max(-999999999, Math.min(999999999, num));
         },
 
         _getStr(row, ...candidates) {
             const val = this._getVal(row, ...candidates);
-            return val !== undefined && val !== null ? String(val).trim() : '';
+            if (val === undefined || val === null) return '';
+            // Truncate excessively long strings and strip control characters
+            return String(val).trim().substring(0, 500).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
         },
 
         // ---- MAPPERS: Convert raw Excel rows into dashboard-format objects ----
@@ -9282,74 +9396,114 @@ let dataThrough = '3/8/2026';
                 'Restaurant Depot','Sysco','US Foods','Gordon Food Service','Performance Foodservice'
             ];
 
-            // Generate distScorecard (25 distributors)
+            // Generate distScorecard (25 distributors) with correlated, realistic data
             distScorecard = distNames.map((name, i) => {
-                const ce = Math.round(150 + Math.random() * 2500);
-                const w4 = Math.round(ce * (0.2 + Math.random() * 0.15));
-                const prior = Math.round(ce * (0.85 + Math.random() * 0.3));
+                // Base volume varies by distributor size (some big, most small-mid)
+                const sizeClass = i < 5 ? 'large' : i < 15 ? 'mid' : 'small';
+                const ceBase = sizeClass === 'large' ? 1200 + Math.random() * 1500 :
+                               sizeClass === 'mid' ? 300 + Math.random() * 800 :
+                               80 + Math.random() * 250;
+                const ce = Math.round(ceBase);
+                // 4W should be roughly 4/13 of 13W with some variance
+                const w4 = Math.round(ce * (4/13) * (0.85 + Math.random() * 0.3));
+                // Prior period: slight growth or decline (realistic range: -15% to +20%)
+                const growthRate = -0.15 + Math.random() * 0.35;
+                const prior = Math.round(ce / (1 + growthRate));
+                const prior_w4 = Math.round(w4 / (1 + growthRate * (0.8 + Math.random() * 0.4)));
                 const pctChange = ((ce - prior) / prior * 100).toFixed(1);
+                // On-hand should correlate with rate: DOH = OH / weekly_rate
+                const weeklyRate = ce / 13;
+                const doh = Math.round(20 + Math.random() * 80); // 20-100 days
+                const oh = Math.round(weeklyRate / 7 * doh); // OH derived from DOH and rate
+                // Net new accounts correlates with growth
+                const net = growthRate > 0.05 ? Math.round(1 + Math.random() * 8) :
+                            growthRate > -0.05 ? Math.round(Math.random() * 3) : 0;
+                // Sell-through inversely correlates with DOH
+                const sellThru = doh < 45 ? Math.round(65 + Math.random() * 30) :
+                                 doh < 75 ? Math.round(40 + Math.random() * 25) :
+                                 Math.round(20 + Math.random() * 20);
+                // Inv action based on DOH
+                const invAction = doh < 14 ? 'Reorder Now' : doh < 30 ? 'Reorder Soon' :
+                                  doh > 90 ? 'Overstocked' : doh > 60 ? 'Monitor' : 'Healthy';
+                // Velocity trend based on growth
+                const velTrend = growthRate > 0.05 ? 'up' : growthRate < -0.05 ? 'down' : 'flat';
+                // Weekly data with smooth trend (not random spikes)
+                const weeklyBase = ce / 13;
+                const weekly = Array.from({length:13}, (_, w) => {
+                    const trendFactor = 1 + (growthRate * (w - 6) / 13); // gradual trend
+                    return Math.round(weeklyBase * trendFactor * (0.85 + Math.random() * 0.3));
+                });
+                const conScore = Math.round(Math.min(80, net * 5 + 15 + Math.random() * 10));
                 return {
                     name, st: states[i % states.length],
-                    ce, prior, w4,
-                    prior_w4: Math.round(w4 * (0.85 + Math.random() * 0.3)),
+                    ce, prior, w4, prior_w4,
                     momentum: (pctChange >= 0 ? '+' : '') + pctChange + '%',
-                    oh: Math.round(50 + Math.random() * 400),
-                    doh: Math.round(20 + Math.random() * 120),
-                    net: Math.round(Math.random() * 15),
-                    con: Math.round(20 + Math.random() * 60),
-                    conLabel: ['Building','Growing','Established','Dominant'][Math.floor(Math.random()*4)],
-                    invAction: ['Reorder Now','Monitor','Healthy','Overstocked','Reorder Soon'][Math.floor(Math.random()*5)],
-                    velTrend: ['up','flat','down'][Math.floor(Math.random()*3)],
-                    sellThru: Math.round(40 + Math.random() * 55),
-                    weekly: Array.from({length:13}, () => Math.round(10 + Math.random() * 200)),
-                    isGroup: false
+                    oh, doh, net, con: conScore,
+                    conLabel: conScore > 60 ? 'Established' : conScore > 40 ? 'Growing' : conScore > 20 ? 'Building' : 'Emerging',
+                    invAction, velTrend, sellThru, weekly, isGroup: false
                 };
             });
 
-            // Generate inventoryData (25 distributors)
-            inventoryData = distNames.map((name, i) => ({
-                name, st: states[i % states.length],
-                oh: Math.round(30 + Math.random() * 350),
-                rate: +(5 + Math.random() * 40).toFixed(1),
-                doh: Math.round(15 + Math.random() * 130),
-                dep90: Math.round(200 + Math.random() * 1500),
-                status: ['Healthy','Low Stock','Overstocked','Reorder Now','Critical'][Math.floor(Math.random()*5)],
-                proj: Math.round(100 + Math.random() * 800),
-                skus: [], isGroup: false
-            }));
+            // Generate inventoryData from scorecard (correlated)
+            inventoryData = distScorecard.map(d => {
+                const weeklyRate = +(d.ce / 13).toFixed(1);
+                const dep90 = Math.round(weeklyRate * 13 * (0.9 + Math.random() * 0.2));
+                const proj = Math.round(weeklyRate * 4 * (0.85 + Math.random() * 0.3));
+                const status = d.doh < 14 ? 'Critical' : d.doh < 28 ? 'Reorder Now' :
+                               d.doh < 45 ? 'Low Stock' : d.doh > 90 ? 'Overstocked' : 'Healthy';
+                return {
+                    name: d.name, st: d.st,
+                    oh: d.oh, rate: weeklyRate, doh: d.doh,
+                    dep90, status, proj, skus: [], isGroup: false
+                };
+            });
 
-            // Generate accountsTop (40 accounts)
+            // Generate accountsTop (40 accounts) with Pareto-like volume distribution
             accountsTop = acctNames.map((acct, i) => {
-                const nov = Math.round(5 + Math.random() * 80);
-                const dec = Math.round(5 + Math.random() * 90);
-                const jan = Math.round(5 + Math.random() * 70);
-                const feb = Math.round(5 + Math.random() * 75);
+                // Top accounts get much more volume (80/20 rule)
+                const tier = i < 5 ? 'key' : i < 15 ? 'mid' : 'tail';
+                const baseVol = tier === 'key' ? 40 + Math.random() * 60 :
+                                tier === 'mid' ? 15 + Math.random() * 30 : 3 + Math.random() * 15;
+                // Month-over-month with slight seasonal pattern and trend
+                const acctGrowth = -0.1 + Math.random() * 0.25;
+                const nov = Math.round(baseVol * (0.9 + Math.random() * 0.2));
+                const dec = Math.round(nov * 1.08 * (0.9 + Math.random() * 0.2)); // holiday bump
+                const jan = Math.round(dec * 0.88 * (0.9 + Math.random() * 0.2)); // Jan dip
+                const feb = Math.round(jan * (1 + acctGrowth * 0.3) * (0.9 + Math.random() * 0.2));
+                const trend = acctGrowth > 0.08 ? 'Growing' : acctGrowth > -0.03 ? 'Stable' :
+                              acctGrowth > -0.08 ? 'Declining' : 'New';
                 return {
                     rank: i + 1, acct,
                     dist: distNames[i % distNames.length],
                     st: states[i % states.length],
-                    ch: channels[Math.floor(Math.random()*3)],
+                    ch: i < 25 ? (i % 3 === 0 ? 'ON' : 'OFF') : 'BOTH',
                     nov, dec, jan, feb,
                     total: nov + dec + jan + feb,
-                    trend: ['Growing','Stable','Declining','New'][Math.floor(Math.random()*4)],
-                    growthPotential: Math.round(20 + Math.random() * 80)
+                    trend,
+                    growthPotential: tier === 'key' ? Math.round(10 + Math.random() * 25) :
+                                     tier === 'mid' ? Math.round(30 + Math.random() * 40) :
+                                     Math.round(50 + Math.random() * 45)
                 };
             });
 
-            // Generate reorderData (20 accounts needing reorder)
-            reorderData = acctNames.slice(0, 20).map((acct, i) => ({
-                rank: i + 1, acct,
-                dist: distNames[i % distNames.length],
-                st: states[i % states.length],
-                ch: channels[Math.floor(Math.random()*3)],
-                ce: Math.round(20 + Math.random() * 200),
-                purch: Math.round(2 + Math.random() * 12),
-                cycle: Math.round(14 + Math.random() * 45),
-                last: new Date(Date.now() - (Math.random() * 90 * 86400000)).toLocaleDateString(),
-                days: Math.round(5 + Math.random() * 60),
-                priority: Math.round(30 + Math.random() * 70),
-                skus: []
-            }));
+            // Generate reorderData (20 accounts overdue for reorder)
+            reorderData = acctNames.slice(0, 20).map((acct, i) => {
+                const ce = Math.round(20 + Math.random() * 200);
+                const cycle = Math.round(14 + Math.random() * 35); // typical reorder cycle
+                const daysSince = Math.round(cycle * (1.1 + Math.random() * 0.8)); // overdue
+                const priority = Math.min(99, Math.round((daysSince / cycle) * 40 + ce * 0.15));
+                return {
+                    rank: i + 1, acct,
+                    dist: distNames[i % distNames.length],
+                    st: states[i % states.length],
+                    ch: i % 3 === 0 ? 'ON' : 'OFF',
+                    ce, purch: Math.round(2 + Math.random() * 12),
+                    cycle,
+                    last: new Date(Date.now() - (daysSince * 86400000)).toLocaleDateString(),
+                    days: daysSince,
+                    priority, skus: []
+                };
+            });
 
             // Generate newWins (8 new accounts)
             newWins = acctNames.slice(30, 38).map(acct => ({
@@ -9392,18 +9546,23 @@ let dataThrough = '3/8/2026';
                 };
             });
 
-            // Generate QB revenue data
+            // Generate QB revenue data (correlated with scorecard CE volumes)
             const months = ['2025-11','2025-12','2026-01','2026-02'];
             qbDistOrders = {};
-            distNames.slice(0, 15).forEach(dist => {
+            distScorecard.slice(0, 15).forEach(d => {
                 const monthly = {};
                 let total = 0;
-                months.forEach(m => {
-                    const amt = Math.round(2000 + Math.random() * 25000);
+                const avgCasePrice = 28 + Math.random() * 18; // $28-46 per case
+                months.forEach((m, mi) => {
+                    // Revenue correlates with CE volume; Dec gets holiday bump, Jan dips
+                    const seasonal = mi === 1 ? 1.12 : mi === 2 ? 0.88 : 1.0;
+                    const monthCE = (d.ce / 4) * seasonal * (0.85 + Math.random() * 0.3);
+                    const amt = Math.round(monthCE * avgCasePrice);
                     monthly[m] = amt;
                     total += amt;
                 });
-                qbDistOrders[dist] = { total, orders: Math.round(4 + Math.random() * 20), customers: 1, monthly };
+                const orderCount = Math.round(d.ce / 40 + 2 + Math.random() * 3);
+                qbDistOrders[d.name] = { total, orders: orderCount, customers: 1, monthly };
             });
 
             // Generate acctConcentration
