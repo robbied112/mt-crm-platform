@@ -3735,22 +3735,22 @@ let dataThrough = '3/8/2026';
             const nt = wh.contemporary['Warehouse Total'] || {};
             const gt = wh.grandTotal || {};
             // Build product columns dynamically from warehouse data keys or catalog
-            const defaultWines = ['sw','sr','rd','spw','spr'];
-            const defaultWineNames = ['Still White','Still Rose','Red','Spark White','Spark Rose'];
+            const defaultProductKeys = ['sw','sr','rd','spw','spr'];
+            const defaultProductNames = ['Still White','Still Rose','Red','Spark White','Spark Rose'];
             // Try to detect product keys from warehouse data
             const sampleRow = Object.values(wh.classic || wh.contemporary || {})[0] || {};
             const detectedKeys = Object.keys(sampleRow).filter(k => k !== 'total' && typeof sampleRow[k] === 'number');
-            const wines = detectedKeys.length > 0 ? detectedKeys : defaultWines;
+            const wines = detectedKeys.length > 0 ? detectedKeys : defaultProductKeys;
             const catalogNames = {};
             (TENANT_CONFIG.productCatalog || []).forEach(p => { if (p.shortCode) catalogNames[p.shortCode] = p.name; });
-            const wineNames = wines.map(w => catalogNames[w] || w.toUpperCase());
+            const productNames = wines.map(w => catalogNames[w] || w.toUpperCase());
             const unit = TENANT_CONFIG.productUnit || 'cases';
             let html = '<div class="table-header"><div class="table-title">Company Warehouse Inventory (by Product Line)</div></div>';
             html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">';
             const line1Name = (TENANT_CONFIG.productLines || [])[0] || 'Line 1';
             html += '<div><div style="font-weight:600;margin-bottom:6px;"><span style="display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;background:#F3E8FF;color:#7C3AED;margin-right:6px;">' + line1Name + '</span></div>';
             html += '<table style="width:100%;font-size:12px;border-collapse:collapse;"><thead><tr style="background:#f9fafb;"><th style="text-align:left;padding:4px 6px;">Location</th>';
-            wineNames.forEach(w => html += '<th style="text-align:right;padding:4px 6px;">' + w + '</th>');
+            productNames.forEach(w => html += '<th style="text-align:right;padding:4px 6px;">' + w + '</th>');
             html += '<th style="text-align:right;padding:4px 6px;font-weight:700;">Total</th></tr></thead><tbody>';
             for (const [loc, vals] of Object.entries(wh.classic)) {
                 const bold = (loc === 'Warehouse Total' || loc === 'Zephyr Total') ? 'font-weight:700;border-top:1px solid #e5e7eb;' : '';
@@ -3762,7 +3762,7 @@ let dataThrough = '3/8/2026';
             const line2Name = (TENANT_CONFIG.productLines || [])[1] || 'Line 2';
             html += '<div><div style="font-weight:600;margin-bottom:6px;"><span style="display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;background:#DBEAFE;color:#2563EB;margin-right:6px;">' + line2Name + '</span></div>';
             html += '<table style="width:100%;font-size:12px;border-collapse:collapse;"><thead><tr style="background:#f9fafb;"><th style="text-align:left;padding:4px 6px;">Location</th>';
-            wineNames.forEach(w => html += '<th style="text-align:right;padding:4px 6px;">' + w + '</th>');
+            productNames.forEach(w => html += '<th style="text-align:right;padding:4px 6px;">' + w + '</th>');
             html += '<th style="text-align:right;padding:4px 6px;font-weight:700;">Total</th></tr></thead><tbody>';
             for (const [loc, vals] of Object.entries(wh.contemporary)) {
                 const bold = loc === 'Warehouse Total' ? 'font-weight:700;border-top:1px solid #e5e7eb;' : '';
