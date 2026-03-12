@@ -1881,6 +1881,88 @@
                     <div id="productCatalogTable" style="overflow-x:auto;"></div>
                 </div>
 
+                <!-- Goals & Targets -->
+                <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <h3 style="font-size:16px;font-weight:700;color:#374151;margin:0;">Goals & Targets</h3>
+                        <div>
+                            <button id="saveGoalsBtn" style="padding:6px 14px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save</button>
+                            <span id="goalsSaveStatus" style="font-size:12px;color:#059669;margin-left:8px;display:none;">Saved!</span>
+                        </div>
+                    </div>
+                    <p style="font-size:13px;color:#6B7280;margin-bottom:16px;">Set volume, account, and distribution goals. Progress is tracked on the Overview dashboard.</p>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                        <!-- Volume Goals -->
+                        <div style="border:1px solid #E5E7EB;border-radius:8px;padding:16px;">
+                            <h4 style="font-size:14px;font-weight:600;color:#374151;margin-bottom:12px;">Volume Goals</h4>
+                            <div style="margin-bottom:10px;">
+                                <label style="font-size:12px;color:#6B7280;display:block;margin-bottom:3px;">Annual Volume Target (cases)</label>
+                                <input type="number" id="goalAnnualVolume" placeholder="e.g. 50000" style="width:100%;padding:8px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;">
+                            </div>
+                            <div style="margin-bottom:10px;">
+                                <label style="font-size:12px;color:#6B7280;display:block;margin-bottom:3px;">Quarterly Volume Target (cases)</label>
+                                <input type="number" id="goalQuarterlyVolume" placeholder="Auto-calc from annual" style="width:100%;padding:8px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;">
+                            </div>
+                            <div>
+                                <label style="font-size:12px;color:#6B7280;display:block;margin-bottom:3px;">Monthly Volume Target (cases)</label>
+                                <input type="number" id="goalMonthlyVolume" placeholder="Auto-calc from annual" style="width:100%;padding:8px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;">
+                            </div>
+                        </div>
+
+                        <!-- Account Goals -->
+                        <div style="border:1px solid #E5E7EB;border-radius:8px;padding:16px;">
+                            <h4 style="font-size:14px;font-weight:600;color:#374151;margin-bottom:12px;">Account Goals</h4>
+                            <div style="margin-bottom:10px;">
+                                <label style="font-size:12px;color:#6B7280;display:block;margin-bottom:3px;">Total Active Accounts Target</label>
+                                <input type="number" id="goalTotalAccounts" placeholder="e.g. 500" style="width:100%;padding:8px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;">
+                            </div>
+                            <div style="margin-bottom:10px;">
+                                <label style="font-size:12px;color:#6B7280;display:block;margin-bottom:3px;">New Accounts Per Quarter</label>
+                                <input type="number" id="goalNewAccounts" placeholder="e.g. 50" style="width:100%;padding:8px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;">
+                            </div>
+                            <div>
+                                <label style="font-size:12px;color:#6B7280;display:block;margin-bottom:3px;">Re-Engagement Target (per month)</label>
+                                <input type="number" id="goalReEngagement" placeholder="e.g. 10" style="width:100%;padding:8px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;">
+                            </div>
+                        </div>
+
+                        <!-- Distribution Goals -->
+                        <div style="border:1px solid #E5E7EB;border-radius:8px;padding:16px;">
+                            <h4 style="font-size:14px;font-weight:600;color:#374151;margin-bottom:12px;">Distribution Goals</h4>
+                            <div style="margin-bottom:10px;">
+                                <label style="font-size:12px;color:#6B7280;display:block;margin-bottom:3px;">Total States Target</label>
+                                <input type="number" id="goalTotalStates" placeholder="e.g. 15" style="width:100%;padding:8px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;">
+                            </div>
+                            <div>
+                                <label style="font-size:12px;color:#6B7280;display:block;margin-bottom:3px;">Total Distributors Target</label>
+                                <input type="number" id="goalTotalDistributors" placeholder="e.g. 30" style="width:100%;padding:8px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;">
+                            </div>
+                        </div>
+
+                        <!-- Revenue Goals -->
+                        <div style="border:1px solid #E5E7EB;border-radius:8px;padding:16px;">
+                            <h4 style="font-size:14px;font-weight:600;color:#374151;margin-bottom:12px;">Revenue Goals</h4>
+                            <div style="margin-bottom:10px;">
+                                <label style="font-size:12px;color:#6B7280;display:block;margin-bottom:3px;">Annual Revenue Target ($)</label>
+                                <input type="number" id="goalAnnualRevenue" placeholder="e.g. 500000" style="width:100%;padding:8px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;">
+                            </div>
+                            <div>
+                                <label style="font-size:12px;color:#6B7280;display:block;margin-bottom:3px;">Average Order Value Target ($)</label>
+                                <input type="number" id="goalAvgOrderValue" placeholder="e.g. 1200" style="width:100%;padding:8px 10px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Per-State Goals (expandable) -->
+                    <details style="margin-top:16px;">
+                        <summary style="font-size:13px;font-weight:600;color:#374151;cursor:pointer;padding:8px 0;">Per-State Volume Targets (optional)</summary>
+                        <p style="font-size:12px;color:#6B7280;margin:8px 0;">Set specific volume targets for individual states. States without targets will use a proportional share of the annual goal.</p>
+                        <div id="goalStateTargetsContainer" style="max-height:300px;overflow-y:auto;margin-top:8px;"></div>
+                        <button id="goalAddStateTarget" style="margin-top:8px;padding:6px 14px;background:#F3F4F6;border:1px solid #D1D5DB;border-radius:6px;font-size:12px;cursor:pointer;">+ Add State Target</button>
+                    </details>
+                </div>
+
                 <!-- Terminology / Labels -->
                 <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
@@ -3092,6 +3174,48 @@ let dataThrough = '3/8/2026';
                     <div class="kpi-value" style="color:#DC2626;">${overdueReorders}</div>
                 </div>
             </div>`;
+
+            // Goal Progress Section (only show if goals are configured)
+            const goals = TENANT_CONFIG.goals || {};
+            if (goals.annualVolume || goals.totalAccounts || goals.annualRevenue || goals.totalStates) {
+                const uniqueStates = new Set(filteredDists.map(d => d.st).filter(Boolean));
+                const uniqueDists = filteredDists.length;
+                const totalRevenue = (typeof qbDistOrders !== 'undefined') ? Object.values(qbDistOrders).reduce((s, d) => s + (d.total || 0), 0) : 0;
+                const totalAccounts = (typeof accountsTop !== 'undefined') ? accountsTop.filter(a => matchesUserTerritory(a.st)).length : 0;
+                const newWinsCount = (typeof newWins !== 'undefined') ? newWins.filter(w => matchesUserTerritory(w.st)).length : 0;
+
+                function goalBar(label, current, target, unit, color) {
+                    if (!target) return '';
+                    const pct = Math.min(100, Math.round(current / target * 100));
+                    const barColor = pct >= 100 ? '#059669' : pct >= 75 ? color : pct >= 50 ? '#D97706' : '#DC2626';
+                    const fmt = (n) => n >= 1000 ? (n/1000).toFixed(1) + 'k' : n.toLocaleString();
+                    return `<div style="margin-bottom:14px;">
+                        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+                            <span style="font-size:13px;font-weight:600;color:#374151;">${label}</span>
+                            <span style="font-size:12px;color:#6B7280;">${fmt(current)} / ${fmt(target)} ${unit}</span>
+                        </div>
+                        <div style="background:#E5E7EB;border-radius:6px;height:10px;overflow:hidden;">
+                            <div style="background:${barColor};height:100%;border-radius:6px;width:${pct}%;transition:width 0.5s;"></div>
+                        </div>
+                        <div style="text-align:right;font-size:11px;color:${barColor};font-weight:600;margin-top:2px;">${pct}%</div>
+                    </div>`;
+                }
+
+                html += `<div style="background:#fff;border-radius:12px;padding:20px;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:1px solid #E5E7EB;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <h3 style="margin:0;font-size:16px;font-weight:700;color:#374151;">Goal Progress</h3>
+                        <span style="font-size:11px;color:#9CA3AF;">Set in Settings</span>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;">
+                        ${goalBar('Annual Volume', totalCE, goals.annualVolume, 'cases', '#B13B34')}
+                        ${goalBar('Total Accounts', totalAccounts, goals.totalAccounts, '', '#2563EB')}
+                        ${goalBar('Annual Revenue', totalRevenue, goals.annualRevenue, '$', '#059669')}
+                        ${goalBar('Distribution (States)', uniqueStates.size, goals.totalStates, '', '#7C3AED')}
+                        ${goalBar('Active Distributors', uniqueDists, goals.totalDistributors, '', '#D97706')}
+                        ${goalBar('New Accounts (Q)', newWinsCount, goals.newAccountsPerQuarter, '', '#0EA5E9')}
+                    </div>
+                </div>`;
+            }
 
             // Attention Needed section
             let attentionItems = [];
@@ -6690,6 +6814,100 @@ let dataThrough = '3/8/2026';
             showProductModal();
         });
 
+        // Goals & Targets
+        const goalFields = {
+            goalAnnualVolume: 'annualVolume',
+            goalQuarterlyVolume: 'quarterlyVolume',
+            goalMonthlyVolume: 'monthlyVolume',
+            goalTotalAccounts: 'totalAccounts',
+            goalNewAccounts: 'newAccountsPerQuarter',
+            goalReEngagement: 'reEngagementPerMonth',
+            goalTotalStates: 'totalStates',
+            goalTotalDistributors: 'totalDistributors',
+            goalAnnualRevenue: 'annualRevenue',
+            goalAvgOrderValue: 'avgOrderValue',
+        };
+        // Load current goals
+        const currentGoals = TENANT_CONFIG.goals || {};
+        for (const [inputId, goalKey] of Object.entries(goalFields)) {
+            const el = document.getElementById(inputId);
+            if (el && currentGoals[goalKey]) el.value = currentGoals[goalKey];
+        }
+        // Auto-calculate quarterly/monthly from annual if empty
+        const annualInput = document.getElementById('goalAnnualVolume');
+        const quarterlyInput = document.getElementById('goalQuarterlyVolume');
+        const monthlyInput = document.getElementById('goalMonthlyVolume');
+        if (annualInput) {
+            annualInput.addEventListener('input', function() {
+                const annual = parseFloat(this.value) || 0;
+                if (!quarterlyInput.value) quarterlyInput.placeholder = annual ? Math.round(annual / 4).toLocaleString() : 'Auto-calc from annual';
+                if (!monthlyInput.value) monthlyInput.placeholder = annual ? Math.round(annual / 12).toLocaleString() : 'Auto-calc from annual';
+            });
+            // Trigger on load
+            if (annualInput.value) annualInput.dispatchEvent(new Event('input'));
+        }
+        // Load per-state targets
+        const stateTargets = currentGoals.stateTargets || {};
+        function renderStateTargets() {
+            const container = document.getElementById('goalStateTargetsContainer');
+            if (!container) return;
+            const entries = Object.entries(stateTargets);
+            if (entries.length === 0) {
+                container.innerHTML = '<p style="font-size:12px;color:#9CA3AF;padding:8px;">No state-specific targets set.</p>';
+                return;
+            }
+            let html = '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+            html += '<thead><tr style="border-bottom:1px solid #E5E7EB;"><th style="text-align:left;padding:6px;">State</th><th style="text-align:right;padding:6px;">Target (cases)</th><th style="width:60px;padding:6px;"></th></tr></thead><tbody>';
+            entries.sort((a,b) => a[0].localeCompare(b[0])).forEach(([st, target]) => {
+                html += '<tr style="border-bottom:1px solid #F3F4F6;"><td style="padding:6px;font-weight:600;">' + st + '</td>';
+                html += '<td style="padding:6px;text-align:right;"><input type="number" data-state-target="' + st + '" value="' + target + '" style="width:100px;padding:4px 6px;border:1px solid #D1D5DB;border-radius:4px;font-size:12px;text-align:right;"></td>';
+                html += '<td style="padding:6px;text-align:center;"><button data-remove-state="' + st + '" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:14px;">x</button></td></tr>';
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+            container.querySelectorAll('[data-state-target]').forEach(input => {
+                input.addEventListener('change', function() {
+                    stateTargets[this.dataset.stateTarget] = parseFloat(this.value) || 0;
+                });
+            });
+            container.querySelectorAll('[data-remove-state]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    delete stateTargets[this.dataset.removeState];
+                    renderStateTargets();
+                });
+            });
+        }
+        renderStateTargets();
+        document.getElementById('goalAddStateTarget')?.addEventListener('click', function() {
+            const st = prompt('Enter state code (e.g. CA, NY, TX):');
+            if (st && st.trim().length >= 2) {
+                const code = st.trim().toUpperCase().substring(0, 2);
+                const target = prompt('Enter annual volume target for ' + code + ':');
+                if (target && parseFloat(target) > 0) {
+                    stateTargets[code] = parseFloat(target);
+                    renderStateTargets();
+                }
+            }
+        });
+        // Save goals
+        document.getElementById('saveGoalsBtn')?.addEventListener('click', async function() {
+            const goals = {};
+            for (const [inputId, goalKey] of Object.entries(goalFields)) {
+                const el = document.getElementById(inputId);
+                if (el && el.value) goals[goalKey] = parseFloat(el.value);
+            }
+            // Auto-fill quarterly/monthly if not set
+            if (goals.annualVolume && !goals.quarterlyVolume) goals.quarterlyVolume = Math.round(goals.annualVolume / 4);
+            if (goals.annualVolume && !goals.monthlyVolume) goals.monthlyVolume = Math.round(goals.annualVolume / 12);
+            goals.stateTargets = stateTargets;
+            TENANT_CONFIG.goals = goals;
+            await saveTenantConfig();
+            // Update goal progress on dashboard
+            if (typeof renderGoalProgress === 'function') renderGoalProgress();
+            const status = document.getElementById('goalsSaveStatus');
+            if (status) { status.style.display = 'inline'; setTimeout(() => status.style.display = 'none', 2000); }
+        });
+
         // Terminology / Labels
         const termFields = {
             termVolume: 'volume',
@@ -7321,6 +7539,7 @@ let dataThrough = '3/8/2026';
             productLines: TENANT_CONFIG.productLines || [],
             productUnit: TENANT_CONFIG.productUnit || 'cases',
             terminology: TENANT_CONFIG.terminology || { volume: 'CE', longPeriod: '13W', shortPeriod: '4W', distributor: 'Distributor', account: 'Account', depletion: 'Depletion' },
+            goals: TENANT_CONFIG.goals || {},
             updatedAt: Date.now()
         };
         localStorage.setItem('sk_tenant_config', JSON.stringify(configToSave));
