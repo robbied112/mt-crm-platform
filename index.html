@@ -7563,10 +7563,13 @@ let dataThrough = '3/8/2026';
     // Payment Links are the simplest way to accept payments without a backend.
     // Create them at: https://dashboard.stripe.com/payment-links
     const STRIPE_CONFIG = {
-        // Replace these with your actual Stripe Payment Link URLs
-        starter: '', // e.g. 'https://buy.stripe.com/your_starter_link'
-        growth: '',  // e.g. 'https://buy.stripe.com/your_growth_link'
-        portalUrl: '', // Stripe Customer Portal URL (set up in Stripe Dashboard)
+        // TEST MODE links (swap to live links when ready to accept real payments)
+        starter: 'https://buy.stripe.com/test_7sY4gAdfGb6B2ig4gl9sk00',
+        growth: 'https://buy.stripe.com/test_3cIdRacbC8Yt7CA4gl9sk01',
+        portalUrl: '', // Stripe Customer Portal URL (set up in Stripe Dashboard > Settings > Customer Portal)
+        // LIVE MODE links (uncomment and swap when ready):
+        // starter: 'https://buy.stripe.com/3cIaEY1wY1w19KIdQV9sk02',
+        // growth: 'https://buy.stripe.com/3cIdRacbC8Yt7CA4gl9sk01',
     };
 
     function startCheckout(plan) {
