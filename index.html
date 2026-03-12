@@ -1033,8 +1033,8 @@
         <header>
             <img id="brandLogo" src="" alt="Company Logo">
             <div class="header-text">
-                <h1 id="headerTitle">Distributor Performance Report</h1>
-                <p>Real-time sales rep opportunity tracking • Data through <span id="dataThrough">2/14</span></p>
+                <h1 id="headerTitle">Sidekick BI</h1>
+                <p>Real-time sales intelligence</p>
             </div>
         </header>
 
@@ -2139,7 +2139,7 @@
     </div>
 
     <footer>
-        <span id="footerBrand">Sidekick BI</span> - Distributor Performance Report - Generated <span id="generatedDate">February 24, 2026</span> - Data source: VIP Depletion Report
+        <span id="footerBrand">Sidekick BI</span> - Data through: <span id="dataThrough">--</span>
     </footer>
 
     <script>
@@ -2202,7 +2202,7 @@ function applyTenantBranding() {
     if (brandName) brandName.textContent = TENANT_CONFIG.companyName;
     const footerBrand = document.getElementById('footerBrand');
     if (footerBrand) footerBrand.textContent = TENANT_CONFIG.companyName;
-    document.title = TENANT_CONFIG.companyName + ' - Distributor Performance Report';
+    document.title = TENANT_CONFIG.companyName + ' - Sidekick BI';
     // Apply primary color to key elements
     if (TENANT_CONFIG.primaryColor) {
         document.querySelectorAll('header, .tabs .tab.active').forEach(el => {
@@ -3028,9 +3028,9 @@ let dataThrough = '3/8/2026';
             localStorage.removeItem('sk_user');
             document.getElementById('loginOverlay').style.display = 'flex';
             document.getElementById('userBar').style.display = 'none';
-            document.getElementById('headerTitle').textContent = 'Distributor Performance Report';
+            document.getElementById('headerTitle').textContent = 'Sidekick BI';
             document.getElementById('filterBarUser').textContent = '';
-            document.title = TENANT_CONFIG.companyName + ' - Distributor Performance Report';
+            document.title = TENANT_CONFIG.companyName + ' - Sidekick BI';
             // Reset form
             toggleAuthMode('signin');
             document.getElementById('loginEmail').value = '';
@@ -3655,7 +3655,7 @@ let dataThrough = '3/8/2026';
             document.getElementById('kpi-perf-markets').textContent = markets;
             document.getElementById('kpi-perf-wins').textContent = wins;
 
-            const avgMomentum = (data.filter(d => d.momentum.startsWith('+')).length / data.length * 100).toFixed(0);
+            const avgMomentum = data.length > 0 ? (data.filter(d => d.momentum.startsWith('+')).length / data.length * 100).toFixed(0) : '0';
             const snapshot = `<strong>Summary:</strong> You have <strong>${data.length} active distributors</strong> across <strong>${markets} markets</strong> with <strong>${totalCE.toFixed(0)} CE</strong> in 13-week volume. <strong>${avgMomentum}%</strong> of distributors show positive momentum. 4-week velocity is <strong>${velocity.toFixed(0)} CE</strong>, indicating ${velocity > totalCE / 3 ? 'acceleration' : 'stable demand'}.`;
             document.getElementById('performanceSnapshot').innerHTML = snapshot;
 
@@ -3738,7 +3738,7 @@ let dataThrough = '3/8/2026';
             const totalCE = data.reduce((sum, d) => sum + d.ce, 0);
             const total4W = data.reduce((sum, d) => sum + d.w4, 0);
             const momentumCount = data.filter(d => d.momentum.startsWith('+')).length;
-            const avgConsistency = (data.reduce((sum, d) => sum + d.con, 0) / data.length * 100).toFixed(0);
+            const avgConsistency = data.length > 0 ? (data.reduce((sum, d) => sum + d.con, 0) / data.length * 100).toFixed(0) : '0';
 
             document.getElementById('kpi-dep-ce').textContent = totalCE.toFixed(0);
             document.getElementById('kpi-dep-4w').textContent = total4W.toFixed(0);
@@ -4090,7 +4090,7 @@ let dataThrough = '3/8/2026';
             }
 
             const totalOH = data.reduce((sum, d) => sum + d.oh, 0);
-            const avgDOH = (data.reduce((sum, d) => sum + d.doh, 0) / data.length).toFixed(0);
+            const avgDOH = data.length > 0 ? (data.reduce((sum, d) => sum + d.doh, 0) / data.length).toFixed(0) : '0';
             const reorderCount = data.filter(d => d.status === 'Reorder Opportunity').length;
 
             document.getElementById('kpi-inv-oh').textContent = totalOH.toFixed(1);
@@ -4559,7 +4559,7 @@ let dataThrough = '3/8/2026';
             const overdueCount = reorderWithStatus.filter(r => r.status === 'Overdue').length;
             const soonCount = reorderWithStatus.filter(r => r.status === 'Due Soon').length;
             const trackCount = reorderWithStatus.filter(r => r.status === 'On Track').length;
-            const avgCycle = (reorderWithStatus.reduce((sum, r) => sum + r.cycle, 0) / reorderWithStatus.length).toFixed(0);
+            const avgCycle = reorderWithStatus.length > 0 ? (reorderWithStatus.reduce((sum, r) => sum + r.cycle, 0) / reorderWithStatus.length).toFixed(0) : '0';
 
             document.getElementById('kpi-reord-overdue').textContent = overdueCount;
             document.getElementById('kpi-reord-soon').textContent = soonCount;
