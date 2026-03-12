@@ -1,25 +1,24 @@
-const { onRequest } = require("firebase-functions/v2/https");
-const { defineSecret } = require("firebase-functions/params");
+const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const { defineSecret } = require("firebase-functions/params");
 
 admin.initializeApp();
 const db = admin.firestore();
 
 // -------------------------------------------------------------------
-// Stripe Webhook Handler
+// Stripe Webhook Handler  (v1 Cloud Function with Secret Manager)
 // -------------------------------------------------------------------
 // Listens for Stripe events and updates tenant subscription status
 // in Firestore so the client app can read it.
 //
 // SETUP (one-time):
-// 1. Set your Stripe secrets:
+// 1. Set your Stripe secrets via Secret Manager:
 //      firebase functions:secrets:set STRIPE_WEBHOOK_SECRET
 //      firebase functions:secrets:set STRIPE_SECRET_KEY
 //
 // 2. In the Stripe Dashboard > Developers > Webhooks, create an
 //    endpoint pointing to:
-//      https://stripewebhook-<hash>-uc.a.run.app
-//    (URL shown after deploy)
+//      https://us-central1-mt-crm-platform.cloudfunctions.net/stripeWebhook
 //    and subscribe to these events:
 //      - checkout.session.completed
 //      - customer.subscription.updated
@@ -34,9 +33,9 @@ const db = admin.firestore();
 const stripeWebhookSecret = defineSecret("STRIPE_WEBHOOK_SECRET");
 const stripeSecretKey = defineSecret("STRIPE_SECRET_KEY");
 
-exports.stripeWebhook = onRequest(
-  { secrets: [stripeWebhookSecret, stripeSecretKey] },
-  async (req, res) => {
+exports.stripeWebhook = functions
+  .runWith({ secrets: [stripeWebhookSecret, stripeSecretKey] })
+  .https.onRequest(async (req, res) => {
     if (req.method !== "POST") {
       res.status(405).send("Method Not Allowed");
       return;
@@ -200,8 +199,7 @@ exports.stripeWebhook = onRequest(
       console.error("Error processing webhook:", err);
       res.status(500).json({ error: "Webhook processing failed" });
     }
-  }
-);
+  });
 
 // -------------------------------------------------------------------
 // Helper: Find tenant by Stripe customer ID
