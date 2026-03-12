@@ -83,24 +83,26 @@
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
-            align-items: center;
+            gap: 8px 14px;
+            align-items: flex-end;
         }
 
         .filter-group {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            flex-direction: column;
+            gap: 2px;
         }
 
         .filter-group label {
             font-weight: 600;
-            font-size: 13px;
+            font-size: 11px;
             color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         select {
@@ -537,11 +539,20 @@
             }
 
             .filter-bar {
-                flex-direction: column;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 6px 10px;
+                padding: 10px 12px;
             }
 
             .filter-group {
+                flex: 1;
+                min-width: 100px;
+            }
+
+            .filter-group select, .filter-group input {
                 width: 100%;
+                font-size: 11px !important;
             }
 
             select, .search-input {
@@ -1000,36 +1011,74 @@
             </div>
         </header>
 
-        <!-- Filter Bar -->
-        <div class="filter-bar">
-            <div class="filter-group">
+        <!-- Global Filter Bar -->
+        <div class="filter-bar" style="flex-wrap:wrap;gap:8px 16px;padding:12px 20px;">
+            <!-- Row 1: Primary filters -->
+            <div class="filter-group" style="min-width:140px;">
+                <label>Date Range</label>
+                <select id="globalDateRange" style="padding:6px 10px;border-radius:6px;border:1px solid #e2e8f0;font-size:12px;">
+                    <option value="">All Time</option>
+                    <option value="R3">Rolling 3 Months</option>
+                    <option value="R6">Rolling 6 Months</option>
+                    <option value="R9">Rolling 9 Months</option>
+                    <option value="R12">Rolling 12 Months</option>
+                    <option value="MTD">Month to Date</option>
+                    <option value="QTD">Quarter to Date</option>
+                    <option value="YTD">Year to Date</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+            </div>
+            <div id="customDateFields" class="filter-group" style="display:none;min-width:200px;">
+                <label>From / To</label>
+                <div style="display:flex;gap:4px;">
+                    <input id="globalDateFrom" type="date" style="padding:4px 6px;border-radius:6px;border:1px solid #e2e8f0;font-size:11px;width:120px;">
+                    <input id="globalDateTo" type="date" style="padding:4px 6px;border-radius:6px;border:1px solid #e2e8f0;font-size:11px;width:120px;">
+                </div>
+            </div>
+            <div class="filter-group" style="min-width:130px;">
+                <label>Rep / Owner</label>
+                <select id="globalRepFilter" style="padding:6px 10px;border-radius:6px;border:1px solid #e2e8f0;font-size:12px;">
+                    <option value="">All Reps</option>
+                </select>
+            </div>
+            <div class="filter-group" style="min-width:130px;">
+                <label>Product</label>
+                <select id="globalProductFilter" style="padding:6px 10px;border-radius:6px;border:1px solid #e2e8f0;font-size:12px;">
+                    <option value="">All Products</option>
+                </select>
+            </div>
+            <div class="filter-group" style="min-width:130px;">
+                <label>Distributor</label>
+                <select id="globalDistFilter" style="padding:6px 10px;border-radius:6px;border:1px solid #e2e8f0;font-size:12px;">
+                    <option value="">All Distributors</option>
+                </select>
+            </div>
+            <div class="filter-group" style="min-width:110px;">
                 <label>Region</label>
-                <select id="regionFilter" style="padding:8px 12px;border-radius:8px;border:1px solid #e2e8f0;font-size:13px;margin-right:8px;">
+                <select id="regionFilter" style="padding:6px 10px;border-radius:6px;border:1px solid #e2e8f0;font-size:12px;">
                     <option value="">All Regions</option>
                     <option value="East">East</option>
                     <option value="West">West</option>
                 </select>
             </div>
-            <div class="filter-group">
-                <label>Market</label>
-                <select id="stateFilter">
-                    <option value="">All Markets</option>
+            <div class="filter-group" style="min-width:110px;">
+                <label>State</label>
+                <select id="stateFilter" style="padding:6px 10px;border-radius:6px;border:1px solid #e2e8f0;font-size:12px;">
+                    <option value="">All States</option>
                 </select>
             </div>
-            <div class="filter-group">
-                <label>States</label>
-                <div class="filter-pills" id="statePills"></div>
-            </div>
-            <div class="filter-group">
+            <div class="filter-group" style="min-width:110px;">
                 <label>Channel</label>
-                <div class="filter-pills" id="channelPills">
-                    <div class="pill active" data-channel="ALL">All</div>
-                    <div class="pill" data-channel="ON">On-Premise</div>
-                    <div class="pill" data-channel="OFF">Off-Premise</div>
-                </div>
+                <select id="channelFilter" style="padding:6px 10px;border-radius:6px;border:1px solid #e2e8f0;font-size:12px;">
+                    <option value="ALL">All Channels</option>
+                    <option value="ON">On-Premise</option>
+                    <option value="OFF">Off-Premise</option>
+                </select>
             </div>
-            <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
-                <span id="filterBarUser" style="font-size:12px;font-weight:600;color:#1a1a2e;"></span>
+            <div style="display:flex;align-items:flex-end;gap:6px;margin-left:auto;">
+                <button id="clearAllFilters" style="padding:6px 12px;background:#F3F4F6;color:#6B7280;border:1px solid #E5E7EB;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;" title="Reset all filters">Clear Filters</button>
+                <span id="activeFilterCount" style="display:none;background:#2563EB;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;"></span>
+                <span id="filterBarUser" style="font-size:12px;font-weight:600;color:#1a1a2e;white-space:nowrap;"></span>
             </div>
         </div>
 
@@ -2039,13 +2088,71 @@ let buildDate = 'March 11, 2026';
 let dataThrough = '3/8/2026';
 // __DATA_END__
 
-        // Global State
+        // Global Filter State
         let currentRegionFilter = '';
         let currentStateFilter = '';
         let currentChannelFilter = 'ALL';
+        let currentDateRange = '';       // '', R3, R6, R9, R12, MTD, QTD, YTD, custom
+        let currentDateFrom = '';        // YYYY-MM-DD for custom range
+        let currentDateTo = '';          // YYYY-MM-DD for custom range
+        let currentRepFilter = '';       // rep/owner name
+        let currentProductFilter = '';   // product name
+        let currentDistFilter = '';      // distributor name
         let accountsViewMode = 'top';
         let reorderViewMode = 'top';
         let charts = {};
+
+        // Compute date range boundaries from filter selection
+        function getDateRangeBounds() {
+            const now = new Date();
+            let from = null, to = now;
+            switch (currentDateRange) {
+                case 'R3': from = new Date(now); from.setMonth(from.getMonth() - 3); break;
+                case 'R6': from = new Date(now); from.setMonth(from.getMonth() - 6); break;
+                case 'R9': from = new Date(now); from.setMonth(from.getMonth() - 9); break;
+                case 'R12': from = new Date(now); from.setFullYear(from.getFullYear() - 1); break;
+                case 'MTD': from = new Date(now.getFullYear(), now.getMonth(), 1); break;
+                case 'QTD': {
+                    const qMonth = Math.floor(now.getMonth() / 3) * 3;
+                    from = new Date(now.getFullYear(), qMonth, 1);
+                    break;
+                }
+                case 'YTD': from = new Date(now.getFullYear(), 0, 1); break;
+                case 'custom':
+                    from = currentDateFrom ? new Date(currentDateFrom) : null;
+                    to = currentDateTo ? new Date(currentDateTo) : now;
+                    break;
+                default: return null; // All Time
+            }
+            return from ? { from, to } : null;
+        }
+
+        // Check if a date string falls within the current range
+        function dateInRange(dateStr) {
+            if (!currentDateRange) return true;
+            const bounds = getDateRangeBounds();
+            if (!bounds) return true;
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return true; // keep rows with no/bad dates
+            return d >= bounds.from && d <= bounds.to;
+        }
+
+        // Active filter count for badge
+        function updateFilterBadge() {
+            let count = 0;
+            if (currentDateRange) count++;
+            if (currentRepFilter) count++;
+            if (currentProductFilter) count++;
+            if (currentDistFilter) count++;
+            if (currentRegionFilter) count++;
+            if (currentStateFilter) count++;
+            if (currentChannelFilter && currentChannelFilter !== 'ALL') count++;
+            const badge = document.getElementById('activeFilterCount');
+            if (badge) {
+                if (count > 0) { badge.textContent = count; badge.style.display = 'inline'; }
+                else { badge.style.display = 'none'; }
+            }
+        }
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -2065,10 +2172,6 @@ let dataThrough = '3/8/2026';
 
         // Filter Management
         function initializeFilters() {
-            const states = new Set();
-            distScorecard.forEach(d => states.add(d.st));
-
-            // Restrict filter options for reps based on territory
             const isRepRestricted = currentUser && currentUser.role !== 'admin';
             const allowedStates = new Set();
             if (isRepRestricted) {
@@ -2078,91 +2181,171 @@ let dataThrough = '3/8/2026';
                 else if (terr && terr !== 'all') { allowedStates.add(terr); }
             }
 
-            // Restrict region dropdown for reps
-            if (isRepRestricted && allowedStates.size > 0) {
-                const regionDD = document.getElementById('regionFilter');
-                if (regionDD) {
-                    const allowedRegions = new Set([...allowedStates].map(s => regionMap[s]).filter(Boolean));
-                    Array.from(regionDD.options).forEach(opt => {
-                        if (!opt.value) { opt.textContent = allowedRegions.size === 1 ? [...allowedRegions][0] : 'All Regions'; return; }
-                        if (!allowedRegions.has(opt.value)) opt.style.display = 'none';
-                    });
-                    if (allowedRegions.size === 1) { regionDD.value = [...allowedRegions][0]; currentRegionFilter = regionDD.value; }
-                }
+            // Populate State dropdown from data + config
+            const states = new Set();
+            distScorecard.forEach(d => { if (d.st) states.add(d.st); });
+            reorderData.forEach(r => { if (r.st) states.add(r.st); });
+            Object.keys(TENANT_CONFIG.stateNames || {}).forEach(s => states.add(s));
+
+            const stateDD = document.getElementById('stateFilter');
+            if (stateDD) {
+                stateDD.innerHTML = '<option value="">All States</option>';
+                Array.from(states).sort().forEach(st => {
+                    if (isRepRestricted && allowedStates.size > 0 && !allowedStates.has(st)) return;
+                    const opt = document.createElement('option');
+                    opt.value = st;
+                    opt.textContent = stateNames[st] || st;
+                    stateDD.appendChild(opt);
+                });
+                stateDD.addEventListener('change', function() { currentStateFilter = this.value; applyFilters(); });
             }
 
-            const stateDropdown = document.getElementById('stateFilter');
-            const statePills = document.getElementById('statePills');
-
-            Array.from(states).sort().forEach(st => {
-                // Skip states not in rep's territory
-                if (isRepRestricted && allowedStates.size > 0 && !allowedStates.has(st)) return;
-                const option = document.createElement('option');
-                option.value = st;
-                option.textContent = stateNames[st] || st;
-                stateDropdown.appendChild(option);
-
-                const pill = document.createElement('div');
-                pill.className = 'pill';
-                pill.textContent = st;
-                pill.dataset.state = st;
-                pill.addEventListener('click', function() {
-                    const wasActive = this.classList.contains('active');
-                    // Deactivate all pills first (single-select behavior)
-                    document.querySelectorAll('#statePills .pill').forEach(p => p.classList.remove('active'));
-                    if (wasActive) {
-                        // Clicking active pill deselects it
-                        currentStateFilter = '';
-                    } else {
-                        this.classList.add('active');
-                        currentStateFilter = this.dataset.state;
+            // Region dropdown
+            const regionDD = document.getElementById('regionFilter');
+            if (regionDD) {
+                const regions = new Set(Object.values(regionMap).filter(Boolean));
+                regionDD.innerHTML = '<option value="">All Regions</option>';
+                Array.from(regions).sort().forEach(r => {
+                    if (isRepRestricted && allowedStates.size > 0) {
+                        const hasAllowed = [...allowedStates].some(s => regionMap[s] === r);
+                        if (!hasAllowed) return;
                     }
-                    // Sync dropdown
-                    const dd = document.getElementById('stateFilter');
-                    if (dd) dd.value = currentStateFilter;
+                    const opt = document.createElement('option');
+                    opt.value = r; opt.textContent = r;
+                    regionDD.appendChild(opt);
+                });
+                regionDD.addEventListener('change', function() {
+                    currentRegionFilter = this.value;
+                    currentStateFilter = '';
+                    if (stateDD) {
+                        stateDD.value = '';
+                        Array.from(stateDD.options).forEach(opt => {
+                            if (!opt.value) return;
+                            opt.style.display = (!currentRegionFilter || regionMap[opt.value] === currentRegionFilter) ? '' : 'none';
+                        });
+                    }
                     applyFilters();
                 });
-                statePills.appendChild(pill);
-            });
+            }
 
-            stateDropdown.addEventListener('change', function() {
-                currentStateFilter = this.value;
-                document.querySelectorAll('#statePills .pill').forEach(p => p.classList.remove('active'));
-                if (currentStateFilter) {
-                    document.querySelector(`#statePills [data-state="${currentStateFilter}"]`).classList.add('active');
-                }
+            // Channel dropdown
+            const channelDD = document.getElementById('channelFilter');
+            if (channelDD) {
+                channelDD.addEventListener('change', function() { currentChannelFilter = this.value; applyFilters(); });
+            }
+
+            // Date Range dropdown
+            const dateDD = document.getElementById('globalDateRange');
+            const customFields = document.getElementById('customDateFields');
+            if (dateDD) {
+                dateDD.addEventListener('change', function() {
+                    currentDateRange = this.value;
+                    if (customFields) customFields.style.display = this.value === 'custom' ? 'flex' : 'none';
+                    applyFilters();
+                });
+            }
+            const dateFrom = document.getElementById('globalDateFrom');
+            const dateTo = document.getElementById('globalDateTo');
+            if (dateFrom) dateFrom.addEventListener('change', function() { currentDateFrom = this.value; if (currentDateRange === 'custom') applyFilters(); });
+            if (dateTo) dateTo.addEventListener('change', function() { currentDateTo = this.value; if (currentDateRange === 'custom') applyFilters(); });
+
+            // Rep / Owner dropdown - populated from data
+            populateRepDropdown();
+
+            // Product dropdown - populated from catalog + data
+            if (typeof populateProductDropdowns === 'function') populateProductDropdowns();
+            populateGlobalProductDropdown();
+
+            // Distributor dropdown - populated from data
+            populateDistDropdown();
+
+            // Clear All Filters button
+            document.getElementById('clearAllFilters')?.addEventListener('click', function() {
+                currentDateRange = ''; currentDateFrom = ''; currentDateTo = '';
+                currentRepFilter = ''; currentProductFilter = ''; currentDistFilter = '';
+                currentRegionFilter = ''; currentStateFilter = ''; currentChannelFilter = 'ALL';
+                if (dateDD) dateDD.value = '';
+                if (customFields) customFields.style.display = 'none';
+                if (dateFrom) dateFrom.value = '';
+                if (dateTo) dateTo.value = '';
+                document.getElementById('globalRepFilter').value = '';
+                document.getElementById('globalProductFilter').value = '';
+                document.getElementById('globalDistFilter').value = '';
+                if (regionDD) regionDD.value = '';
+                if (stateDD) { stateDD.value = ''; Array.from(stateDD.options).forEach(o => o.style.display = ''); }
+                if (channelDD) channelDD.value = 'ALL';
                 applyFilters();
             });
 
-            const regionDropdown = document.getElementById('regionFilter');
-            if(regionDropdown) {
-                regionDropdown.addEventListener('change', function() {
-                    currentRegionFilter = this.value;
-                    currentStateFilter = '';
-                    // Reset state dropdown and rebuild with filtered states
-                    const stateDropdown = document.getElementById('stateFilter');
-                    if(stateDropdown) {
-                        stateDropdown.value = '';
-                        // Show only states in selected region
-                        Array.from(stateDropdown.options).forEach(opt => {
-                            if(!opt.value) { opt.style.display = ''; return; }
-                            if(!currentRegionFilter) { opt.style.display = ''; return; }
-                            opt.style.display = regionMap[opt.value] === currentRegionFilter ? '' : 'none';
-                        });
-                    }
-                    // Show/hide state pills by region
-                    document.querySelectorAll('#statePills .pill').forEach(p => {
-                        p.classList.remove('active');
-                        const st = p.dataset.state;
-                        if(!currentRegionFilter) { p.style.display = ''; }
-                        else { p.style.display = regionMap[st] === currentRegionFilter ? '' : 'none'; }
-                    });
-                    applyFilters();
-                });
+            // Rep filter
+            document.getElementById('globalRepFilter')?.addEventListener('change', function() { currentRepFilter = this.value; applyFilters(); });
+            // Product filter
+            document.getElementById('globalProductFilter')?.addEventListener('change', function() { currentProductFilter = this.value; applyFilters(); });
+            // Distributor filter
+            document.getElementById('globalDistFilter')?.addEventListener('change', function() { currentDistFilter = this.value; applyFilters(); });
+        }
+
+        function populateRepDropdown() {
+            const dd = document.getElementById('globalRepFilter');
+            if (!dd) return;
+            const reps = new Set();
+            // From scorecard data (rep field varies)
+            distScorecard.forEach(d => { if (d.owner) reps.add(d.owner); if (d.rep) reps.add(d.rep); });
+            // From pipeline
+            if (typeof pipelineAccounts !== 'undefined') {
+                pipelineAccounts.forEach(a => { if (a.owner) a.owner.split('/').forEach(o => reps.add(o.trim())); });
             }
+            // From REP_CREDENTIALS
+            if (typeof REP_CREDENTIALS !== 'undefined') {
+                Object.values(REP_CREDENTIALS).forEach(u => { if (u.name) reps.add(u.name); });
+            }
+            dd.innerHTML = '<option value="">All Reps</option>';
+            Array.from(reps).filter(Boolean).sort().forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r; opt.textContent = r;
+                dd.appendChild(opt);
+            });
+        }
+
+        function populateGlobalProductDropdown() {
+            const dd = document.getElementById('globalProductFilter');
+            if (!dd) return;
+            const products = new Set();
+            // From product catalog
+            (TENANT_CONFIG.productCatalog || []).forEach(p => { if (p.name) products.add(p.name); else if (p.sku) products.add(p.sku); });
+            // From inventory data
+            if (typeof inventoryData !== 'undefined') {
+                inventoryData.forEach(d => { if (d.skus) d.skus.forEach(s => { if (s.w) products.add(s.w); }); });
+            }
+            // From reorder data
+            if (typeof reorderData !== 'undefined') {
+                reorderData.forEach(r => { if (r.skus) r.skus.forEach(s => { if (s.w) products.add(s.w); }); });
+            }
+            dd.innerHTML = '<option value="">All Products</option>';
+            Array.from(products).filter(Boolean).sort().forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p; opt.textContent = p;
+                dd.appendChild(opt);
+            });
+        }
+
+        function populateDistDropdown() {
+            const dd = document.getElementById('globalDistFilter');
+            if (!dd) return;
+            const dists = new Set();
+            distScorecard.forEach(d => { if (d.name) dists.add(d.name); });
+            if (typeof distHealth !== 'undefined') distHealth.forEach(d => { if (d.dist) dists.add(d.dist); });
+            if (typeof reorderData !== 'undefined') reorderData.forEach(r => { if (r.dist) dists.add(r.dist); });
+            dd.innerHTML = '<option value="">All Distributors</option>';
+            Array.from(dists).filter(Boolean).sort().forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d; opt.textContent = d;
+                dd.appendChild(opt);
+            });
         }
 
         function applyFilters() {
+            updateFilterBadge();
             renderMyTerritory();
             renderDepletions();
             renderDistributorHealth();
@@ -2181,18 +2364,57 @@ let dataThrough = '3/8/2026';
                 filtered = filtered.filter(d => matchesUserTerritory(d[stateField]));
             }
 
+            // Region filter
             if (currentRegionFilter) {
                 filtered = filtered.filter(d => regionMap[d[stateField]] === currentRegionFilter);
             }
 
+            // State filter
             if (currentStateFilter) {
                 filtered = filtered.filter(d => d[stateField] === currentStateFilter);
             }
 
+            // Channel filter
             if (currentChannelFilter && currentChannelFilter !== 'ALL') {
                 filtered = filtered.filter(d => {
-                    if (!d.ch) return true; // keep data without channel field
+                    if (!d.ch) return true;
                     return currentChannelFilter === 'ON' ? d.ch === 'On-Premise' : d.ch === 'Off-Premise';
+                });
+            }
+
+            // Distributor filter
+            if (currentDistFilter) {
+                filtered = filtered.filter(d => {
+                    return (d.name && d.name === currentDistFilter) ||
+                           (d.dist && d.dist === currentDistFilter) ||
+                           (d.distributor && d.distributor === currentDistFilter);
+                });
+            }
+
+            // Rep / Owner filter
+            if (currentRepFilter) {
+                filtered = filtered.filter(d => {
+                    const owner = d.owner || d.rep || '';
+                    return owner.includes(currentRepFilter);
+                });
+            }
+
+            // Product filter (for data with skus arrays)
+            if (currentProductFilter) {
+                filtered = filtered.filter(d => {
+                    if (d.skus && Array.isArray(d.skus)) {
+                        return d.skus.some(s => s.w === currentProductFilter || s.name === currentProductFilter);
+                    }
+                    return true; // keep rows without SKU data (scorecard level)
+                });
+            }
+
+            // Date range filter (for data with date fields)
+            if (currentDateRange) {
+                filtered = filtered.filter(d => {
+                    const dateVal = d.date || d.last || d.stageDate || d.lastOrder || '';
+                    if (!dateVal) return true; // keep rows without date fields
+                    return dateInRange(dateVal);
                 });
             }
 
@@ -4172,14 +4394,7 @@ let dataThrough = '3/8/2026';
                 })));
             });
 
-            document.querySelectorAll('#channelPills .pill').forEach(pill => {
-                pill.addEventListener('click', function() {
-                    document.querySelectorAll('#channelPills .pill').forEach(p => p.classList.remove('active'));
-                    this.classList.add('active');
-                    currentChannelFilter = this.dataset.channel;
-                    applyFilters();
-                });
-            });
+            // Channel filter is now handled by the global filter bar dropdown
         }
     </script>
 
@@ -7762,9 +7977,12 @@ let dataThrough = '3/8/2026';
                 if (typeof renderMyTerritory === 'function') {
                     try { renderMyTerritory(); } catch(e) { console.warn('DataLoader: renderMyTerritory error:', e); }
                 }
-                // Populate product dropdowns from catalog + loaded data
+                // Repopulate all global filter dropdowns with fresh data
                 if (typeof populateProductDropdowns === 'function') {
                     try { populateProductDropdowns(); renderProductKeyLegend(); } catch(e) {}
+                }
+                if (typeof populateRepDropdown === 'function') {
+                    try { populateRepDropdown(); populateGlobalProductDropdown(); populateDistDropdown(); } catch(e) {}
                 }
             } else {
                 console.log('DataLoader: no tenant data found in Firestore, using demo/empty data');
