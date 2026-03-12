@@ -7613,6 +7613,7 @@ let dataThrough = '3/8/2026';
         'newplacements': { label: 'New Placements', match: /new.*placement/i },
         'lostplacements': { label: 'Lost Placements', match: /lost.*placement/i },
         'qbrevenue': { label: 'QuickBooks Revenue / Sales', match: /sales.*customer|quickbooks|qb|revenue|yolo/i },
+        'accounts': { label: 'Account Detail / Chain Tracker', match: /account.*detail|chain.*track|account.*list|account.*report/i },
         'warehouse': { label: 'Warehouse Inventory Tracker', match: /warehouse|tracker.*live/i },
         'products': { label: 'Product Details', match: /product.*detail/i }
     };
@@ -7661,17 +7662,22 @@ let dataThrough = '3/8/2026';
     // Known dashboard fields that uploaded data can map to
     const DASHBOARD_FIELDS = {
         // Scorecard / Velocity fields
-        name: { label: 'Distributor Name', group: 'Scorecard', aliases: ['distributor','dist_name','partner','wholesaler','account_name'] },
+        name: { label: 'Distributor Name', group: 'Scorecard', aliases: ['distributor_name','dist_name','partner','wholesaler'] },
         st: { label: 'State', group: 'Scorecard', aliases: ['state','market','state_code','territory'] },
         ch: { label: 'Channel', group: 'Scorecard', aliases: ['channel','trade_channel','on_off','premise'] },
         ce: { label: 'Total Volume (13W/Period)', group: 'Scorecard', aliases: ['total_ce','volume','13w_ce','depletions','total_cases','units_shipped','total_units','ce_13w'] },
         w4: { label: 'Recent Volume (4W/Current)', group: 'Scorecard', aliases: ['4w_ce','current_volume','4w_depletions','recent_cases','current_period','4w'] },
         accts: { label: 'Account Count', group: 'Scorecard', aliases: ['accounts','acct_count','num_accounts','doors','outlets','locations'] },
         momentum: { label: 'Momentum / Trend', group: 'Scorecard', aliases: ['trend','growth','direction','velocity_trend'] },
+        prior_ce: { label: 'Prior Period Volume', group: 'Scorecard', aliases: ['prior_13w','prior_13w_ce','prior_period','prior_ce','previous_volume','prior_total'] },
+        prior_w4: { label: 'Prior Short Period Volume', group: 'Scorecard', aliases: ['prior_4w','prior_4w_ce','previous_4w'] },
+        sellThru: { label: 'Sell-Through %', group: 'Scorecard', aliases: ['sell_through','sell_thru','sell_through_pct','sell_through_rate'] },
         owner: { label: 'Rep / Owner', group: 'Scorecard', aliases: ['rep','sales_rep','salesperson','assigned_to','territory_rep'] },
         // Inventory fields
         oh: { label: 'On Hand Qty', group: 'Inventory', aliases: ['on_hand','qty_on_hand','current_stock','inventory','stock'] },
         rate: { label: 'Depletion/Sell Rate', group: 'Inventory', aliases: ['sell_rate','depletion_rate','velocity','turns'] },
+        dep90: { label: '90-Day Projected Depletion', group: 'Inventory', aliases: ['projected_depletion','dep_90','90_day_projected','projected_90'] },
+        invStatus: { label: 'Inventory Status', group: 'Inventory', aliases: ['inventory_status','stock_status','inv_status'] },
         doh: { label: 'Days on Hand', group: 'Inventory', aliases: ['days_on_hand','days_supply','coverage_days'] },
         // Reorder fields
         cycle: { label: 'Order Cycle (days)', group: 'Reorder', aliases: ['reorder_cycle','order_frequency','avg_cycle'] },
@@ -7679,31 +7685,67 @@ let dataThrough = '3/8/2026';
         days: { label: 'Days Since Last Order', group: 'Reorder', aliases: ['days_since','days_since_order','days_elapsed'] },
         purch: { label: 'Purchase Count', group: 'Reorder', aliases: ['purchases','order_count','num_orders','po_count'] },
         // Account fields
-        acct: { label: 'Account Name', group: 'Accounts', aliases: ['account','customer','outlet','location','store'] },
-        dist: { label: 'Distributor', group: 'Accounts', aliases: ['distributor','dist_name','wholesaler'] },
+        acct: { label: 'Account Name', group: 'Accounts', aliases: ['account','customer','outlet','location','store','account_name'] },
+        dist: { label: 'Distributor', group: 'Accounts', aliases: ['distributor','dist','dist_name','wholesaler'] },
         total: { label: 'Total Sales/Volume', group: 'Accounts', aliases: ['total_sales','revenue','total_volume','amount'] },
         // QB / Revenue fields
-        date: { label: 'Date', group: 'Revenue', aliases: ['order_date','invoice_date','ship_date','transaction_date'] },
-        num: { label: 'Invoice/PO Number', group: 'Revenue', aliases: ['invoice','po_number','order_number','invoice_num'] },
+        date: { label: 'Date', group: 'Revenue', aliases: ['order_date','invoice_date','ship_date','transaction_date','date'] },
+        num: { label: 'Invoice/PO Number', group: 'Revenue', aliases: ['invoice_number','invoice_num','invoice_no','invoice','po_number','order_number','po_num'] },
         items: { label: 'Line Items / Products', group: 'Revenue', aliases: ['products','items','skus','line_items','description'] },
+        net: { label: 'Net New Accounts', group: 'Scorecard', aliases: ['net_new','net_new_accounts','net_accounts','net_placements'] },
+        nov: { label: 'November Volume', group: 'Accounts', aliases: ['november','nov_ce','month_1'] },
+        dec: { label: 'December Volume', group: 'Accounts', aliases: ['december','dec_ce','month_2'] },
+        jan: { label: 'January Volume', group: 'Accounts', aliases: ['january','jan_ce','month_3'] },
+        feb: { label: 'February Volume', group: 'Accounts', aliases: ['february','feb_ce','month_4'] },
+        growthPotential: { label: 'Growth Potential', group: 'Accounts', aliases: ['growth_potential','potential','growth'] },
         // General
         skus: { label: 'SKU Count', group: 'General', aliases: ['sku_count','num_skus','product_count','items_count'] },
     };
 
-    // Auto-match a column header to a dashboard field
+    // Auto-match a column header to a dashboard field using scored matching
     function autoMatchColumn(header) {
-        const h = header.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_');
-        // Exact field name match
+        const h = header.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+        // Exact field name match (highest priority)
         if (DASHBOARD_FIELDS[h]) return h;
-        // Check aliases
+
+        // Score-based matching: find best match across all fields
+        let bestField = null;
+        let bestScore = 0;
+
         for (const [field, config] of Object.entries(DASHBOARD_FIELDS)) {
-            if (config.aliases.some(a => h === a || h.includes(a) || a.includes(h))) return field;
+            let score = 0;
+            for (const a of config.aliases) {
+                // Exact alias match = 100 points
+                if (h === a) { score = Math.max(score, 100); continue; }
+                // Header starts with alias + separator (e.g. "distributor_name" starts with "distributor")
+                if (h.startsWith(a + '_') || h.startsWith(a + ' ')) { score = Math.max(score, 80 + a.length); continue; }
+                // Header ends with alias (e.g. "total_ce" ends with "ce" -- but only if alias is 3+ chars)
+                if (a.length >= 3 && h.endsWith('_' + a)) { score = Math.max(score, 70 + a.length); continue; }
+                // Alias starts with header (e.g. header "rep" matches alias "rep")
+                if (a === h) { score = Math.max(score, 100); continue; }
+                // Word boundary match: alias appears as a whole word segment in header
+                const hParts = h.split('_');
+                const aParts = a.split('_');
+                // Check if all parts of alias appear in header parts
+                if (aParts.length > 1 && aParts.every(ap => hParts.includes(ap))) {
+                    score = Math.max(score, 60 + a.length); continue;
+                }
+                // Single-word alias exact match within header segments
+                if (aParts.length === 1 && a.length >= 3 && hParts.includes(a)) {
+                    score = Math.max(score, 50 + a.length); continue;
+                }
+            }
+            // Also check label match (lower priority)
+            const labelNorm = config.label.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_');
+            if (h === labelNorm) score = Math.max(score, 90);
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestField = field;
+            }
         }
-        // Partial match on label
-        for (const [field, config] of Object.entries(DASHBOARD_FIELDS)) {
-            if (config.label.toLowerCase().replace(/[^a-z0-9]/g, '_').includes(h)) return field;
-        }
-        return null;
+
+        return bestScore >= 50 ? bestField : null;
     }
 
     // Get saved column mappings for a source
@@ -8272,6 +8314,14 @@ let dataThrough = '3/8/2026';
                 console.log('DataLoader: loaded inventoryData -', inventoryData.length, 'rows');
             }
 
+            // Accounts -> accountsTop
+            const acctRows = await this._readChunks(tenantId, 'accounts');
+            if (acctRows) {
+                accountsTop = this.mapAccountsTop(acctRows);
+                loadedCount++;
+                console.log('DataLoader: loaded accountsTop from Firestore -', accountsTop.length, 'rows');
+            }
+
             // New Placements -> newWins
             const newPlRows = await this._readChunks(tenantId, 'newplacements');
             if (newPlRows) {
@@ -8338,6 +8388,7 @@ let dataThrough = '3/8/2026';
                 // Clear demo data for arrays that were NOT loaded (new tenant shouldn't see other company's data)
                 if (!scorecardRows) { distScorecard = []; }
                 if (!invRows) { inventoryData = []; }
+                if (!acctRows) { accountsTop = []; }
                 if (!newPlRows) { newWins = []; reEngagementData = []; }
                 if (!reorderRows) { reorderData = []; }
                 if (!qbRows) { qbDistOrders = {}; }
