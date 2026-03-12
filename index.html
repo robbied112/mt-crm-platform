@@ -1085,7 +1085,7 @@
         <!-- Tabs -->
         <div class="tabs">
             <button class="tab active" data-tab="performance">My Territory</button>
-            <button class="tab" data-tab="depletions">Depletions</button>
+            <button class="tab" data-tab="depletions" data-term="{dep}s">Depletions</button>
             <button class="tab" data-tab="distributor-detail">Distributors</button>
             <button class="tab" data-tab="inventory">Inventory</button>
             <button class="tab" data-tab="accounts">Account Insights</button>
@@ -1105,11 +1105,11 @@
         <div id="depletions" class="tab-content">
             <div class="kpi-row">
                 <div class="kpi-card">
-                    <div class="kpi-label">Total 13W CE</div>
+                    <div class="kpi-label" data-term="Total {lp} {vol}">Total 13W CE</div>
                     <div class="kpi-value" id="kpi-dep-ce">0</div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-label">4W CE</div>
+                    <div class="kpi-label" data-term="{sp} {vol}">{sp} CE</div>
                     <div class="kpi-value" id="kpi-dep-4w">0</div>
                 </div>
                 <div class="kpi-card">
@@ -1124,7 +1124,7 @@
 
             <div class="charts-row">
                 <div class="chart-container">
-                    <div class="chart-title">Weekly CE by Top Distributors</div>
+                    <div class="chart-title" data-term="Weekly {vol} by Top {dist}s">Weekly CE by Top Distributors</div>
                     <div class="chart-wrapper">
                         <canvas id="weeklyCEChart"></canvas>
                     </div>
@@ -1139,7 +1139,7 @@
 
             <div class="table-container">
                 <div class="table-header">
-                    <div class="table-title">Distributor Scorecard</div>
+                    <div class="table-title" data-term="{dist} Scorecard">Distributor Scorecard</div>
                     <div class="table-controls">
                         <button class="btn btn-secondary btn-small" onclick="exportTableToExcel('distScorecardTable', 'Distributor_Scorecard')">Export to Excel</button>
                     </div>
@@ -1147,12 +1147,12 @@
                 <table class="sortable" id="distScorecardTable">
                     <thead>
                         <tr>
-                            <th>Distributor</th>
+                            <th data-term="{dist}">Distributor</th>
                             <th>State</th>
-                            <th>13W CE</th>
+                            <th data-term="{lp} {vol}">13W CE</th>
                             <th>Momentum</th>
-                            <th>4W CE</th>
-                            <th>4W Trend</th>
+                            <th data-term="{sp} {vol}">4W CE</th>
+                            <th data-term="{sp} Trend">4W Trend</th>
                             <th>On Hand</th>
                             <th>DOH</th>
                             <th>Net Placements</th>
@@ -1185,7 +1185,7 @@
                         <div class="kpi-value" id="kpi-health-sellin">0</div>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-label">Sell-Through (13W)</div>
+                        <div class="kpi-label" data-term="Sell-Through ({lp})">Sell-Through (13W)</div>
                         <div class="kpi-value" id="kpi-health-sellthru">0</div>
                     </div>
                     <div class="kpi-card">
@@ -1213,7 +1213,7 @@
                     <!-- Monthly Purchasing Pattern -->
                     <div class="table-container">
                         <div class="table-header">
-                            <div class="table-title">Monthly Purchasing Pattern (CE)</div>
+                            <div class="table-title" data-term="Monthly Purchasing Pattern ({vol})">Monthly Purchasing Pattern (CE)</div>
                         </div>
                         <div style="height:240px;padding:12px;">
                             <canvas id="healthMonthlyChart"></canvas>
@@ -1257,8 +1257,8 @@
                         <thead>
                             <tr>
                                 <th>Product</th>
-                                <th>Sell-In (4M CE)</th>
-                                <th>Sell-Through (13W CE)</th>
+                                <th data-term="Sell-In ({sp} {vol})">Sell-In (4M CE)</th>
+                                <th data-term="Sell-Through ({lp} {vol})">Sell-Through (13W CE)</th>
                                 <th>Pull-Through %</th>
                                 <th>On Hand (CE)</th>
                                 <th>Weeks Supply</th>
@@ -1322,12 +1322,12 @@
                 <table class="sortable" id="inventoryDetailTable">
                     <thead>
                         <tr>
-                            <th>Distributor</th>
+                            <th data-term="{dist}">Distributor</th>
                             <th>State</th>
                             <th>On Hand</th>
                             <th>Daily Rate</th>
                             <th>DOH</th>
-                            <th>90D Depletion</th>
+                            <th data-term="90D {dep}">90D Depletion</th>
                             <th>Status</th>
                             <th>Proj Order</th>
                         </tr>
@@ -1697,12 +1697,12 @@
                     <div class="key-box">
                         <h4>Metrics Definitions</h4>
                         <div class="key-item">
-                            <div class="key-label">13W CE</div>
-                            <div class="key-desc">13-week case equivalents (total volume)</div>
+                            <div class="key-label" data-term="{lp} {vol}">13W CE</div>
+                            <div class="key-desc" data-term="{lp} {vol} - total volume over long period">13-week case equivalents (total volume)</div>
                         </div>
                         <div class="key-item">
-                            <div class="key-label">4W CE</div>
-                            <div class="key-desc">4-week case equivalents (current velocity)</div>
+                            <div class="key-label" data-term="{sp} {vol}">4W CE</div>
+                            <div class="key-desc" data-term="{sp} {vol} - current velocity over short period">4-week case equivalents (current velocity)</div>
                         </div>
                         <div class="key-item">
                             <div class="key-label">Momentum</div>
@@ -1881,6 +1881,44 @@
                     <div id="productCatalogTable" style="overflow-x:auto;"></div>
                 </div>
 
+                <!-- Terminology / Labels -->
+                <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <h3 style="font-size:16px;font-weight:700;color:#374151;margin:0;">Terminology & Labels</h3>
+                        <div>
+                            <button id="saveTermsBtn" style="padding:6px 14px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save</button>
+                            <span id="termsSaveStatus" style="display:none;color:#059669;font-size:12px;margin-left:8px;">Saved!</span>
+                        </div>
+                    </div>
+                    <p style="font-size:12px;color:#6B7280;margin-bottom:12px;">Customize what things are called throughout your dashboard to match your team's language.</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                        <div>
+                            <label style="font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:2px;">Volume Metric Name</label>
+                            <input id="termVolume" type="text" placeholder="e.g. CE, Units, Cases, BBLs" style="width:100%;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:2px;">Long Period Label</label>
+                            <input id="termLongPeriod" type="text" placeholder="e.g. 13W, Quarterly, 90-Day" style="width:100%;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:2px;">Short Period Label</label>
+                            <input id="termShortPeriod" type="text" placeholder="e.g. 4W, Monthly, 30-Day" style="width:100%;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:2px;">Distribution Partner</label>
+                            <input id="termDistributor" type="text" placeholder="e.g. Distributor, Wholesaler, Partner" style="width:100%;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:2px;">End Customer</label>
+                            <input id="termAccount" type="text" placeholder="e.g. Account, Customer, Outlet, Store" style="width:100%;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:2px;">Product Movement</label>
+                            <input id="termDepletion" type="text" placeholder="e.g. Depletion, Shipment, Sales" style="width:100%;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Pipeline Stage Management -->
                 <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
@@ -2011,6 +2049,14 @@ const TENANT_CONFIG = {
     productCatalog: [],  // Array of {sku, name, category, size, packSize, casePack, msrp, wholesale, cogs, upc, status}
     productLines: [],    // Array of product line/brand names for labeling (e.g. ['Classic','Contemporary'] or ['Original','Lite'])
     productUnit: 'cases', // Default unit of measure for display (cases, units, packs, bottles, etc.)
+    terminology: {
+        volume: 'CE',           // What they call their volume metric (CE, Units, Cases, BBLs, Packs)
+        longPeriod: '13W',      // Long measurement period label (13W, Quarterly, 90-Day, etc.)
+        shortPeriod: '4W',      // Short measurement period label (4W, Monthly, 30-Day, etc.)
+        distributor: 'Distributor', // What they call their distribution partners
+        account: 'Account',     // What they call their end customers/outlets
+        depletion: 'Depletion', // What they call product movement (Depletion, Shipment, Sales, etc.)
+    },
     tags: ['VIP','At Risk','Hot Lead','Needs Visit','New','Inactive','Priority','Seasonal','Key Account','Expansion Target'],
     nextActions: ['Call','Email','Visit','Send Samples','Follow Up','Reorder Check'],
     features: {
@@ -2045,6 +2091,51 @@ function applyTenantBranding() {
     }
 }
 document.addEventListener('DOMContentLoaded', applyTenantBranding);
+
+// Helper to get terminology labels with fallbacks
+function t(key) {
+    const terms = TENANT_CONFIG.terminology || {};
+    const defaults = { volume: 'CE', longPeriod: '13W', shortPeriod: '4W', distributor: 'Distributor', account: 'Account', depletion: 'Depletion' };
+    return terms[key] || defaults[key] || key;
+}
+
+function applyTerminologyLabels() {
+    // Update all elements with data-term attribute
+    document.querySelectorAll('[data-term]').forEach(el => {
+        const template = el.getAttribute('data-term');
+        el.textContent = template
+            .replace('{vol}', t('volume'))
+            .replace('{lp}', t('longPeriod'))
+            .replace('{sp}', t('shortPeriod'))
+            .replace('{dist}', t('distributor'))
+            .replace('{acct}', t('account'))
+            .replace('{dep}', t('depletion'));
+    });
+    // Update page title
+    document.title = TENANT_CONFIG.companyName + ' - ' + t('distributor') + ' Performance Report';
+    const footer = document.getElementById('footerBrand');
+    if (footer && footer.parentElement) {
+        const footerText = footer.parentElement;
+        const genDate = document.getElementById('generatedDate');
+        if (genDate) {
+            footerText.innerHTML = '';
+            const brandSpan = document.createElement('span');
+            brandSpan.id = 'footerBrand';
+            brandSpan.textContent = TENANT_CONFIG.companyName || 'Sidekick BI';
+            footerText.appendChild(brandSpan);
+            footerText.append(' - ' + t('distributor') + ' Performance Report - Generated ');
+            const dateSpan = document.createElement('span');
+            dateSpan.id = 'generatedDate';
+            dateSpan.textContent = genDate.textContent;
+            footerText.appendChild(dateSpan);
+            footerText.append(' - Data source: VIP ' + t('depletion') + ' Report');
+        }
+    }
+    // Update the Depletions tab label
+    const depTab = document.querySelector('.tab[data-tab="depletions"]');
+    if (depTab) depTab.textContent = t('depletion') + 's';
+}
+document.addEventListener('DOMContentLoaded', function() { setTimeout(applyTerminologyLabels, 100); });
 
 // ==================== DEPLETION SCORECARD ====================
 let distScorecard = [];
@@ -2978,11 +3069,11 @@ let dataThrough = '3/8/2026';
 
             html += `<div class="kpi-row" style="margin-bottom:24px;">
                 <div class="kpi-card">
-                    <div class="kpi-label">Total 13W CE</div>
+                    <div class="kpi-label">Total ${t('longPeriod')} ${t('volume')}</div>
                     <div class="kpi-value" style="color:#B13B34;">${totalCE.toFixed(0)}</div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-label">Active Accounts</div>
+                    <div class="kpi-label">Active ${t('account')}s</div>
                     <div class="kpi-value" style="color:#2563EB;">${activeAccts}</div>
                 </div>
                 <div class="kpi-card">
@@ -3041,7 +3132,7 @@ let dataThrough = '3/8/2026';
                     attentionItems.push({
                         type: 'Declining',
                         account: a.acct,
-                        detail: `4W velocity dropping (${a.w4.toFixed(1)} CE vs ${(a.ce/13).toFixed(1)} avg)`,
+                        detail: `${t('shortPeriod')} velocity dropping (${a.w4.toFixed(1)} ${t('volume')} vs ${(a.ce/13).toFixed(1)} avg)`,
                         color: '#9333EA'
                     });
                 });
@@ -3351,7 +3442,7 @@ let dataThrough = '3/8/2026';
                 data: {
                     labels: topDists.map(d => d.name.substring(0, 20)),
                     datasets: [{
-                        label: '13W CE',
+                        label: t('longPeriod') + ' ' + t('volume'),
                         data: topDists.map(d => d.ce),
                         backgroundColor: '#B13B34'
                     }]
@@ -3635,7 +3726,7 @@ let dataThrough = '3/8/2026';
                     labels: skuLabels,
                     datasets: [
                         { label: 'Sell-In (4M)', data: h.skus.map(s => s.sellIn), backgroundColor: 'rgba(52,152,219,0.7)', borderRadius: 4 },
-                        { label: 'Sell-Through (13W)', data: h.skus.map(s => s.sellThru), backgroundColor: 'rgba(46,204,113,0.7)', borderRadius: 4 }
+                        { label: `Sell-Through (${t('longPeriod')})`, data: h.skus.map(s => s.sellThru), backgroundColor: 'rgba(46,204,113,0.7)', borderRadius: 4 }
                     ]
                 },
                 options: {
@@ -5046,9 +5137,9 @@ let dataThrough = '3/8/2026';
         if(topData) {
             const months = [topData.nov||0, topData.dec||0, topData.jan||0, topData.feb||0];
             const maxM = Math.max(...months, 0.1);
-            html += `<div class="ap-section"><h3>Monthly Depletions</h3><div style="display:flex;align-items:center;gap:16px;">
+            html += `<div class="ap-section"><h3>Monthly ${t('depletion')}s</h3><div style="display:flex;align-items:center;gap:16px;">
                 <div class="ap-sparkline">
-                    ${months.map((m,i) => `<div class="bar" style="height:${Math.max(2, m/maxM*32)}px;" title="${['Nov','Dec','Jan','Feb'][i]}: ${m.toFixed(1)} CE"></div>`).join('')}
+                    ${months.map((m,i) => `<div class="bar" style="height:${Math.max(2, m/maxM*32)}px;" title="${['Nov','Dec','Jan','Feb'][i]}: ${m.toFixed(1)} ${t('volume')}"></div>`).join('')}
                 </div>
                 <div style="font-size:12px;color:#6B7280;">${['Nov','Dec','Jan','Feb'].map((l,i) => `${l}: ${months[i].toFixed(1)}`).join(' / ')}</div>
             </div>
@@ -6592,6 +6683,32 @@ let dataThrough = '3/8/2026';
             showProductModal();
         });
 
+        // Terminology / Labels
+        const termFields = {
+            termVolume: 'volume',
+            termLongPeriod: 'longPeriod',
+            termShortPeriod: 'shortPeriod',
+            termDistributor: 'distributor',
+            termAccount: 'account',
+            termDepletion: 'depletion'
+        };
+        const terms = TENANT_CONFIG.terminology || {};
+        Object.entries(termFields).forEach(([inputId, configKey]) => {
+            const el = document.getElementById(inputId);
+            if (el) el.value = terms[configKey] || '';
+        });
+        document.getElementById('saveTermsBtn')?.addEventListener('click', async function() {
+            if (!TENANT_CONFIG.terminology) TENANT_CONFIG.terminology = {};
+            Object.entries(termFields).forEach(([inputId, configKey]) => {
+                const el = document.getElementById(inputId);
+                if (el && el.value.trim()) TENANT_CONFIG.terminology[configKey] = el.value.trim();
+            });
+            await saveTenantConfig();
+            applyTerminologyLabels();
+            const status = document.getElementById('termsSaveStatus');
+            if (status) { status.style.display = 'inline'; setTimeout(() => status.style.display = 'none', 2000); }
+        });
+
         // Pipeline stages
         renderSettPills('settStagesContainer', TENANT_CONFIG.pipelineStages, 'stage');
         document.getElementById('addStageBtn')?.addEventListener('click', function() {
@@ -7141,6 +7258,7 @@ let dataThrough = '3/8/2026';
             productCatalog: TENANT_CONFIG.productCatalog || [],
             productLines: TENANT_CONFIG.productLines || [],
             productUnit: TENANT_CONFIG.productUnit || 'cases',
+            terminology: TENANT_CONFIG.terminology || { volume: 'CE', longPeriod: '13W', shortPeriod: '4W', distributor: 'Distributor', account: 'Account', depletion: 'Depletion' },
             updatedAt: Date.now()
         };
         localStorage.setItem('sk_tenant_config', JSON.stringify(configToSave));
@@ -7404,6 +7522,7 @@ let dataThrough = '3/8/2026';
 
     // Load tenant config on startup, then check if wizard is needed
     loadTenantConfig().then ? loadTenantConfig().then(() => {
+        applyTerminologyLabels();
         if (checkFirstTimeSetup()) showSetupWizard();
         else {
             const loginCompany = document.getElementById('loginCompanyName');
@@ -7412,6 +7531,7 @@ let dataThrough = '3/8/2026';
     }) : (function() {
         loadTenantConfig();
         setTimeout(() => {
+            applyTerminologyLabels();
             if (checkFirstTimeSetup()) showSetupWizard();
             else {
                 const loginCompany = document.getElementById('loginCompanyName');
@@ -7474,92 +7594,279 @@ let dataThrough = '3/8/2026';
         loadUploadedFilesList();
     }
 
-    // Process uploaded data files
+    // ==================== UPLOAD PREVIEW & COLUMN MAPPER ====================
+
+    // Known dashboard fields that uploaded data can map to
+    const DASHBOARD_FIELDS = {
+        // Scorecard / Velocity fields
+        name: { label: 'Distributor Name', group: 'Scorecard', aliases: ['distributor','dist_name','partner','wholesaler','account_name'] },
+        st: { label: 'State', group: 'Scorecard', aliases: ['state','market','state_code','territory'] },
+        ch: { label: 'Channel', group: 'Scorecard', aliases: ['channel','trade_channel','on_off','premise'] },
+        ce: { label: 'Total Volume (13W/Period)', group: 'Scorecard', aliases: ['total_ce','volume','13w_ce','depletions','total_cases','units_shipped','total_units','ce_13w'] },
+        w4: { label: 'Recent Volume (4W/Current)', group: 'Scorecard', aliases: ['4w_ce','current_volume','4w_depletions','recent_cases','current_period','4w'] },
+        accts: { label: 'Account Count', group: 'Scorecard', aliases: ['accounts','acct_count','num_accounts','doors','outlets','locations'] },
+        momentum: { label: 'Momentum / Trend', group: 'Scorecard', aliases: ['trend','growth','direction','velocity_trend'] },
+        owner: { label: 'Rep / Owner', group: 'Scorecard', aliases: ['rep','sales_rep','salesperson','assigned_to','territory_rep'] },
+        // Inventory fields
+        oh: { label: 'On Hand Qty', group: 'Inventory', aliases: ['on_hand','qty_on_hand','current_stock','inventory','stock'] },
+        rate: { label: 'Depletion/Sell Rate', group: 'Inventory', aliases: ['sell_rate','depletion_rate','velocity','turns'] },
+        doh: { label: 'Days on Hand', group: 'Inventory', aliases: ['days_on_hand','days_supply','coverage_days'] },
+        // Reorder fields
+        cycle: { label: 'Order Cycle (days)', group: 'Reorder', aliases: ['reorder_cycle','order_frequency','avg_cycle'] },
+        last: { label: 'Last Order Date', group: 'Reorder', aliases: ['last_order','last_purchase','last_po','last_order_date'] },
+        days: { label: 'Days Since Last Order', group: 'Reorder', aliases: ['days_since','days_since_order','days_elapsed'] },
+        purch: { label: 'Purchase Count', group: 'Reorder', aliases: ['purchases','order_count','num_orders','po_count'] },
+        // Account fields
+        acct: { label: 'Account Name', group: 'Accounts', aliases: ['account','customer','outlet','location','store'] },
+        dist: { label: 'Distributor', group: 'Accounts', aliases: ['distributor','dist_name','wholesaler'] },
+        total: { label: 'Total Sales/Volume', group: 'Accounts', aliases: ['total_sales','revenue','total_volume','amount'] },
+        // QB / Revenue fields
+        date: { label: 'Date', group: 'Revenue', aliases: ['order_date','invoice_date','ship_date','transaction_date'] },
+        num: { label: 'Invoice/PO Number', group: 'Revenue', aliases: ['invoice','po_number','order_number','invoice_num'] },
+        items: { label: 'Line Items / Products', group: 'Revenue', aliases: ['products','items','skus','line_items','description'] },
+        // General
+        skus: { label: 'SKU Count', group: 'General', aliases: ['sku_count','num_skus','product_count','items_count'] },
+    };
+
+    // Auto-match a column header to a dashboard field
+    function autoMatchColumn(header) {
+        const h = header.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_');
+        // Exact field name match
+        if (DASHBOARD_FIELDS[h]) return h;
+        // Check aliases
+        for (const [field, config] of Object.entries(DASHBOARD_FIELDS)) {
+            if (config.aliases.some(a => h === a || h.includes(a) || a.includes(h))) return field;
+        }
+        // Partial match on label
+        for (const [field, config] of Object.entries(DASHBOARD_FIELDS)) {
+            if (config.label.toLowerCase().replace(/[^a-z0-9]/g, '_').includes(h)) return field;
+        }
+        return null;
+    }
+
+    // Get saved column mappings for a source
+    function getSavedMappings() {
+        try { return JSON.parse(localStorage.getItem('sk_column_mappings') || '{}'); } catch(e) { return {}; }
+    }
+    function saveMappings(mappings) {
+        localStorage.setItem('sk_column_mappings', JSON.stringify(mappings));
+    }
+
+    // Process uploaded data files - now shows preview + mapper
     async function processDataUploads(files) {
         const listEl = document.getElementById('dataUploadList');
         if (!listEl) return;
 
         for (const file of files) {
-            const fileType = detectFileType(file.name);
             const statusId = 'upload_' + Date.now() + '_' + Math.random().toString(36).substr(2,4);
-
-            // Show processing status
             listEl.insertAdjacentHTML('afterbegin',
-                '<div id="' + statusId + '" style="display:flex;align-items:center;gap:12px;padding:12px;background:#F9FAFB;border-radius:8px;margin-bottom:8px;">' +
+                '<div id="' + statusId + '" style="padding:12px;background:#F9FAFB;border-radius:8px;margin-bottom:8px;">' +
+                '<div style="display:flex;align-items:center;gap:12px;">' +
                 '<div style="font-size:20px;">&#9203;</div>' +
-                '<div style="flex:1;">' +
-                '<div style="font-size:13px;font-weight:600;color:#374151;">' + file.name + '</div>' +
-                '<div style="font-size:11px;color:#6B7280;">Processing...</div>' +
-                '</div></div>'
+                '<div style="flex:1;"><div style="font-size:13px;font-weight:600;">' + file.name + '</div>' +
+                '<div style="font-size:11px;color:#6B7280;">Reading file...</div></div></div></div>'
             );
 
             try {
                 const data = await readExcelFile(file);
-                const rowCount = data ? data.length : 0;
+                if (!data || data.length === 0) throw new Error('No data found in file');
 
-                // Store in Firestore
-                if (firebaseReady && db && data && data.length > 0) {
-                    const docId = fileType || file.name.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50);
-                    await db.collection('tenants').doc(TENANT_CONFIG.tenantId).collection('data').doc(docId).set({
-                        filename: file.name,
-                        fileType: fileType,
-                        label: fileType ? DATA_FILE_TYPES[fileType].label : 'Unknown',
-                        rows: rowCount,
-                        headers: data.length > 0 ? Object.keys(data[0]) : [],
-                        uploadedAt: Date.now(),
-                        uploadedBy: currentUser ? currentUser.name : 'unknown'
+                const headers = Object.keys(data[0]);
+                const fileType = detectFileType(file.name);
+                const savedMaps = getSavedMappings();
+                const sourceKey = file.name.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40);
+
+                // Build column mappings: saved > auto-match > unmapped
+                const columnMap = {};
+                headers.forEach(h => {
+                    if (savedMaps[sourceKey] && savedMaps[sourceKey][h]) {
+                        columnMap[h] = savedMaps[sourceKey][h]; // Use saved mapping
+                    } else {
+                        columnMap[h] = autoMatchColumn(h) || ''; // Auto-match or empty
+                    }
+                });
+
+                const matchedCount = Object.values(columnMap).filter(Boolean).length;
+                const unmatchedCount = headers.length - matchedCount;
+
+                // Build preview + mapper UI
+                const statusEl = document.getElementById(statusId);
+                if (!statusEl) continue;
+
+                let html = '<div style="margin-bottom:12px;">' +
+                    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">' +
+                    '<div style="font-size:20px;">&#128203;</div>' +
+                    '<div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#1a1a2e;">' + file.name + '</div>' +
+                    '<div style="font-size:12px;color:#6B7280;">' + data.length + ' rows, ' + headers.length + ' columns' +
+                    (fileType ? ' | Detected as: <strong>' + DATA_FILE_TYPES[fileType].label + '</strong>' : ' | <span style="color:#F59E0B;">File type not auto-detected</span>') +
+                    '</div></div></div>';
+
+                // File type selector
+                html += '<div style="margin-bottom:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">' +
+                    '<div><label style="font-size:11px;font-weight:600;color:#6B7280;">Data Type:</label> ' +
+                    '<select id="' + statusId + '_type" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;">' +
+                    '<option value="">-- Select data type --</option>';
+                Object.entries(DATA_FILE_TYPES).forEach(([key, config]) => {
+                    html += '<option value="' + key + '"' + (fileType === key ? ' selected' : '') + '>' + config.label + '</option>';
+                });
+                html += '</select></div>' +
+                    '<div style="font-size:12px;">' +
+                    '<span style="color:#059669;font-weight:600;">' + matchedCount + ' matched</span>' +
+                    (unmatchedCount > 0 ? ' | <span style="color:#F59E0B;">' + unmatchedCount + ' unmapped</span>' : '') +
+                    '</div></div>';
+
+                // Data preview table (first 5 rows)
+                html += '<div style="overflow-x:auto;margin-bottom:12px;border:1px solid #E5E7EB;border-radius:8px;">' +
+                    '<table style="width:100%;border-collapse:collapse;font-size:11px;">';
+                // Header row with column mapping dropdowns
+                html += '<thead><tr style="background:#F1F5F9;">';
+                headers.forEach(h => {
+                    const mapped = columnMap[h];
+                    const mapLabel = mapped ? DASHBOARD_FIELDS[mapped]?.label || mapped : '';
+                    const color = mapped ? '#059669' : '#9CA3AF';
+                    html += '<th style="padding:6px 8px;text-align:left;min-width:120px;">' +
+                        '<div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;" title="' + h + '">' + h + '</div>' +
+                        '<select data-header="' + h.replace(/"/g, '&quot;') + '" class="colMapSelect" style="width:100%;padding:2px 4px;border:1px solid ' + (mapped ? '#BBF7D0' : '#FDE68A') + ';border-radius:4px;font-size:10px;background:' + (mapped ? '#F0FDF4' : '#FFFBEB') + ';">' +
+                        '<option value="">-- skip --</option>';
+                    // Group options by category
+                    const groups = {};
+                    Object.entries(DASHBOARD_FIELDS).forEach(([key, config]) => {
+                        if (!groups[config.group]) groups[config.group] = [];
+                        groups[config.group].push({ key, label: config.label });
+                    });
+                    Object.entries(groups).forEach(([group, fields]) => {
+                        html += '<optgroup label="' + group + '">';
+                        fields.forEach(f => {
+                            html += '<option value="' + f.key + '"' + (mapped === f.key ? ' selected' : '') + '>' + f.label + '</option>';
+                        });
+                        html += '</optgroup>';
+                    });
+                    html += '</select></th>';
+                });
+                html += '</tr></thead>';
+
+                // Data rows (first 5)
+                html += '<tbody>';
+                data.slice(0, 5).forEach((row, ri) => {
+                    html += '<tr style="border-top:1px solid #F3F4F6;' + (ri % 2 ? 'background:#FAFAFA;' : '') + '">';
+                    headers.forEach(h => {
+                        let val = row[h];
+                        if (val === null || val === undefined) val = '';
+                        if (typeof val === 'object' && val instanceof Date) val = val.toLocaleDateString();
+                        const display = String(val).substring(0, 40);
+                        html += '<td style="padding:4px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;color:#374151;" title="' + String(val).replace(/"/g, '&quot;') + '">' + display + '</td>';
+                    });
+                    html += '</tr>';
+                });
+                if (data.length > 5) {
+                    html += '<tr><td colspan="' + headers.length + '" style="padding:6px;text-align:center;color:#9CA3AF;font-size:11px;">... and ' + (data.length - 5) + ' more rows</td></tr>';
+                }
+                html += '</tbody></table></div>';
+
+                // Action buttons
+                html += '<div style="display:flex;gap:8px;">' +
+                    '<button id="' + statusId + '_save" style="flex:2;padding:10px;background:#059669;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">Save & Load Data</button>' +
+                    '<button id="' + statusId + '_cancel" style="flex:1;padding:10px;background:#F3F4F6;color:#6B7280;border:1px solid #E5E7EB;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">Cancel</button>' +
+                    '</div></div>';
+
+                statusEl.innerHTML = html;
+
+                // Wire up Save button
+                document.getElementById(statusId + '_save')?.addEventListener('click', async function() {
+                    this.disabled = true;
+                    this.textContent = 'Saving...';
+
+                    // Read final column mappings from dropdowns
+                    const finalMap = {};
+                    statusEl.querySelectorAll('.colMapSelect').forEach(sel => {
+                        const header = sel.dataset.header;
+                        if (sel.value) finalMap[header] = sel.value;
                     });
 
-                    // Store actual data in chunks (Firestore has 1MB doc limit)
-                    const chunkSize = 200;
-                    for (let i = 0; i < data.length; i += chunkSize) {
-                        const chunk = data.slice(i, i + chunkSize);
-                        await db.collection('tenants').doc(TENANT_CONFIG.tenantId)
-                            .collection('data').doc(docId)
-                            .collection('rows').doc('chunk_' + Math.floor(i / chunkSize))
-                            .set({ rows: chunk, startIndex: i, count: chunk.length });
+                    // Save mapping for this source
+                    const allMaps = getSavedMappings();
+                    allMaps[sourceKey] = finalMap;
+                    saveMappings(allMaps);
+
+                    // Get selected file type
+                    const selectedType = document.getElementById(statusId + '_type')?.value || fileType || null;
+                    const docId = selectedType || file.name.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50);
+
+                    // Remap data using final column mappings
+                    const remappedData = data.map(row => {
+                        const newRow = {};
+                        Object.entries(finalMap).forEach(([origHeader, dashField]) => {
+                            newRow[dashField] = row[origHeader];
+                        });
+                        // Also keep unmapped columns with original names (for future reference)
+                        headers.forEach(h => {
+                            if (!finalMap[h]) newRow['_orig_' + h] = row[h];
+                        });
+                        return newRow;
+                    });
+
+                    // Store in Firestore
+                    if (firebaseReady && db && remappedData.length > 0) {
+                        try {
+                            await db.collection('tenants').doc(TENANT_CONFIG.tenantId).collection('data').doc(docId).set({
+                                filename: file.name,
+                                fileType: selectedType,
+                                label: selectedType ? DATA_FILE_TYPES[selectedType]?.label : file.name,
+                                rows: remappedData.length,
+                                headers: Object.keys(remappedData[0]),
+                                columnMapping: finalMap,
+                                uploadedAt: Date.now(),
+                                uploadedBy: currentUser ? currentUser.name : 'unknown'
+                            });
+                            const chunkSize = 200;
+                            for (let i = 0; i < remappedData.length; i += chunkSize) {
+                                const chunk = remappedData.slice(i, i + chunkSize);
+                                await db.collection('tenants').doc(TENANT_CONFIG.tenantId)
+                                    .collection('data').doc(docId)
+                                    .collection('rows').doc('chunk_' + Math.floor(i / chunkSize))
+                                    .set({ rows: chunk, startIndex: i, count: chunk.length });
+                            }
+                        } catch(e) { console.warn('Firestore save error:', e); }
                     }
-                }
 
-                // Also cache in localStorage for offline use
-                try {
-                    const cacheKey = 'sk_data_' + (fileType || 'unknown');
-                    localStorage.setItem(cacheKey, JSON.stringify(data));
-                } catch(e) { /* localStorage might be full for large datasets */ }
+                    // Cache in localStorage
+                    try { localStorage.setItem('sk_data_' + docId, JSON.stringify(remappedData)); } catch(e) {}
 
-                // Update status
-                const statusEl = document.getElementById(statusId);
-                if (statusEl) {
-                    const typeLabel = fileType ? DATA_FILE_TYPES[fileType].label : 'Unknown file type';
+                    // Show success
                     statusEl.innerHTML =
+                        '<div style="display:flex;align-items:center;gap:12px;padding:4px 0;">' +
                         '<div style="font-size:20px;">&#9989;</div>' +
                         '<div style="flex:1;">' +
                         '<div style="font-size:13px;font-weight:600;color:#374151;">' + file.name + '</div>' +
-                        '<div style="font-size:11px;color:#059669;">' + typeLabel + ' - ' + rowCount + ' rows parsed and saved</div>' +
+                        '<div style="font-size:11px;color:#059669;">' + remappedData.length + ' rows saved | ' + Object.keys(finalMap).length + ' columns mapped</div>' +
                         '</div>' +
-                        '<button data-removefile="' + (fileType || file.name) + '" style="background:none;border:1px solid #FECACA;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#DC2626;">Remove</button>';
-
+                        '<button data-removefile="' + docId + '" style="background:none;border:1px solid #FECACA;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#DC2626;">Remove</button>' +
+                        '</div>';
                     statusEl.querySelector('[data-removefile]')?.addEventListener('click', async function() {
-                        const docId = this.dataset.removefile.replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 50);
+                        const rid = this.dataset.removefile;
                         if (confirm('Remove this uploaded data?')) {
-                            if (firebaseReady && db) {
-                                try { await db.collection('tenants').doc(TENANT_CONFIG.tenantId).collection('data').doc(docId).delete(); } catch(e) {}
-                            }
-                            localStorage.removeItem('sk_data_' + docId);
+                            if (firebaseReady && db) { try { await db.collection('tenants').doc(TENANT_CONFIG.tenantId).collection('data').doc(rid).delete(); } catch(e) {} }
+                            localStorage.removeItem('sk_data_' + rid);
                             statusEl.remove();
                         }
                     });
-                }
+                });
+
+                // Wire up Cancel button
+                document.getElementById(statusId + '_cancel')?.addEventListener('click', function() {
+                    statusEl.remove();
+                });
 
             } catch(err) {
                 const statusEl = document.getElementById(statusId);
                 if (statusEl) {
                     statusEl.innerHTML =
+                        '<div style="display:flex;align-items:center;gap:12px;">' +
                         '<div style="font-size:20px;">&#10060;</div>' +
                         '<div style="flex:1;">' +
                         '<div style="font-size:13px;font-weight:600;color:#374151;">' + file.name + '</div>' +
                         '<div style="font-size:11px;color:#DC2626;">Error: ' + (err.message || 'Failed to parse file') + '</div>' +
-                        '</div>';
+                        '</div></div>';
                 }
             }
         }
