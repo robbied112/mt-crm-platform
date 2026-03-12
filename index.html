@@ -8910,25 +8910,300 @@ let dataThrough = '3/8/2026';
                     try { populateRepDropdown(); populateGlobalProductDropdown(); populateDistDropdown(); } catch(e) {}
                 }
             } else {
-                console.log('DataLoader: no tenant data found in Firestore, using demo/empty data');
-                // For new tenants with no uploads, clear demo data
+                console.log('DataLoader: no tenant data found in Firestore');
+                // For new tenants with no uploads, show welcome experience with demo data option
                 if (TENANT_CONFIG.tenantId && TENANT_CONFIG.tenantId !== 'default') {
-                    distScorecard = [];
-                    inventoryData = [];
-                    reEngagementData = [];
-                    newWins = [];
-                    accountsTop = [];
-                    reorderData = [];
-                    distHealth = [];
-                    qbDistOrders = {};
-                    warehouseInventory = {};
-                    placementSummary = [];
-                    acctConcentration = {total:0,top5:0,top10:0,top20:0,median:0,under1:0};
+                    const hasDemoLoaded = localStorage.getItem('sk_demo_data_' + TENANT_CONFIG.tenantId);
+                    if (hasDemoLoaded === 'loaded') {
+                        // Demo data was loaded previously - reload it and show indicator
+                        this._loadDemoData();
+                        this._showDemoIndicator();
+                    } else {
+                        // First time - show welcome banner
+                        distScorecard = [];
+                        inventoryData = [];
+                        reEngagementData = [];
+                        newWins = [];
+                        accountsTop = [];
+                        reorderData = [];
+                        distHealth = [];
+                        qbDistOrders = {};
+                        warehouseInventory = {};
+                        placementSummary = [];
+                        acctConcentration = {total:0,top5:0,top10:0,top20:0,median:0,under1:0};
+                        this._showWelcomeBanner();
+                    }
                     if (typeof renderMyTerritory === 'function') {
                         try { renderMyTerritory(); } catch(e) {}
                     }
                 }
             }
+        },
+
+        // ---- DEMO DATA: Realistic sample data for first-time users ----
+        _showWelcomeBanner() {
+            // Remove existing banner if any
+            document.getElementById('sk-welcome-banner')?.remove();
+            const companyName = TENANT_CONFIG.companyName || 'your company';
+            const banner = document.createElement('div');
+            banner.id = 'sk-welcome-banner';
+            banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:10000;background:linear-gradient(135deg,#1e3a5f 0%,#2d5a88 100%);color:white;padding:0;box-shadow:0 4px 20px rgba(0,0,0,0.3);';
+            banner.innerHTML = `
+                <div style="max-width:900px;margin:0 auto;padding:24px 30px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+                    <div style="flex:1;min-width:300px;">
+                        <h2 style="margin:0 0 8px 0;font-size:22px;font-weight:700;">Welcome to Sidekick BI!</h2>
+                        <p style="margin:0 0 4px 0;font-size:14px;opacity:0.9;">Your dashboard is ready for ${companyName}. Upload your distributor data to get started, or load sample data to explore the platform first.</p>
+                        <p style="margin:0;font-size:12px;opacity:0.7;">Sample data can be cleared anytime from Settings.</p>
+                    </div>
+                    <div style="display:flex;gap:12px;flex-shrink:0;">
+                        <button id="sk-load-demo" style="background:white;color:#1e3a5f;border:none;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;">
+                            Explore with Sample Data
+                        </button>
+                        <button id="sk-skip-demo" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.4);padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;">
+                            I'll Upload My Data
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.prepend(banner);
+            // Push content down
+            document.body.style.paddingTop = banner.offsetHeight + 'px';
+
+            document.getElementById('sk-load-demo').addEventListener('click', () => {
+                this._loadDemoData();
+                localStorage.setItem('sk_demo_data_' + TENANT_CONFIG.tenantId, 'loaded');
+                banner.remove();
+                document.body.style.paddingTop = '0';
+                // Show persistent demo indicator
+                this._showDemoIndicator();
+                if (typeof renderMyTerritory === 'function') {
+                    try { renderMyTerritory(); } catch(e) {}
+                }
+                if (typeof populateRepDropdown === 'function') {
+                    try { populateRepDropdown(); populateGlobalProductDropdown(); populateDistDropdown(); } catch(e) {}
+                }
+            });
+
+            document.getElementById('sk-skip-demo').addEventListener('click', () => {
+                banner.remove();
+                document.body.style.paddingTop = '0';
+                // Scroll to settings/upload section
+                const settTab = document.querySelector('[data-tab="settings"]');
+                if (settTab) settTab.click();
+                setTimeout(() => {
+                    const uploadSection = document.getElementById('settDataUpload');
+                    if (uploadSection) uploadSection.scrollIntoView({ behavior: 'smooth' });
+                }, 300);
+            });
+        },
+
+        _showDemoIndicator() {
+            document.getElementById('sk-demo-indicator')?.remove();
+            const ind = document.createElement('div');
+            ind.id = 'sk-demo-indicator';
+            ind.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:#F59E0B;color:#78350F;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,0.15);display:flex;align-items:center;gap:10px;';
+            ind.innerHTML = `
+                <span>Viewing Sample Data</span>
+                <button id="sk-clear-demo" style="background:#78350F;color:white;border:none;padding:4px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600;">Clear & Upload Real Data</button>
+            `;
+            document.body.appendChild(ind);
+            document.getElementById('sk-clear-demo').addEventListener('click', () => {
+                this._clearDemoData();
+                ind.remove();
+            });
+        },
+
+        _clearDemoData() {
+            localStorage.removeItem('sk_demo_data_' + TENANT_CONFIG.tenantId);
+            distScorecard = [];
+            inventoryData = [];
+            reEngagementData = [];
+            newWins = [];
+            accountsTop = [];
+            reorderData = [];
+            distHealth = [];
+            qbDistOrders = {};
+            warehouseInventory = {};
+            placementSummary = [];
+            acctConcentration = {total:0,top5:0,top10:0,top20:0,median:0,under1:0};
+            if (typeof renderMyTerritory === 'function') {
+                try { renderMyTerritory(); } catch(e) {}
+            }
+            // Navigate to settings upload
+            const settTab = document.querySelector('[data-tab="settings"]');
+            if (settTab) settTab.click();
+            setTimeout(() => {
+                const uploadSection = document.getElementById('settDataUpload');
+                if (uploadSection) uploadSection.scrollIntoView({ behavior: 'smooth' });
+            }, 300);
+        },
+
+        _loadDemoData() {
+            // Realistic sample data for a craft beverage company
+            const states = ['CA','NY','TX','FL','IL','PA','OH','GA','NC','NJ','MA','WA','CO','AZ','TN','VA','OR','MN','WI','MD'];
+            const distNames = [
+                'Pacific Beverage Co','Empire State Distributors','Lone Star Wholesale','Sunshine Beverage Group',
+                'Great Lakes Distribution','Keystone Partners','Buckeye Beverage','Peachtree Distributors',
+                'Carolina Supply Co','Garden State Beverage','Bay State Distributors','Evergreen Wholesale',
+                'Rocky Mountain Beverage','Desert Sun Distribution','Volunteer State Beverage','Old Dominion Distributors',
+                'Cascadia Beverage Group','North Star Distribution','Badger State Beverage','Chesapeake Distributors',
+                'Golden Gate Wholesale','Hudson Valley Beverage','Rio Grande Distribution','Palm Coast Distributors',
+                'Windy City Beverage'
+            ];
+            const reps = ['Sarah M.','Jake T.','Maria G.','Chris P.','Alex R.'];
+            const channels = ['OFF','ON','BOTH'];
+            const acctNames = [
+                'Whole Foods Market','Total Wine & More','Costco Wholesale','Trader Joes','Kroger',
+                'Safeway','Publix','HEB','Wegmans','Sprouts Farmers Market',
+                'BevMo!','World Market','Central Market','Spec\'s','ABC Fine Wine',
+                'The Capital Grille','Cheesecake Factory','P.F. Chang\'s','Ruth\'s Chris','Morton\'s',
+                'Local Wine Bar','Downtown Taproom','The Craft House','Neighborhood Bistro','Corner Bottle Shop',
+                'Metro Liquors','City Wine Merchant','Oak & Vine','The Pour House','Highland Market',
+                'Fresh & Easy','Natural Grocers','Earth Fare','Lucky\'s Market','New Seasons Market',
+                'Restaurant Depot','Sysco','US Foods','Gordon Food Service','Performance Foodservice'
+            ];
+
+            // Generate distScorecard (25 distributors)
+            distScorecard = distNames.map((name, i) => {
+                const ce = Math.round(150 + Math.random() * 2500);
+                const w4 = Math.round(ce * (0.2 + Math.random() * 0.15));
+                const prior = Math.round(ce * (0.85 + Math.random() * 0.3));
+                const pctChange = ((ce - prior) / prior * 100).toFixed(1);
+                return {
+                    name, st: states[i % states.length],
+                    ce, prior, w4,
+                    prior_w4: Math.round(w4 * (0.85 + Math.random() * 0.3)),
+                    momentum: (pctChange >= 0 ? '+' : '') + pctChange + '%',
+                    oh: Math.round(50 + Math.random() * 400),
+                    doh: Math.round(20 + Math.random() * 120),
+                    net: Math.round(Math.random() * 15),
+                    con: Math.round(20 + Math.random() * 60),
+                    conLabel: ['Building','Growing','Established','Dominant'][Math.floor(Math.random()*4)],
+                    invAction: ['Reorder Now','Monitor','Healthy','Overstocked','Reorder Soon'][Math.floor(Math.random()*5)],
+                    velTrend: ['up','flat','down'][Math.floor(Math.random()*3)],
+                    sellThru: Math.round(40 + Math.random() * 55),
+                    weekly: Array.from({length:13}, () => Math.round(10 + Math.random() * 200)),
+                    isGroup: false
+                };
+            });
+
+            // Generate inventoryData (25 distributors)
+            inventoryData = distNames.map((name, i) => ({
+                name, st: states[i % states.length],
+                oh: Math.round(30 + Math.random() * 350),
+                rate: +(5 + Math.random() * 40).toFixed(1),
+                doh: Math.round(15 + Math.random() * 130),
+                dep90: Math.round(200 + Math.random() * 1500),
+                status: ['Healthy','Low Stock','Overstocked','Reorder Now','Critical'][Math.floor(Math.random()*5)],
+                proj: Math.round(100 + Math.random() * 800),
+                skus: [], isGroup: false
+            }));
+
+            // Generate accountsTop (40 accounts)
+            accountsTop = acctNames.map((acct, i) => {
+                const nov = Math.round(5 + Math.random() * 80);
+                const dec = Math.round(5 + Math.random() * 90);
+                const jan = Math.round(5 + Math.random() * 70);
+                const feb = Math.round(5 + Math.random() * 75);
+                return {
+                    rank: i + 1, acct,
+                    dist: distNames[i % distNames.length],
+                    st: states[i % states.length],
+                    ch: channels[Math.floor(Math.random()*3)],
+                    nov, dec, jan, feb,
+                    total: nov + dec + jan + feb,
+                    trend: ['Growing','Stable','Declining','New'][Math.floor(Math.random()*4)],
+                    growthPotential: Math.round(20 + Math.random() * 80)
+                };
+            });
+
+            // Generate reorderData (20 accounts needing reorder)
+            reorderData = acctNames.slice(0, 20).map((acct, i) => ({
+                rank: i + 1, acct,
+                dist: distNames[i % distNames.length],
+                st: states[i % states.length],
+                ch: channels[Math.floor(Math.random()*3)],
+                ce: Math.round(20 + Math.random() * 200),
+                purch: Math.round(2 + Math.random() * 12),
+                cycle: Math.round(14 + Math.random() * 45),
+                last: new Date(Date.now() - (Math.random() * 90 * 86400000)).toLocaleDateString(),
+                days: Math.round(5 + Math.random() * 60),
+                priority: Math.round(30 + Math.random() * 70),
+                skus: []
+            }));
+
+            // Generate newWins (8 new accounts)
+            newWins = acctNames.slice(30, 38).map(acct => ({
+                acct,
+                dist: distNames[Math.floor(Math.random() * distNames.length)],
+                st: states[Math.floor(Math.random() * states.length)],
+                ce: Math.round(5 + Math.random() * 50),
+                skus: Math.round(1 + Math.random() * 4)
+            }));
+
+            // Generate reEngagementData (6 accounts to re-engage)
+            reEngagementData = acctNames.slice(20, 26).map(acct => ({
+                acct,
+                dist: distNames[Math.floor(Math.random() * distNames.length)],
+                st: states[Math.floor(Math.random() * states.length)],
+                ce: Math.round(10 + Math.random() * 80),
+                months: Math.round(2 + Math.random() * 6),
+                lastOrder: new Date(Date.now() - (Math.random() * 180 * 86400000)).toLocaleDateString(),
+                skus: Math.round(1 + Math.random() * 3)
+            }));
+
+            // Generate distHealth from scorecard
+            distHealth = distScorecard.map(d => {
+                const velocity = Math.min(100, Math.round(d.ce * 0.04));
+                const momentumScore = d.momentum.startsWith('+') ? Math.round(50 + Math.random() * 40) : Math.round(20 + Math.random() * 30);
+                const sellThruScore = d.sellThru;
+                const acctCount = Math.min(100, Math.round(d.net * 8 + Math.random() * 20));
+                const invHealth = d.doh < 60 ? Math.round(70 + Math.random() * 25) : (d.doh < 120 ? Math.round(40 + Math.random() * 30) : Math.round(10 + Math.random() * 25));
+                const score = Math.round(
+                    velocity * (TENANT_CONFIG.scoringWeights?.velocity || 0.3) +
+                    momentumScore * (TENANT_CONFIG.scoringWeights?.momentum || 0.2) +
+                    sellThruScore * (TENANT_CONFIG.scoringWeights?.sellThru || 0.2) +
+                    acctCount * (TENANT_CONFIG.scoringWeights?.accountCount || 0.15) +
+                    invHealth * (TENANT_CONFIG.scoringWeights?.inventoryHealth || 0.15)
+                );
+                return {
+                    name: d.name, st: d.st, velocity, momentum: momentumScore,
+                    sellThru: sellThruScore, accountCount: acctCount, inventoryHealth: invHealth,
+                    score, tier: score >= 70 ? 'Star' : score >= 50 ? 'Strong' : score >= 30 ? 'Developing' : 'At Risk'
+                };
+            });
+
+            // Generate QB revenue data
+            const months = ['2025-11','2025-12','2026-01','2026-02'];
+            qbDistOrders = {};
+            distNames.slice(0, 15).forEach(dist => {
+                const monthly = {};
+                let total = 0;
+                months.forEach(m => {
+                    const amt = Math.round(2000 + Math.random() * 25000);
+                    monthly[m] = amt;
+                    total += amt;
+                });
+                qbDistOrders[dist] = { total, orders: Math.round(4 + Math.random() * 20), customers: 1, monthly };
+            });
+
+            // Generate acctConcentration
+            const sortedAccts = [...accountsTop].sort((a,b) => b.total - a.total);
+            const totalVol = sortedAccts.reduce((s,a) => s + a.total, 0);
+            acctConcentration = {
+                total: totalVol,
+                top5: sortedAccts.slice(0,5).reduce((s,a) => s + a.total, 0),
+                top10: sortedAccts.slice(0,10).reduce((s,a) => s + a.total, 0),
+                top20: sortedAccts.slice(0,20).reduce((s,a) => s + a.total, 0),
+                median: sortedAccts[Math.floor(sortedAccts.length/2)]?.total || 0,
+                under1: sortedAccts.filter(a => a.total < totalVol * 0.01).length
+            };
+
+            dataThrough = new Date().toLocaleDateString();
+            const dtEl = document.getElementById('dataThrough');
+            if (dtEl) dtEl.textContent = dataThrough + ' (Sample)';
+
+            console.log('DataLoader: loaded demo data - ' + distScorecard.length + ' distributors, ' + accountsTop.length + ' accounts');
         }
     };
 
