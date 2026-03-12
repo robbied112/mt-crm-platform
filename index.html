@@ -7748,6 +7748,316 @@ let dataThrough = '3/8/2026';
         return bestScore >= 50 ? bestField : null;
     }
 
+    // ==================== MAPPING TEMPLATES FOR KNOWN SYSTEMS ====================
+    // Pre-built column maps for common source systems. When a user selects a template,
+    // all columns are mapped instantly - no guessing needed.
+    const MAPPING_TEMPLATES = {
+        'vip_depletion': {
+            label: 'VIP Depletion Report',
+            description: 'Standard VIP i-Digest depletion export',
+            fileType: 'velocity',
+            columns: {
+                'Distributor Name': 'name', 'Distributor': 'name', 'Wholesaler': 'name', 'WHS Name': 'name', 'Whse Name': 'name',
+                'State': 'st', 'ST': 'st', 'State Code': 'st', 'Market': 'st',
+                'Channel': 'ch', 'Trade Channel': 'ch', 'Premise': 'ch',
+                '13W CE': 'ce', '13W Total CE': 'ce', '13 Wk CE': 'ce', 'Ttl 9L CE': 'ce', 'Total CE': 'ce', 'Total 9L CE': 'ce', 'Volume': 'ce',
+                'Prior 13W CE': 'prior_ce', 'Prior 13W': 'prior_ce', 'Prev 13W CE': 'prior_ce',
+                '4W CE': 'w4', '4W Current CE': 'w4', '4 Wk CE': 'w4', 'Curr 4Wk': 'w4', 'Current 4W': 'w4',
+                'Prior 4W CE': 'prior_w4', 'Prior 4W': 'prior_w4', 'Prev 4W CE': 'prior_w4',
+                'Momentum': 'momentum', 'Trend': 'momentum', '% Chg': 'momentum', 'Growth': 'momentum',
+                'On Hand': 'oh', 'On Hand Cases': 'oh', 'OH Cases': 'oh', 'Cases On Hand': 'oh', 'Inventory': 'oh',
+                'DOH': 'doh', 'Days on Hand': 'doh', 'Days Supply': 'doh', 'Days OH': 'doh',
+                'Net New': 'net', 'Net New Accounts': 'net', 'Net Accts': 'net', 'Net Placements': 'net',
+                'Sell-Through': 'sellThru', 'Sell-Through %': 'sellThru', 'Sell Thru': 'sellThru', 'Pull Thru': 'sellThru',
+                'Rep': 'owner', 'Territory Rep': 'owner', 'Sales Rep': 'owner', 'TM': 'owner', 'Salesperson': 'owner',
+            }
+        },
+        'vip_account': {
+            label: 'VIP Account Detail',
+            description: 'VIP account-level depletion data',
+            fileType: 'accounts',
+            columns: {
+                'Account': 'acct', 'Account Name': 'acct', 'Acct Name': 'acct', 'Acct Nm': 'acct', 'Customer': 'acct', 'Outlet': 'acct',
+                'Distributor': 'dist', 'Distributor Name': 'dist', 'WHS Name': 'dist', 'Wholesaler': 'dist',
+                'State': 'st', 'ST': 'st', 'Market': 'st',
+                'Channel': 'ch', 'Trade Channel': 'ch', 'On/Off': 'ch',
+                'Rep': 'owner', 'Territory Rep': 'owner', 'Sales Rep': 'owner', 'TM': 'owner',
+                'Nov CE': 'nov', 'November': 'nov', 'Nov': 'nov',
+                'Dec CE': 'dec', 'December': 'dec', 'Dec': 'dec',
+                'Jan CE': 'jan', 'January': 'jan', 'Jan': 'jan',
+                'Feb CE': 'feb', 'February': 'feb', 'Feb': 'feb',
+                'Total CE': 'total', 'Total': 'total', 'TTL CE': 'total',
+                'Trend': 'momentum', 'Account Trend': 'momentum',
+                'SKU Count': 'skus', 'SKUs': 'skus', '# SKUs': 'skus', 'Items': 'skus',
+                'Growth Potential': 'growthPotential', 'Potential': 'growthPotential',
+            }
+        },
+        'quickbooks': {
+            label: 'QuickBooks Sales Export',
+            description: 'QuickBooks Sales by Customer Detail / Summary',
+            fileType: 'qbrevenue',
+            columns: {
+                'Customer': 'dist', 'Customer Name': 'dist', 'Name': 'dist',
+                'Date': 'date', 'Invoice Date': 'date', 'Txn Date': 'date', 'Transaction Date': 'date',
+                'Num': 'num', 'Invoice #': 'num', 'Invoice No': 'num', 'Ref #': 'num', 'Reference': 'num',
+                'Amount': 'total', 'Total': 'total', 'Sales': 'total', 'Net Amount': 'total',
+                'Item': 'items', 'Items': 'items', 'Product/Service': 'items', 'Description': 'items', 'Memo': 'items',
+            }
+        },
+        'inventory_report': {
+            label: 'Distributor Inventory Report',
+            description: 'Standard inventory/DOH report from distributor',
+            fileType: 'inventory',
+            columns: {
+                'Distributor': 'name', 'Distributor Name': 'name', 'WHS Name': 'name', 'Wholesaler': 'name',
+                'State': 'st', 'ST': 'st', 'Market': 'st',
+                'On Hand': 'oh', 'Cases On Hand': 'oh', 'OH': 'oh', 'Qty On Hand': 'oh', 'Current Stock': 'oh',
+                'Rate': 'rate', 'Depletion Rate': 'rate', 'Weekly Rate': 'rate', 'Avg Weekly': 'rate', 'Weekly Depletion Rate': 'rate',
+                'DOH': 'doh', 'Days on Hand': 'doh', 'Days Supply': 'doh', 'Days OH': 'doh', 'Coverage Days': 'doh',
+                '90D Dep': 'dep90', '90-Day Projected Depletion': 'dep90', 'Projected 90': 'dep90',
+                'Status': 'invStatus', 'Inventory Status': 'invStatus', 'Health': 'invStatus',
+            }
+        },
+        'generic_scorecard': {
+            label: 'Generic Distributor Scorecard',
+            description: 'General format - distributor performance data',
+            fileType: 'scorecard',
+            columns: {
+                'Distributor': 'name', 'Distributor Name': 'name', 'Partner': 'name', 'Wholesaler': 'name',
+                'State': 'st', 'Market': 'st', 'Territory': 'st',
+                'Channel': 'ch',
+                'Volume': 'ce', 'Total Volume': 'ce', 'Cases': 'ce', 'Units': 'ce', 'Total': 'ce',
+                '4W': 'w4', 'Current': 'w4', 'Recent': 'w4',
+                'Trend': 'momentum', 'Growth': 'momentum', 'Direction': 'momentum',
+                'On Hand': 'oh', 'Inventory': 'oh',
+                'DOH': 'doh', 'Days Supply': 'doh',
+                'Rep': 'owner', 'Sales Rep': 'owner', 'Owner': 'owner',
+            }
+        }
+    };
+
+    // Apply a mapping template to headers - returns column map
+    function applyMappingTemplate(templateId, headers) {
+        const template = MAPPING_TEMPLATES[templateId];
+        if (!template) return {};
+        const columnMap = {};
+        headers.forEach(h => {
+            // Try exact match in template first
+            if (template.columns[h]) {
+                columnMap[h] = template.columns[h];
+            } else {
+                // Try case-insensitive match
+                const hLower = h.toLowerCase().trim();
+                for (const [tCol, tField] of Object.entries(template.columns)) {
+                    if (tCol.toLowerCase() === hLower) {
+                        columnMap[h] = tField;
+                        break;
+                    }
+                }
+            }
+            // If template didn't match, fall back to auto-match
+            if (!columnMap[h]) {
+                columnMap[h] = autoMatchColumn(h) || '';
+            }
+        });
+        return columnMap;
+    }
+
+    // ==================== REQUIRED FIELD VALIDATION ====================
+    // Each file type has required fields. If they're missing, warn before save.
+    const REQUIRED_FIELDS = {
+        velocity: {
+            critical: ['name', 'st', 'ce'],
+            labels: { name: 'Distributor Name', st: 'State', ce: 'Volume (13W/Period)' },
+            recommended: ['w4', 'oh', 'doh', 'momentum'],
+            recLabels: { w4: 'Recent Volume (4W)', oh: 'On Hand', doh: 'Days on Hand', momentum: 'Momentum/Trend' }
+        },
+        scorecard: {
+            critical: ['name', 'st', 'ce'],
+            labels: { name: 'Distributor Name', st: 'State', ce: 'Volume' },
+            recommended: ['w4', 'momentum'],
+            recLabels: { w4: 'Recent Volume', momentum: 'Trend' }
+        },
+        accounts: {
+            critical: ['acct', 'dist', 'st'],
+            labels: { acct: 'Account Name', dist: 'Distributor', st: 'State' },
+            recommended: ['total', 'ch'],
+            recLabels: { total: 'Total Volume/Sales', ch: 'Channel' }
+        },
+        inventory: {
+            critical: ['name', 'st', 'oh'],
+            labels: { name: 'Distributor Name', st: 'State', oh: 'On Hand Qty' },
+            recommended: ['rate', 'doh'],
+            recLabels: { rate: 'Depletion Rate', doh: 'Days on Hand' }
+        },
+        qbrevenue: {
+            critical: ['dist', 'total'],
+            labels: { dist: 'Customer/Distributor', total: 'Amount' },
+            recommended: ['date', 'num'],
+            recLabels: { date: 'Invoice Date', num: 'Invoice Number' }
+        },
+        w4comparison: {
+            critical: ['acct', 'dist'],
+            labels: { acct: 'Account Name', dist: 'Distributor' },
+            recommended: ['ce', 'st'],
+            recLabels: { ce: 'Volume', st: 'State' }
+        }
+    };
+
+    // Validate mapped fields against requirements - returns { valid, errors, warnings }
+    function validateColumnMapping(fileType, columnMap) {
+        const reqs = REQUIRED_FIELDS[fileType];
+        if (!reqs) return { valid: true, errors: [], warnings: [] };
+
+        const mappedFields = new Set(Object.values(columnMap).filter(Boolean));
+        const errors = [];
+        const warnings = [];
+
+        reqs.critical.forEach(field => {
+            if (!mappedFields.has(field)) {
+                errors.push('Missing required field: <strong>' + (reqs.labels[field] || field) + '</strong>');
+            }
+        });
+
+        reqs.recommended.forEach(field => {
+            if (!mappedFields.has(field)) {
+                warnings.push('Recommended field not mapped: ' + (reqs.recLabels[field] || field));
+            }
+        });
+
+        // Check for duplicate mappings (two columns mapped to same field)
+        const fieldCounts = {};
+        Object.values(columnMap).forEach(f => {
+            if (f) fieldCounts[f] = (fieldCounts[f] || 0) + 1;
+        });
+        Object.entries(fieldCounts).forEach(([field, count]) => {
+            if (count > 1) {
+                warnings.push('Multiple columns mapped to "' + (DASHBOARD_FIELDS[field]?.label || field) + '" - only the last column will be used');
+            }
+        });
+
+        return { valid: errors.length === 0, errors, warnings };
+    }
+
+    // ==================== FUZZY MATCHING FALLBACK ====================
+    // When score-based matching fails, use string similarity to suggest close matches
+    function stringSimilarity(a, b) {
+        // Normalized Levenshtein-based similarity (0 to 1)
+        a = a.toLowerCase(); b = b.toLowerCase();
+        if (a === b) return 1;
+        if (a.length === 0 || b.length === 0) return 0;
+        const matrix = [];
+        for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+        for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+        for (let i = 1; i <= b.length; i++) {
+            for (let j = 1; j <= a.length; j++) {
+                matrix[i][j] = b[i-1] === a[j-1]
+                    ? matrix[i-1][j-1]
+                    : Math.min(matrix[i-1][j-1] + 1, matrix[i][j-1] + 1, matrix[i-1][j] + 1);
+            }
+        }
+        const maxLen = Math.max(a.length, b.length);
+        return 1 - (matrix[b.length][a.length] / maxLen);
+    }
+
+    // Find fuzzy matches for an unmatched header - returns [{field, score, label}] sorted by score
+    function fuzzyMatchColumn(header) {
+        const h = header.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+        const candidates = [];
+        for (const [field, config] of Object.entries(DASHBOARD_FIELDS)) {
+            // Check similarity against label
+            const labelSim = stringSimilarity(h, config.label.toLowerCase());
+            let bestAliasSim = 0;
+            for (const a of config.aliases) {
+                const sim = stringSimilarity(h.replace(/[^a-z0-9]/g, '_'), a);
+                bestAliasSim = Math.max(bestAliasSim, sim);
+            }
+            const bestSim = Math.max(labelSim, bestAliasSim);
+            if (bestSim >= 0.45) {
+                candidates.push({ field, score: bestSim, label: config.label });
+            }
+        }
+        return candidates.sort((a, b) => b.score - a.score).slice(0, 3);
+    }
+
+    // Enhanced auto-match: score-based first, then fuzzy fallback
+    function enhancedAutoMatch(header) {
+        // First try the score-based matcher
+        const scoreMatch = autoMatchColumn(header);
+        if (scoreMatch) return { field: scoreMatch, confidence: 'high', method: 'alias' };
+
+        // Fuzzy fallback - only use if similarity is strong enough
+        const fuzzy = fuzzyMatchColumn(header);
+        if (fuzzy.length > 0 && fuzzy[0].score >= 0.65) {
+            return { field: fuzzy[0].field, confidence: 'medium', method: 'fuzzy', score: fuzzy[0].score, suggestions: fuzzy };
+        }
+
+        // No match
+        return { field: null, confidence: 'none', method: 'none', suggestions: fuzzy };
+    }
+
+    // ==================== UPLOAD AUDIT LOG ====================
+    // Records every upload attempt with full detail for debugging
+    async function saveUploadAudit(auditEntry) {
+        // Save to localStorage
+        try {
+            const log = JSON.parse(localStorage.getItem('sk_upload_audit') || '[]');
+            log.unshift(auditEntry);
+            if (log.length > 50) log.length = 50; // Keep last 50
+            localStorage.setItem('sk_upload_audit', JSON.stringify(log));
+        } catch(e) {}
+
+        // Save to Firestore
+        if (firebaseReady && db && TENANT_CONFIG.tenantId) {
+            try {
+                await db.collection('tenants').doc(TENANT_CONFIG.tenantId)
+                    .collection('uploadAudit').add(auditEntry);
+            } catch(e) { console.warn('Failed to save upload audit:', e); }
+        }
+    }
+
+    function buildAuditEntry(file, headers, columnMap, matchDetails, fileType, action) {
+        return {
+            timestamp: Date.now(),
+            filename: file.name,
+            fileSize: file.size,
+            fileType: fileType,
+            action: action, // 'saved', 'cancelled', 'validation_failed', 'support_requested'
+            totalColumns: headers.length,
+            originalHeaders: headers,
+            columnMapping: columnMap,
+            matchDetails: matchDetails, // { header: { field, confidence, method } }
+            highConfidence: Object.values(matchDetails).filter(m => m.confidence === 'high').length,
+            mediumConfidence: Object.values(matchDetails).filter(m => m.confidence === 'medium').length,
+            unmapped: Object.values(matchDetails).filter(m => m.confidence === 'none').length,
+            user: currentUser ? currentUser.name || currentUser.email : 'unknown',
+            tenantId: TENANT_CONFIG.tenantId,
+            companyName: TENANT_CONFIG.companyName
+        };
+    }
+
+    // ==================== SUPPORT REQUEST ====================
+    function buildSupportPayload(file, headers, columnMap, matchDetails, fileType) {
+        const unmapped = headers.filter(h => !columnMap[h]);
+        const fuzzyNear = headers.filter(h => matchDetails[h]?.confidence === 'medium');
+        return {
+            subject: 'Column Mapping Help - ' + (TENANT_CONFIG.companyName || 'Unknown'),
+            body: 'Company: ' + (TENANT_CONFIG.companyName || 'N/A') + '\n' +
+                'File: ' + file.name + ' (' + Math.round(file.size/1024) + ' KB)\n' +
+                'Detected Type: ' + (fileType || 'Not detected') + '\n' +
+                'Total Columns: ' + headers.length + '\n' +
+                'Auto-Matched: ' + Object.values(columnMap).filter(Boolean).length + '\n' +
+                'Unmapped: ' + unmapped.length + '\n\n' +
+                'UNMAPPED COLUMNS:\n' + unmapped.map(h => '  - "' + h + '"').join('\n') + '\n\n' +
+                'FUZZY NEAR-MATCHES:\n' + fuzzyNear.map(h => {
+                    const m = matchDetails[h];
+                    return '  - "' + h + '" ~ ' + (m.suggestions || []).map(s => s.label + ' (' + Math.round(s.score*100) + '%)').join(', ');
+                }).join('\n') + '\n\n' +
+                'ALL HEADERS:\n' + headers.map(h => '  ' + h + ' -> ' + (columnMap[h] || 'UNMAPPED')).join('\n'),
+            email: 'support@sidekickbi.com'
+        };
+    }
+
     // Get saved column mappings for a source
     function getSavedMappings() {
         try { return JSON.parse(localStorage.getItem('sk_column_mappings') || '{}'); } catch(e) { return {}; }
@@ -7756,7 +8066,45 @@ let dataThrough = '3/8/2026';
         localStorage.setItem('sk_column_mappings', JSON.stringify(mappings));
     }
 
-    // Process uploaded data files - now shows preview + mapper
+    // Learn from manual mappings - add new aliases globally for this tenant
+    function learnFromManualMapping(header, dashField) {
+        if (!header || !dashField) return;
+        const h = header.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+        // Check if this is already a known alias
+        const config = DASHBOARD_FIELDS[dashField];
+        if (!config) return;
+        if (config.aliases.includes(h)) return;
+        // Add to the runtime alias list
+        config.aliases.push(h);
+        // Persist learned aliases per tenant
+        try {
+            const learned = JSON.parse(localStorage.getItem('sk_learned_aliases') || '{}');
+            if (!learned[dashField]) learned[dashField] = [];
+            if (!learned[dashField].includes(h)) {
+                learned[dashField].push(h);
+                localStorage.setItem('sk_learned_aliases', JSON.stringify(learned));
+            }
+        } catch(e) {}
+    }
+
+    // Load learned aliases on startup
+    function loadLearnedAliases() {
+        try {
+            const learned = JSON.parse(localStorage.getItem('sk_learned_aliases') || '{}');
+            Object.entries(learned).forEach(([field, aliases]) => {
+                if (DASHBOARD_FIELDS[field]) {
+                    aliases.forEach(a => {
+                        if (!DASHBOARD_FIELDS[field].aliases.includes(a)) {
+                            DASHBOARD_FIELDS[field].aliases.push(a);
+                        }
+                    });
+                }
+            });
+        } catch(e) {}
+    }
+    loadLearnedAliases();
+
+    // Process uploaded data files - enhanced with templates, validation, fuzzy matching, audit
     async function processDataUploads(files) {
         const listEl = document.getElementById('dataUploadList');
         if (!listEl) return;
@@ -7780,18 +8128,23 @@ let dataThrough = '3/8/2026';
                 const savedMaps = getSavedMappings();
                 const sourceKey = file.name.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40);
 
-                // Build column mappings: saved > auto-match > unmapped
+                // Build column mappings with enhanced matching + match detail tracking
                 const columnMap = {};
+                const matchDetails = {};
                 headers.forEach(h => {
                     if (savedMaps[sourceKey] && savedMaps[sourceKey][h]) {
-                        columnMap[h] = savedMaps[sourceKey][h]; // Use saved mapping
+                        columnMap[h] = savedMaps[sourceKey][h];
+                        matchDetails[h] = { field: savedMaps[sourceKey][h], confidence: 'high', method: 'saved' };
                     } else {
-                        columnMap[h] = autoMatchColumn(h) || ''; // Auto-match or empty
+                        const result = enhancedAutoMatch(h);
+                        columnMap[h] = result.field || '';
+                        matchDetails[h] = result;
                     }
                 });
 
-                const matchedCount = Object.values(columnMap).filter(Boolean).length;
-                const unmatchedCount = headers.length - matchedCount;
+                const highCount = Object.values(matchDetails).filter(m => m.confidence === 'high').length;
+                const mediumCount = Object.values(matchDetails).filter(m => m.confidence === 'medium').length;
+                const unmappedCount = Object.values(matchDetails).filter(m => m.confidence === 'none').length;
 
                 // Build preview + mapper UI
                 const statusEl = document.getElementById(statusId);
@@ -7805,34 +8158,66 @@ let dataThrough = '3/8/2026';
                     (fileType ? ' | Detected as: <strong>' + DATA_FILE_TYPES[fileType].label + '</strong>' : ' | <span style="color:#F59E0B;">File type not auto-detected</span>') +
                     '</div></div></div>';
 
-                // File type selector
-                html += '<div style="margin-bottom:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">' +
-                    '<div><label style="font-size:11px;font-weight:600;color:#6B7280;">Data Type:</label> ' +
+                // Mapping Template selector + File type selector row
+                html += '<div style="margin-bottom:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">';
+
+                // Template picker
+                html += '<div><label style="font-size:11px;font-weight:600;color:#6B7280;">Quick Template:</label> ' +
+                    '<select id="' + statusId + '_template" style="padding:5px 8px;border:1px solid #93C5FD;border-radius:6px;font-size:12px;background:#EFF6FF;">' +
+                    '<option value="">-- Auto-detect --</option>';
+                Object.entries(MAPPING_TEMPLATES).forEach(([key, tmpl]) => {
+                    html += '<option value="' + key + '">' + tmpl.label + '</option>';
+                });
+                html += '</select></div>';
+
+                // Data type picker
+                html += '<div><label style="font-size:11px;font-weight:600;color:#6B7280;">Data Type:</label> ' +
                     '<select id="' + statusId + '_type" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;">' +
                     '<option value="">-- Select data type --</option>';
                 Object.entries(DATA_FILE_TYPES).forEach(([key, config]) => {
                     html += '<option value="' + key + '"' + (fileType === key ? ' selected' : '') + '>' + config.label + '</option>';
                 });
-                html += '</select></div>' +
-                    '<div style="font-size:12px;">' +
-                    '<span style="color:#059669;font-weight:600;">' + matchedCount + ' matched</span>' +
-                    (unmatchedCount > 0 ? ' | <span style="color:#F59E0B;">' + unmatchedCount + ' unmapped</span>' : '') +
-                    '</div></div>';
+                html += '</select></div>';
+
+                // Match confidence summary
+                html += '<div style="font-size:12px;">';
+                if (highCount > 0) html += '<span style="color:#059669;font-weight:600;">' + highCount + ' matched</span> ';
+                if (mediumCount > 0) html += '<span style="color:#D97706;font-weight:600;">' + mediumCount + ' fuzzy</span> ';
+                if (unmappedCount > 0) html += '<span style="color:#DC2626;font-weight:600;">' + unmappedCount + ' unmapped</span>';
+                if (unmappedCount === 0 && mediumCount === 0) html += '<span style="color:#059669;">All columns matched!</span>';
+                html += '</div></div>';
+
+                // Validation banner placeholder
+                html += '<div id="' + statusId + '_validation"></div>';
 
                 // Data preview table (first 5 rows)
                 html += '<div style="overflow-x:auto;margin-bottom:12px;border:1px solid #E5E7EB;border-radius:8px;">' +
                     '<table style="width:100%;border-collapse:collapse;font-size:11px;">';
-                // Header row with column mapping dropdowns
                 html += '<thead><tr style="background:#F1F5F9;">';
                 headers.forEach(h => {
                     const mapped = columnMap[h];
-                    const mapLabel = mapped ? DASHBOARD_FIELDS[mapped]?.label || mapped : '';
-                    const color = mapped ? '#059669' : '#9CA3AF';
+                    const detail = matchDetails[h];
+                    const conf = detail?.confidence || 'none';
+                    // Color code by confidence: green=high, yellow=medium/fuzzy, red=none
+                    const borderColor = conf === 'high' ? '#BBF7D0' : conf === 'medium' ? '#FDE68A' : '#FECACA';
+                    const bgColor = conf === 'high' ? '#F0FDF4' : conf === 'medium' ? '#FFFBEB' : '#FEF2F2';
+                    const dotColor = conf === 'high' ? '#059669' : conf === 'medium' ? '#D97706' : '#DC2626';
+                    const confLabel = conf === 'high' ? '' : conf === 'medium' ? ' (fuzzy)' : '';
+
                     html += '<th style="padding:6px 8px;text-align:left;min-width:120px;">' +
-                        '<div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;" title="' + h + '">' + h + '</div>' +
-                        '<select data-header="' + h.replace(/"/g, '&quot;') + '" class="colMapSelect" style="width:100%;padding:2px 4px;border:1px solid ' + (mapped ? '#BBF7D0' : '#FDE68A') + ';border-radius:4px;font-size:10px;background:' + (mapped ? '#F0FDF4' : '#FFFBEB') + ';">' +
+                        '<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">' +
+                        '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + dotColor + ';"></span>' +
+                        '<span style="font-size:11px;font-weight:600;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;" title="' + h + '">' + h + '</span>' +
+                        '</div>';
+
+                    // Fuzzy suggestion hint for unmapped columns
+                    if (conf === 'none' && detail?.suggestions?.length > 0) {
+                        html += '<div style="font-size:9px;color:#9CA3AF;margin-bottom:2px;">Did you mean: ' +
+                            detail.suggestions.slice(0,2).map(s => s.label).join(', ') + '?</div>';
+                    }
+
+                    html += '<select data-header="' + h.replace(/"/g, '&quot;') + '" class="colMapSelect" style="width:100%;padding:2px 4px;border:1px solid ' + borderColor + ';border-radius:4px;font-size:10px;background:' + bgColor + ';">' +
                         '<option value="">-- skip --</option>';
-                    // Group options by category
                     const groups = {};
                     Object.entries(DASHBOARD_FIELDS).forEach(([key, config]) => {
                         if (!groups[config.group]) groups[config.group] = [];
@@ -7849,7 +8234,6 @@ let dataThrough = '3/8/2026';
                 });
                 html += '</tr></thead>';
 
-                // Data rows (first 5)
                 html += '<tbody>';
                 data.slice(0, 5).forEach((row, ri) => {
                     html += '<tr style="border-top:1px solid #F3F4F6;' + (ri % 2 ? 'background:#FAFAFA;' : '') + '">';
@@ -7867,19 +8251,75 @@ let dataThrough = '3/8/2026';
                 }
                 html += '</tbody></table></div>';
 
-                // Action buttons
-                html += '<div style="display:flex;gap:8px;">' +
+                // Action buttons: Save, Support, Cancel
+                html += '<div style="display:flex;gap:8px;align-items:center;">' +
                     '<button id="' + statusId + '_save" style="flex:2;padding:10px;background:#059669;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">Save & Load Data</button>' +
-                    '<button id="' + statusId + '_cancel" style="flex:1;padding:10px;background:#F3F4F6;color:#6B7280;border:1px solid #E5E7EB;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">Cancel</button>' +
+                    '<button id="' + statusId + '_support" style="padding:10px 14px;background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;" title="Get help mapping these columns">Need Help?</button>' +
+                    '<button id="' + statusId + '_cancel" style="padding:10px 14px;background:#F3F4F6;color:#6B7280;border:1px solid #E5E7EB;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;">Cancel</button>' +
                     '</div></div>';
 
                 statusEl.innerHTML = html;
 
+                // Run initial validation and show banner
+                function runValidation() {
+                    const selectedType = document.getElementById(statusId + '_type')?.value || fileType || null;
+                    const currentMap = {};
+                    statusEl.querySelectorAll('.colMapSelect').forEach(sel => {
+                        if (sel.value) currentMap[sel.dataset.header] = sel.value;
+                    });
+                    const valEl = document.getElementById(statusId + '_validation');
+                    if (!valEl || !selectedType) { if (valEl) valEl.innerHTML = ''; return; }
+
+                    const result = validateColumnMapping(selectedType, currentMap);
+                    let vHtml = '';
+                    if (result.errors.length > 0) {
+                        vHtml += '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 14px;margin-bottom:8px;">' +
+                            '<div style="font-size:12px;font-weight:700;color:#DC2626;margin-bottom:4px;">Missing Required Fields</div>' +
+                            '<div style="font-size:11px;color:#7F1D1D;">' + result.errors.join('<br>') + '</div></div>';
+                    }
+                    if (result.warnings.length > 0) {
+                        vHtml += '<div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;margin-bottom:8px;">' +
+                            '<div style="font-size:12px;font-weight:600;color:#92400E;margin-bottom:4px;">Recommendations</div>' +
+                            '<div style="font-size:11px;color:#78350F;">' + result.warnings.join('<br>') + '</div></div>';
+                    }
+                    if (result.errors.length === 0 && result.warnings.length === 0) {
+                        vHtml = '<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:8px 14px;margin-bottom:8px;font-size:12px;color:#166534;">All required fields mapped. Ready to save.</div>';
+                    }
+                    valEl.innerHTML = vHtml;
+                }
+                runValidation();
+
+                // Re-validate when dropdowns change
+                statusEl.querySelectorAll('.colMapSelect').forEach(sel => {
+                    sel.addEventListener('change', runValidation);
+                });
+                document.getElementById(statusId + '_type')?.addEventListener('change', runValidation);
+
+                // Template selector: re-map all columns when template is chosen
+                document.getElementById(statusId + '_template')?.addEventListener('change', function() {
+                    const tmplId = this.value;
+                    if (!tmplId) return;
+                    const tmpl = MAPPING_TEMPLATES[tmplId];
+                    const newMap = applyMappingTemplate(tmplId, headers);
+                    // Update all dropdowns
+                    statusEl.querySelectorAll('.colMapSelect').forEach(sel => {
+                        const h = sel.dataset.header;
+                        sel.value = newMap[h] || '';
+                        // Update visual style
+                        const isMapped = !!sel.value;
+                        sel.style.borderColor = isMapped ? '#BBF7D0' : '#FECACA';
+                        sel.style.background = isMapped ? '#F0FDF4' : '#FEF2F2';
+                    });
+                    // Auto-set file type from template
+                    if (tmpl && tmpl.fileType) {
+                        const typeEl = document.getElementById(statusId + '_type');
+                        if (typeEl) typeEl.value = tmpl.fileType;
+                    }
+                    runValidation();
+                });
+
                 // Wire up Save button
                 document.getElementById(statusId + '_save')?.addEventListener('click', async function() {
-                    this.disabled = true;
-                    this.textContent = 'Saving...';
-
                     // Read final column mappings from dropdowns
                     const finalMap = {};
                     statusEl.querySelectorAll('.colMapSelect').forEach(sel => {
@@ -7887,13 +8327,41 @@ let dataThrough = '3/8/2026';
                         if (sel.value) finalMap[header] = sel.value;
                     });
 
+                    // Validate before save
+                    const selectedType = document.getElementById(statusId + '_type')?.value || fileType || null;
+                    if (selectedType) {
+                        const valResult = validateColumnMapping(selectedType, finalMap);
+                        if (!valResult.valid) {
+                            if (!confirm('WARNING: Required fields are missing:\n\n' +
+                                valResult.errors.map(e => e.replace(/<[^>]*>/g, '')).join('\n') +
+                                '\n\nYour dashboard may show incomplete data. Save anyway?')) {
+                                // Log the failed validation
+                                saveUploadAudit(buildAuditEntry(file, headers, finalMap, matchDetails, selectedType, 'validation_failed'));
+                                return;
+                            }
+                        }
+                    }
+
+                    if (!selectedType) {
+                        if (!confirm('No data type selected. The system may not know how to display this data. Continue anyway?')) return;
+                    }
+
+                    this.disabled = true;
+                    this.textContent = 'Saving...';
+
+                    // Learn from any manual mappings (columns the user changed from auto-match)
+                    Object.entries(finalMap).forEach(([header, field]) => {
+                        const origMatch = matchDetails[header];
+                        if (origMatch && origMatch.field !== field) {
+                            learnFromManualMapping(header, field);
+                        }
+                    });
+
                     // Save mapping for this source
                     const allMaps = getSavedMappings();
                     allMaps[sourceKey] = finalMap;
                     saveMappings(allMaps);
 
-                    // Get selected file type
-                    const selectedType = document.getElementById(statusId + '_type')?.value || fileType || null;
                     const docId = selectedType || file.name.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50);
 
                     // Remap data using final column mappings
@@ -7902,7 +8370,6 @@ let dataThrough = '3/8/2026';
                         Object.entries(finalMap).forEach(([origHeader, dashField]) => {
                             newRow[dashField] = row[origHeader];
                         });
-                        // Also keep unmapped columns with original names (for future reference)
                         headers.forEach(h => {
                             if (!finalMap[h]) newRow['_orig_' + h] = row[h];
                         });
@@ -7933,8 +8400,10 @@ let dataThrough = '3/8/2026';
                         } catch(e) { console.warn('Firestore save error:', e); }
                     }
 
-                    // Cache in localStorage
                     try { localStorage.setItem('sk_data_' + docId, JSON.stringify(remappedData)); } catch(e) {}
+
+                    // Save audit log
+                    saveUploadAudit(buildAuditEntry(file, headers, finalMap, matchDetails, selectedType, 'saved'));
 
                     // Show success
                     statusEl.innerHTML =
@@ -7956,8 +8425,34 @@ let dataThrough = '3/8/2026';
                     });
                 });
 
+                // Wire up Support button
+                document.getElementById(statusId + '_support')?.addEventListener('click', function() {
+                    const currentMap = {};
+                    statusEl.querySelectorAll('.colMapSelect').forEach(sel => {
+                        if (sel.value) currentMap[sel.dataset.header] = sel.value;
+                    });
+                    const selectedType = document.getElementById(statusId + '_type')?.value || fileType || null;
+                    const payload = buildSupportPayload(file, headers, currentMap, matchDetails, selectedType);
+
+                    // Log the support request
+                    saveUploadAudit(buildAuditEntry(file, headers, currentMap, matchDetails, selectedType, 'support_requested'));
+
+                    // Open mailto with pre-filled details
+                    const subject = encodeURIComponent(payload.subject);
+                    const body = encodeURIComponent(payload.body);
+                    window.open('mailto:' + payload.email + '?subject=' + subject + '&body=' + body, '_blank');
+
+                    // Also show inline confirmation
+                    this.textContent = 'Email Opened';
+                    this.style.background = '#D1FAE5';
+                    this.style.color = '#065F46';
+                    this.style.borderColor = '#A7F3D0';
+                    this.disabled = true;
+                });
+
                 // Wire up Cancel button
                 document.getElementById(statusId + '_cancel')?.addEventListener('click', function() {
+                    saveUploadAudit(buildAuditEntry(file, headers, columnMap, matchDetails, fileType, 'cancelled'));
                     statusEl.remove();
                 });
 
