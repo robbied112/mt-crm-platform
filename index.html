@@ -875,8 +875,8 @@
             <input id="setupChannels" type="text" placeholder="e.g. On-Premise, Off-Premise, DTC" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
           </div>
           <div style="margin-bottom:14px;">
-            <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">States / Markets You Operate In (comma-separated codes)</label>
-            <input id="setupStates" type="text" placeholder="e.g. FL, NJ, CA, TX" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+            <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">States / Markets (leave blank for all 50 states)</label>
+            <input id="setupStates" type="text" placeholder="Leave blank for all states, or enter specific: FL, NJ, CA" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
           </div>
           <div style="margin-bottom:14px;">
             <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Regions (optional, comma-separated)</label>
@@ -6731,6 +6731,14 @@ let dataThrough = '3/8/2026';
                 console.warn('Failed to load tenant config from Firestore:', e);
             }
         }
+
+        // Default to all 50 states if none configured -- filters will just show no data for empty states
+        if (Object.keys(TENANT_CONFIG.stateNames).length === 0) {
+            Object.keys(US_STATE_NAMES).forEach(code => {
+                TENANT_CONFIG.stateNames[code] = US_STATE_NAMES[code];
+                stateNames[code] = US_STATE_NAMES[code];
+            });
+        }
     }
 
     // Hook into the existing tab switch to load settings form when admin settings tab is clicked
@@ -6854,22 +6862,22 @@ let dataThrough = '3/8/2026';
                 TENANT_CONFIG.channels = channelsRaw.split(',').map(c => c.trim()).filter(Boolean);
             }
 
-            // States and regions
-            if (statesRaw) {
-                const stateCodes = statesRaw.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
-                const regions = regionsRaw ? regionsRaw.split(',').map(r => r.trim()).filter(Boolean) : [];
+            // States and regions - default to ALL 50 states if left blank
+            const stateCodes = statesRaw
+                ? statesRaw.split(',').map(s => s.trim().toUpperCase()).filter(Boolean)
+                : Object.keys(US_STATE_NAMES);  // All 50 states
+            const regions = regionsRaw ? regionsRaw.split(',').map(r => r.trim()).filter(Boolean) : [];
 
-                stateCodes.forEach(code => {
-                    if (US_STATE_NAMES[code]) {
-                        TENANT_CONFIG.stateNames[code] = US_STATE_NAMES[code];
-                        stateNames[code] = US_STATE_NAMES[code];
-                    }
-                    if (regions.length > 0) {
-                        TENANT_CONFIG.regionMap[code] = regions[0];
-                        regionMap[code] = regions[0];
-                    }
-                });
-            }
+            stateCodes.forEach(code => {
+                if (US_STATE_NAMES[code]) {
+                    TENANT_CONFIG.stateNames[code] = US_STATE_NAMES[code];
+                    stateNames[code] = US_STATE_NAMES[code];
+                }
+                if (regions.length > 0) {
+                    TENANT_CONFIG.regionMap[code] = regions[0];
+                    regionMap[code] = regions[0];
+                }
+            });
 
             // Create Firebase Auth account for admin
             try {
