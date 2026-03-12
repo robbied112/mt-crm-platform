@@ -1963,6 +1963,13 @@
                         <input id="dataFileInput" type="file" accept=".xlsx,.xls,.csv" multiple style="display:none;" />
                     </div>
                     <div id="dataUploadList" style="margin-top:12px;"></div>
+                    <div style="margin-top:16px;padding-top:16px;border-top:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;">
+                        <div>
+                            <div style="font-size:13px;font-weight:600;color:#374151;">Clear Uploaded Data</div>
+                            <div style="font-size:11px;color:#9CA3AF;">Remove all uploaded data from the dashboard. Settings and config are kept.</div>
+                        </div>
+                        <button id="clearAllDataBtn" style="padding:8px 16px;background:#DC2626;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Clear All Data</button>
+                    </div>
                 </div>
 
                 <!-- Billing & Subscription -->
@@ -6745,16 +6752,71 @@ let dataThrough = '3/8/2026';
         // Features
         renderSettFeatures();
 
-        // Reset
+        // Clear All Data (keeps settings)
+        document.getElementById('clearAllDataBtn')?.addEventListener('click', async function() {
+            if (!confirm('This will remove ALL uploaded data from your dashboard. Your settings, product catalog, and config will be kept. Continue?')) return;
+            await clearAllTenantData();
+            alert('All data cleared. The dashboard will now reload.');
+            location.reload();
+        });
+
+        // Reset (clears everything)
         document.getElementById('resetTenantBtn')?.addEventListener('click', async function() {
-            if (!confirm('This will reset ALL settings to defaults. Are you sure?')) return;
+            if (!confirm('This will reset ALL settings AND data to defaults. Are you sure?')) return;
             if (!confirm('This is irreversible. Type "RESET" to confirm... (Cancel to abort)')) return;
+            await clearAllTenantData();
             if (firebaseReady && db) {
                 try { await db.collection('tenants').doc(TENANT_CONFIG.tenantId).delete(); } catch(e) {}
             }
             localStorage.removeItem('sk_tenant_config');
             location.reload();
         });
+    }
+
+    // Clear all uploaded data from Firestore and localStorage for the current tenant
+    async function clearAllTenantData() {
+        const tenantId = TENANT_CONFIG.tenantId;
+        const dataTypes = ['scorecard', 'inventory', 'accounts', 'reorder', 'qb_orders', 'newWins', 'reEngagement', 'placement'];
+
+        // Clear Firestore data subcollections
+        if (firebaseReady && db) {
+            for (const dtype of dataTypes) {
+                try {
+                    // Delete row chunks
+                    const rowsSnap = await db.collection('tenants').doc(tenantId)
+                        .collection('data').doc(dtype).collection('rows').get();
+                    const batch = db.batch();
+                    rowsSnap.docs.forEach(doc => batch.delete(doc.ref));
+                    await batch.commit();
+                    // Delete the data doc itself
+                    await db.collection('tenants').doc(tenantId).collection('data').doc(dtype).delete();
+                } catch(e) { console.warn('Failed to clear', dtype, e); }
+            }
+        }
+
+        // Clear localStorage data keys
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('sk_data_') || key.startsWith('sk_pipeline_') || key.startsWith('mt_acct_') || key.startsWith('mt_files_') || key.startsWith('mt_emails_'))) {
+                keysToRemove.push(key);
+            }
+        }
+        keysToRemove.forEach(k => localStorage.removeItem(k));
+
+        // Reset in-memory data arrays
+        distScorecard = [];
+        inventoryData = [];
+        reEngagementData = [];
+        newWins = [];
+        placementSummary = [];
+        if (typeof reorderData !== 'undefined') reorderData = [];
+        if (typeof accountsTop !== 'undefined') accountsTop = [];
+        if (typeof qbDistOrders !== 'undefined') qbDistOrders = {};
+        if (typeof distHealth !== 'undefined') distHealth = [];
+        if (typeof DataLoader !== 'undefined') DataLoader._isLoaded = false;
+
+        console.log('All tenant data cleared for', tenantId);
     }
 
     // ==================== PRODUCT CATALOG MANAGEMENT ====================
