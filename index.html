@@ -338,6 +338,19 @@
             box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
         }
 
+        /* Focus styles for all interactive elements */
+        button:focus-visible, .btn:focus-visible, .tab:focus-visible, .pill:focus-visible,
+        [role="button"]:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+        }
+
         .btn {
             padding: 8px 16px;
             border: none;
@@ -878,9 +891,26 @@
         .myacct-row:last-child {border-bottom:none;}
         .myacct-tags {display:flex;gap:4px;flex-wrap:wrap;}
         .myacct-tag-sm {padding:2px 6px;border-radius:8px;font-size:9px;font-weight:600;background:#EEF2FF;color:#4338CA;}
+        /* Skip to content link */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--accent);
+            color: white;
+            padding: 8px 16px;
+            z-index: 10001;
+            border-radius: 0 0 8px 0;
+            font-size: 14px;
+            transition: top 0.2s;
+        }
+        .skip-link:focus {
+            top: 0;
+        }
     </style>
 </head>
 <body>
+    <a href="#mainContent" class="skip-link">Skip to main content</a>
 
     <!-- Login Overlay -->
     <!-- Setup Wizard (shown on first visit when no tenant is configured) -->
@@ -1029,14 +1059,14 @@
     <div id="userBar" style="display:none;position:fixed;top:8px;right:16px;z-index:100;background:#fff;border-radius:20px;padding:4px 14px 4px 10px;box-shadow:0 2px 8px rgba(0,0,0,0.1);border:1px solid #e5e7eb;font-size:12px;display:none;align-items:center;gap:8px;">
       <div style="width:24px;height:24px;border-radius:50%;background:#0F766E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;" id="userAvatar">?</div>
       <span id="userName" style="font-weight:600;color:#374151;">--</span>
-      <button onclick="openUserMgmt()" style="background:none;border:none;color:#6B7280;font-size:13px;cursor:pointer;padding:2px 4px;" title="Manage Users">&#9881;</button>
+      <button onclick="openUserMgmt()" style="background:none;border:none;color:#6B7280;font-size:13px;cursor:pointer;padding:2px 4px;" title="Manage Users" aria-label="Manage Users">&#9881;</button>
       <button onclick="doLogout()" style="background:none;border:none;color:#9ca3af;font-size:11px;cursor:pointer;padding:2px 6px;">Logout</button>
     </div>
 
     <!-- User Management Panel -->
     <div id="userMgmtOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:9998;justify-content:center;align-items:center;" onclick="if(event.target===this)closeUserMgmt()">
       <div style="background:#fff;border-radius:12px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;padding:28px;position:relative;">
-        <button onclick="closeUserMgmt()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#6B7280;">x</button>
+        <button onclick="closeUserMgmt()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#6B7280;" aria-label="Close user management">&#10005;</button>
         <h3 style="margin:0 0 6px 0;color:#0F766E;">Manage Users</h3>
         <p style="font-size:12px;color:#6B7280;margin:0 0 20px 0;">Manage team members. Users sign in with their email and password.</p>
         <div id="userMgmtList"></div>
@@ -1068,7 +1098,7 @@
       </div>
     </div>
 
-    <div class="container">
+    <main id="mainContent" class="container" role="main">
         <header>
             <img id="brandLogo" src="logo.png" alt="Sidekick BI" style="height:40px;">
             <div class="header-text">
@@ -1159,7 +1189,7 @@
             <button class="tab" data-tab="reorder">Reorder Forecast</button>
             <button class="tab tab-accent-blue" data-tab="pipeline">Customer Pipeline</button>
             <button class="tab" data-tab="admin-settings" id="adminSettingsTab" style="display:none;">Settings</button>
-            <button id="helpIconBtn" style="background:none;border:none;font-size:18px;cursor:pointer;color:#6B7280;padding:8px 12px;margin-left:auto;" title="Help & Legend">?</button>
+            <button id="helpIconBtn" style="background:none;border:none;font-size:18px;cursor:pointer;color:#6B7280;padding:8px 12px;margin-left:auto;" title="Help & Legend" aria-label="Help and Legend">?</button>
         </div>
 
         <!-- Tab: My Territory -->
@@ -1722,7 +1752,7 @@
           <div id="activityLogSection" class="card" style="margin-bottom:16px;padding:16px;display:none;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
               <h4 style="margin:0;font-size:14px;color:#0F766E;">Recent Activity</h4>
-              <button onclick="document.getElementById('activityLogSection').style.display='none'" style="background:none;border:none;font-size:16px;cursor:pointer;color:#6B7280;">x</button>
+              <button onclick="document.getElementById('activityLogSection').style.display='none'" style="background:none;border:none;font-size:16px;cursor:pointer;color:#6B7280;" aria-label="Close activity log">&#10005;</button>
             </div>
             <div id="activityLogEntries" style="max-height:200px;overflow-y:auto;"></div>
           </div>
@@ -1754,7 +1784,7 @@
         <!-- Pipeline Account Detail Panel (overlay) -->
         <div id="pipelineDetailOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:1000;justify-content:center;align-items:center;">
           <div style="background:#fff;border-radius:12px;max-width:720px;width:94%;max-height:85vh;overflow-y:auto;padding:28px;position:relative;">
-            <button onclick="closePipelineDetail()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#6B7280;">x</button>
+            <button onclick="closePipelineDetail()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#6B7280;" aria-label="Close pipeline detail">&#10005;</button>
             <div id="pipelineDetailContent"></div>
           </div>
         </div>
@@ -2175,7 +2205,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <footer>
         <span id="footerBrand">Sidekick BI</span> - Data through: <span id="dataThrough">--</span>
