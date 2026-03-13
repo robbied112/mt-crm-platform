@@ -5726,15 +5726,15 @@ let dataThrough = '3/8/2026';
 
             return '<tr style="border-bottom:1px solid #f1f5f9;cursor:pointer;" onclick="openPipelineDetail(\'' + escAttr(r.acct) + '\')">' +
                 '<td style="padding:8px 12px;font-weight:600;color:#0F766E;cursor:pointer;">' + esc(r.acct) + distBadge + '</td>' +
-                '<td style="padding:8px;text-align:center;"><span style="padding:2px 10px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:'+plTierColors[r.tier]+';">'+r.tier+'</span></td>' +
+                '<td style="padding:8px;text-align:center;"><span style="padding:2px 10px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:'+plTierColors[r.tier]+';">'+esc(r.tier)+'</span></td>' +
                 '<td style="padding:8px;text-align:center;"><span style="padding:2px 10px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:'+plStageColors[r.stage]+';">' + esc(r.stage) + '</span></td>' +
                 '<td style="padding:8px;text-align:center;font-size:11px;font-weight:600;color:'+daysColor+';">'+daysSinceStage+'</td>' +
                 '<td style="padding:8px;font-size:12px;">' + esc(r.owner) + '</td>' +
                 '<td style="padding:8px;font-size:12px;color:#6B7280;">'+esc(r.source || '--')+'</td>' +
                 '<td style="padding:8px;text-align:right;font-weight:600;">'+f$pl(r.estValue)+(r.hasCustom ? '<span style="color:#10b981;font-size:9px;margin-left:2px;">*</span>' : '')+'</td>' +
                 '<td style="padding:8px;text-align:right;color:#7C3AED;font-weight:600;">'+f$pl(r.weighted)+'</td>' +
-                '<td style="padding:8px;font-size:11px;">'+(r.nextStep || '<span style="color:#d1d5db;">--</span>')+'</td>' +
-                '<td style="padding:8px;text-align:center;font-size:11px;'+(isOverdue?'color:#DC2626;font-weight:700;':'')+'">'+(r.dueDate || '--')+'</td>' +
+                '<td style="padding:8px;font-size:11px;">'+(r.nextStep ? esc(r.nextStep) : '<span style="color:#d1d5db;">--</span>')+'</td>' +
+                '<td style="padding:8px;text-align:center;font-size:11px;'+(isOverdue?'color:#DC2626;font-weight:700;':'')+'">'+(r.dueDate ? esc(r.dueDate) : '--')+'</td>' +
                 '<td style="padding:8px;text-align:center;">'+(r.notes ? '<span style="background:#EEF2FF;color:#4338CA;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">Yes</span>' : '--')+'</td></tr>';
         }).join('');
         document.getElementById('pipelineSummary').textContent = 'Showing ' + rows.length + ' accounts | ' + f$pl(rows.reduce((s,r) => s + r.estValue, 0)) + ' total value';
@@ -5774,8 +5774,8 @@ let dataThrough = '3/8/2026';
         const hasCustom = meta.customValue && meta.customValue > 0;
         const tierDefaults = {Enterprise:'$118,500','On-Premise Natl':'$79,000',Regional:'$39,500',Emerging:'$7,900'};
         const typeBadge = acctType === 'Distributor' ? ' <span style="background:#dbeafe;color:#0F766E;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">Distribution Partner</span>' : '';
-        const channelBadge = channel ? ' <span style="background:'+(channel==='On-Premise'?'#FEF3C7':'#E0E7FF')+';color:'+(channel==='On-Premise'?'#92400E':'#3730A3')+';padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">'+channel+'</span>' : '';
-        const stateBadge = acctState ? ' <span style="background:#F0FDF4;color:#166534;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">'+acctState+(regionMap[acctState]?' - '+regionMap[acctState]:'')+'</span>' : '';
+        const channelBadge = channel ? ' <span style="background:'+(channel==='On-Premise'?'#FEF3C7':'#E0E7FF')+';color:'+(channel==='On-Premise'?'#92400E':'#3730A3')+';padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">'+esc(channel)+'</span>' : '';
+        const stateBadge = acctState ? ' <span style="background:#F0FDF4;color:#166534;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">'+esc(acctState)+(regionMap[acctState]?' - '+esc(regionMap[acctState]):'')+'</span>' : '';
         const escapedName = escAttr(acctName);
 
         // Stage date and days calc
@@ -5786,9 +5786,9 @@ let dataThrough = '3/8/2026';
         else if (daysSinceStage > 14) daysColor = '#D97706';
 
         // Header (always shown)
-        let html = '<h3 style="margin:0 0 4px 0;color:#0F766E;font-size:20px;">'+acct.acct+typeBadge+channelBadge+stateBadge+'</h3>' +
+        let html = '<h3 style="margin:0 0 4px 0;color:#0F766E;font-size:20px;">'+esc(acct.acct)+typeBadge+channelBadge+stateBadge+'</h3>' +
             '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">' +
-                '<span style="padding:3px 12px;border-radius:12px;font-size:11px;font-weight:600;color:#fff;background:'+plTierColors[tier]+';">'+tier+'</span>' +
+                '<span style="padding:3px 12px;border-radius:12px;font-size:11px;font-weight:600;color:#fff;background:'+plTierColors[tier]+';">'+esc(tier)+'</span>' +
                 '<span style="padding:3px 12px;border-radius:12px;font-size:11px;font-weight:600;color:#fff;background:'+plStageColors[stage]+';">'+esc(stage)+'</span>' +
                 '<span style="padding:3px 12px;border-radius:12px;font-size:11px;font-weight:600;color:'+daysColor+';background:#f8fafc;border:1px solid #e2e8f0;">'+daysSinceStage+' days in stage</span></div>';
 
