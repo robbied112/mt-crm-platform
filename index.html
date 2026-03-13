@@ -1314,6 +1314,28 @@
                     </div>
                 </div>
 
+                <!-- Account Security -->
+                <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                    <h3 style="font-size:16px;font-weight:700;color:#374151;margin-bottom:16px;">Account Security</h3>
+                    <p style="font-size:13px;color:#6B7280;margin-bottom:16px;">Change your password. You must enter your current password to confirm.</p>
+                    <div style="max-width:400px;">
+                        <div style="margin-bottom:12px;">
+                            <label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Current Password</label>
+                            <input id="pwdCurrent" type="password" autocomplete="current-password" style="width:100%;padding:8px 12px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;box-sizing:border-box;">
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">New Password</label>
+                            <input id="pwdNew" type="password" autocomplete="new-password" placeholder="At least 6 characters" style="width:100%;padding:8px 12px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;box-sizing:border-box;">
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Confirm New Password</label>
+                            <input id="pwdConfirm" type="password" autocomplete="new-password" placeholder="Re-enter new password" style="width:100%;padding:8px 12px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;box-sizing:border-box;">
+                        </div>
+                        <div id="pwdChangeMsg" style="font-size:13px;margin-bottom:12px;display:none;"></div>
+                        <button onclick="doPasswordChange()" style="padding:8px 20px;background:#0F766E;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Change Password</button>
+                    </div>
+                </div>
+
                 <!-- Danger Zone -->
                 <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:24px;margin-bottom:20px;">
                     <h3 style="font-size:16px;font-weight:700;color:#991B1B;margin-bottom:12px;">Danger Zone</h3>
@@ -2200,6 +2222,39 @@ let dataThrough = '3/8/2026';
                 console.error('Password reset error:', e);
                 if (e.code === 'auth/user-not-found') showLoginError('No account found with that email.');
                 else showLoginError('Could not send reset email. Try again.');
+            }
+        }
+
+        async function doPasswordChange() {
+            const msgEl = document.getElementById('pwdChangeMsg');
+            function showPwdMsg(text, isError) {
+                if (!msgEl) return;
+                msgEl.style.display = 'block';
+                msgEl.style.color = isError ? '#DC2626' : '#059669';
+                msgEl.textContent = text;
+            }
+            const current = document.getElementById('pwdCurrent').value;
+            const newPwd = document.getElementById('pwdNew').value;
+            const confirm = document.getElementById('pwdConfirm').value;
+            if (!current || !newPwd || !confirm) { showPwdMsg('Please fill in all fields.', true); return; }
+            if (newPwd.length < 6) { showPwdMsg('New password must be at least 6 characters.', true); return; }
+            if (newPwd !== confirm) { showPwdMsg('New passwords do not match.', true); return; }
+            if (newPwd === current) { showPwdMsg('New password must be different from current password.', true); return; }
+            try {
+                const user = auth.currentUser;
+                if (!user || !user.email) { showPwdMsg('You must be logged in to change your password.', true); return; }
+                const credential = firebase.auth.EmailAuthProvider.credential(user.email, current);
+                await user.reauthenticateWithCredential(credential);
+                await user.updatePassword(newPwd);
+                showPwdMsg('Password changed successfully!', false);
+                document.getElementById('pwdCurrent').value = '';
+                document.getElementById('pwdNew').value = '';
+                document.getElementById('pwdConfirm').value = '';
+            } catch(e) {
+                console.error('Password change error:', e);
+                if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') showPwdMsg('Current password is incorrect.', true);
+                else if (e.code === 'auth/weak-password') showPwdMsg('New password is too weak. Use at least 6 characters.', true);
+                else showPwdMsg('Could not change password. Try logging out and back in first.', true);
             }
         }
 
