@@ -4137,6 +4137,17 @@ let dataThrough = '3/8/2026';
         }
     })();
 
+    // Tenant-scoped Firestore helpers
+    function tenantRef() {
+        return db.collection('tenants').doc(TENANT_CONFIG.tenantId);
+    }
+    function tenantAccountsRef() {
+        return tenantRef().collection('accounts');
+    }
+    function tenantPipelineRef() {
+        return tenantRef().collection('pipeline');
+    }
+
     // Storage abstraction - uses Firebase if available, localStorage fallback
     const AccountStore = {
         _localKey(acctId) { return 'mt_acct_' + acctId; },
@@ -4145,7 +4156,7 @@ let dataThrough = '3/8/2026';
         async getNotes(acctId) {
             const id = this._sanitizeId(acctId);
             if(firebaseReady) {
-                const snap = await db.collection('accounts').doc(id).collection('notes').orderBy('ts','desc').get();
+                const snap = await tenantAccountsRef().doc(id).collection('notes').orderBy('ts','desc').get();
                 return snap.docs.map(d => ({id:d.id, ...d.data()}));
             }
             const data = JSON.parse(localStorage.getItem(this._localKey(id)) || '{}');
@@ -4156,7 +4167,7 @@ let dataThrough = '3/8/2026';
             const id = this._sanitizeId(acctId);
             const note = {text, author, ts: Date.now(), date: new Date().toLocaleDateString(), mentions: mentions || []};
             if(firebaseReady) {
-                await db.collection('accounts').doc(id).collection('notes').add(note);
+                await tenantAccountsRef().doc(id).collection('notes').add(note);
                 return;
             }
             const data = JSON.parse(localStorage.getItem(this._localKey(id)) || '{}');
@@ -4168,7 +4179,7 @@ let dataThrough = '3/8/2026';
         async getMeta(acctId) {
             const id = this._sanitizeId(acctId);
             if(firebaseReady) {
-                const doc = await db.collection('accounts').doc(id).get();
+                const doc = await tenantAccountsRef().doc(id).get();
                 return doc.exists ? doc.data() : {};
             }
             const data = JSON.parse(localStorage.getItem(this._localKey(id)) || '{}');
@@ -4178,7 +4189,7 @@ let dataThrough = '3/8/2026';
         async setMeta(acctId, meta) {
             const id = this._sanitizeId(acctId);
             if(firebaseReady) {
-                await db.collection('accounts').doc(id).set(meta, {merge: true});
+                await tenantAccountsRef().doc(id).set(meta, {merge: true});
                 return;
             }
             const data = JSON.parse(localStorage.getItem(this._localKey(id)) || '{}');
@@ -4191,7 +4202,7 @@ let dataThrough = '3/8/2026';
             const result = {};
             if (firebaseReady) {
                 try {
-                    const snap = await db.collection('accounts').get();
+                    const snap = await tenantAccountsRef().get();
                     snap.docs.forEach(doc => {
                         result[doc.id] = doc.data();
                     });
@@ -4219,7 +4230,7 @@ let dataThrough = '3/8/2026';
                 try {
                     // Firestore doesn't support collection group count easily,
                     // so we get accounts and check subcollections
-                    const snap = await db.collection('accounts').get();
+                    const snap = await tenantAccountsRef().get();
                     for (const doc of snap.docs) {
                         const noteSnap = await doc.ref.collection('notes').get();
                         if (noteSnap.size > 0) {
@@ -4256,7 +4267,7 @@ let dataThrough = '3/8/2026';
             const id = this._id(acctId);
             const ts = Date.now();
             const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-            const path = `attachments/${id}/${ts}_${safeName}`;
+            const path = `tenants/${TENANT_CONFIG.tenantId}/attachments/${id}/${ts}_${safeName}`;
             let url = '';
 
             if (storage) {
@@ -4278,7 +4289,7 @@ let dataThrough = '3/8/2026';
             };
 
             if (firebaseReady) {
-                await db.collection('accounts').doc(id).collection('files').add(meta);
+                await tenantAccountsRef().doc(id).collection('files').add(meta);
             } else {
                 const data = JSON.parse(localStorage.getItem('mt_files_' + id) || '[]');
                 data.push(meta);
@@ -4291,7 +4302,7 @@ let dataThrough = '3/8/2026';
         async getFiles(acctId) {
             const id = this._id(acctId);
             if (firebaseReady) {
-                const snap = await db.collection('accounts').doc(id).collection('files').orderBy('ts', 'desc').get();
+                const snap = await tenantAccountsRef().doc(id).collection('files').orderBy('ts', 'desc').get();
                 return snap.docs.map(d => ({id: d.id, ...d.data()}));
             }
             return JSON.parse(localStorage.getItem('mt_files_' + id) || '[]').sort((a, b) => b.ts - a.ts);
@@ -4304,7 +4315,7 @@ let dataThrough = '3/8/2026';
                 try { await storage.ref(filePath).delete(); } catch(e) { console.warn('Could not delete file from storage:', e); }
             }
             if (firebaseReady) {
-                await db.collection('accounts').doc(id).collection('files').doc(fileId).delete();
+                await tenantAccountsRef().doc(id).collection('files').doc(fileId).delete();
             }
         },
 
@@ -4323,7 +4334,7 @@ let dataThrough = '3/8/2026';
                 date: new Date().toLocaleDateString()
             };
             if (firebaseReady) {
-                await db.collection('accounts').doc(id).collection('emails').add(entry);
+                await tenantAccountsRef().doc(id).collection('emails').add(entry);
             } else {
                 const data = JSON.parse(localStorage.getItem('mt_emails_' + id) || '[]');
                 data.push(entry);
@@ -4336,7 +4347,7 @@ let dataThrough = '3/8/2026';
         async getEmails(acctId) {
             const id = this._id(acctId);
             if (firebaseReady) {
-                const snap = await db.collection('accounts').doc(id).collection('emails').orderBy('ts', 'desc').get();
+                const snap = await tenantAccountsRef().doc(id).collection('emails').orderBy('ts', 'desc').get();
                 return snap.docs.map(d => ({id: d.id, ...d.data()}));
             }
             return JSON.parse(localStorage.getItem('mt_emails_' + id) || '[]').sort((a, b) => b.ts - a.ts);
@@ -5023,7 +5034,7 @@ let dataThrough = '3/8/2026';
 
         if (firebaseReady && db) {
             try {
-                const snap = await db.collection('accounts').get();
+                const snap = await tenantAccountsRef().get();
                 const fbAccounts = {};
                 snap.forEach(doc => { fbAccounts[doc.id] = doc.data(); });
 
@@ -5033,13 +5044,13 @@ let dataThrough = '3/8/2026';
                     let noteCount = 0;
                     let lastNoteDate = '';
                     try {
-                        const notesSnap = await db.collection('accounts').doc(id).collection('notes').orderBy('ts','desc').limit(1).get();
+                        const notesSnap = await tenantAccountsRef().doc(id).collection('notes').orderBy('ts','desc').limit(1).get();
                         noteCount = notesSnap.size;
                         if (!notesSnap.empty) {
                             const lastNote = notesSnap.docs[0].data();
                             lastNoteDate = lastNote.date || new Date(lastNote.ts).toLocaleDateString();
                         }
-                        const allNotesSnap = await db.collection('accounts').doc(id).collection('notes').get();
+                        const allNotesSnap = await tenantAccountsRef().doc(id).collection('notes').get();
                         noteCount = allNotesSnap.size;
                     } catch(e) {}
                     if (meta.tags && meta.tags.length > 0 || meta.nextAction || meta.followUp) {
@@ -5349,7 +5360,7 @@ let dataThrough = '3/8/2026';
     async function initPipeline() {
         if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
             try {
-                const snap = await db.collection('pipeline').get();
+                const snap = await tenantPipelineRef().get();
                 snap.forEach(doc => { pipelineMeta[doc.id] = doc.data(); });
             } catch(e) { console.warn('Pipeline Firebase load failed', e); }
         } else {
@@ -5889,7 +5900,7 @@ let dataThrough = '3/8/2026';
         };
         pipelineMeta[id] = data;
         if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
-            try { await db.collection('pipeline').doc(id).set(data, {merge:true}); } catch(e) {}
+            try { await tenantPipelineRef().doc(id).set(data, {merge:true}); } catch(e) {}
         }
         localStorage.setItem('sk_pipeline_meta', JSON.stringify(pipelineMeta));
         // Log changes
@@ -6006,7 +6017,7 @@ let dataThrough = '3/8/2026';
         };
         pipelineMeta[id] = metaData;
         if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
-            try { await db.collection('pipeline').doc(id).set(metaData, {merge:true}); } catch(e) {}
+            try { await tenantPipelineRef().doc(id).set(metaData, {merge:true}); } catch(e) {}
         }
         localStorage.setItem('sk_pipeline_meta', JSON.stringify(pipelineMeta));
 

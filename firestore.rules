@@ -62,30 +62,30 @@ service cloud.firestore {
         allow read: if isAdmin();
         allow write: if false; // Only written by Cloud Function (Admin SDK)
       }
-    }
 
-    // Account-level data (notes, emails, files, pipeline)
-    match /accounts/{accountId} {
-      allow read: if isAuth();
-      allow write: if isAuth();
+      // Account CRM data (tenant-scoped)
+      match /accounts/{accountId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantMember(tenantId);
 
-      match /notes/{noteId} {
-        allow read, write: if isAuth();
+        match /notes/{noteId} {
+          allow read, write: if isTenantMember(tenantId);
+        }
+
+        match /emails/{emailId} {
+          allow read, write: if isTenantMember(tenantId);
+        }
+
+        match /files/{fileId} {
+          allow read, write: if isTenantMember(tenantId);
+        }
       }
 
-      match /emails/{emailId} {
-        allow read, write: if isAuth();
+      // Pipeline data (tenant-scoped)
+      match /pipeline/{docId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantMember(tenantId);
       }
-
-      match /files/{fileId} {
-        allow read, write: if isAuth();
-      }
-    }
-
-    // Pipeline data
-    match /pipeline/{docId} {
-      allow read: if isAuth();
-      allow write: if isAuth();
     }
 
     // Deny everything else by default
