@@ -164,7 +164,12 @@
           </div>
         </div>
 
-        <div style="text-align:center;margin-top:16px;font-size:11px;color:#9ca3af;">Powered by Sidekick BI</div>
+        <div style="text-align:center;margin-top:16px;font-size:11px;color:#9ca3af;">
+            Powered by Sidekick BI<br>
+            <a href="#" onclick="event.preventDefault();document.getElementById('privacyModal').style.display='flex'" style="color:#9CA3AF;text-decoration:underline;">Privacy</a>
+            &nbsp;|&nbsp;
+            <a href="#" onclick="event.preventDefault();document.getElementById('tosModal').style.display='flex'" style="color:#9CA3AF;text-decoration:underline;">Terms</a>
+        </div>
       </div>
     </div>
 
@@ -1348,7 +1353,66 @@
 
     <footer>
         <span id="footerBrand">Sidekick BI</span> - Data through: <span id="dataThrough">--</span>
+        <span style="margin-left:auto;font-size:11px;">
+            <a href="#" onclick="event.preventDefault();document.getElementById('privacyModal').style.display='flex'" style="color:#9CA3AF;text-decoration:underline;">Privacy Policy</a>
+            &nbsp;|&nbsp;
+            <a href="#" onclick="event.preventDefault();document.getElementById('tosModal').style.display='flex'" style="color:#9CA3AF;text-decoration:underline;">Terms of Service</a>
+        </span>
     </footer>
+
+    <!-- Privacy Policy Modal -->
+    <div id="privacyModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:16px;max-width:700px;width:90%;max-height:80vh;overflow-y:auto;padding:32px;position:relative;">
+            <button onclick="document.getElementById('privacyModal').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:#6B7280;">&times;</button>
+            <h2 style="font-size:22px;font-weight:700;color:#1F2937;margin-bottom:16px;">Privacy Policy</h2>
+            <p style="font-size:12px;color:#9CA3AF;margin-bottom:16px;">Last updated: March 2026</p>
+            <div style="font-size:14px;color:#374151;line-height:1.7;">
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">1. Information We Collect</h3>
+                <p>We collect information you provide when creating an account (name, email address, company name) and data you upload to the platform (sales data, inventory data, account information). We also collect usage data such as login times and feature interactions.</p>
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">2. How We Use Your Information</h3>
+                <p>Your information is used to provide and improve the Sidekick BI service, including generating analytics, reports, and insights from your uploaded data. We do not sell your data to third parties.</p>
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">3. Data Storage &amp; Security</h3>
+                <p>Your data is stored securely using Google Firebase (Firestore and Firebase Authentication) with encryption at rest and in transit. Access is restricted to your tenant and authorized team members only.</p>
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">4. Data Sharing</h3>
+                <p>We do not share your data with third parties except as necessary to provide the service (e.g., Stripe for payment processing, Firebase for data storage). We may disclose information if required by law.</p>
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">5. Data Retention &amp; Deletion</h3>
+                <p>Your data is retained as long as your account is active. You may request deletion of your data at any time by contacting support or using the data management tools in Settings.</p>
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">6. Cookies</h3>
+                <p>We use browser local storage and session cookies for authentication and user preferences. We do not use third-party tracking cookies.</p>
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">7. Contact</h3>
+                <p>For privacy-related inquiries, contact us at the email address provided in your account settings or through your account administrator.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms of Service Modal -->
+    <div id="tosModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:16px;max-width:700px;width:90%;max-height:80vh;overflow-y:auto;padding:32px;position:relative;">
+            <button onclick="document.getElementById('tosModal').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:#6B7280;">&times;</button>
+            <h2 style="font-size:22px;font-weight:700;color:#1F2937;margin-bottom:16px;">Terms of Service</h2>
+            <p style="font-size:12px;color:#9CA3AF;margin-bottom:16px;">Last updated: March 2026</p>
+            <div style="font-size:14px;color:#374151;line-height:1.7;">
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">1. Acceptance of Terms</h3>
+                <p>By accessing or using Sidekick BI, you agree to be bound by these Terms of Service. If you do not agree, do not use the service.</p>
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">2. Service Description</h3>
+                <p>Sidekick BI is a cloud-based business intelligence platform for beverage and CPG companies. We provide data analytics, reporting, CRM, and pipeline management tools on a subscription basis.</p>
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">3. Account Responsibilities</h3>
+                <p>You are responsible for maintaining the confidentiality of your account credentials. You agree to notify us immediately of any unauthorized use. You are responsible for all activity under your account.</p>
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">4. Acceptable Use</h3>
+                <p>You agree not to misuse the service, attempt unauthorized access, upload malicious content, or use the platform for unlawful purposes. We reserve the right to suspend accounts that violate these terms.</p>
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">5. Data Ownership</h3>
+                <p>You retain ownership of all data you upload to Sidekick BI. We do not claim any intellectual property rights over your data. You grant us a limited license to process your data solely to provide the service.</p>
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">6. Subscription &amp; Billing</h3>
+                <p>Paid subscriptions are billed through Stripe. You may cancel at any time through the billing portal. Refunds are handled per our refund policy. A 14-day free trial is available for new accounts.</p>
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">7. Service Availability</h3>
+                <p>We strive for high availability but do not guarantee uninterrupted service. We are not liable for downtime, data loss, or service interruptions beyond our reasonable control.</p>
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">8. Limitation of Liability</h3>
+                <p>Sidekick BI is provided "as is" without warranties of any kind. Our liability is limited to the amount you paid for the service in the 12 months preceding the claim.</p>
+                <h3 style="font-size:16px;font-weight:600;margin:16px 0 8px;">9. Changes to Terms</h3>
+                <p>We may update these terms from time to time. Continued use of the service after changes constitutes acceptance of the revised terms.</p>
+            </div>
+        </div>
+    </div>
 
     <script>
         // __DATA_START__
