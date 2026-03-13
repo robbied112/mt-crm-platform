@@ -61,9 +61,10 @@ exports.stripeWebhook = functions
         return;
       }
     } else {
-      // No secret configured -- parse body directly (dev/testing only)
-      console.warn("WARNING: No Stripe webhook secret configured. Skipping signature verification.");
-      event = req.body;
+      // No secret configured -- reject in production
+      console.error("ERROR: Stripe webhook secrets not configured. Webhook rejected.");
+      res.status(403).json({error: "Webhook secrets not configured"});
+      return;
     }
 
     const eventType = event.type;
