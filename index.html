@@ -218,6 +218,10 @@
                 <h1 id="headerTitle">Sidekick BI</h1>
                 <p>Real-time sales intelligence</p>
             </div>
+            <span id="syncStatus" title="Connection status" style="margin-left:auto;margin-right:12px;font-size:11px;color:#94a3b8;display:flex;align-items:center;gap:4px;white-space:nowrap;">
+                <span id="syncDot" style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
+                <span id="syncLabel">Connected</span>
+            </span>
         </header>
 
         <!-- Global Filter Bar -->
@@ -3991,6 +3995,27 @@ let dataThrough = '3/8/2026';
         firebaseReady = false;
     }
 
+    // Sync status indicator
+    const _syncDot = document.getElementById('syncDot');
+    const _syncLabel = document.getElementById('syncLabel');
+    function setSyncStatus(state) {
+        if (!_syncDot || !_syncLabel) return;
+        const states = {
+            connected: { color: '#22c55e', text: 'Connected' },
+            syncing:   { color: '#f59e0b', text: 'Syncing\u2026' },
+            offline:   { color: '#ef4444', text: 'Offline' },
+            saved:     { color: '#22c55e', text: 'Saved' },
+            error:     { color: '#ef4444', text: 'Sync error' }
+        };
+        const s = states[state] || states.connected;
+        _syncDot.style.background = s.color;
+        _syncLabel.textContent = s.text;
+        if (state === 'saved') setTimeout(() => setSyncStatus('connected'), 2000);
+    }
+    if (!firebaseReady) setSyncStatus('offline');
+    window.addEventListener('online', () => { if (firebaseReady) setSyncStatus('connected'); });
+    window.addEventListener('offline', () => setSyncStatus('offline'));
+
     // Load cached users from localStorage immediately (so login works right away)
     // But always preserve role/territory from hardcoded defaults (not user-editable)
     const _hardcodedDefaults = JSON.parse(JSON.stringify(REP_CREDENTIALS));
@@ -4148,6 +4173,19 @@ let dataThrough = '3/8/2026';
         return tenantRef().collection('pipeline');
     }
 
+    // Wrap a Firestore write promise to show sync status
+    async function syncWrite(promise) {
+        setSyncStatus('syncing');
+        try {
+            const result = await promise;
+            setSyncStatus('saved');
+            return result;
+        } catch(e) {
+            setSyncStatus('error');
+            throw e;
+        }
+    }
+
     // Storage abstraction - uses Firebase if available, localStorage fallback
     const AccountStore = {
         _localKey(acctId) { return 'mt_acct_' + acctId; },
@@ -4167,7 +4205,7 @@ let dataThrough = '3/8/2026';
             const id = this._sanitizeId(acctId);
             const note = {text, author, ts: Date.now(), date: new Date().toLocaleDateString(), mentions: mentions || []};
             if(firebaseReady) {
-                await tenantAccountsRef().doc(id).collection('notes').add(note);
+                await syncWrite(tenantAccountsRef().doc(id).collection('notes').add(note));
                 return;
             }
             const data = JSON.parse(localStorage.getItem(this._localKey(id)) || '{}');
@@ -4189,7 +4227,7 @@ let dataThrough = '3/8/2026';
         async setMeta(acctId, meta) {
             const id = this._sanitizeId(acctId);
             if(firebaseReady) {
-                await tenantAccountsRef().doc(id).set(meta, {merge: true});
+                await syncWrite(tenantAccountsRef().doc(id).set(meta, {merge: true}));
                 return;
             }
             const data = JSON.parse(localStorage.getItem(this._localKey(id)) || '{}');
@@ -4289,7 +4327,7 @@ let dataThrough = '3/8/2026';
             };
 
             if (firebaseReady) {
-                await tenantAccountsRef().doc(id).collection('files').add(meta);
+                await syncWrite(tenantAccountsRef().doc(id).collection('files').add(meta));
             } else {
                 const data = JSON.parse(localStorage.getItem('mt_files_' + id) || '[]');
                 data.push(meta);
@@ -4334,7 +4372,7 @@ let dataThrough = '3/8/2026';
                 date: new Date().toLocaleDateString()
             };
             if (firebaseReady) {
-                await tenantAccountsRef().doc(id).collection('emails').add(entry);
+                await syncWrite(tenantAccountsRef().doc(id).collection('emails').add(entry));
             } else {
                 const data = JSON.parse(localStorage.getItem('mt_emails_' + id) || '[]');
                 data.push(entry);
@@ -5900,7 +5938,7 @@ let dataThrough = '3/8/2026';
         };
         pipelineMeta[id] = data;
         if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
-            try { await tenantPipelineRef().doc(id).set(data, {merge:true}); } catch(e) {}
+            try { await syncWrite(tenantPipelineRef().doc(id).set(data, {merge:true})); } catch(e) {}
         }
         localStorage.setItem('sk_pipeline_meta', JSON.stringify(pipelineMeta));
         // Log changes
@@ -6017,7 +6055,7 @@ let dataThrough = '3/8/2026';
         };
         pipelineMeta[id] = metaData;
         if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
-            try { await tenantPipelineRef().doc(id).set(metaData, {merge:true}); } catch(e) {}
+            try { await syncWrite(tenantPipelineRef().doc(id).set(metaData, {merge:true})); } catch(e) {}
         }
         localStorage.setItem('sk_pipeline_meta', JSON.stringify(pipelineMeta));
 
