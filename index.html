@@ -2388,18 +2388,18 @@ let dataThrough = '3/8/2026';
                                   u.role === 'manager' ? '<span style="background:#D1FAE5;color:#059669;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;">MANAGER</span>' :
                                   '<span style="background:#F3F4F6;color:#6B7280;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;">REP</span>';
                 html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9;">' +
-                    '<div style="width:32px;height:32px;border-radius:50%;background:#0F766E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">' + (u.initials || '??') + '</div>' +
+                    '<div style="width:32px;height:32px;border-radius:50%;background:#0F766E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">' + esc(u.initials || '??') + '</div>' +
                     '<div style="flex:1;">' +
-                        '<div style="font-weight:600;font-size:13px;color:#0F766E;">' + u.name + (isCurrent ? ' <span style="font-size:10px;color:#10b981;">(you)</span>' : '') + ' ' + roleLabel + '</div>' +
-                        '<div style="font-size:11px;color:#9ca3af;">' + (u.email || 'No email') + (u.territory && u.territory !== 'all' ? ' | Territory: ' + (Array.isArray(u.territory) ? u.territory.join(', ') : u.territory) : '') + '</div>' +
+                        '<div style="font-weight:600;font-size:13px;color:#0F766E;">' + esc(u.name) + (isCurrent ? ' <span style="font-size:10px;color:#10b981;">(you)</span>' : '') + ' ' + roleLabel + '</div>' +
+                        '<div style="font-size:11px;color:#9ca3af;">' + esc(u.email || 'No email') + (u.territory && u.territory !== 'all' ? ' | Territory: ' + esc(Array.isArray(u.territory) ? u.territory.join(', ') : u.territory) : '') + '</div>' +
                     '</div>' +
                     '<div style="display:flex;gap:6px;align-items:center;">' +
-                        '<select onchange="updateUserRole(\'' + key + '\',this.value)" style="padding:4px;border:1px solid #d1d5db;border-radius:4px;font-size:11px;" title="Change role">' +
+                        '<select onchange="updateUserRole(\'' + escAttr(key) + '\',this.value)" style="padding:4px;border:1px solid #d1d5db;border-radius:4px;font-size:11px;" title="Change role">' +
                             '<option value="rep"' + (u.role === 'rep' ? ' selected' : '') + '>Rep</option>' +
                             '<option value="manager"' + (u.role === 'manager' ? ' selected' : '') + '>Manager</option>' +
                             '<option value="admin"' + (u.role === 'admin' ? ' selected' : '') + '>Admin</option>' +
                         '</select>' +
-                        (isCurrent ? '' : '<button onclick="removeUser(\'' + key + '\')" style="background:none;border:none;color:#DC2626;font-size:16px;cursor:pointer;padding:2px 6px;" title="Remove user">x</button>') +
+                        (isCurrent ? '' : '<button onclick="removeUser(\'' + escAttr(key) + '\')" style="background:none;border:none;color:#DC2626;font-size:16px;cursor:pointer;padding:2px 6px;" title="Remove user">x</button>') +
                     '</div></div>';
             });
             list.innerHTML = html || '<div style="color:#9ca3af;font-size:13px;">No users configured.</div>';
@@ -2573,7 +2573,7 @@ let dataThrough = '3/8/2026';
 
             // Welcome header
             html += `<div style="background:linear-gradient(135deg,#0F766E 0%,#0D9488 100%);color:#fff;padding:24px 24px;border-radius:8px;margin-bottom:24px;">
-                <h2 style="margin:0 0 4px 0;font-size:24px;font-weight:700;">Welcome back, ${currentUser.name}</h2>
+                <h2 style="margin:0 0 4px 0;font-size:24px;font-weight:700;">Welcome back, ${esc(currentUser.name)}</h2>
                 <p style="margin:0;opacity:0.9;font-size:14px;">${todayStr}</p>
             </div>`;
 
@@ -2785,9 +2785,9 @@ let dataThrough = '3/8/2026';
                     '<h3 style="margin:0 0 12px 0;font-size:16px;font-weight:700;">Recent Activity</h3>';
                 recentActivity.forEach(entry => {
                     html += `<div style="padding:8px 0;border-bottom:1px solid #d1d5db;font-size:12px;">
-                        <span style="color:#6B7280;">${entry.date}</span> -
-                        <strong>${entry.account}</strong><br/>
-                        <span style="color:#6B7280;">by ${entry.by}</span>
+                        <span style="color:#6B7280;">${esc(entry.date)}</span> -
+                        <strong>${esc(entry.account)}</strong><br/>
+                        <span style="color:#6B7280;">by ${esc(entry.by)}</span>
                     </div>`;
                 });
                 html += '</div>';
@@ -3641,33 +3641,33 @@ let dataThrough = '3/8/2026';
             let html = '<div class="table-header"><div class="table-title">Company Warehouse Inventory (by Product Line)</div></div>';
             html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">';
             const line1Name = (TENANT_CONFIG.productLines || [])[0] || 'Line 1';
-            html += '<div><div style="font-weight:600;margin-bottom:6px;"><span style="display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;background:#F3E8FF;color:#7C3AED;margin-right:6px;">' + line1Name + '</span></div>';
+            html += '<div><div style="font-weight:600;margin-bottom:6px;"><span style="display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;background:#F3E8FF;color:#7C3AED;margin-right:6px;">' + esc(line1Name) + '</span></div>';
             html += '<table style="width:100%;font-size:12px;border-collapse:collapse;"><thead><tr style="background:#f9fafb;"><th style="text-align:left;padding:4px 6px;">Location</th>';
-            productNames.forEach(w => html += '<th style="text-align:right;padding:4px 6px;">' + w + '</th>');
+            productNames.forEach(w => html += '<th style="text-align:right;padding:4px 6px;">' + esc(w) + '</th>');
             html += '<th style="text-align:right;padding:4px 6px;font-weight:700;">Total</th></tr></thead><tbody>';
             for (const [loc, vals] of Object.entries(wh.classic)) {
                 const bold = (loc === 'Warehouse Total' || loc === 'Zephyr Total') ? 'font-weight:700;border-top:1px solid #e5e7eb;' : '';
-                html += '<tr style="' + bold + '"><td style="padding:3px 6px;">' + loc + '</td>';
-                wines.forEach(w => { const v = vals[w] || 0; html += '<td style="text-align:right;padding:3px 6px;' + '' + '">' + v.toLocaleString() + '</td>'; });
+                html += '<tr style="' + bold + '"><td style="padding:3px 6px;">' + esc(loc) + '</td>';
+                wines.forEach(w => { const v = vals[w] || 0; html += '<td style="text-align:right;padding:3px 6px;">' + v.toLocaleString() + '</td>'; });
                 html += '<td style="text-align:right;padding:3px 6px;font-weight:600;">' + (vals.total||0).toLocaleString() + '</td></tr>';
             }
             html += '</tbody></table></div>';
             const line2Name = (TENANT_CONFIG.productLines || [])[1] || 'Line 2';
-            html += '<div><div style="font-weight:600;margin-bottom:6px;"><span style="display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;background:#DBEAFE;color:#0F766E;margin-right:6px;">' + line2Name + '</span></div>';
+            html += '<div><div style="font-weight:600;margin-bottom:6px;"><span style="display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;background:#DBEAFE;color:#0F766E;margin-right:6px;">' + esc(line2Name) + '</span></div>';
             html += '<table style="width:100%;font-size:12px;border-collapse:collapse;"><thead><tr style="background:#f9fafb;"><th style="text-align:left;padding:4px 6px;">Location</th>';
-            productNames.forEach(w => html += '<th style="text-align:right;padding:4px 6px;">' + w + '</th>');
+            productNames.forEach(w => html += '<th style="text-align:right;padding:4px 6px;">' + esc(w) + '</th>');
             html += '<th style="text-align:right;padding:4px 6px;font-weight:700;">Total</th></tr></thead><tbody>';
             for (const [loc, vals] of Object.entries(wh.contemporary)) {
                 const bold = loc === 'Warehouse Total' ? 'font-weight:700;border-top:1px solid #e5e7eb;' : '';
-                html += '<tr style="' + bold + '"><td style="padding:3px 6px;">' + loc + '</td>';
+                html += '<tr style="' + bold + '"><td style="padding:3px 6px;">' + esc(loc) + '</td>';
                 wines.forEach(w => { const v = vals[w] || 0; html += '<td style="text-align:right;padding:3px 6px;">' + v.toLocaleString() + '</td>'; });
                 html += '<td style="text-align:right;padding:3px 6px;font-weight:600;">' + (vals.total||0).toLocaleString() + '</td></tr>';
             }
             html += '</tbody></table></div></div>';
             html += '<div style="margin-top:12px;padding:8px 12px;background:#f9fafb;border-radius:6px;display:flex;gap:24px;font-size:13px;">';
             html += '<span><strong>Grand Total:</strong> ' + (gt.total||0).toLocaleString() + ' cases</span>';
-            html += '<span>' + line1Name + ': ' + (ct.total||0).toLocaleString() + '</span>';
-            html += '<span>' + line2Name + ': ' + (nt.total||0).toLocaleString() + '</span>';
+            html += '<span>' + esc(line1Name) + ': ' + (ct.total||0).toLocaleString() + '</span>';
+            html += '<span>' + esc(line2Name) + ': ' + (nt.total||0).toLocaleString() + '</span>';
             if (wh.batch4Est && wh.batch4Est.total) html += '<span style="color:#6B7280;">Batch 4 Est: +' + wh.batch4Est.total.toLocaleString() + '</span>';
             html += '</div>';
             panel.innerHTML = html;
@@ -5855,7 +5855,7 @@ let dataThrough = '3/8/2026';
             '<div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">Account Info</div>' +
             '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px;">' +
                 '<div><label style="'+lbl+'">Owner</label>' +
-                '<input id="plDetailOwner" type="text" value="'+(owner||'').replace(/"/g,'&quot;')+'" placeholder="e.g. Robbie" style="'+fld+'"></div>' +
+                '<input id="plDetailOwner" type="text" value="'+escAttr(owner||'')+'" placeholder="e.g. Robbie" style="'+fld+'"></div>' +
                 '<div><label style="'+lbl+'">Tier</label>' +
                 '<select id="plDetailTier" style="'+fld+'">' +
                 ['Enterprise','On-Premise Natl','Regional','Emerging'].map(t => '<option value="'+t+'" '+(t===tier?'selected':'')+'>'+t+'</option>').join('') +
@@ -5873,16 +5873,16 @@ let dataThrough = '3/8/2026';
                 '</select></div></div>' +
             '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">' +
                 '<div><label style="'+lbl+'">Source / Referral</label>' +
-                '<input id="plDetailSource" type="text" value="'+(source||'').replace(/"/g,'&quot;')+'" placeholder="e.g. Distributor, Trade show" style="'+fld+'"></div>' +
+                '<input id="plDetailSource" type="text" value="'+escAttr(source||'')+'" placeholder="e.g. Distributor, Trade show" style="'+fld+'"></div>' +
                 '<div><label style="'+lbl+'">Contact Name</label>' +
-                '<input id="plDetailContact" type="text" value="'+(contact||'').replace(/"/g,'&quot;')+'" placeholder="e.g. John Smith" style="'+fld+'"></div>' +
+                '<input id="plDetailContact" type="text" value="'+escAttr(contact||'')+'" placeholder="e.g. John Smith" style="'+fld+'"></div>' +
                 '<div><label style="'+lbl+'">State</label>' +
                 '<select id="plDetailState" style="'+fld+'">' +
                 '<option value="" '+((!acctState)?'selected':'')+'>-- Select --</option>' +
                 '<option value="Multi-State" '+('Multi-State'===acctState?'selected':'')+'>Multi-State</option>' + Object.keys(regionMap).sort().map(st => '<option value="'+st+'" '+(st===acctState?'selected':'')+'>'+st+' ('+regionMap[st]+')</option>').join('') +
                 '</select></div></div>' +
             '<div style="margin-bottom:16px;"><label style="'+lbl+'">Contact Email</label>' +
-                '<input id="plDetailEmail" type="email" value="'+(email||'').replace(/"/g,'&quot;')+'" placeholder="e.g. john@company.com" style="'+fld+'"></div>';
+                '<input id="plDetailEmail" type="email" value="'+escAttr(email||'')+'" placeholder="e.g. john@company.com" style="'+fld+'"></div>';
 
         // Deal Info section
         html += '<div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">Deal Info</div>' +
@@ -5892,14 +5892,14 @@ let dataThrough = '3/8/2026';
                 '<div><label style="'+lbl+'">Est. Annual Value</label>' +
                 '<div style="display:flex;gap:4px;align-items:center;margin-top:3px;"><span style="color:#374151;">$</span>' +
                 '<input id="plDetailValue" type="number" value="'+(hasCustom ? meta.customValue : '')+'" placeholder="'+tierDefaults[tier]+'" style="flex:1;padding:7px;border:1px solid #d1d5db;border-radius:6px;box-sizing:border-box;font-size:13px;"></div>' +
-                '<div style="font-size:10px;color:#9ca3af;margin-top:2px;">Blank = '+tier+' default</div></div></div>' +
+                '<div style="font-size:10px;color:#9ca3af;margin-top:2px;">Blank = '+esc(tier)+' default</div></div></div>' +
             '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">' +
                 '<div><label style="'+lbl+'">Next Step</label>' +
-                '<input id="plDetailNext" type="text" value="'+((meta.nextStep||'').replace(/"/g,'&quot;'))+'" placeholder="e.g. Send samples" style="'+fld+'"></div>' +
+                '<input id="plDetailNext" type="text" value="'+escAttr(meta.nextStep||'')+'" placeholder="e.g. Send samples" style="'+fld+'"></div>' +
                 '<div><label style="'+lbl+'">Due Date</label>' +
                 '<input id="plDetailDue" type="date" value="'+(meta.dueDate||'')+'" style="'+fld+'"></div></div>' +
             '<div style="margin-bottom:14px;"><label style="'+lbl+'">Notes</label>' +
-                '<textarea id="plDetailNotes" rows="2" placeholder="Add notes..." style="'+fld+'resize:vertical;">'+(meta.notes||'')+'</textarea></div>' +
+                '<textarea id="plDetailNotes" rows="2" placeholder="Add notes..." style="'+fld+'resize:vertical;">'+esc(meta.notes||'')+'</textarea></div>' +
             '<button onclick="savePipelineDetail(\''+escapedName+'\')" style="width:100%;padding:10px;background:#0F766E;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">Save Changes</button></div>';
         return html;
     }
@@ -6710,23 +6710,23 @@ let dataThrough = '3/8/2026';
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                         <div>
                             <label style="font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:2px;">SKU Code *</label>
-                            <input id="pmSku" type="text" value="${(product.sku||'').replace(/"/g,'&quot;')}" placeholder="e.g. SKU-001" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                            <input id="pmSku" type="text" value="${escAttr(product.sku||'')}" placeholder="e.g. SKU-001" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
                         </div>
                         <div>
                             <label style="font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:2px;">Product Name *</label>
-                            <input id="pmName" type="text" value="${(product.name||'').replace(/"/g,'&quot;')}" placeholder="e.g. Original Hot Sauce 12oz" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                            <input id="pmName" type="text" value="${escAttr(product.name||'')}" placeholder="e.g. Original Hot Sauce 12oz" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
                         </div>
                         <div>
                             <label style="font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:2px;">Category / Product Line</label>
-                            <input id="pmCategory" type="text" value="${(product.category||'').replace(/"/g,'&quot;')}" placeholder="e.g. Hot Sauce, Lager, Red Wine" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                            <input id="pmCategory" type="text" value="${escAttr(product.category||'')}" placeholder="e.g. Hot Sauce, Lager, Red Wine" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
                         </div>
                         <div>
                             <label style="font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:2px;">Size / Volume</label>
-                            <input id="pmSize" type="text" value="${(product.size||'').replace(/"/g,'&quot;')}" placeholder="e.g. 12oz, 750ml, 16oz" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                            <input id="pmSize" type="text" value="${escAttr(product.size||'')}" placeholder="e.g. 12oz, 750ml, 16oz" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
                         </div>
                         <div>
                             <label style="font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:2px;">Pack Configuration</label>
-                            <input id="pmPackConfig" type="text" value="${(product.packConfig||'').replace(/"/g,'&quot;')}" placeholder="e.g. Single, 4-pack, 6-pack" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                            <input id="pmPackConfig" type="text" value="${escAttr(product.packConfig||'')}" placeholder="e.g. Single, 4-pack, 6-pack" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
                         </div>
                         <div>
                             <label style="font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:2px;">Case Pack (units/case)</label>
@@ -6746,11 +6746,11 @@ let dataThrough = '3/8/2026';
                         </div>
                         <div>
                             <label style="font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:2px;">UPC / Barcode</label>
-                            <input id="pmUpc" type="text" value="${(product.upc||'').replace(/"/g,'&quot;')}" placeholder="e.g. 012345678901" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                            <input id="pmUpc" type="text" value="${escAttr(product.upc||'')}" placeholder="e.g. 012345678901" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
                         </div>
                         <div>
                             <label style="font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:2px;">Short Code (for data matching)</label>
-                            <input id="pmShortCode" type="text" value="${(product.shortCode||'').replace(/"/g,'&quot;')}" placeholder="e.g. sr, sw, rd" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                            <input id="pmShortCode" type="text" value="${escAttr(product.shortCode||'')}" placeholder="e.g. sr, sw, rd" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
                         </div>
                         <div>
                             <label style="font-size:11px;font-weight:600;color:#6B7280;display:block;margin-bottom:2px;">Status</label>
@@ -6879,13 +6879,13 @@ let dataThrough = '3/8/2026';
                 ? '<span style="background:#EDE9FE;color:#7C3AED;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">Admin</span>'
                 : '<span style="background:#DBEAFE;color:#0F766E;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">Rep</span>';
             html += '<tr style="border-bottom:1px solid #F3F4F6;">';
-            html += '<td style="padding:8px;font-weight:600;">' + (u.name || key) + (u.pendingSetup ? ' <span style="font-size:10px;color:#F59E0B;">(pending)</span>' : '') + '</td>';
-            html += '<td style="padding:8px;font-size:12px;color:#6B7280;">' + (u.email || '--') + '</td>';
+            html += '<td style="padding:8px;font-weight:600;">' + esc(u.name || key) + (u.pendingSetup ? ' <span style="font-size:10px;color:#F59E0B;">(pending)</span>' : '') + '</td>';
+            html += '<td style="padding:8px;font-size:12px;color:#6B7280;">' + esc(u.email || '--') + '</td>';
             html += '<td style="padding:8px;">' + roleBadge + '</td>';
-            html += '<td style="padding:8px;font-family:monospace;font-size:12px;">' + terrDisplay + '</td>';
+            html += '<td style="padding:8px;font-family:monospace;font-size:12px;">' + esc(terrDisplay) + '</td>';
             html += '<td style="padding:8px;text-align:center;">';
-            html += '<button data-edituser="' + key + '" style="background:none;border:1px solid #D1D5DB;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px;">Edit</button>';
-            html += '<button data-deleteuser="' + key + '" style="background:none;border:1px solid #FECACA;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#DC2626;">Remove</button>';
+            html += '<button data-edituser="' + escAttr(key) + '" style="background:none;border:1px solid #D1D5DB;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px;">Edit</button>';
+            html += '<button data-deleteuser="' + escAttr(key) + '" style="background:none;border:1px solid #FECACA;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#DC2626;">Remove</button>';
             html += '</td></tr>';
         });
         html += '</tbody></table>';
@@ -6920,11 +6920,11 @@ let dataThrough = '3/8/2026';
 
         let html = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;" id="settUserModal">';
         html += '<div style="background:#fff;border-radius:16px;padding:28px;max-width:450px;width:90%;max-height:80vh;overflow-y:auto;">';
-        html += '<h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Edit User: ' + u.name + '</h3>';
+        html += '<h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Edit User: ' + esc(u.name) + '</h3>';
         html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Name</label>';
-        html += '<input id="editUserName" type="text" value="' + (u.name || '') + '" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;"></div>';
+        html += '<input id="editUserName" type="text" value="' + escAttr(u.name || '') + '" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;"></div>';
         html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Initials</label>';
-        html += '<input id="editUserInitials" type="text" value="' + (u.initials || '') + '" maxlength="3" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;"></div>';
+        html += '<input id="editUserInitials" type="text" value="' + escAttr(u.initials || '') + '" maxlength="3" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;"></div>';
         html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Role</label>';
         html += '<select id="editUserRole" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;">';
         html += '<option value="admin"' + (u.role === 'admin' ? ' selected' : '') + '>Admin</option>';
@@ -6932,9 +6932,9 @@ let dataThrough = '3/8/2026';
         html += '</select></div>';
         html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Territory</label>';
         html += '<p style="font-size:11px;color:#9CA3AF;margin-bottom:4px;">Use "all" for full access, a region name (East/West), a state code (FL), or comma-separated states (FL,NJ)</p>';
-        html += '<input id="editUserTerritory" type="text" value="' + terrVal + '" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:monospace;"></div>';
+        html += '<input id="editUserTerritory" type="text" value="' + escAttr(terrVal) + '" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:monospace;"></div>';
         html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Email</label>';
-        html += '<input id="editUserEmail" type="email" value="' + (u.email || '') + '" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;" ' + (u.uid ? 'disabled title="Email is managed by Firebase Auth"' : '') + '></div>';
+        html += '<input id="editUserEmail" type="email" value="' + escAttr(u.email || '') + '" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;" ' + (u.uid ? 'disabled title="Email is managed by Firebase Auth"' : '') + '></div>';
         html += '<div style="display:flex;gap:8px;margin-top:16px;">';
         html += '<button id="saveEditUser" style="flex:1;padding:10px;background:#0F766E;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Save</button>';
         html += '<button id="cancelEditUser" style="flex:1;padding:10px;background:#F3F4F6;color:#374151;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>';
@@ -8104,7 +8104,7 @@ let dataThrough = '3/8/2026';
                             detail.suggestions.slice(0,2).map(s => s.label).join(', ') + '?</div>';
                     }
 
-                    html += '<select data-header="' + h.replace(/"/g, '&quot;') + '" class="colMapSelect" style="width:100%;padding:2px 4px;border:1px solid ' + borderColor + ';border-radius:4px;font-size:10px;background:' + bgColor + ';">' +
+                    html += '<select data-header="' + escAttr(h) + '" class="colMapSelect" style="width:100%;padding:2px 4px;border:1px solid ' + borderColor + ';border-radius:4px;font-size:10px;background:' + bgColor + ';">' +
                         '<option value="">-- skip --</option>';
                     const groups = {};
                     Object.entries(DASHBOARD_FIELDS).forEach(([key, config]) => {
@@ -8130,7 +8130,7 @@ let dataThrough = '3/8/2026';
                         if (val === null || val === undefined) val = '';
                         if (typeof val === 'object' && val instanceof Date) val = val.toLocaleDateString();
                         const display = String(val).substring(0, 40);
-                        html += '<td style="padding:4px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;color:#374151;" title="' + String(val).replace(/"/g, '&quot;') + '">' + display + '</td>';
+                        html += '<td style="padding:4px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;color:#374151;" title="' + escAttr(String(val)) + '">' + esc(display) + '</td>';
                     });
                     html += '</tr>';
                 });
