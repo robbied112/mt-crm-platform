@@ -46,9 +46,13 @@ exports.stripeWebhook = functions
 
     // Verify webhook signature if secret is configured
     let event;
-    if (webhookSecret) {
+    if (webhookSecret && secretKey) {
       const stripe = require("stripe")(secretKey);
       const sig = req.headers["stripe-signature"];
+      if (!sig) {
+        res.status(400).send("Missing stripe-signature header");
+        return;
+      }
       try {
         event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret);
       } catch (err) {
