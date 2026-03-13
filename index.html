@@ -27,11 +27,11 @@
             --cream: #F0FDFA;
             --peach: #CCFBF1;
             --orange: #F97316;
-            --burgundy: #0F766E;
+            --primary: #0F766E;
             --green: #059669;
             --red: #DC2626;
             --yellow: #D97706;
-            --blue: #0F766E;
+            --teal: #0F766E;
             --coral: #FB7185;
         }
 
@@ -440,7 +440,7 @@
 
         .badge-blue {
             background: #D1E9FF;
-            color: var(--blue);
+            color: var(--teal);
         }
 
         .badge-yellow {
@@ -1291,11 +1291,11 @@
                         <div style="padding:16px;">
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
                                 <div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:8px;">
-                                    <div style="font-size:24px;font-weight:700;color:#2c3e50;" id="health-total-accts">0</div>
+                                    <div style="font-size:24px;font-weight:700;color:#334155;" id="health-total-accts">0</div>
                                     <div style="font-size:11px;color:#7f8c8d;">Total Accounts</div>
                                 </div>
                                 <div style="text-align:center;padding:12px;background:#f8f9fa;border-radius:8px;">
-                                    <div style="font-size:24px;font-weight:700;color:#2c3e50;" id="health-avg-sku">0</div>
+                                    <div style="font-size:24px;font-weight:700;color:#334155;" id="health-avg-sku">0</div>
                                     <div style="font-size:11px;color:#7f8c8d;">Avg Product Count</div>
                                 </div>
                             </div>
@@ -1303,9 +1303,9 @@
                                 <canvas id="healthPenetrationChart"></canvas>
                             </div>
                             <div style="display:flex;justify-content:space-between;margin-top:12px;padding:8px 12px;background:#f8f9fa;border-radius:8px;font-size:12px;">
-                                <span style="color:#27ae60;">+<span id="health-new-accts">0</span> New Wins</span>
-                                <span style="color:#e67e22;"><span id="health-lost-accts">0</span> Re-Engage Opps</span>
-                                <span style="font-weight:600;color:#2c3e50;">Net: <span id="health-net-accts">0</span></span>
+                                <span style="color:#059669;">+<span id="health-new-accts">0</span> New Wins</span>
+                                <span style="color:#F97316;"><span id="health-lost-accts">0</span> Re-Engage Opps</span>
+                                <span style="font-weight:600;color:#334155;">Net: <span id="health-net-accts">0</span></span>
                             </div>
                         </div>
                     </div>
@@ -1711,7 +1711,7 @@
               <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:#9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
             </div>
             <button onclick="exportPipelineCSV()" style="padding:6px 14px;background:#374151;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Export CSV</button>
-            <button onclick="exportPipelineXLSX()" style="padding:6px 14px;background:#1d4ed8;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Export Excel</button>
+            <button onclick="exportPipelineXLSX()" style="padding:6px 14px;background:#0F766E;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Export Excel</button>
           </div>
 
           <!-- Recent Activity Log -->
@@ -2141,7 +2141,7 @@
                             <div style="font-size:11px;color:#6B7280;margin-top:4px;">Up to 5 users</div>
                             <button onclick="startCheckout('starter')" style="margin-top:8px;padding:6px 16px;background:#0F766E;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Select</button>
                         </div>
-                        <div style="background:#EFF6FF;border:2px solid #2563EB;border-radius:8px;padding:16px;text-align:center;position:relative;">
+                        <div style="background:#EFF6FF;border:2px solid #0F766E;border-radius:8px;padding:16px;text-align:center;position:relative;">
                             <div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#0F766E;color:#fff;padding:2px 10px;border-radius:10px;font-size:10px;font-weight:700;">POPULAR</div>
                             <div style="font-size:24px;font-weight:800;color:#0F766E;">$99</div>
                             <div style="font-size:12px;color:#6B7280;">/month</div>
@@ -3377,7 +3377,7 @@ let dataThrough = '3/8/2026';
                     </div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;">
                         ${goalBar('Annual Volume', totalCE, goals.annualVolume, 'cases', '#0F766E')}
-                        ${goalBar('Total Accounts', totalAccounts, goals.totalAccounts, '', '#2563EB')}
+                        ${goalBar('Total Accounts', totalAccounts, goals.totalAccounts, '', '#0F766E')}
                         ${goalBar('Annual Revenue', totalRevenue, goals.annualRevenue, '$', '#059669')}
                         ${goalBar('Distribution (States)', uniqueStates.size, goals.totalStates, '', '#7C3AED')}
                         ${goalBar('Active Distributors', uniqueDists, goals.totalDistributors, '', '#D97706')}
@@ -3648,7 +3648,7 @@ let dataThrough = '3/8/2026';
 
             list.innerHTML = filtered.slice(0, 50).map(a => {
                 const tagsHtml = a.tags.map(t => {
-                    const tagColors = {VIP:'#7C3AED',  'At Risk':'#DC2626', 'Hot Lead':'#F59E0B', 'Needs Visit':'#2563EB', 'Follow Up':'#10b981', Chain:'#6B7280', Independent:'#6B7280', Seasonal:'#D97706'};
+                    const tagColors = {VIP:'#7C3AED',  'At Risk':'#DC2626', 'Hot Lead':'#F59E0B', 'Needs Visit':'#0F766E', 'Follow Up':'#10b981', Chain:'#6B7280', Independent:'#6B7280', Seasonal:'#D97706'};
                     const bg = tagColors[t] || '#6B7280';
                     return '<span style="padding:2px 6px;border-radius:8px;font-size:9px;font-weight:600;background:'+bg+'20;color:'+bg+';">'+t+'</span>';
                 }).join('');
@@ -3787,7 +3787,7 @@ let dataThrough = '3/8/2026';
             const datasets = topDists.map((d, idx) => ({
                 label: d.name.substring(0, 15),
                 data: d.weekly,
-                backgroundColor: ['#0F766E', '#14B8A6', '#F8992D', '#0D9F6E', '#2563EB', '#D97706'][idx],
+                backgroundColor: ['#0F766E', '#14B8A6', '#F8992D', '#0D9F6E', '#0F766E', '#D97706'][idx],
                 stack: 'stack'
             }));
 
@@ -3832,7 +3832,7 @@ let dataThrough = '3/8/2026';
                     labels: skus,
                     datasets: [{
                         data: skuDistribution,
-                        backgroundColor: ['#0F766E', '#F8992D', '#0D9F6E', '#2563EB']
+                        backgroundColor: ['#0F766E', '#F8992D', '#0D9F6E', '#0F766E']
                     }]
                 },
                 options: {
@@ -3853,7 +3853,7 @@ let dataThrough = '3/8/2026';
                 const isGroup = d.isGroup || false;
                 if (isGroup && d.children) {
                     const gid = 'depGrp_' + idx;
-                    const grpToggle = `<span style="cursor:pointer;color:#3498db;font-size:12px;margin-right:4px;" title="Show warehouses" onclick="toggleRow(this,'${gid}')">&#9654;</span>`;
+                    const grpToggle = `<span style="cursor:pointer;color:#14B8A6;font-size:12px;margin-right:4px;" title="Show warehouses" onclick="toggleRow(this,'${gid}')">&#9654;</span>`;
                     tableHtml += `<tr style="background-color:#f0f4f8;font-weight:600;">
                         <td>${grpToggle}<span style="cursor:pointer;text-decoration:underline;color:#0F766E;" onclick="drillIntoDistributor('${escAttr(d.name)}')">${esc(d.name)}</span> <span style="font-size:10px;color:#6B7280;font-weight:400">(${d.children.length} locations)</span></td>
                         <td>${esc(d.st)}</td>
@@ -3870,7 +3870,7 @@ let dataThrough = '3/8/2026';
                     </tr>`;
                     tableHtml += `<tr id="${gid}" style="display:none"><td colspan="12" style="padding:0"><table style="width:100%;border:none;margin:0"><tbody>`;
                     d.children.forEach((child) => {
-                        tableHtml += `<tr style="background-color:#f9f9f9;font-size:12px;border-left:3px solid #3498db;">
+                        tableHtml += `<tr style="background-color:#f9f9f9;font-size:12px;border-left:3px solid #14B8A6;">
                             <td style="padding:4px 10px 4px 28px;border-bottom:1px solid #e5e7eb">${esc(child.name)}</td>
                             <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${esc(child.st)}</td>
                             <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${child.ce.toFixed(1)}</td>
@@ -4073,7 +4073,7 @@ let dataThrough = '3/8/2026';
                     labels: ['Established', 'Building', 'Emerging'],
                     datasets: [{
                         data: hasData ? [h.established, h.building, h.emerging] : [1],
-                        backgroundColor: hasData ? ['#27ae60', '#3498db', '#f39c12'] : ['#ecf0f1'],
+                        backgroundColor: hasData ? ['#059669', '#14B8A6', '#D97706'] : ['#E2E8F0'],
                     }]
                 },
                 options: {
@@ -4087,9 +4087,9 @@ let dataThrough = '3/8/2026';
             // --- Inventory Table ---
             let tableHtml = '';
             h.skus.forEach(s => {
-                const ratioColor = s.ratio >= 80 ? '#27ae60' : s.ratio >= 50 ? '#f39c12' : '#e74c3c';
+                const ratioColor = s.ratio >= 80 ? '#059669' : s.ratio >= 50 ? '#D97706' : '#DC2626';
                 const supplyLabel = s.wkSupply > 26 ? 'Overstocked' : s.wkSupply >= 8 ? 'Healthy' : s.wkSupply > 0 ? 'Reorder Soon' : '-';
-                const supplyColor = s.wkSupply > 26 ? '#e67e22' : s.wkSupply >= 8 ? '#27ae60' : s.wkSupply > 0 ? '#e74c3c' : '#95a5a6';
+                const supplyColor = s.wkSupply > 26 ? '#F97316' : s.wkSupply >= 8 ? '#059669' : s.wkSupply > 0 ? '#DC2626' : '#64748B';
                 tableHtml += `<tr>
                     <td>${s.w}</td>
                     <td>${s.sellIn.toFixed(1)}</td>
@@ -4102,11 +4102,11 @@ let dataThrough = '3/8/2026';
             });
             // Totals row
             const totalOH = h.skus.reduce((sum, s) => sum + s.oh, 0);
-            tableHtml += `<tr style="font-weight:700;border-top:2px solid #2c3e50;">
+            tableHtml += `<tr style="font-weight:700;border-top:2px solid #334155;">
                 <td>Total</td>
                 <td>${h.totalSellIn.toFixed(1)}</td>
                 <td>${h.totalSellThru.toFixed(1)}</td>
-                <td style="color:${h.totalRatio >= 80 ? '#27ae60' : '#f39c12'};font-weight:700;">${h.totalRatio}%</td>
+                <td style="color:${h.totalRatio >= 80 ? '#059669' : '#D97706'};font-weight:700;">${h.totalRatio}%</td>
                 <td>${totalOH.toFixed(1)}</td>
                 <td>${h.doh} days on hand</td>
             </tr>`;
@@ -4150,7 +4150,7 @@ let dataThrough = '3/8/2026';
                     labels: Object.keys(statusCounts),
                     datasets: [{
                         data: Object.values(statusCounts),
-                        backgroundColor: ['#0D9F6E', '#F8992D', '#2563EB', '#6B7280', '#2563EB']
+                        backgroundColor: ['#0D9F6E', '#F8992D', '#0F766E', '#6B7280', '#0F766E']
                     }]
                 },
                 options: {
@@ -4218,7 +4218,7 @@ let dataThrough = '3/8/2026';
                     const isGroup = d.isGroup || false;
                     if (isGroup) {
                         const gid = 'invGrpF_' + idx;
-                        const grpToggle = `<span style="cursor:pointer;color:#3498db;font-size:12px;margin-right:4px;" onclick="toggleRow(this,'${gid}')">&#9654;</span>`;
+                        const grpToggle = `<span style="cursor:pointer;color:#14B8A6;font-size:12px;margin-right:4px;" onclick="toggleRow(this,'${gid}')">&#9654;</span>`;
                         tableHtml += `<tr style="background-color:#f0f4f8;font-weight:600;">
                             <td>${grpToggle}${esc(d.name)}</td><td>${esc(d.st)}</td>
                             <td>${sku.oh.toFixed(1)}</td><td>${sku.rate.toFixed(2)}</td>
@@ -4229,7 +4229,7 @@ let dataThrough = '3/8/2026';
                         d.children.forEach((child) => {
                             const childSku = (child.skus || []).find(s => s.w === skuFilter);
                             if (childSku) {
-                                tableHtml += `<tr style="background-color:#f9f9f9;font-size:12px;border-left:3px solid #3498db;">
+                                tableHtml += `<tr style="background-color:#f9f9f9;font-size:12px;border-left:3px solid #14B8A6;">
                                     <td style="padding:4px 10px 4px 28px;border-bottom:1px solid #e5e7eb">${esc(child.name)}</td>
                                     <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${esc(child.st)}</td>
                                     <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${childSku.oh.toFixed(1)}</td>
@@ -4258,7 +4258,7 @@ let dataThrough = '3/8/2026';
                     if (isGroup) {
                         // GROUP: warehouse toggle only (no combined wine toggle)
                         const gid = 'invGrp_' + idx;
-                        const grpToggle = `<span style="cursor:pointer;color:#3498db;font-size:12px;margin-right:4px;" title="Show warehouses" onclick="toggleRow(this,'${gid}')">&#9654;</span>`;
+                        const grpToggle = `<span style="cursor:pointer;color:#14B8A6;font-size:12px;margin-right:4px;" title="Show warehouses" onclick="toggleRow(this,'${gid}')">&#9654;</span>`;
                         tableHtml += `<tr style="background-color:#f0f4f8;font-weight:600;">
                             <td>${grpToggle}${esc(d.name)} <span style="font-size:10px;color:#6B7280;font-weight:400">(${d.children.length} locations)</span></td>
                             <td>${esc(d.st)}</td>
@@ -4274,8 +4274,8 @@ let dataThrough = '3/8/2026';
                         d.children.forEach((child, childIdx) => {
                             const childHasSkus = child.skus && child.skus.length > 0;
                             const childExpId = 'inv-wh-sku-' + idx + '-' + childIdx;
-                            const childExpIcon = childHasSkus ? `<span style="cursor:pointer;color:#3498db;font-size:11px;margin-right:2px;" title="Show product breakdown" onclick="toggleRow(this,'${childExpId}')">&#9654;</span>` : '';
-                            tableHtml += `<tr style="background-color:#f9f9f9;font-size:12px;border-left:3px solid #3498db;">
+                            const childExpIcon = childHasSkus ? `<span style="cursor:pointer;color:#14B8A6;font-size:11px;margin-right:2px;" title="Show product breakdown" onclick="toggleRow(this,'${childExpId}')">&#9654;</span>` : '';
+                            tableHtml += `<tr style="background-color:#f9f9f9;font-size:12px;border-left:3px solid #14B8A6;">
                                 <td style="padding:4px 10px 4px 28px;border-bottom:1px solid #e5e7eb;font-weight:500">${childExpIcon}${esc(child.name)}${getQbOrderBadge(child.name)}</td>
                                 <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${esc(child.st)}</td>
                                 <td style="padding:4px 6px;border-bottom:1px solid #e5e7eb">${child.oh.toFixed(1)}</td>
@@ -4304,7 +4304,7 @@ let dataThrough = '3/8/2026';
                         tableHtml += `</tbody></table></td></tr>`;
                     } else {
                         // SINGLE distributor: wine toggle
-                        const expIcon = hasSkus ? `<span style="cursor:pointer;color:#3498db;font-size:12px;margin-right:4px;" title="Show product breakdown" onclick="toggleRow(this,'${expId}')">&#9654;</span>` : '';
+                        const expIcon = hasSkus ? `<span style="cursor:pointer;color:#14B8A6;font-size:12px;margin-right:4px;" title="Show product breakdown" onclick="toggleRow(this,'${expId}')">&#9654;</span>` : '';
                         tableHtml += `<tr>
                             <td>${expIcon}${esc(d.name)}${getQbOrderBadge(d.name)}</td>
                             <td>${esc(d.st)}</td>
@@ -4421,8 +4421,8 @@ let dataThrough = '3/8/2026';
             if(typeof acctConcentration!=='undefined'&&acctConcentration.total>0){
                 const concentrationDiv = document.getElementById('accountConcentrationInsight');
                 if(concentrationDiv){
-                    let html = `<div style="padding:12px;background:#f0f4f8;border-radius:8px;margin-bottom:16px;border-left:4px solid #3498db;">
-                        <h4 style="margin:0 0 8px 0;color:#2c3e50;">Account Concentration</h4>
+                    let html = `<div style="padding:12px;background:#f0f4f8;border-radius:8px;margin-bottom:16px;border-left:4px solid #14B8A6;">
+                        <h4 style="margin:0 0 8px 0;color:#334155;">Account Concentration</h4>
                         <div style="font-size:14px;color:#555;">
                             Top 10 accounts = <strong>${acctConcentration.top10}%</strong> of volume | Median = <strong>${acctConcentration.median} CE</strong> | ${acctConcentration.under1} accounts under 1 CE
                         </div>
@@ -4550,7 +4550,7 @@ let dataThrough = '3/8/2026';
                         {
                             label: 'Re-engagement',
                             data: topPlacement.map(d => d.reEngageA),
-                            backgroundColor: '#2563EB'
+                            backgroundColor: '#0F766E'
                         }
                     ]
                 },
@@ -4664,7 +4664,7 @@ let dataThrough = '3/8/2026';
                 }
                 const hasSkus = r.skus && r.skus.length > 0;
                 const expandId = 'sku-expand-' + idx;
-                const expandIcon = hasSkus ? `<span class="sku-toggle" onclick="toggleRow(this,'${expandId}')" style="cursor:pointer;color:#3498db;font-size:12px;margin-right:4px;" title="Show SKU breakdown">&#9654;</span>` : '';
+                const expandIcon = hasSkus ? `<span class="sku-toggle" onclick="toggleRow(this,'${expandId}')" style="cursor:pointer;color:#14B8A6;font-size:12px;margin-right:4px;" title="Show SKU breakdown">&#9654;</span>` : '';
                 tableHtml += `<tr>
                     <td>${r.rank}</td>
                     <td>${expandIcon}<span class="acct-clickable" onclick="openAccountPanel('${escAttr(r.acct)}')">${esc(r.acct)}</span></td>
@@ -5237,7 +5237,7 @@ let dataThrough = '3/8/2026';
 
         dropZone.addEventListener('dragover', function(e) {
             e.preventDefault();
-            this.style.borderColor = '#2563EB';
+            this.style.borderColor = '#0F766E';
             this.style.background = '#EFF6FF';
         });
         dropZone.addEventListener('dragleave', function(e) {
@@ -5313,7 +5313,7 @@ let dataThrough = '3/8/2026';
         let html = '';
         emails.forEach(e => {
             const dirIcon = e.direction === 'outbound' ? '&#10148;' : '&#10149;';
-            const dirColor = e.direction === 'outbound' ? '#2563EB' : '#059669';
+            const dirColor = e.direction === 'outbound' ? '#0F766E' : '#059669';
             const dirLabel = e.direction === 'outbound' ? 'Sent' : 'Received';
             html += '<div style="padding:10px 0;border-bottom:1px solid #f1f5f9;">' +
                 '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">' +
@@ -5387,7 +5387,7 @@ let dataThrough = '3/8/2026';
         if (!items || items.length === 0) return '<div style="text-align:center;padding:24px 0;color:#9ca3af;font-size:12px;">No activity yet</div>';
         let html = '<div style="max-height:400px;overflow-y:auto;">';
         items.slice(0, 50).forEach(item => {
-            const typeColors = {file: '#2563EB', email: '#059669', note: '#7C3AED', stage: '#F59E0B'};
+            const typeColors = {file: '#0F766E', email: '#059669', note: '#7C3AED', stage: '#F59E0B'};
             const typeLabels = {file: 'File', email: 'Email', note: 'Note', stage: 'Stage'};
             const color = typeColors[item.type] || '#6B7280';
             html += '<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9;align-items:flex-start;">' +
@@ -5943,7 +5943,7 @@ let dataThrough = '3/8/2026';
 
         const tagColors = {
             'VIP': '#7C3AED', 'At Risk': '#DC2626', 'Hot Lead': '#F59E0B',
-            'Needs Visit': '#2563EB', 'Seasonal': '#059669', 'Chain': '#6B7280',
+            'Needs Visit': '#0F766E', 'Seasonal': '#059669', 'Chain': '#6B7280',
             'Independent': '#8B5CF6', 'Follow Up': '#EC4899'
         };
 
@@ -5993,7 +5993,7 @@ let dataThrough = '3/8/2026';
             <div class="kpi-card" style="border-left:3px solid #DC2626;"><div class="kpi-label">At Risk</div><div class="kpi-value" style="color:#DC2626;">${atRiskCount}</div></div>
             <div class="kpi-card" style="border-left:3px solid #F59E0B;"><div class="kpi-label">Overdue</div><div class="kpi-value" style="color:#F59E0B;">${overdueCount}</div></div>
             <div class="kpi-card"><div class="kpi-label">Active Actions</div><div class="kpi-value">${activeActions}</div></div>
-            <div class="kpi-card" style="border-left:3px solid #2563EB;"><div class="kpi-label">Needs Visit</div><div class="kpi-value" style="color:#0F766E;">${needsVisitCount}</div></div>
+            <div class="kpi-card" style="border-left:3px solid #0F766E;"><div class="kpi-label">Needs Visit</div><div class="kpi-value" style="color:#0F766E;">${needsVisitCount}</div></div>
         `;
 
         let alerts = '';
@@ -6091,7 +6091,7 @@ let dataThrough = '3/8/2026';
     const plStageOrder = ['Identified','Outreach Sent','Meeting Set','RFP/Proposal','Negotiation','Closed Won','Closed Lost'];
     const plStageWeights = {Identified:0.05,'Outreach Sent':0.10,'Meeting Set':0.25,'RFP/Proposal':0.50,Negotiation:0.75,'Closed Won':1.0,'Closed Lost':0};
     const plStageColors = {Identified:'#94a3b8','Outreach Sent':'#60a5fa','Meeting Set':'#a78bfa','RFP/Proposal':'#f59e0b',Negotiation:'#f97316','Closed Won':'#10b981','Closed Lost':'#DC2626'};
-    const plTierColors = {Enterprise:'#7C3AED','On-Premise Natl':'#DC2626',Regional:'#2563EB',Emerging:'#6B7280'};
+    const plTierColors = {Enterprise:'#7C3AED','On-Premise Natl':'#DC2626',Regional:'#0F766E',Emerging:'#6B7280'};
 
     function f$pl(v) { return '$' + v.toLocaleString('en-US'); }
 
@@ -6315,7 +6315,7 @@ let dataThrough = '3/8/2026';
 
         document.getElementById('pipelineKpis').innerHTML =
             '<div style="flex:1;min-width:120px;background:#fff;border-radius:8px;padding:12px 16px;border:1px solid #e5e7eb;"><div style="font-size:11px;color:#6B7280;">Total Accounts</div><div style="font-size:22px;font-weight:700;color:#0F766E;">'+rows.length+'</div></div>' +
-            '<div style="flex:1;min-width:120px;background:#fff;border-radius:8px;padding:12px 16px;border-left:3px solid #2563EB;border-top:1px solid #e5e7eb;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;"><div style="font-size:11px;color:#6B7280;">Open Pipeline</div><div style="font-size:22px;font-weight:700;color:#0F766E;">'+f$pl(totalOpen)+'</div><div style="font-size:10px;color:#9ca3af;">unweighted</div></div>' +
+            '<div style="flex:1;min-width:120px;background:#fff;border-radius:8px;padding:12px 16px;border-left:3px solid #0F766E;border-top:1px solid #e5e7eb;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;"><div style="font-size:11px;color:#6B7280;">Open Pipeline</div><div style="font-size:22px;font-weight:700;color:#0F766E;">'+f$pl(totalOpen)+'</div><div style="font-size:10px;color:#9ca3af;">unweighted</div></div>' +
             '<div style="flex:1;min-width:120px;background:#fff;border-radius:8px;padding:12px 16px;border-left:3px solid #7C3AED;border-top:1px solid #e5e7eb;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;"><div style="font-size:11px;color:#6B7280;">Weighted Pipeline</div><div style="font-size:22px;font-weight:700;color:#7C3AED;">'+f$pl(totalWeighted)+'</div><div style="font-size:10px;color:#9ca3af;">probability-adjusted</div></div>' +
             '<div style="flex:1;min-width:120px;background:#fff;border-radius:8px;padding:12px 16px;border-left:3px solid #10b981;border-top:1px solid #e5e7eb;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;"><div style="font-size:11px;color:#6B7280;">Closed Won</div><div style="font-size:22px;font-weight:700;color:#10b981;">'+f$pl(totalWon)+'</div><div style="font-size:10px;color:#9ca3af;">'+won.length+' accounts</div></div>' +
             '<div style="flex:1;min-width:120px;background:#fff;border-radius:8px;padding:12px 16px;border-left:3px solid #f59e0b;border-top:1px solid #e5e7eb;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;"><div style="font-size:11px;color:#6B7280;">RFP+ Active</div><div style="font-size:22px;font-weight:700;color:#f59e0b;">'+rfpPlus.length+'</div></div>' +
@@ -6396,7 +6396,7 @@ let dataThrough = '3/8/2026';
         const todayStr = today.toISOString().split('T')[0];
         document.getElementById('pipelineTableBody').innerHTML = rows.map(r => {
             const isOverdue = r.dueDate && r.dueDate < todayStr;
-            const distBadge = r.type === 'Distributor' ? '<span style="background:#dbeafe;color:#1d4ed8;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:600;margin-left:4px;">Dist</span>' : '';
+            const distBadge = r.type === 'Distributor' ? '<span style="background:#dbeafe;color:#0F766E;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:600;margin-left:4px;">Dist</span>' : '';
 
             // Calculate days in stage
             const stageDate = r.stageDate ? new Date(r.stageDate) : new Date('2026-02-15');
@@ -6454,7 +6454,7 @@ let dataThrough = '3/8/2026';
         const curValue = getAcctValue(acct, meta);
         const hasCustom = meta.customValue && meta.customValue > 0;
         const tierDefaults = {Enterprise:'$118,500','On-Premise Natl':'$79,000',Regional:'$39,500',Emerging:'$7,900'};
-        const typeBadge = acctType === 'Distributor' ? ' <span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">Distribution Partner</span>' : '';
+        const typeBadge = acctType === 'Distributor' ? ' <span style="background:#dbeafe;color:#0F766E;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">Distribution Partner</span>' : '';
         const channelBadge = channel ? ' <span style="background:'+(channel==='On-Premise'?'#FEF3C7':'#E0E7FF')+';color:'+(channel==='On-Premise'?'#92400E':'#3730A3')+';padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">'+channel+'</span>' : '';
         const stateBadge = acctState ? ' <span style="background:#F0FDF4;color:#166534;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">'+acctState+(regionMap[acctState]?' - '+regionMap[acctState]:'')+'</span>' : '';
         const escapedName = acctName.replace(/'/g,"\\'");
@@ -6490,7 +6490,7 @@ let dataThrough = '3/8/2026';
         html += '<div style="display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-bottom:16px;">';
         tabs.forEach(t => {
             const active = plDetailTab === t.key;
-            html += '<button onclick="switchPlDetailTab(\''+t.key+'\',\''+escapedName+'\')" style="padding:8px 20px;border:none;background:none;font-size:13px;font-weight:'+(active?'700':'500')+';color:'+(active?'#2563EB':'#6B7280')+';cursor:pointer;border-bottom:2px solid '+(active?'#2563EB':'transparent')+';margin-bottom:-2px;">'+t.label+'</button>';
+            html += '<button onclick="switchPlDetailTab(\''+t.key+'\',\''+escapedName+'\')" style="padding:8px 20px;border:none;background:none;font-size:13px;font-weight:'+(active?'700':'500')+';color:'+(active?'#0F766E':'#6B7280')+';cursor:pointer;border-bottom:2px solid '+(active?'#0F766E':'transparent')+';margin-bottom:-2px;">'+t.label+'</button>';
         });
         html += '</div>';
 
@@ -6646,7 +6646,7 @@ let dataThrough = '3/8/2026';
             const isStageChange = e.action.startsWith('Stage changed');
             html += '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9;align-items:flex-start;">' +
                 '<div style="min-width:72px;font-size:11px;color:#6B7280;">'+e.date+'<br><span style="font-size:10px;">'+e.time+'</span></div>' +
-                '<div style="width:6px;height:6px;border-radius:50%;background:'+(isStageChange?'#2563EB':'#9ca3af')+';margin-top:5px;flex-shrink:0;"></div>' +
+                '<div style="width:6px;height:6px;border-radius:50%;background:'+(isStageChange?'#0F766E':'#9ca3af')+';margin-top:5px;flex-shrink:0;"></div>' +
                 '<div style="flex:1;">' +
                     '<div style="font-size:12px;color:#0F766E;'+(isStageChange?'font-weight:600;':'')+'">'+e.action+'</div>' +
                     (e.by ? '<div style="font-size:10px;color:#0F766E;margin-top:1px;">by '+e.by+'</div>' : '') +
@@ -7005,7 +7005,7 @@ let dataThrough = '3/8/2026';
         const existing = document.getElementById('trialBanner');
         if (existing) existing.remove();
 
-        const color = daysLeft <= 3 ? '#DC2626' : daysLeft <= 7 ? '#D97706' : '#2563EB';
+        const color = daysLeft <= 3 ? '#DC2626' : daysLeft <= 7 ? '#D97706' : '#0F766E';
         const banner = document.createElement('div');
         banner.id = 'trialBanner';
         banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:10000;padding:8px 16px;text-align:center;font-size:14px;font-weight:600;color:#fff;background:' + color + ';';
@@ -7533,7 +7533,7 @@ let dataThrough = '3/8/2026';
             container.innerHTML = '<div style="color:#9CA3AF;font-size:12px;">Configure your products in Settings to see them here.</div>';
             return;
         }
-        const colors = ['#2563EB','#059669','#DC2626','#7C3AED','#F59E0B','#EC4899','#6366F1','#14B8A6'];
+        const colors = ['#0F766E','#059669','#DC2626','#7C3AED','#F59E0B','#EC4899','#6366F1','#14B8A6'];
         container.innerHTML = catalog.map((p, i) => {
             const desc = [p.size, p.packConfig, p.casePack ? p.casePack + '/case' : ''].filter(Boolean).join(' | ');
             return '<div class="key-item"><div class="key-label" style="color:' + colors[i % colors.length] + ';">' + (p.name || p.sku) + '</div>' +
