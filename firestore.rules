@@ -32,25 +32,21 @@ service cloud.firestore {
       allow create: if isAuth() && request.auth.uid == userId;
       allow update: if isAuth() && (request.auth.uid == userId || isAdmin());
       allow delete: if isAdmin();
-    }
-
-    // Allow admins to list all users (for user management in Settings)
-    match /users/{userId} {
       allow list: if isAdmin();
     }
 
     // Tenant config: only members of that tenant can read, only admins can write
     match /tenants/{tenantId} {
-      allow read: if isAuth();
+      allow read: if isTenantMember(tenantId);
       allow write: if isAdmin();
 
       // Tenant data subcollections (uploaded data chunks)
       match /data/{fileType} {
-        allow read: if isAuth();
+        allow read: if isTenantMember(tenantId);
         allow write: if isAdmin();
 
         match /rows/{chunkId} {
-          allow read: if isAuth();
+          allow read: if isTenantMember(tenantId);
           allow write: if isAdmin();
         }
       }
@@ -58,7 +54,13 @@ service cloud.firestore {
       // Upload audit logs
       match /uploadAudit/{auditId} {
         allow read: if isAdmin();
-        allow write: if isAuth();
+        allow write: if isTenantMember(tenantId);
+      }
+
+      // Invoices (written by Cloud Function via Admin SDK, readable by admins)
+      match /invoices/{invoiceId} {
+        allow read: if isAdmin();
+        allow write: if false; // Only written by Cloud Function (Admin SDK)
       }
     }
 
