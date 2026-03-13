@@ -4915,8 +4915,17 @@ let dataThrough = '3/8/2026';
                     };
                     setLoggedInUI(user.uid);
                 }
+                // Check subscription status after login
+                if (typeof checkSubscriptionAccess === 'function') {
+                    checkSubscriptionAccess();
+                }
             } else {
                 firebaseAuthUser = null;
+                // Remove paywall/trial banner on sign out
+                const pw = document.getElementById('paywallOverlay');
+                if (pw) pw.remove();
+                const tb = document.getElementById('trialBanner');
+                if (tb) { tb.remove(); document.body.style.paddingTop = ''; }
                 // Not signed in - show login screen (unless setup wizard is showing)
                 if (!currentUser) {
                     document.getElementById('loginOverlay').style.display = 'flex';
@@ -6911,6 +6920,104 @@ let dataThrough = '3/8/2026';
         }
     }
 
+    // ---------------------------------------------------------------
+    // Subscription gating: check if tenant has active/trial access
+    // ---------------------------------------------------------------
+    async function checkSubscriptionAccess() {
+        if (!firebaseReady || !db || !TENANT_CONFIG.tenantId) return true; // Allow access if Firebase not ready
+        try {
+            const doc = await db.collection('tenants').doc(TENANT_CONFIG.tenantId).get();
+            if (!doc.exists) return true; // New tenant, allow access (setup wizard handles trial)
+            const data = doc.data();
+            if (!data.subscription) return true; // No subscription record yet, allow
+
+            const status = data.subscription.status;
+
+            // Active or trial with time remaining = allow
+            if (status === 'active') return true;
+
+            if (status === 'trial') {
+                // Check if trial has expired
+                const trialEndsAt = data.subscription.trialEndsAt;
+                if (trialEndsAt) {
+                    const endDate = new Date(trialEndsAt);
+                    const now = new Date();
+                    if (now < endDate) {
+                        // Update days left
+                        const daysLeft = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));
+                        data.subscription.trialDaysLeft = daysLeft;
+                        // Show trial banner
+                        showTrialBanner(daysLeft);
+                        return true;
+                    }
+                    // Trial expired - fall through to paywall
+                } else {
+                    return true; // No end date, assume trial is valid
+                }
+            }
+
+            // past_due, cancelled, inactive, or expired trial - show paywall
+            showPaywall(status);
+            return false;
+        } catch(e) {
+            console.warn('Subscription check failed:', e);
+            return true; // Fail open so users aren't locked out by errors
+        }
+    }
+
+    function showTrialBanner(daysLeft) {
+        // Remove existing banner if any
+        const existing = document.getElementById('trialBanner');
+        if (existing) existing.remove();
+
+        const color = daysLeft <= 3 ? '#DC2626' : daysLeft <= 7 ? '#D97706' : '#2563EB';
+        const banner = document.createElement('div');
+        banner.id = 'trialBanner';
+        banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:10000;padding:8px 16px;text-align:center;font-size:14px;font-weight:600;color:#fff;background:' + color + ';';
+        banner.innerHTML = 'Free trial: ' + daysLeft + ' day' + (daysLeft !== 1 ? 's' : '') + ' remaining. <a href="#" onclick="event.preventDefault();showTab(\'settings\');document.getElementById(\'settingsBilling\')?.click();" style="color:#fff;text-decoration:underline;margin-left:8px;">Upgrade now</a>';
+        document.body.prepend(banner);
+        // Push content down
+        document.body.style.paddingTop = '36px';
+    }
+
+    function showPaywall(status) {
+        // Remove login overlay if showing and show paywall instead
+        const existing = document.getElementById('paywallOverlay');
+        if (existing) existing.remove();
+
+        const statusMsg = status === 'cancelled' ? 'Your subscription has been cancelled.'
+            : status === 'past_due' ? 'Your payment is past due.'
+            : status === 'trial' ? 'Your free trial has expired.'
+            : 'Your subscription is inactive.';
+
+        const overlay = document.createElement('div');
+        overlay.id = 'paywallOverlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;';
+        overlay.innerHTML = '<div style="background:#fff;border-radius:16px;padding:48px;max-width:560px;width:90%;text-align:center;box-shadow:0 24px 48px rgba(0,0,0,0.2);">' +
+            '<div style="font-size:48px;margin-bottom:16px;">&#128274;</div>' +
+            '<h2 style="font-size:24px;font-weight:700;margin:0 0 8px;">Subscription Required</h2>' +
+            '<p style="color:#64748b;margin:0 0 24px;font-size:16px;">' + esc(statusMsg) + ' Choose a plan to continue using Sidekick BI.</p>' +
+            '<div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;">' +
+                '<div style="border:2px solid #e2e8f0;border-radius:12px;padding:24px;flex:1;min-width:200px;max-width:240px;">' +
+                    '<div style="font-size:14px;font-weight:600;color:#64748b;margin-bottom:4px;">Starter</div>' +
+                    '<div style="font-size:32px;font-weight:700;">$49<span style="font-size:14px;font-weight:400;color:#64748b;">/mo</span></div>' +
+                    '<div style="font-size:13px;color:#64748b;margin:8px 0 16px;">Up to 3 users</div>' +
+                    '<button onclick="startCheckout(\'starter\')" style="width:100%;padding:10px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Choose Starter</button>' +
+                '</div>' +
+                '<div style="border:2px solid #2563eb;border-radius:12px;padding:24px;flex:1;min-width:200px;max-width:240px;position:relative;">' +
+                    '<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#2563eb;color:#fff;font-size:11px;font-weight:700;padding:2px 12px;border-radius:10px;">POPULAR</div>' +
+                    '<div style="font-size:14px;font-weight:600;color:#64748b;margin-bottom:4px;">Growth</div>' +
+                    '<div style="font-size:32px;font-weight:700;">$99<span style="font-size:14px;font-weight:400;color:#64748b;">/mo</span></div>' +
+                    '<div style="font-size:13px;color:#64748b;margin:8px 0 16px;">Up to 10 users</div>' +
+                    '<button onclick="startCheckout(\'growth\')" style="width:100%;padding:10px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Choose Growth</button>' +
+                '</div>' +
+            '</div>' +
+            (STRIPE_CONFIG.portalUrl ? '<p style="margin:0;"><a href="#" onclick="event.preventDefault();openBillingPortal();" style="color:#2563eb;font-size:14px;">Manage existing subscription</a></p>' : '') +
+            '<p style="margin:16px 0 0;"><a href="#" onclick="event.preventDefault();if(auth)auth.signOut();location.reload();" style="color:#94a3b8;font-size:13px;">Sign out</a></p>' +
+        '</div>';
+        document.body.appendChild(overlay);
+    }
+
     // Load current config into settings form
     function loadSettingsForm() {
         // Branding
@@ -7935,6 +8042,20 @@ let dataThrough = '3/8/2026';
                     try {
                         await db.collection('users').doc(adminKey).set(adminProfile);
                     } catch(e) { console.warn('Failed to save admin to Firestore:', e); }
+                    // Start 14-day free trial for new tenants
+                    try {
+                        const trialEnd = new Date();
+                        trialEnd.setDate(trialEnd.getDate() + 14);
+                        await db.collection('tenants').doc(tenantId).set({
+                            subscription: {
+                                status: 'trial',
+                                plan: 'Trial',
+                                trialStartedAt: new Date().toISOString(),
+                                trialEndsAt: trialEnd.toISOString(),
+                                trialDaysLeft: 14
+                            }
+                        }, { merge: true });
+                    } catch(e) { console.warn('Failed to set trial status:', e); }
                 }
                 localStorage.setItem('sk_users', JSON.stringify(REP_CREDENTIALS));
 
