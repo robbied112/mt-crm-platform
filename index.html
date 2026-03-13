@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sidekick BI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Catamaran:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
@@ -15,26 +15,27 @@
         }
 
         :root {
-            --bg: #F9F7F5;
+            --bg: #F8FAFC;
             --card: #FFFFFF;
-            --border: #E8E0DA;
-            --text: #2D2420;
-            --text-dim: #7A6E66;
-            --accent: #B13B34;
-            --accent2: #DF584A;
-            --accent-light: #F2A49D;
-            --cream: #FFF4EC;
-            --peach: #FEDAB2;
-            --orange: #F8992D;
-            --burgundy: #6C312E;
-            --green: #0D9F6E;
+            --border: #E2E8F0;
+            --text: #334155;
+            --text-dim: #64748B;
+            --accent: #0F766E;
+            --accent2: #14B8A6;
+            --accent-light: #99F6E4;
+            --cream: #F0FDFA;
+            --peach: #CCFBF1;
+            --orange: #F97316;
+            --burgundy: #0F766E;
+            --green: #059669;
             --red: #DC2626;
             --yellow: #D97706;
-            --blue: #2563EB;
+            --blue: #0F766E;
+            --coral: #FB7185;
         }
 
         body {
-            font-family: 'Catamaran', sans-serif;
+            font-family: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             line-height: 1.6;
@@ -48,42 +49,43 @@
 
         /* Header */
         header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+            background: linear-gradient(135deg, #0F766E 0%, #0D9488 50%, #14B8A6 100%);
             color: white;
-            padding: 25px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 20px 25px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 16px rgba(15, 118, 110, 0.2);
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 16px;
         }
 
         header img {
-            height: 50px;
+            height: 44px;
             width: auto;
             filter: brightness(0) invert(1);
         }
 
         .header-text h1 {
-            font-size: 28px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 24px;
             font-weight: 700;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
             color: #FFFFFF;
         }
 
         .header-text p {
-            font-size: 14px;
-            opacity: 0.95;
-            color: #e2e8f0;
+            font-size: 13px;
+            opacity: 0.9;
+            color: #CCFBF1;
         }
 
         /* Filter Bar */
         .filter-bar {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 16px;
+            border-radius: 12px;
+            padding: 14px 18px;
             margin-bottom: 20px;
             display: flex;
             flex-wrap: wrap;
@@ -108,12 +110,19 @@
         select {
             padding: 8px 12px;
             border: 1px solid var(--border);
-            border-radius: 6px;
-            font-family: 'Catamaran', sans-serif;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
             background: var(--cream);
             color: var(--text);
             cursor: pointer;
             font-size: 13px;
+            transition: border-color 0.2s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
         }
 
         .filter-pills {
@@ -126,7 +135,7 @@
             padding: 8px 14px;
             border: 1px solid var(--border);
             border-radius: 20px;
-            background: var(--cream);
+            background: var(--card);
             color: var(--text);
             cursor: pointer;
             font-size: 13px;
@@ -135,8 +144,8 @@
         }
 
         .pill:hover {
-            background: var(--peach);
-            border-color: var(--orange);
+            background: var(--cream);
+            border-color: var(--accent2);
         }
 
         .pill.active {
@@ -148,8 +157,8 @@
         /* Tabs */
         .tabs {
             display: flex;
-            gap: 5px;
-            margin-bottom: 25px;
+            gap: 4px;
+            margin-bottom: 24px;
             border-bottom: 2px solid var(--border);
             flex-wrap: wrap;
         }
@@ -160,30 +169,33 @@
             border: none;
             color: var(--text-dim);
             cursor: pointer;
-            font-family: 'Catamaran', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-weight: 600;
             font-size: 14px;
             border-bottom: 3px solid transparent;
-            transition: all 0.3s;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s;
         }
 
         .tab:hover {
             color: var(--accent);
+            background: var(--cream);
         }
 
         .tab.active {
             color: var(--accent);
             border-bottom-color: var(--accent);
+            background: var(--cream);
         }
 
         .tab-accent-blue {
-            color: #2563EB !important;
-            border-bottom: 3px solid rgba(37, 99, 235, 0.25);
+            color: var(--accent) !important;
+            border-bottom: 3px solid rgba(15, 118, 110, 0.25);
         }
         .tab-accent-blue:hover, .tab-accent-blue.active {
-            color: #2563EB !important;
-            border-bottom-color: #2563EB !important;
-            background: rgba(37, 99, 235, 0.06);
+            color: var(--accent) !important;
+            border-bottom-color: var(--accent) !important;
+            background: var(--cream);
         }
 
         /* Tab Content */
@@ -206,13 +218,19 @@
         .kpi-card {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 20px;
             text-align: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            transition: box-shadow 0.2s;
+        }
+
+        .kpi-card:hover {
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.08);
         }
 
         .kpi-label {
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 12px;
             font-weight: 600;
             color: var(--text-dim);
@@ -222,6 +240,7 @@
         }
 
         .kpi-value {
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 32px;
             font-weight: 700;
             color: var(--accent);
@@ -244,12 +263,13 @@
         .chart-container {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
 
         .chart-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 15px;
             font-weight: 600;
             margin-bottom: 15px;
@@ -268,10 +288,10 @@
         .table-container {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 20px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
             overflow-x: auto;
         }
 
@@ -285,6 +305,7 @@
         }
 
         .table-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 15px;
             font-weight: 600;
             color: var(--text);
@@ -300,17 +321,24 @@
         .search-input {
             padding: 8px 12px;
             border: 1px solid var(--border);
-            border-radius: 6px;
-            font-family: 'Catamaran', sans-serif;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
             font-size: 13px;
             width: 200px;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
         }
 
         .btn {
-            padding: 8px 14px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 6px;
-            font-family: 'Catamaran', sans-serif;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
             font-weight: 600;
             font-size: 13px;
             cursor: pointer;
@@ -323,17 +351,18 @@
         }
 
         .btn-primary:hover {
-            background: #991c16;
+            background: #0D6560;
         }
 
         .btn-secondary {
-            background: var(--cream);
+            background: var(--card);
             color: var(--text);
             border: 1px solid var(--border);
         }
 
         .btn-secondary:hover {
-            background: var(--peach);
+            background: var(--cream);
+            border-color: var(--accent2);
         }
 
         .btn-small {
@@ -355,8 +384,12 @@
         th {
             padding: 12px;
             text-align: left;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-weight: 600;
-            color: var(--text);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: var(--text-dim);
             cursor: pointer;
             user-select: none;
             position: relative;
@@ -364,6 +397,7 @@
 
         th.sortable:hover {
             background: var(--peach);
+            color: var(--accent);
         }
 
         th .sort-indicator {
@@ -421,11 +455,11 @@
 
         /* Snapshot Summary */
         .snapshot-box {
-            background: linear-gradient(135deg, #FFF4EC 0%, #FEDAB2 100%);
+            background: linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 20px;
-            margin-bottom: 25px;
+            margin-bottom: 24px;
             line-height: 1.8;
         }
 
@@ -461,12 +495,13 @@
         .section-header {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
         }
 
         .section-header h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 16px;
             font-weight: 600;
             color: var(--text);
@@ -499,7 +534,7 @@
         .key-box {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 20px;
         }
 
@@ -706,9 +741,9 @@
         .toggle-btn {
             padding: 6px 12px;
             border: 1px solid var(--border);
-            background: var(--cream);
+            background: var(--card);
             color: var(--text);
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 12px;
             cursor: pointer;
             transition: all 0.2s;
@@ -732,15 +767,15 @@
         .account-panel-overlay.active {opacity:1;pointer-events:auto;}
         .account-panel {
             position:fixed;top:0;right:-520px;width:520px;height:100%;background:#fff;z-index:9999;
-            box-shadow:-4px 0 24px rgba(0,0,0,0.15);transition:right 0.3s ease;overflow-y:auto;
-            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+            box-shadow:-4px 0 24px rgba(0,0,0,0.12);transition:right 0.3s ease;overflow-y:auto;
+            font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;border-radius:16px 0 0 16px;
         }
         .account-panel.active {right:0;}
         .ap-header {
-            position:sticky;top:0;background:linear-gradient(135deg,#1a1a2e 0%,#0f3460 100%);
+            position:sticky;top:0;background:linear-gradient(135deg,#0F766E 0%,#14B8A6 100%);
             color:#fff;padding:20px 24px;z-index:1;
         }
-        .ap-header h2 {font-size:18px;font-weight:700;margin:0 0 4px;}
+        .ap-header h2 {font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:700;margin:0 0 4px;}
         .ap-header .ap-sub {font-size:13px;opacity:0.85;}
         .ap-close {position:absolute;top:16px;right:16px;background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px 8px;border-radius:4px;}
         .ap-close:hover {background:rgba(255,255,255,0.15);}
@@ -788,29 +823,29 @@
         }
 
         .key-modal-close:hover {
-            color: #1a1a2e;
+            color: #0F766E;
         }
-        .ap-section h3 {font-size:14px;font-weight:700;color:#1a1a2e;margin:0 0 12px;text-transform:uppercase;letter-spacing:0.5px;}
+        .ap-section h3 {font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:#334155;margin:0 0 12px;text-transform:uppercase;letter-spacing:0.5px;}
         .ap-kpi-grid {display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
         .ap-kpi {background:#f8fafc;border-radius:8px;padding:10px 12px;text-align:center;}
-        .ap-kpi .val {font-size:20px;font-weight:700;color:#1a1a2e;}
+        .ap-kpi .val {font-size:20px;font-weight:700;color:#0F766E;}
         .ap-kpi .label {font-size:11px;color:#6B7280;margin-top:2px;}
         .ap-sku-table {width:100%;border-collapse:collapse;font-size:12px;}
         .ap-sku-table th {background:#f1f5f9;padding:6px 8px;text-align:left;font-weight:600;color:#475569;}
         .ap-sku-table td {padding:6px 8px;border-bottom:1px solid #f1f5f9;}
         .ap-sparkline {display:flex;align-items:flex-end;gap:3px;height:32px;}
-        .ap-sparkline .bar {width:16px;background:#3b82f6;border-radius:2px 2px 0 0;min-height:2px;}
+        .ap-sparkline .bar {width:16px;background:#0F766E;border-radius:2px 2px 0 0;min-height:2px;}
         .ap-tags {display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
         .ap-tag {padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #e5e7eb;background:#fff;transition:all 0.15s;}
-        .ap-tag:hover {border-color:#3b82f6;color:#3b82f6;}
-        .ap-tag.selected {background:#3b82f6;color:#fff;border-color:#3b82f6;}
+        .ap-tag:hover {border-color:#0F766E;color:#0F766E;}
+        .ap-tag.selected {background:#0F766E;color:#fff;border-color:#0F766E;}
         .ap-notes-list {max-height:300px;overflow-y:auto;}
         .ap-note {background:#f8fafc;border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:13px;}
         .ap-note .meta {font-size:11px;color:#9ca3af;margin-bottom:4px;}
         .ap-note-input {display:flex;gap:8px;margin-top:12px;}
         .ap-note-input textarea {flex:1;border:1px solid #d1d5db;border-radius:8px;padding:8px 12px;font-size:13px;resize:none;height:60px;font-family:inherit;}
-        .ap-note-input button {background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:600;cursor:pointer;font-size:13px;white-space:nowrap;}
-        .ap-note-input button:hover {background:#2563eb;}
+        .ap-note-input button {background:#0F766E;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:600;cursor:pointer;font-size:13px;white-space:nowrap;}
+        .ap-note-input button:hover {background:#0D6560;}
         .ap-action-row {display:flex;gap:8px;align-items:center;}
         .ap-action-row input[type="date"] {border:1px solid #d1d5db;border-radius:6px;padding:6px 10px;font-size:13px;}
         .ap-action-row select {border:1px solid #d1d5db;border-radius:6px;padding:6px 10px;font-size:13px;}
@@ -826,14 +861,14 @@
         }
         .mention-dropdown.visible {display:block;}
         .mention-item {padding:8px 12px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;}
-        .mention-item:hover,.mention-item.active {background:#EEF2FF;color:#2563EB;}
-        .mention-item .avatar {width:24px;height:24px;border-radius:50%;background:#2563EB;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
-        .mention-tag {color:#2563EB;font-weight:600;background:#EEF2FF;padding:1px 4px;border-radius:4px;}
+        .mention-item:hover,.mention-item.active {background:#EEF2FF;color:#0F766E;}
+        .mention-item .avatar {width:24px;height:24px;border-radius:50%;background:#0F766E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+        .mention-tag {color:#0F766E;font-weight:600;background:#EEF2FF;padding:1px 4px;border-radius:4px;}
         .ap-note-input-wrapper {position:relative;flex:1;display:flex;flex-direction:column;}
         .mention-badge {display:inline-block;background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-left:6px;}
         .myacct-filter {padding:4px 10px;border-radius:14px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #d1d5db;background:#fff;color:#6B7280;transition:all 0.15s;}
-        .myacct-filter:hover {border-color:#3b82f6;color:#3b82f6;}
-        .myacct-filter.active {background:#2563EB;color:#fff;border-color:#2563EB;}
+        .myacct-filter:hover {border-color:#0F766E;color:#0F766E;}
+        .myacct-filter.active {background:#0F766E;color:#fff;border-color:#0F766E;}
         .myacct-row {display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9;cursor:pointer;font-size:13px;}
         .myacct-row:hover {background:#f8fafc;margin:0 -8px;padding:10px 8px;}
         .myacct-row:last-child {border-bottom:none;}
@@ -845,17 +880,17 @@
 
     <!-- Login Overlay -->
     <!-- Setup Wizard (shown on first visit when no tenant is configured) -->
-    <div id="setupWizard" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg, #1E40AF 0%, #1E3A8A 60%, #172554 100%);z-index:10000;justify-content:center;align-items:center;overflow-y:auto;padding:20px;">
+    <div id="setupWizard" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg, #0F766E 0%, #0D9488 50%, #14B8A6 100%);z-index:10000;justify-content:center;align-items:center;overflow-y:auto;padding:20px;">
       <div style="background:#fff;border-radius:20px;padding:44px;width:500px;max-width:95%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
         <div style="text-align:center;margin-bottom:8px;">
           <div style="font-size:36px;margin-bottom:8px;">&#128640;</div>
-          <div style="font-size:28px;font-weight:800;color:#1E40AF;font-family:'Catamaran',sans-serif;">Sidekick BI</div>
+          <div style="font-size:28px;font-weight:800;color:#0F766E;font-family:'Plus Jakarta Sans','Inter',sans-serif;">Sidekick BI</div>
           <div style="font-size:14px;color:#6B7280;margin-top:4px;">Let's get your workspace set up</div>
         </div>
 
         <!-- Step 1: Company Info -->
         <div id="setupStep1" style="margin-top:24px;">
-          <div style="font-size:11px;font-weight:700;color:#2563EB;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Step 1 of 3 -- Your Company</div>
+          <div style="font-size:11px;font-weight:700;color:#0F766E;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Step 1 of 3 -- Your Company</div>
           <div style="margin-bottom:14px;">
             <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Company Name *</label>
             <input id="setupCompanyName" type="text" placeholder="e.g. Acme Beverages" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
@@ -876,12 +911,12 @@
               <option value="other">Other</option>
             </select>
           </div>
-          <button id="setupNext1" style="width:100%;padding:12px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;margin-top:8px;">Continue</button>
+          <button id="setupNext1" style="width:100%;padding:12px;background:#0F766E;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;margin-top:8px;">Continue</button>
         </div>
 
         <!-- Step 2: Admin Account -->
         <div id="setupStep2" style="display:none;margin-top:24px;">
-          <div style="font-size:11px;font-weight:700;color:#2563EB;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Step 2 of 3 -- Admin Account</div>
+          <div style="font-size:11px;font-weight:700;color:#0F766E;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Step 2 of 3 -- Admin Account</div>
           <div style="margin-bottom:14px;">
             <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Your Name *</label>
             <input id="setupAdminName" type="text" placeholder="e.g. Robbie" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
@@ -901,13 +936,13 @@
           </div>
           <div style="display:flex;gap:8px;margin-top:8px;">
             <button id="setupBack2" style="flex:1;padding:12px;background:#F3F4F6;color:#374151;border:none;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;">Back</button>
-            <button id="setupNext2" style="flex:2;padding:12px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;">Continue</button>
+            <button id="setupNext2" style="flex:2;padding:12px;background:#0F766E;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;">Continue</button>
           </div>
         </div>
 
         <!-- Step 3: Channels & Regions -->
         <div id="setupStep3" style="display:none;margin-top:24px;">
-          <div style="font-size:11px;font-weight:700;color:#2563EB;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Step 3 of 3 -- Your Setup</div>
+          <div style="font-size:11px;font-weight:700;color:#0F766E;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Step 3 of 3 -- Your Setup</div>
           <div style="margin-bottom:14px;">
             <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Sales Channels (comma-separated)</label>
             <input id="setupChannels" type="text" placeholder="e.g. On-Premise, Off-Premise, DTC" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
@@ -930,10 +965,10 @@
     </div>
 
     <!-- Login Screen -->
-    <div id="loginOverlay" style="display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg, #1E40AF 0%, #1E3A8A 60%, #172554 100%);z-index:9999;justify-content:center;align-items:center;">
+    <div id="loginOverlay" style="display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg, #0F766E 0%, #0D9488 50%, #14B8A6 100%);z-index:9999;justify-content:center;align-items:center;">
       <div style="background:#fff;border-radius:16px;padding:40px;width:380px;max-width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
         <div style="text-align:center;margin-bottom:28px;">
-          <div id="brandName" style="font-size:28px;font-weight:800;color:#2563EB;font-family:'Catamaran',sans-serif;">Sidekick BI</div>
+          <div id="brandName" style="font-size:28px;font-weight:800;color:#0F766E;font-family:'Plus Jakarta Sans','Inter',sans-serif;">Sidekick BI</div>
           <div id="loginCompanyName" style="font-size:14px;color:#6B7280;margin-top:4px;">Sign in to your workspace</div>
         </div>
         <div id="loginError" style="display:none;background:#FEE2E2;color:#DC2626;padding:8px 12px;border-radius:8px;font-size:13px;margin-bottom:16px;"></div>
@@ -949,9 +984,9 @@
             <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Password</label>
             <input id="loginPassword" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
           </div>
-          <button onclick="doLogin()" id="loginBtn" style="width:100%;padding:12px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Catamaran',sans-serif;">Sign In</button>
+          <button onclick="doLogin()" id="loginBtn" style="width:100%;padding:12px;background:#0F766E;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Plus Jakarta Sans','Inter',sans-serif;">Sign In</button>
           <div style="text-align:center;margin-top:14px;">
-            <button onclick="toggleAuthMode('signup')" style="background:none;border:none;color:#2563EB;font-size:13px;cursor:pointer;text-decoration:underline;">Don't have an account? Sign up</button>
+            <button onclick="toggleAuthMode('signup')" style="background:none;border:none;color:#0F766E;font-size:13px;cursor:pointer;text-decoration:underline;">Don't have an account? Sign up</button>
           </div>
           <div style="text-align:center;margin-top:6px;">
             <button onclick="doPasswordReset()" style="background:none;border:none;color:#6B7280;font-size:12px;cursor:pointer;text-decoration:underline;">Forgot password?</button>
@@ -976,9 +1011,9 @@
             <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Confirm Password</label>
             <input id="signupPasswordConfirm" type="password" placeholder="Confirm password" onkeydown="if(event.key==='Enter')doSignUp()" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
           </div>
-          <button onclick="doSignUp()" id="signupBtn" style="width:100%;padding:12px;background:#059669;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Catamaran',sans-serif;">Create Account</button>
+          <button onclick="doSignUp()" id="signupBtn" style="width:100%;padding:12px;background:#059669;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Plus Jakarta Sans','Inter',sans-serif;">Create Account</button>
           <div style="text-align:center;margin-top:14px;">
-            <button onclick="toggleAuthMode('signin')" style="background:none;border:none;color:#2563EB;font-size:13px;cursor:pointer;text-decoration:underline;">Already have an account? Sign in</button>
+            <button onclick="toggleAuthMode('signin')" style="background:none;border:none;color:#0F766E;font-size:13px;cursor:pointer;text-decoration:underline;">Already have an account? Sign in</button>
           </div>
         </div>
 
@@ -988,7 +1023,7 @@
 
     <!-- User bar (shown when logged in) -->
     <div id="userBar" style="display:none;position:fixed;top:8px;right:16px;z-index:100;background:#fff;border-radius:20px;padding:4px 14px 4px 10px;box-shadow:0 2px 8px rgba(0,0,0,0.1);border:1px solid #e5e7eb;font-size:12px;display:none;align-items:center;gap:8px;">
-      <div style="width:24px;height:24px;border-radius:50%;background:#2563EB;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;" id="userAvatar">?</div>
+      <div style="width:24px;height:24px;border-radius:50%;background:#0F766E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;" id="userAvatar">?</div>
       <span id="userName" style="font-weight:600;color:#374151;">--</span>
       <button onclick="openUserMgmt()" style="background:none;border:none;color:#6B7280;font-size:13px;cursor:pointer;padding:2px 4px;" title="Manage Users">&#9881;</button>
       <button onclick="doLogout()" style="background:none;border:none;color:#9ca3af;font-size:11px;cursor:pointer;padding:2px 6px;">Logout</button>
@@ -998,11 +1033,11 @@
     <div id="userMgmtOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:9998;justify-content:center;align-items:center;" onclick="if(event.target===this)closeUserMgmt()">
       <div style="background:#fff;border-radius:12px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;padding:28px;position:relative;">
         <button onclick="closeUserMgmt()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#6B7280;">x</button>
-        <h3 style="margin:0 0 6px 0;color:#1a1a2e;">Manage Users</h3>
+        <h3 style="margin:0 0 6px 0;color:#0F766E;">Manage Users</h3>
         <p style="font-size:12px;color:#6B7280;margin:0 0 20px 0;">Manage team members. Users sign in with their email and password.</p>
         <div id="userMgmtList"></div>
         <div style="margin-top:20px;padding-top:16px;border-top:1px solid #e5e7eb;">
-          <h4 style="margin:0 0 4px 0;font-size:14px;color:#1a1a2e;">Invite a Team Member</h4>
+          <h4 style="margin:0 0 4px 0;font-size:14px;color:#0F766E;">Invite a Team Member</h4>
           <p style="font-size:11px;color:#9CA3AF;margin:0 0 12px 0;">Add their info here, then share the login page URL. They'll create their own password on sign-up.</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
             <div>
@@ -1104,8 +1139,8 @@
             </div>
             <div style="display:flex;align-items:flex-end;gap:6px;margin-left:auto;">
                 <button id="clearAllFilters" style="padding:6px 12px;background:#F3F4F6;color:#6B7280;border:1px solid #E5E7EB;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;" title="Reset all filters">Clear Filters</button>
-                <span id="activeFilterCount" style="display:none;background:#2563EB;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;"></span>
-                <span id="filterBarUser" style="font-size:12px;font-weight:600;color:#1a1a2e;white-space:nowrap;"></span>
+                <span id="activeFilterCount" style="display:none;background:#0F766E;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;"></span>
+                <span id="filterBarUser" style="font-size:12px;font-weight:600;color:#0F766E;white-space:nowrap;"></span>
             </div>
         </div>
 
@@ -1571,7 +1606,7 @@
 
         <!-- Tab: Customer Pipeline -->
         <div id="pipeline" class="tab-content">
-          <div style="font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:4px;">Customer Pipeline
+          <div style="font-size:18px;font-weight:700;color:#0F766E;margin-bottom:4px;">Customer Pipeline
             <span style="font-size:13px;font-weight:400;color:#6B7280;margin-left:8px;">National & Regional Account Tracker</span>
           </div>
 
@@ -1580,18 +1615,18 @@
 
           <!-- Pipeline Funnel -->
           <div style="background:#fff;border-radius:10px;padding:20px;margin-bottom:20px;border:1px solid #e5e7eb;">
-            <h4 style="margin:0 0 14px 0;font-size:14px;color:#1a1a2e;">Pipeline Funnel</h4>
+            <h4 style="margin:0 0 14px 0;font-size:14px;color:#0F766E;">Pipeline Funnel</h4>
             <div id="pipelineFunnel"></div>
           </div>
 
           <!-- Owner + Tier side by side -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
             <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e5e7eb;">
-              <h4 style="margin:0 0 12px 0;font-size:14px;color:#1a1a2e;">By Owner</h4>
+              <h4 style="margin:0 0 12px 0;font-size:14px;color:#0F766E;">By Owner</h4>
               <div id="pipelineByOwner"></div>
             </div>
             <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e5e7eb;">
-              <h4 style="margin:0 0 12px 0;font-size:14px;color:#1a1a2e;">By Tier</h4>
+              <h4 style="margin:0 0 12px 0;font-size:14px;color:#0F766E;">By Tier</h4>
               <div id="pipelineByTier"></div>
             </div>
           </div>
@@ -1682,7 +1717,7 @@
           <!-- Recent Activity Log -->
           <div id="activityLogSection" class="card" style="margin-bottom:16px;padding:16px;display:none;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-              <h4 style="margin:0;font-size:14px;color:#1a1a2e;">Recent Activity</h4>
+              <h4 style="margin:0;font-size:14px;color:#0F766E;">Recent Activity</h4>
               <button onclick="document.getElementById('activityLogSection').style.display='none'" style="background:none;border:none;font-size:16px;cursor:pointer;color:#6B7280;">x</button>
             </div>
             <div id="activityLogEntries" style="max-height:200px;overflow-y:auto;"></div>
@@ -1858,7 +1893,7 @@
                             </div>
                         </div>
                     </div>
-                    <button id="saveBrandingBtn" style="margin-top:16px;padding:8px 20px;background:#6C312E;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Save Branding</button>
+                    <button id="saveBrandingBtn" style="margin-top:16px;padding:8px 20px;background:#0F766E;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Save Branding</button>
                     <span id="brandingSaveStatus" style="margin-left:12px;font-size:13px;color:#059669;display:none;">Saved!</span>
                 </div>
 
@@ -1905,7 +1940,7 @@
                             <input id="settProductLines" type="text" placeholder="e.g. Original, Lite, Premium" style="width:100%;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box;">
                         </div>
                         <div style="flex:0 0 auto;display:flex;align-items:flex-end;">
-                            <button id="saveProductMetaBtn" style="padding:6px 14px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Save</button>
+                            <button id="saveProductMetaBtn" style="padding:6px 14px;background:#0F766E;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Save</button>
                             <span id="productMetaSaveStatus" style="display:none;color:#059669;font-size:12px;margin-left:8px;">Saved!</span>
                         </div>
                     </div>
@@ -1917,7 +1952,7 @@
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                         <h3 style="font-size:16px;font-weight:700;color:#374151;margin:0;">Goals & Targets</h3>
                         <div>
-                            <button id="saveGoalsBtn" style="padding:6px 14px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save</button>
+                            <button id="saveGoalsBtn" style="padding:6px 14px;background:#0F766E;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save</button>
                             <span id="goalsSaveStatus" style="font-size:12px;color:#059669;margin-left:8px;display:none;">Saved!</span>
                         </div>
                     </div>
@@ -1999,7 +2034,7 @@
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                         <h3 style="font-size:16px;font-weight:700;color:#374151;margin:0;">Terminology & Labels</h3>
                         <div>
-                            <button id="saveTermsBtn" style="padding:6px 14px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save</button>
+                            <button id="saveTermsBtn" style="padding:6px 14px;background:#0F766E;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save</button>
                             <span id="termsSaveStatus" style="display:none;color:#059669;font-size:12px;margin-left:8px;">Saved!</span>
                         </div>
                     </div>
@@ -2087,7 +2122,7 @@
 
                 <!-- Billing & Subscription -->
                 <div id="settBillingSection" style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:24px;margin-bottom:20px;">
-                    <h3 style="font-size:16px;font-weight:700;color:#1a1a2e;margin-bottom:4px;">Billing & Subscription</h3>
+                    <h3 style="font-size:16px;font-weight:700;color:#0F766E;margin-bottom:4px;">Billing & Subscription</h3>
                     <p style="font-size:12px;color:#6B7280;margin-bottom:16px;">Manage your subscription plan and payment details.</p>
 
                     <div id="billingStatus" style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:16px;margin-bottom:16px;">
@@ -2100,19 +2135,19 @@
 
                     <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:16px;">
                         <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:16px;text-align:center;">
-                            <div style="font-size:24px;font-weight:800;color:#2563EB;">$49</div>
+                            <div style="font-size:24px;font-weight:800;color:#0F766E;">$49</div>
                             <div style="font-size:12px;color:#6B7280;">/month</div>
-                            <div style="font-size:13px;font-weight:600;color:#1E40AF;margin-top:4px;">Starter</div>
+                            <div style="font-size:13px;font-weight:600;color:#0F766E;margin-top:4px;">Starter</div>
                             <div style="font-size:11px;color:#6B7280;margin-top:4px;">Up to 5 users</div>
-                            <button onclick="startCheckout('starter')" style="margin-top:8px;padding:6px 16px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Select</button>
+                            <button onclick="startCheckout('starter')" style="margin-top:8px;padding:6px 16px;background:#0F766E;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Select</button>
                         </div>
                         <div style="background:#EFF6FF;border:2px solid #2563EB;border-radius:8px;padding:16px;text-align:center;position:relative;">
-                            <div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#2563EB;color:#fff;padding:2px 10px;border-radius:10px;font-size:10px;font-weight:700;">POPULAR</div>
-                            <div style="font-size:24px;font-weight:800;color:#2563EB;">$99</div>
+                            <div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#0F766E;color:#fff;padding:2px 10px;border-radius:10px;font-size:10px;font-weight:700;">POPULAR</div>
+                            <div style="font-size:24px;font-weight:800;color:#0F766E;">$99</div>
                             <div style="font-size:12px;color:#6B7280;">/month</div>
-                            <div style="font-size:13px;font-weight:600;color:#1E40AF;margin-top:4px;">Growth</div>
+                            <div style="font-size:13px;font-weight:600;color:#0F766E;margin-top:4px;">Growth</div>
                             <div style="font-size:11px;color:#6B7280;margin-top:4px;">Up to 15 users</div>
-                            <button onclick="startCheckout('growth')" style="margin-top:8px;padding:6px 16px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Select</button>
+                            <button onclick="startCheckout('growth')" style="margin-top:8px;padding:6px 16px;background:#0F766E;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Select</button>
                         </div>
                         <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:16px;text-align:center;">
                             <div style="font-size:24px;font-weight:800;color:#374151;">Custom</div>
@@ -2152,8 +2187,8 @@ const TENANT_CONFIG = {
     tenantId: 'default',
     companyName: '',
     logo: '',
-    primaryColor: '#2563EB',
-    accentColor: '#059669',
+    primaryColor: '#0F766E',
+    accentColor: '#14B8A6',
     stateNames: {},
     regionMap: {},
     channels: [],
@@ -2782,8 +2817,8 @@ let dataThrough = '3/8/2026';
             if (!order) return '';
             let labelBadge = '';
             if (order.label === 'Classic') labelBadge = '<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:#F3E8FF;color:#7C3AED;margin-left:4px;">Classic</span>';
-            else if (order.label === 'Contemporary') labelBadge = '<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:#DBEAFE;color:#2563EB;margin-left:4px;">Contemporary</span>';
-            else if (order.label === 'Both') labelBadge = '<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:#F3E8FF;color:#7C3AED;margin-left:4px;">Classic</span><span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:#DBEAFE;color:#2563EB;margin-left:2px;">Contemporary</span>';
+            else if (order.label === 'Contemporary') labelBadge = '<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:#DBEAFE;color:#0F766E;margin-left:4px;">Contemporary</span>';
+            else if (order.label === 'Both') labelBadge = '<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:#F3E8FF;color:#7C3AED;margin-left:4px;">Classic</span><span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:#DBEAFE;color:#0F766E;margin-left:2px;">Contemporary</span>';
             return `<div style="font-size:11px;color:#6B7280;margin-top:2px;" title="QB Invoice #${order.num} - ${order.items}">Last QB Order: ${order.date} | $${order.total.toLocaleString()}${order.items ? ' | ' + order.items : ''}${labelBadge}</div>`;
         }
         function getLabelBadgeOnly(distName) {
@@ -2791,8 +2826,8 @@ let dataThrough = '3/8/2026';
             const order = qbDistOrders[distName];
             if (!order) return '';
             if (order.label === 'Classic') return '<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:#F3E8FF;color:#7C3AED;">Classic</span>';
-            if (order.label === 'Contemporary') return '<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:#DBEAFE;color:#2563EB;">Contemporary</span>';
-            if (order.label === 'Both') return '<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:#F3E8FF;color:#7C3AED;">Classic</span> <span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:#DBEAFE;color:#2563EB;">Contemporary</span>';
+            if (order.label === 'Contemporary') return '<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:#DBEAFE;color:#0F766E;">Contemporary</span>';
+            if (order.label === 'Both') return '<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:#F3E8FF;color:#7C3AED;">Classic</span> <span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:#DBEAFE;color:#0F766E;">Contemporary</span>';
             return '';
         }
 
@@ -3079,13 +3114,13 @@ let dataThrough = '3/8/2026';
             let html = '';
             Object.entries(REP_CREDENTIALS).forEach(([key, u]) => {
                 const isCurrent = currentUser && (currentUser.uid === key || currentUser.name === u.name);
-                const roleLabel = u.role === 'admin' ? '<span style="background:#DBEAFE;color:#2563EB;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;">ADMIN</span>' :
+                const roleLabel = u.role === 'admin' ? '<span style="background:#DBEAFE;color:#0F766E;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;">ADMIN</span>' :
                                   u.role === 'manager' ? '<span style="background:#D1FAE5;color:#059669;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;">MANAGER</span>' :
                                   '<span style="background:#F3F4F6;color:#6B7280;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;">REP</span>';
                 html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9;">' +
-                    '<div style="width:32px;height:32px;border-radius:50%;background:#2563EB;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">' + (u.initials || '??') + '</div>' +
+                    '<div style="width:32px;height:32px;border-radius:50%;background:#0F766E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">' + (u.initials || '??') + '</div>' +
                     '<div style="flex:1;">' +
-                        '<div style="font-weight:600;font-size:13px;color:#1a1a2e;">' + u.name + (isCurrent ? ' <span style="font-size:10px;color:#10b981;">(you)</span>' : '') + ' ' + roleLabel + '</div>' +
+                        '<div style="font-weight:600;font-size:13px;color:#0F766E;">' + u.name + (isCurrent ? ' <span style="font-size:10px;color:#10b981;">(you)</span>' : '') + ' ' + roleLabel + '</div>' +
                         '<div style="font-size:11px;color:#9ca3af;">' + (u.email || 'No email') + (u.territory && u.territory !== 'all' ? ' | Territory: ' + (Array.isArray(u.territory) ? u.territory.join(', ') : u.territory) : '') + '</div>' +
                     '</div>' +
                     '<div style="display:flex;gap:6px;align-items:center;">' +
@@ -3267,7 +3302,7 @@ let dataThrough = '3/8/2026';
             }
 
             // Welcome header
-            html += `<div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:#fff;padding:24px 24px;border-radius:8px;margin-bottom:24px;">
+            html += `<div style="background:linear-gradient(135deg,#0F766E 0%,#0D9488 100%);color:#fff;padding:24px 24px;border-radius:8px;margin-bottom:24px;">
                 <h2 style="margin:0 0 4px 0;font-size:24px;font-weight:700;">Welcome back, ${currentUser.name}</h2>
                 <p style="margin:0;opacity:0.9;font-size:14px;">${todayStr}</p>
             </div>`;
@@ -3293,11 +3328,11 @@ let dataThrough = '3/8/2026';
             html += `<div class="kpi-row" style="margin-bottom:24px;">
                 <div class="kpi-card">
                     <div class="kpi-label">Total ${t('longPeriod')} ${t('volume')}</div>
-                    <div class="kpi-value" style="color:#B13B34;">${totalCE.toFixed(0)}</div>
+                    <div class="kpi-value" style="color:#0F766E;">${totalCE.toFixed(0)}</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">Active ${t('account')}s</div>
-                    <div class="kpi-value" style="color:#2563EB;">${activeAccts}</div>
+                    <div class="kpi-value" style="color:#0F766E;">${activeAccts}</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">Pipeline Deals</div>
@@ -3341,7 +3376,7 @@ let dataThrough = '3/8/2026';
                         <span style="font-size:11px;color:#9CA3AF;">Set in Settings</span>
                     </div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;">
-                        ${goalBar('Annual Volume', totalCE, goals.annualVolume, 'cases', '#B13B34')}
+                        ${goalBar('Annual Volume', totalCE, goals.annualVolume, 'cases', '#0F766E')}
                         ${goalBar('Total Accounts', totalAccounts, goals.totalAccounts, '', '#2563EB')}
                         ${goalBar('Annual Revenue', totalRevenue, goals.annualRevenue, '$', '#059669')}
                         ${goalBar('Distribution (States)', uniqueStates.size, goals.totalStates, '', '#7C3AED')}
@@ -3429,13 +3464,13 @@ let dataThrough = '3/8/2026';
 
             // My Mentions (loaded async)
             html += '<div id="myMentionsSection" style="display:none;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:16px;margin-bottom:24px;">' +
-                '<h3 style="margin:0 0 12px 0;font-size:16px;font-weight:700;color:#1E40AF;">My Mentions <span id="myMentionsCount" style="font-size:12px;font-weight:400;color:#3B82F6;"></span></h3>' +
+                '<h3 style="margin:0 0 12px 0;font-size:16px;font-weight:700;color:#0F766E;">My Mentions <span id="myMentionsCount" style="font-size:12px;font-weight:400;color:#3B82F6;"></span></h3>' +
                 '<div id="myMentionsList"></div></div>';
 
             // My Accounts (CRM filter view - loaded async)
             html += `<div id="myAccountsSection" style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:24px;overflow:hidden;">
                 <div style="padding:16px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-                    <h3 style="margin:0;font-size:16px;font-weight:700;color:#1a1a2e;">My Accounts</h3>
+                    <h3 style="margin:0;font-size:16px;font-weight:700;color:#0F766E;">My Accounts</h3>
                     <div id="myAcctFilters" style="display:flex;gap:6px;flex-wrap:wrap;">
                         <button class="myacct-filter active" data-filter="all" onclick="filterMyAccounts('all',this)">All</button>
                         <button class="myacct-filter" data-filter="has-action" onclick="filterMyAccounts('has-action',this)">Has Action</button>
@@ -3625,7 +3660,7 @@ let dataThrough = '3/8/2026';
 
                 return '<div class="myacct-row" onclick="openAccountPanel(\''+a.name.replace(/'/g,"\\'")+'\')">' +
                     '<div style="flex:1;min-width:0;">' +
-                        '<div style="font-weight:600;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+a.name+'</div>' +
+                        '<div style="font-weight:600;color:#0F766E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+a.name+'</div>' +
                         '<div style="font-size:11px;color:#6B7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(a.dist || '--')+' - '+(a.st || '')+'</div>' +
                     '</div>' +
                     '<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;justify-content:flex-end;">'+tagsHtml+notesBadge+'</div>' +
@@ -3674,12 +3709,12 @@ let dataThrough = '3/8/2026';
                     datasets: [{
                         label: 'Weekly CE',
                         data: weeklyTotal,
-                        borderColor: '#B13B34',
+                        borderColor: '#0F766E',
                         backgroundColor: 'rgba(177, 59, 52, 0.1)',
                         borderWidth: 2,
                         tension: 0.4,
                         fill: true,
-                        pointBackgroundColor: '#B13B34'
+                        pointBackgroundColor: '#0F766E'
                     }]
                 },
                 options: {
@@ -3709,7 +3744,7 @@ let dataThrough = '3/8/2026';
                     datasets: [{
                         label: t('longPeriod') + ' ' + t('volume'),
                         data: topDists.map(d => d.ce),
-                        backgroundColor: '#B13B34'
+                        backgroundColor: '#0F766E'
                     }]
                 },
                 options: {
@@ -3752,7 +3787,7 @@ let dataThrough = '3/8/2026';
             const datasets = topDists.map((d, idx) => ({
                 label: d.name.substring(0, 15),
                 data: d.weekly,
-                backgroundColor: ['#B13B34', '#DF584A', '#F8992D', '#0D9F6E', '#2563EB', '#D97706'][idx],
+                backgroundColor: ['#0F766E', '#14B8A6', '#F8992D', '#0D9F6E', '#2563EB', '#D97706'][idx],
                 stack: 'stack'
             }));
 
@@ -3797,7 +3832,7 @@ let dataThrough = '3/8/2026';
                     labels: skus,
                     datasets: [{
                         data: skuDistribution,
-                        backgroundColor: ['#B13B34', '#F8992D', '#0D9F6E', '#2563EB']
+                        backgroundColor: ['#0F766E', '#F8992D', '#0D9F6E', '#2563EB']
                     }]
                 },
                 options: {
@@ -3820,7 +3855,7 @@ let dataThrough = '3/8/2026';
                     const gid = 'depGrp_' + idx;
                     const grpToggle = `<span style="cursor:pointer;color:#3498db;font-size:12px;margin-right:4px;" title="Show warehouses" onclick="toggleRow(this,'${gid}')">&#9654;</span>`;
                     tableHtml += `<tr style="background-color:#f0f4f8;font-weight:600;">
-                        <td>${grpToggle}<span style="cursor:pointer;text-decoration:underline;color:#1a1a2e;" onclick="drillIntoDistributor('${escAttr(d.name)}')">${esc(d.name)}</span> <span style="font-size:10px;color:#6B7280;font-weight:400">(${d.children.length} locations)</span></td>
+                        <td>${grpToggle}<span style="cursor:pointer;text-decoration:underline;color:#0F766E;" onclick="drillIntoDistributor('${escAttr(d.name)}')">${esc(d.name)}</span> <span style="font-size:10px;color:#6B7280;font-weight:400">(${d.children.length} locations)</span></td>
                         <td>${esc(d.st)}</td>
                         <td><strong>${d.ce.toFixed(1)}</strong></td>
                         <td>${renderMomentum(d.momentum)}</td>
@@ -3853,7 +3888,7 @@ let dataThrough = '3/8/2026';
                     tableHtml += `</tbody></table></td></tr>`;
                 } else {
                     tableHtml += `<tr>
-                        <td><span style="cursor:pointer;text-decoration:underline;color:#1a1a2e;" onclick="drillIntoDistributor('${escAttr(d.name)}')">${esc(d.name)}</span></td>
+                        <td><span style="cursor:pointer;text-decoration:underline;color:#0F766E;" onclick="drillIntoDistributor('${escAttr(d.name)}')">${esc(d.name)}</span></td>
                         <td>${esc(d.st)}</td>
                         <td><strong>${d.ce.toFixed(1)}</strong></td>
                         <td>${renderMomentum(d.momentum)}</td>
@@ -4144,7 +4179,7 @@ let dataThrough = '3/8/2026';
                     datasets: [{
                         label: 'Distributors',
                         data: scatterData.map(d => ({x: d.x, y: d.y})),
-                        backgroundColor: '#B13B34'
+                        backgroundColor: '#0F766E'
                     }]
                 },
                 options: {
@@ -4348,7 +4383,7 @@ let dataThrough = '3/8/2026';
             }
             html += '</tbody></table></div>';
             const line2Name = (TENANT_CONFIG.productLines || [])[1] || 'Line 2';
-            html += '<div><div style="font-weight:600;margin-bottom:6px;"><span style="display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;background:#DBEAFE;color:#2563EB;margin-right:6px;">' + line2Name + '</span></div>';
+            html += '<div><div style="font-weight:600;margin-bottom:6px;"><span style="display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;background:#DBEAFE;color:#0F766E;margin-right:6px;">' + line2Name + '</span></div>';
             html += '<table style="width:100%;font-size:12px;border-collapse:collapse;"><thead><tr style="background:#f9fafb;"><th style="text-align:left;padding:4px 6px;">Location</th>';
             productNames.forEach(w => html += '<th style="text-align:right;padding:4px 6px;">' + w + '</th>');
             html += '<th style="text-align:right;padding:4px 6px;font-weight:700;">Total</th></tr></thead><tbody>';
@@ -5234,7 +5269,7 @@ let dataThrough = '3/8/2026';
             const file = files[i];
             if (file.size > 10 * 1024 * 1024) { alert('File too large (10MB max): ' + file.name); continue; }
             if (file.size === 0) { alert('File is empty: ' + file.name); continue; }
-            dropZone.innerHTML = '<div style="color:#2563EB;font-weight:600;">Uploading ' + file.name + '...</div>';
+            dropZone.innerHTML = '<div style="color:#0F766E;font-weight:600;">Uploading ' + file.name + '...</div>';
             try {
                 await FileStore.uploadFile(acctName, file, context, repName);
             } catch(e) {
@@ -5255,8 +5290,8 @@ let dataThrough = '3/8/2026';
             html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9;">' +
                 '<span style="font-size:20px;">' + icon + '</span>' +
                 '<div style="flex:1;min-width:0;">' +
-                    '<div style="font-size:13px;font-weight:600;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
-                    (f.url ? '<a href="' + f.url + '" target="_blank" style="color:#2563EB;text-decoration:none;">' + f.name + '</a>' : f.name) + '</div>' +
+                    '<div style="font-size:13px;font-weight:600;color:#0F766E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
+                    (f.url ? '<a href="' + f.url + '" target="_blank" style="color:#0F766E;text-decoration:none;">' + f.name + '</a>' : f.name) + '</div>' +
                     '<div style="font-size:11px;color:#6B7280;">' + formatFileSize(f.size) + ' &bull; ' + f.date + ' &bull; ' + (f.uploadedBy || '') + '</div>' +
                 '</div>' +
                 (allowDelete && f.id ? '<button onclick="deleteFileFromAccount(\'' + acctName.replace(/'/g, "\\'") + '\',\'' + f.id + '\',\'' + (f.path || '').replace(/'/g, "\\'") + '\')" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:14px;padding:4px;" title="Delete">&#10005;</button>' : '') +
@@ -5287,7 +5322,7 @@ let dataThrough = '3/8/2026';
                     '<span style="font-size:11px;color:#6B7280;">' + e.date + '</span>' +
                     '<span style="font-size:11px;color:#9ca3af;margin-left:auto;">logged by ' + (e.loggedBy || '') + '</span>' +
                 '</div>' +
-                '<div style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:2px;">' + (e.subject || '(no subject)') + '</div>' +
+                '<div style="font-size:13px;font-weight:600;color:#0F766E;margin-bottom:2px;">' + (e.subject || '(no subject)') + '</div>' +
                 '<div style="font-size:12px;color:#6B7280;">' + (e.direction === 'outbound' ? 'To: ' : 'From: ') + (e.direction === 'outbound' ? e.to : e.from) + '</div>' +
                 (e.body ? '<div style="font-size:12px;color:#374151;margin-top:6px;padding:8px;background:#f8fafc;border-radius:6px;max-height:80px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">' + e.body.substring(0, 500) + (e.body.length > 500 ? '...' : '') + '</div>' : '') +
                 '</div>';
@@ -5303,7 +5338,7 @@ let dataThrough = '3/8/2026';
         overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
         overlay.innerHTML = '<div style="background:#fff;border-radius:12px;padding:24px;width:90%;max-width:520px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">' +
             '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">' +
-                '<h3 style="margin:0;font-size:18px;font-weight:700;color:#1a1a2e;">Log Email</h3>' +
+                '<h3 style="margin:0;font-size:18px;font-weight:700;color:#0F766E;">Log Email</h3>' +
                 '<button onclick="document.getElementById(\'emailLogOverlay\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6B7280;">&times;</button></div>' +
             '<div style="margin-bottom:12px;">' +
                 '<label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Direction</label>' +
@@ -5321,7 +5356,7 @@ let dataThrough = '3/8/2026';
             '<div style="margin-bottom:16px;">' +
                 '<label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Body <span style="font-weight:400;color:#9ca3af;">(paste email content)</span></label>' +
                 '<textarea id="emlBody" rows="6" placeholder="Paste the email content here..." style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;resize:vertical;box-sizing:border-box;"></textarea></div>' +
-            '<button id="emlSaveBtn" style="width:100%;padding:10px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">Save Email Log</button></div>';
+            '<button id="emlSaveBtn" style="width:100%;padding:10px;background:#0F766E;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">Save Email Log</button></div>';
         document.body.appendChild(overlay);
 
         document.getElementById('emlSaveBtn').addEventListener('click', async function() {
@@ -5362,10 +5397,10 @@ let dataThrough = '3/8/2026';
                     '<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">' +
                         '<span style="font-size:10px;font-weight:700;color:' + color + ';text-transform:uppercase;letter-spacing:0.5px;">' + (typeLabels[item.type] || item.type) + '</span>' +
                         '<span style="font-size:11px;color:#9ca3af;">' + (item.date || '') + '</span>' +
-                        (item.by ? '<span style="font-size:11px;color:#B13B34;margin-left:auto;">' + item.by + '</span>' : '') +
+                        (item.by ? '<span style="font-size:11px;color:#0F766E;margin-left:auto;">' + item.by + '</span>' : '') +
                     '</div>' +
-                    '<div style="font-size:13px;color:#1a1a2e;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
-                        (item.type === 'file' && item.url ? '<a href="' + item.url + '" target="_blank" style="color:#2563EB;text-decoration:none;">' + item.title + '</a>' : item.title) + '</div>' +
+                    '<div style="font-size:13px;color:#0F766E;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
+                        (item.type === 'file' && item.url ? '<a href="' + item.url + '" target="_blank" style="color:#0F766E;text-decoration:none;">' + item.title + '</a>' : item.title) + '</div>' +
                     (item.detail ? '<div style="font-size:11px;color:#6B7280;">' + item.detail + '</div>' : '') +
                 '</div></div>';
         });
@@ -5958,7 +5993,7 @@ let dataThrough = '3/8/2026';
             <div class="kpi-card" style="border-left:3px solid #DC2626;"><div class="kpi-label">At Risk</div><div class="kpi-value" style="color:#DC2626;">${atRiskCount}</div></div>
             <div class="kpi-card" style="border-left:3px solid #F59E0B;"><div class="kpi-label">Overdue</div><div class="kpi-value" style="color:#F59E0B;">${overdueCount}</div></div>
             <div class="kpi-card"><div class="kpi-label">Active Actions</div><div class="kpi-value">${activeActions}</div></div>
-            <div class="kpi-card" style="border-left:3px solid #2563EB;"><div class="kpi-label">Needs Visit</div><div class="kpi-value" style="color:#2563EB;">${needsVisitCount}</div></div>
+            <div class="kpi-card" style="border-left:3px solid #2563EB;"><div class="kpi-label">Needs Visit</div><div class="kpi-value" style="color:#0F766E;">${needsVisitCount}</div></div>
         `;
 
         let alerts = '';
@@ -6011,15 +6046,15 @@ let dataThrough = '3/8/2026';
                     'onmouseover="this.style.boxShadow=\'0 2px 8px rgba(0,0,0,0.08)\'" onmouseout="this.style.boxShadow=\'none\'" ' +
                     'onclick="openAccountPanel(\'' + item.acct.replace(/'/g, "\\'") + '\')">' +
                     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">' +
-                        '<div><span style="font-weight:700;font-size:14px;color:#1a1a2e;">' + item.acct + '</span>' +
+                        '<div><span style="font-weight:700;font-size:14px;color:#0F766E;">' + item.acct + '</span>' +
                         '<span style="margin-left:8px;font-size:11px;color:#6B7280;">' + item.dist + ' / ' + item.st + '</span></div>' +
                         '<div style="text-align:right;">' +
-                            (item.ce > 0 ? '<span style="font-size:12px;font-weight:600;color:#1a1a2e;">' + item.ce.toFixed(1) + ' CE</span>' : '') +
+                            (item.ce > 0 ? '<span style="font-size:12px;font-weight:600;color:#0F766E;">' + item.ce.toFixed(1) + ' CE</span>' : '') +
                         '</div>' +
                     '</div>' +
                     '<div style="margin-bottom:6px;">' + (tagBadges || '') + '</div>' +
                     '<div style="display:flex;gap:16px;font-size:12px;color:#6B7280;flex-wrap:wrap;">' +
-                        (item.nextAction ? '<span>Action: <strong style="color:#1a1a2e;">' + item.nextAction + '</strong></span>' : '') +
+                        (item.nextAction ? '<span>Action: <strong style="color:#0F766E;">' + item.nextAction + '</strong></span>' : '') +
                         (item.followUp ? '<span style="' + (item.isOverdue ? 'color:#DC2626;font-weight:700;' : '') + '">Due: ' + item.followUp + (item.isOverdue ? ' (OVERDUE)' : '') + '</span>' : '') +
                         '<span>Last Order: <strong style="color:' + dayColor + ';">' + item.lastOrder + '</strong> (' + (item.daysSince < 999 ? item.daysSince + 'd ago' : '--') + ')</span>' +
                         (item.noteCount > 0 ? '<span style="background:#EEF2FF;color:#4338CA;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:600;">' + item.noteCount + ' note' + (item.noteCount > 1 ? 's' : '') + '</span>' : '') +
@@ -6099,11 +6134,11 @@ let dataThrough = '3/8/2026';
         if (!el || log.length === 0) return;
         document.getElementById('activityLogSection').style.display = 'block';
         el.innerHTML = log.slice(0,20).map(e => {
-            const byTag = e.by ? '<span style="color:#B13B34;font-weight:600;min-width:60px;">' + e.by + '</span>' : '';
+            const byTag = e.by ? '<span style="color:#0F766E;font-weight:600;min-width:60px;">' + e.by + '</span>' : '';
             return '<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:12px;">' +
                 '<span style="min-width:80px;color:#6B7280;">' + e.date + '</span>' +
                 byTag +
-                '<span style="font-weight:600;min-width:120px;color:#1a1a2e;">' + e.acct + '</span>' +
+                '<span style="font-weight:600;min-width:120px;color:#0F766E;">' + e.acct + '</span>' +
                 '<span style="color:#374151;">' + e.action + '</span></div>';
         }).join('');
     }
@@ -6279,8 +6314,8 @@ let dataThrough = '3/8/2026';
         const rfpPlus = rows.filter(r => ['RFP/Proposal','Negotiation','Closed Won'].includes(r.stage));
 
         document.getElementById('pipelineKpis').innerHTML =
-            '<div style="flex:1;min-width:120px;background:#fff;border-radius:8px;padding:12px 16px;border:1px solid #e5e7eb;"><div style="font-size:11px;color:#6B7280;">Total Accounts</div><div style="font-size:22px;font-weight:700;color:#1a1a2e;">'+rows.length+'</div></div>' +
-            '<div style="flex:1;min-width:120px;background:#fff;border-radius:8px;padding:12px 16px;border-left:3px solid #2563EB;border-top:1px solid #e5e7eb;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;"><div style="font-size:11px;color:#6B7280;">Open Pipeline</div><div style="font-size:22px;font-weight:700;color:#2563EB;">'+f$pl(totalOpen)+'</div><div style="font-size:10px;color:#9ca3af;">unweighted</div></div>' +
+            '<div style="flex:1;min-width:120px;background:#fff;border-radius:8px;padding:12px 16px;border:1px solid #e5e7eb;"><div style="font-size:11px;color:#6B7280;">Total Accounts</div><div style="font-size:22px;font-weight:700;color:#0F766E;">'+rows.length+'</div></div>' +
+            '<div style="flex:1;min-width:120px;background:#fff;border-radius:8px;padding:12px 16px;border-left:3px solid #2563EB;border-top:1px solid #e5e7eb;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;"><div style="font-size:11px;color:#6B7280;">Open Pipeline</div><div style="font-size:22px;font-weight:700;color:#0F766E;">'+f$pl(totalOpen)+'</div><div style="font-size:10px;color:#9ca3af;">unweighted</div></div>' +
             '<div style="flex:1;min-width:120px;background:#fff;border-radius:8px;padding:12px 16px;border-left:3px solid #7C3AED;border-top:1px solid #e5e7eb;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;"><div style="font-size:11px;color:#6B7280;">Weighted Pipeline</div><div style="font-size:22px;font-weight:700;color:#7C3AED;">'+f$pl(totalWeighted)+'</div><div style="font-size:10px;color:#9ca3af;">probability-adjusted</div></div>' +
             '<div style="flex:1;min-width:120px;background:#fff;border-radius:8px;padding:12px 16px;border-left:3px solid #10b981;border-top:1px solid #e5e7eb;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;"><div style="font-size:11px;color:#6B7280;">Closed Won</div><div style="font-size:22px;font-weight:700;color:#10b981;">'+f$pl(totalWon)+'</div><div style="font-size:10px;color:#9ca3af;">'+won.length+' accounts</div></div>' +
             '<div style="flex:1;min-width:120px;background:#fff;border-radius:8px;padding:12px 16px;border-left:3px solid #f59e0b;border-top:1px solid #e5e7eb;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;"><div style="font-size:11px;color:#6B7280;">RFP+ Active</div><div style="font-size:22px;font-weight:700;color:#f59e0b;">'+rfpPlus.length+'</div></div>' +
@@ -6371,7 +6406,7 @@ let dataThrough = '3/8/2026';
             else if (daysSinceStage > 14) daysColor = '#D97706';
 
             return '<tr style="border-bottom:1px solid #f1f5f9;cursor:pointer;" onclick="openPipelineDetail(\'' + escAttr(r.acct) + '\')">' +
-                '<td style="padding:8px 12px;font-weight:600;color:#2563EB;cursor:pointer;">' + esc(r.acct) + distBadge + '</td>' +
+                '<td style="padding:8px 12px;font-weight:600;color:#0F766E;cursor:pointer;">' + esc(r.acct) + distBadge + '</td>' +
                 '<td style="padding:8px;text-align:center;"><span style="padding:2px 10px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:'+plTierColors[r.tier]+';">'+r.tier+'</span></td>' +
                 '<td style="padding:8px;text-align:center;"><span style="padding:2px 10px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:'+plStageColors[r.stage]+';">' + esc(r.stage) + '</span></td>' +
                 '<td style="padding:8px;text-align:center;font-size:11px;font-weight:600;color:'+daysColor+';">'+daysSinceStage+'</td>' +
@@ -6432,7 +6467,7 @@ let dataThrough = '3/8/2026';
         else if (daysSinceStage > 14) daysColor = '#D97706';
 
         // Header (always shown)
-        let html = '<h3 style="margin:0 0 4px 0;color:#1a1a2e;font-size:20px;">'+acct.acct+typeBadge+channelBadge+stateBadge+'</h3>' +
+        let html = '<h3 style="margin:0 0 4px 0;color:#0F766E;font-size:20px;">'+acct.acct+typeBadge+channelBadge+stateBadge+'</h3>' +
             '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">' +
                 '<span style="padding:3px 12px;border-radius:12px;font-size:11px;font-weight:600;color:#fff;background:'+plTierColors[tier]+';">'+tier+'</span>' +
                 '<span style="padding:3px 12px;border-radius:12px;font-size:11px;font-weight:600;color:#fff;background:'+plStageColors[stage]+';">'+stage+'</span>' +
@@ -6442,7 +6477,7 @@ let dataThrough = '3/8/2026';
         html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px;padding:12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">' +
             '<div><span style="font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;">Owner</span><div style="font-weight:600;font-size:13px;">'+owner+'</div></div>' +
             '<div><span style="font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;">Source</span><div style="font-weight:600;font-size:13px;">'+(source || '--')+'</div></div>' +
-            '<div><span style="font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;">Est. Value</span><div style="font-weight:600;font-size:13px;color:#2563EB;">'+f$pl(curValue)+(hasCustom ? ' *' : '')+'</div></div>' +
+            '<div><span style="font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;">Est. Value</span><div style="font-weight:600;font-size:13px;color:#0F766E;">'+f$pl(curValue)+(hasCustom ? ' *' : '')+'</div></div>' +
             '<div><span style="font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;">Weighted</span><div style="font-weight:600;font-size:13px;color:#7C3AED;">'+f$pl(Math.round(curValue * w))+'</div></div></div>';
 
         // Tab navigation
@@ -6491,7 +6526,7 @@ let dataThrough = '3/8/2026';
             const isOverdue = meta.dueDate && meta.dueDate < new Date().toISOString().split('T')[0];
             html += '<div style="padding:10px 14px;border-radius:8px;background:'+(isOverdue?'#FEF2F2':'#F0FDF4')+';border:1px solid '+(isOverdue?'#FECACA':'#BBF7D0')+';margin-bottom:16px;">' +
                 '<div style="font-size:11px;font-weight:600;color:'+(isOverdue?'#DC2626':'#059669')+';text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">'+(isOverdue?'Overdue':'Next Step')+'</div>' +
-                '<div style="font-size:13px;font-weight:600;color:#1a1a2e;">'+(meta.nextStep || '--')+'</div>' +
+                '<div style="font-size:13px;font-weight:600;color:#0F766E;">'+(meta.nextStep || '--')+'</div>' +
                 (meta.dueDate ? '<div style="font-size:11px;color:#6B7280;margin-top:2px;">Due: '+meta.dueDate+'</div>' : '') +
                 '</div>';
         }
@@ -6546,7 +6581,7 @@ let dataThrough = '3/8/2026';
                 '<input id="plDetailDue" type="date" value="'+(meta.dueDate||'')+'" style="'+fld+'"></div></div>' +
             '<div style="margin-bottom:14px;"><label style="'+lbl+'">Notes</label>' +
                 '<textarea id="plDetailNotes" rows="2" placeholder="Add notes..." style="'+fld+'resize:vertical;">'+(meta.notes||'')+'</textarea></div>' +
-            '<button onclick="savePipelineDetail(\''+escapedName+'\')" style="width:100%;padding:10px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">Save Changes</button></div>';
+            '<button onclick="savePipelineDetail(\''+escapedName+'\')" style="width:100%;padding:10px;background:#0F766E;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">Save Changes</button></div>';
         return html;
     }
 
@@ -6571,7 +6606,7 @@ let dataThrough = '3/8/2026';
                 (isComplete ? '<span style="color:#fff;font-size:12px;font-weight:700;">&#10003;</span>' : (isCurrent ? '<span style="color:#fff;font-size:9px;font-weight:700;">&#9679;</span>' : '')) +
                 '</div>' +
                 // Stage info
-                '<div style="font-weight:'+(isCurrent?'700':'500')+';font-size:14px;color:'+(isFuture?'#9ca3af':'#1a1a2e')+';">'+s+'</div>' +
+                '<div style="font-weight:'+(isCurrent?'700':'500')+';font-size:14px;color:'+(isFuture?'#9ca3af':'#0F766E')+';">'+s+'</div>' +
                 '<div style="font-size:11px;color:#6B7280;margin-top:2px;">Weight: '+Math.round(weight*100)+'%' +
                 (isCurrent && acct.stageDate ? ' &middot; Entered: '+acct.stageDate : '') +
                 (isComplete ? ' &middot; Completed' : '') +
@@ -6613,8 +6648,8 @@ let dataThrough = '3/8/2026';
                 '<div style="min-width:72px;font-size:11px;color:#6B7280;">'+e.date+'<br><span style="font-size:10px;">'+e.time+'</span></div>' +
                 '<div style="width:6px;height:6px;border-radius:50%;background:'+(isStageChange?'#2563EB':'#9ca3af')+';margin-top:5px;flex-shrink:0;"></div>' +
                 '<div style="flex:1;">' +
-                    '<div style="font-size:12px;color:#1a1a2e;'+(isStageChange?'font-weight:600;':'')+'">'+e.action+'</div>' +
-                    (e.by ? '<div style="font-size:10px;color:#B13B34;margin-top:1px;">by '+e.by+'</div>' : '') +
+                    '<div style="font-size:12px;color:#0F766E;'+(isStageChange?'font-weight:600;':'')+'">'+e.action+'</div>' +
+                    (e.by ? '<div style="font-size:10px;color:#0F766E;margin-top:1px;">by '+e.by+'</div>' : '') +
                 '</div></div>';
         });
         html += '</div>';
@@ -6742,7 +6777,7 @@ let dataThrough = '3/8/2026';
         const lbl = 'font-size:12px;font-weight:600;color:#374151;';
         const defaultOwner = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.name : 'Robbie';
         document.getElementById('pipelineDetailContent').innerHTML =
-            '<h3 style="margin:0 0 16px 0;color:#1a1a2e;">Add New Pipeline Entry</h3>' +
+            '<h3 style="margin:0 0 16px 0;color:#0F766E;">Add New Pipeline Entry</h3>' +
             '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">' +
                 '<div><label style="'+lbl+'">Account Name *</label>' +
                 '<input id="newAcct" type="text" placeholder="e.g. Whole Foods" style="'+fld+'"></div>' +
@@ -7002,14 +7037,14 @@ let dataThrough = '3/8/2026';
                     '<div style="font-size:14px;font-weight:600;color:#64748b;margin-bottom:4px;">Starter</div>' +
                     '<div style="font-size:32px;font-weight:700;">$49<span style="font-size:14px;font-weight:400;color:#64748b;">/mo</span></div>' +
                     '<div style="font-size:13px;color:#64748b;margin:8px 0 16px;">Up to 3 users</div>' +
-                    '<button onclick="startCheckout(\'starter\')" style="width:100%;padding:10px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Choose Starter</button>' +
+                    '<button onclick="startCheckout(\'starter\')" style="width:100%;padding:10px;background:#0D6560;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Choose Starter</button>' +
                 '</div>' +
                 '<div style="border:2px solid #2563eb;border-radius:12px;padding:24px;flex:1;min-width:200px;max-width:240px;position:relative;">' +
-                    '<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#2563eb;color:#fff;font-size:11px;font-weight:700;padding:2px 12px;border-radius:10px;">POPULAR</div>' +
+                    '<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#0D6560;color:#fff;font-size:11px;font-weight:700;padding:2px 12px;border-radius:10px;">POPULAR</div>' +
                     '<div style="font-size:14px;font-weight:600;color:#64748b;margin-bottom:4px;">Growth</div>' +
                     '<div style="font-size:32px;font-weight:700;">$99<span style="font-size:14px;font-weight:400;color:#64748b;">/mo</span></div>' +
                     '<div style="font-size:13px;color:#64748b;margin:8px 0 16px;">Up to 10 users</div>' +
-                    '<button onclick="startCheckout(\'growth\')" style="width:100%;padding:10px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Choose Growth</button>' +
+                    '<button onclick="startCheckout(\'growth\')" style="width:100%;padding:10px;background:#0D6560;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Choose Growth</button>' +
                 '</div>' +
             '</div>' +
             (STRIPE_CONFIG.portalUrl ? '<p style="margin:0;"><a href="#" onclick="event.preventDefault();openBillingPortal();" style="color:#2563eb;font-size:14px;">Manage existing subscription</a></p>' : '') +
@@ -7028,14 +7063,14 @@ let dataThrough = '3/8/2026';
         if (nameInput) nameInput.value = TENANT_CONFIG.companyName || '';
         if (logoInput) logoInput.value = TENANT_CONFIG.logo || '';
         if (primaryInput) {
-            primaryInput.value = TENANT_CONFIG.primaryColor || '#6C312E';
+            primaryInput.value = TENANT_CONFIG.primaryColor || '#0F766E';
             document.getElementById('settPrimaryColorHex').textContent = primaryInput.value;
             primaryInput.addEventListener('input', function() {
                 document.getElementById('settPrimaryColorHex').textContent = this.value;
             });
         }
         if (accentInput) {
-            accentInput.value = TENANT_CONFIG.accentColor || '#B8860B';
+            accentInput.value = TENANT_CONFIG.accentColor || '#14B8A6';
             document.getElementById('settAccentColorHex').textContent = accentInput.value;
             accentInput.addEventListener('input', function() {
                 document.getElementById('settAccentColorHex').textContent = this.value;
@@ -7336,7 +7371,7 @@ let dataThrough = '3/8/2026';
             html += '<td style="padding:6px 8px;text-align:right;">' + (p.wholesale ? '$' + p.wholesale : '') + '</td>';
             html += '<td style="padding:6px 8px;text-align:center;"><span style="color:' + statusColor + ';font-weight:600;font-size:11px;">' + (p.status || 'Active') + '</span></td>';
             html += '<td style="padding:6px 8px;text-align:center;">';
-            html += '<button onclick="showProductModal(' + idx + ')" style="background:none;border:none;color:#2563EB;cursor:pointer;font-size:12px;margin-right:4px;">Edit</button>';
+            html += '<button onclick="showProductModal(' + idx + ')" style="background:none;border:none;color:#0F766E;cursor:pointer;font-size:12px;margin-right:4px;">Edit</button>';
             html += '<button onclick="deleteProduct(' + idx + ')" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:12px;">Delete</button>';
             html += '</td></tr>';
         });
@@ -7523,7 +7558,7 @@ let dataThrough = '3/8/2026';
             const terrDisplay = Array.isArray(u.territory) ? u.territory.join(', ') : (u.territory || 'all');
             const roleBadge = u.role === 'admin'
                 ? '<span style="background:#EDE9FE;color:#7C3AED;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">Admin</span>'
-                : '<span style="background:#DBEAFE;color:#2563EB;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">Rep</span>';
+                : '<span style="background:#DBEAFE;color:#0F766E;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">Rep</span>';
             html += '<tr style="border-bottom:1px solid #F3F4F6;">';
             html += '<td style="padding:8px;font-weight:600;">' + (u.name || key) + (u.pendingSetup ? ' <span style="font-size:10px;color:#F59E0B;">(pending)</span>' : '') + '</td>';
             html += '<td style="padding:8px;font-size:12px;color:#6B7280;">' + (u.email || '--') + '</td>';
@@ -7582,7 +7617,7 @@ let dataThrough = '3/8/2026';
         html += '<div style="margin-bottom:12px;"><label style="display:block;font-size:13px;font-weight:600;color:#6B7280;margin-bottom:4px;">Email</label>';
         html += '<input id="editUserEmail" type="email" value="' + (u.email || '') + '" style="width:100%;padding:8px;border:1px solid #D1D5DB;border-radius:8px;font-size:14px;" ' + (u.uid ? 'disabled title="Email is managed by Firebase Auth"' : '') + '></div>';
         html += '<div style="display:flex;gap:8px;margin-top:16px;">';
-        html += '<button id="saveEditUser" style="flex:1;padding:10px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Save</button>';
+        html += '<button id="saveEditUser" style="flex:1;padding:10px;background:#0F766E;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Save</button>';
         html += '<button id="cancelEditUser" style="flex:1;padding:10px;background:#F3F4F6;color:#374151;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>';
         html += '</div></div></div>';
 
@@ -8687,7 +8722,7 @@ let dataThrough = '3/8/2026';
                 let html = '<div style="margin-bottom:12px;">' +
                     '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">' +
                     '<div style="font-size:20px;">&#128203;</div>' +
-                    '<div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#1a1a2e;">' + file.name + '</div>' +
+                    '<div style="flex:1;"><div style="font-size:14px;font-weight:700;color:#0F766E;">' + file.name + '</div>' +
                     '<div style="font-size:12px;color:#6B7280;">' + data.length + ' rows, ' + headers.length + ' columns' +
                     (fileType ? ' | Detected as: <strong>' + DATA_FILE_TYPES[fileType].label + '</strong>' : ' | <span style="color:#F59E0B;">File type not auto-detected</span>') +
                     '</div></div></div>';
@@ -8788,7 +8823,7 @@ let dataThrough = '3/8/2026';
                 // Action buttons: Save, Support, Cancel
                 html += '<div style="display:flex;gap:8px;align-items:center;">' +
                     '<button id="' + statusId + '_save" style="flex:2;padding:10px;background:#059669;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">Save & Load Data</button>' +
-                    '<button id="' + statusId + '_support" style="padding:10px 14px;background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;" title="Get help mapping these columns">Need Help?</button>' +
+                    '<button id="' + statusId + '_support" style="padding:10px 14px;background:#EFF6FF;color:#0F766E;border:1px solid #BFDBFE;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;" title="Get help mapping these columns">Need Help?</button>' +
                     '<button id="' + statusId + '_cancel" style="padding:10px 14px;background:#F3F4F6;color:#6B7280;border:1px solid #E5E7EB;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;">Cancel</button>' +
                     '</div></div>';
 
