@@ -15,6 +15,11 @@
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Minimal overrides - main styles are in styles.css */
+        /* Keyboard accessibility for clickable non-button elements */
+        .acct-clickable, .myacct-row, .sku-toggle, .myacct-filter,
+        [onclick]:not(button):not(a) {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -9003,10 +9008,49 @@ let dataThrough = '3/8/2026';
 
     </script>
 
-    <div class="account-panel-overlay" id="apOverlay" onclick="closeAccountPanel()"></div>
-    <div class="account-panel" id="accountPanel">
+    <script>
+    // Accessibility: Make all elements with onclick keyboard-accessible
+    // Uses MutationObserver to handle dynamically added elements
+    (function() {
+        function makeAccessible(el) {
+            if (el.nodeType !== 1) return;
+            if (el.hasAttribute('onclick') && !el.matches('button, a, input, select, textarea')) {
+                if (!el.hasAttribute('role')) el.setAttribute('role', 'button');
+                if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+                if (!el._kbAccessible) {
+                    el.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            el.click();
+                        }
+                    });
+                    el._kbAccessible = true;
+                }
+            }
+        }
+
+        // Process existing elements
+        document.querySelectorAll('[onclick]').forEach(makeAccessible);
+
+        // Watch for dynamically added elements
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(m) {
+                m.addedNodes.forEach(function(node) {
+                    if (node.nodeType === 1) {
+                        makeAccessible(node);
+                        node.querySelectorAll && node.querySelectorAll('[onclick]').forEach(makeAccessible);
+                    }
+                });
+            });
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    })();
+    </script>
+
+    <div class="account-panel-overlay" id="apOverlay" onclick="closeAccountPanel()" aria-hidden="true"></div>
+    <div class="account-panel" id="accountPanel" role="dialog" aria-label="Account details">
         <div class="ap-header">
-            <button class="ap-close" onclick="closeAccountPanel()">&times;</button>
+            <button class="ap-close" onclick="closeAccountPanel()" aria-label="Close account panel">&times;</button>
             <h2 id="apName">--</h2>
             <div class="ap-sub" id="apSub">--</div>
         </div>
