@@ -44,22 +44,30 @@ exports.stripeWebhook = functions
     const webhookSecret = stripeWebhookSecret.value();
     const secretKey = stripeSecretKey.value();
 
-    // Verify webhook signature if secret is configured
+    // Guard: require both secrets to be configured
+    if (!webhookSecret || !secretKey) {
+      console.error("Stripe secrets not configured. Set STRIPE_WEBHOOK_SECRET and STRIPE_SECRET_KEY.");
+      res.status(500).send("Webhook not configured");
+      return;
+    }
+
+    // Guard: require stripe-signature header
+    const sig = req.headers["stripe-signature"];
+    if (!sig) {
+      console.error("Missing stripe-signature header");
+      res.status(400).send("Missing stripe-signature header");
+      return;
+    }
+
+    // Verify webhook signature
     let event;
-    if (webhookSecret) {
-      const stripe = require("stripe")(secretKey);
-      const sig = req.headers["stripe-signature"];
-      try {
-        event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret);
-      } catch (err) {
-        console.error("Webhook signature verification failed:", err.message);
-        res.status(400).send("Webhook signature verification failed");
-        return;
-      }
-    } else {
-      // No secret configured -- parse body directly (dev/testing only)
-      console.warn("WARNING: No Stripe webhook secret configured. Skipping signature verification.");
-      event = req.body;
+    const stripe = require("stripe")(secretKey);
+    try {
+      event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret);
+    } catch (err) {
+      console.error("Webhook signature verification failed:", err.message);
+      res.status(400).send("Webhook signature verification failed");
+      return;
     }
 
     const eventType = event.type;
