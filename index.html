@@ -6061,7 +6061,7 @@ let dataThrough = '3/8/2026';
         };
         pipelineMeta[id] = data;
         if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
-            try { await syncWrite(tenantPipelineRef().doc(id).set(data, {merge:true})); } catch(e) {}
+            try { await syncWrite(tenantPipelineRef().doc(id).set(data, {merge:true})); } catch(e) { console.warn('Pipeline save failed:', e); showToast('Pipeline changes saved locally but cloud sync failed.', 'warning'); }
         }
         localStorage.setItem('sk_pipeline_meta', JSON.stringify(pipelineMeta));
         // Log changes
@@ -6178,7 +6178,7 @@ let dataThrough = '3/8/2026';
         };
         pipelineMeta[id] = metaData;
         if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
-            try { await syncWrite(tenantPipelineRef().doc(id).set(metaData, {merge:true})); } catch(e) {}
+            try { await syncWrite(tenantPipelineRef().doc(id).set(metaData, {merge:true})); } catch(e) { console.warn('Pipeline save failed:', e); showToast('Pipeline changes saved locally but cloud sync failed.', 'warning'); }
         }
         localStorage.setItem('sk_pipeline_meta', JSON.stringify(pipelineMeta));
 
