@@ -3654,7 +3654,7 @@ let dataThrough = '3/8/2026';
             let reEngHtml = '';
             reEngData.forEach(d => {
                 reEngHtml += `<tr>
-                    <td><span class="acct-clickable" onclick="openAccountPanel('${d.name.replace(/'/g,"\\'")}')">${esc(d.name)}</span></td>
+                    <td><span class="acct-clickable" onclick="openAccountPanel('${escAttr(d.name)}')">${esc(d.name)}</span></td>
                     <td>${esc(d.st)}</td>
                     <td>${d.priorAccts}</td>
                     <td>${d.priorCE.toFixed(1)}</td>
@@ -3666,7 +3666,7 @@ let dataThrough = '3/8/2026';
             let newWinsHtml = '';
             newWinsData.forEach(w => {
                 newWinsHtml += `<tr>
-                    <td><span class="acct-clickable" onclick="openAccountPanel('${w.acct.replace(/'/g,"\\'")}')">${esc(w.acct)}</span></td>
+                    <td><span class="acct-clickable" onclick="openAccountPanel('${escAttr(w.acct)}')">${esc(w.acct)}</span></td>
                     <td>${esc(w.dist)}</td>
                     <td>${esc(w.st)}</td>
                     <td>${w.ce.toFixed(1)}</td>
@@ -4474,7 +4474,7 @@ let dataThrough = '3/8/2026';
 
     // Log Email modal
     function showLogEmailModal(acctName, context, onComplete) {
-        const escapedName = acctName.replace(/'/g, "\\'");
+        const escapedName = escAttr(acctName);
         const overlay = document.createElement('div');
         overlay.id = 'emailLogOverlay';
         overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
@@ -4684,7 +4684,7 @@ let dataThrough = '3/8/2026';
         </div>`;
 
         // -- Files & Emails Section --
-        const apEscapedName = acctName.replace(/'/g, "\\'");
+        const apEscapedName = escAttr(acctName);
         html += `<div class="ap-section"><h3>Files & Emails</h3>
             <div id="apFileDropZone" style="border:2px dashed #d1d5db;border-radius:8px;padding:16px;text-align:center;cursor:pointer;background:#fafafa;margin-bottom:12px;transition:all 0.2s;" onclick="document.getElementById('apFileInput').click()">
                 <div style="font-size:20px;margin-bottom:4px;">&#128206;</div>
@@ -5146,7 +5146,7 @@ let dataThrough = '3/8/2026';
             alerts += '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;color:#991B1B;">';
             alerts += '<strong>Overdue Follow-Ups:</strong> ';
             alerts += overdueItems.slice(0, 5).map(i =>
-                '<span style="font-weight:600;cursor:pointer;text-decoration:underline;" onclick="openAccountPanel(\'' + i.acct.replace(/'/g, "\\'") + '\')">' + esc(i.acct) + '</span> (due ' + esc(i.followUp) + ')'
+                '<span style="font-weight:600;cursor:pointer;text-decoration:underline;" onclick="openAccountPanel(\'' + escAttr(i.acct) + '\')">' + esc(i.acct) + '</span> (due ' + esc(i.followUp) + ')'
             ).join(', ');
             if (overdueItems.length > 5) alerts += ' + ' + (overdueItems.length - 5) + ' more';
             alerts += '</div>';
@@ -5157,7 +5157,7 @@ let dataThrough = '3/8/2026';
             alerts += '<div style="background:#F5F3FF;border:1px solid #C4B5FD;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;color:#5B21B6;">';
             alerts += '<strong>VIP Alert:</strong> ' + vipStale.length + ' VIP account(s) with no order in 30+ days: ';
             alerts += vipStale.slice(0, 5).map(i =>
-                '<span style="font-weight:600;cursor:pointer;text-decoration:underline;" onclick="openAccountPanel(\'' + i.acct.replace(/'/g, "\\'") + '\')">' + esc(i.acct) + '</span> (' + i.daysSince + 'd)'
+                '<span style="font-weight:600;cursor:pointer;text-decoration:underline;" onclick="openAccountPanel(\'' + escAttr(i.acct) + '\')">' + esc(i.acct) + '</span> (' + i.daysSince + 'd)'
             ).join(', ');
             alerts += '</div>';
         }
@@ -5186,7 +5186,7 @@ let dataThrough = '3/8/2026';
 
                 cardsHtml += '<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;margin-bottom:10px;cursor:pointer;' + overdueStyle + 'transition:box-shadow 0.15s;" ' +
                     'onmouseover="this.style.boxShadow=\'0 2px 8px rgba(0,0,0,0.08)\'" onmouseout="this.style.boxShadow=\'none\'" ' +
-                    'onclick="openAccountPanel(\'' + item.acct.replace(/'/g, "\\'") + '\')">' +
+                    'onclick="openAccountPanel(\'' + escAttr(item.acct) + '\')">' +
                     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">' +
                         '<div><span style="font-weight:700;font-size:14px;color:#0F766E;">' + item.acct + '</span>' +
                         '<span style="margin-left:8px;font-size:11px;color:#6B7280;">' + item.dist + ' / ' + item.st + '</span></div>' +
@@ -5599,7 +5599,7 @@ let dataThrough = '3/8/2026';
         const typeBadge = acctType === 'Distributor' ? ' <span style="background:#dbeafe;color:#0F766E;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">Distribution Partner</span>' : '';
         const channelBadge = channel ? ' <span style="background:'+(channel==='On-Premise'?'#FEF3C7':'#E0E7FF')+';color:'+(channel==='On-Premise'?'#92400E':'#3730A3')+';padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">'+channel+'</span>' : '';
         const stateBadge = acctState ? ' <span style="background:#F0FDF4;color:#166534;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">'+acctState+(regionMap[acctState]?' - '+regionMap[acctState]:'')+'</span>' : '';
-        const escapedName = acctName.replace(/'/g,"\\'");
+        const escapedName = escAttr(acctName);
 
         // Stage date and days calc
         const stageDate = (meta.stageDate || acct.stageDate) ? new Date(meta.stageDate || acct.stageDate) : new Date('2026-02-15');
@@ -5799,7 +5799,7 @@ let dataThrough = '3/8/2026';
     }
 
     function renderPlFilesTab(acctName) {
-        const escapedName = acctName.replace(/'/g, "\\'");
+        const escapedName = escAttr(acctName);
         let html = '';
 
         // Upload drop zone
