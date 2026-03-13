@@ -86,6 +86,12 @@ service cloud.firestore {
         allow read: if isTenantMember(tenantId);
         allow write: if isTenantMember(tenantId);
       }
+
+      // Pipeline activity log (tenant-scoped)
+      match /pipeline_activity/{entryId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantMember(tenantId);
+      }
     }
 
     // Deny everything else by default

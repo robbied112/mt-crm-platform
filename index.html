@@ -4283,7 +4283,11 @@ let dataThrough = '3/8/2026';
 
     // Tenant-scoped Firestore helpers
     function tenantRef() {
-        return db.collection('tenants').doc(TENANT_CONFIG.tenantId);
+        const tid = TENANT_CONFIG.tenantId;
+        if (!tid || tid === 'default') {
+            throw new Error('Tenant ID not initialized — cannot access Firestore');
+        }
+        return db.collection('tenants').doc(tid);
     }
     function tenantAccountsRef() {
         return tenantRef().collection('accounts');
@@ -5438,8 +5442,8 @@ let dataThrough = '3/8/2026';
         log.unshift(entry);
         if (log.length > 200) log.length = 200;
         localStorage.setItem('sk_pipeline_activity', JSON.stringify(log));
-        if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
-            try { db.collection('pipeline_activity').add(entry); } catch(e) {}
+        if (typeof firebaseReady !== 'undefined' && firebaseReady && db && TENANT_CONFIG.tenantId && TENANT_CONFIG.tenantId !== 'default') {
+            try { tenantRef().collection('pipeline_activity').add(entry); } catch(e) {}
         }
         renderActivityLog();
     }
@@ -5449,12 +5453,12 @@ let dataThrough = '3/8/2026';
         if (!el || log.length === 0) return;
         document.getElementById('activityLogSection').style.display = 'block';
         el.innerHTML = log.slice(0,20).map(e => {
-            const byTag = e.by ? '<span style="color:#0F766E;font-weight:600;min-width:60px;">' + e.by + '</span>' : '';
+            const byTag = e.by ? '<span style="color:#0F766E;font-weight:600;min-width:60px;">' + esc(e.by) + '</span>' : '';
             return '<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:12px;">' +
-                '<span style="min-width:80px;color:#6B7280;">' + e.date + '</span>' +
+                '<span style="min-width:80px;color:#6B7280;">' + esc(e.date) + '</span>' +
                 byTag +
-                '<span style="font-weight:600;min-width:120px;color:#0F766E;">' + e.acct + '</span>' +
-                '<span style="color:#374151;">' + e.action + '</span></div>';
+                '<span style="font-weight:600;min-width:120px;color:#0F766E;">' + esc(e.acct) + '</span>' +
+                '<span style="color:#374151;">' + esc(e.action) + '</span></div>';
         }).join('');
     }
 
