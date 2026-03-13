@@ -5,9 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sidekick BI</title>
     <link rel="icon" type="image/png" href="logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.gstatic.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -874,9 +878,35 @@
         .myacct-row:last-child {border-bottom:none;}
         .myacct-tags {display:flex;gap:4px;flex-wrap:wrap;}
         .myacct-tag-sm {padding:2px 6px;border-radius:8px;font-size:9px;font-weight:600;background:#EEF2FF;color:#4338CA;}
+
+        /* Accessibility: Focus styles */
+        *:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+        button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+        .skip-link {
+            position: absolute;
+            top: -100px;
+            left: 8px;
+            background: var(--accent);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            z-index: 100000;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .skip-link:focus { top: 8px; }
     </style>
 </head>
 <body>
+    <a href="#mainContent" class="skip-link">Skip to main content</a>
 
     <!-- Login Overlay -->
     <!-- Setup Wizard (shown on first visit when no tenant is configured) -->
@@ -964,7 +994,7 @@
     </div>
 
     <!-- Login Screen -->
-    <div id="loginOverlay" style="display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg, #0F766E 0%, #0D9488 50%, #14B8A6 100%);z-index:9999;justify-content:center;align-items:center;">
+    <div id="loginOverlay" role="dialog" aria-label="Sign in to Sidekick BI" aria-modal="true" style="display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg, #0F766E 0%, #0D9488 50%, #14B8A6 100%);z-index:9999;justify-content:center;align-items:center;">
       <div style="background:#fff;border-radius:16px;padding:40px;width:380px;max-width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
         <div style="text-align:center;margin-bottom:28px;">
           <img src="logo.png" alt="Sidekick BI" style="height:48px;margin-bottom:12px;">
@@ -1030,7 +1060,7 @@
     </div>
 
     <!-- User Management Panel -->
-    <div id="userMgmtOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:9998;justify-content:center;align-items:center;" onclick="if(event.target===this)closeUserMgmt()">
+    <div id="userMgmtOverlay" role="dialog" aria-label="Manage Users" aria-modal="true" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:9998;justify-content:center;align-items:center;" onclick="if(event.target===this)closeUserMgmt()"
       <div style="background:#fff;border-radius:12px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;padding:28px;position:relative;">
         <button onclick="closeUserMgmt()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#6B7280;">x</button>
         <h3 style="margin:0 0 6px 0;color:#0F766E;">Manage Users</h3>
@@ -1064,12 +1094,16 @@
       </div>
     </div>
 
-    <div class="container">
-        <header>
+    <div class="container" id="mainContent" role="main">
+        <header role="banner" aria-label="Sidekick BI Dashboard Header">
             <img id="brandLogo" src="logo.png" alt="Sidekick BI" style="height:40px;">
             <div class="header-text">
                 <h1 id="headerTitle">Sidekick BI</h1>
                 <p>Real-time sales intelligence</p>
+            </div>
+            <div id="syncStatusIndicator" style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;opacity:0.9;" aria-live="polite">
+                <span id="syncDot" style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;"></span>
+                <span id="syncLabel" style="color:#fff;">Connected</span>
             </div>
         </header>
 
@@ -1145,18 +1179,18 @@
         </div>
 
         <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab active" data-tab="performance">My Territory</button>
-            <button class="tab" data-tab="depletions" data-term="{dep}s">Depletions</button>
-            <button class="tab" data-tab="distributor-detail">Distributors</button>
-            <button class="tab" data-tab="inventory">Inventory</button>
-            <button class="tab" data-tab="accounts">Account Insights</button>
-            <button class="tab" data-tab="opportunities">Opportunities</button>
-            <button class="tab" data-tab="reorder">Reorder Forecast</button>
-            <button class="tab tab-accent-blue" data-tab="pipeline">Customer Pipeline</button>
-            <button class="tab" data-tab="admin-settings" id="adminSettingsTab" style="display:none;">Settings</button>
-            <button id="helpIconBtn" style="background:none;border:none;font-size:18px;cursor:pointer;color:#6B7280;padding:8px 12px;margin-left:auto;" title="Help & Legend">?</button>
-        </div>
+        <nav class="tabs" role="tablist" aria-label="Dashboard sections">
+            <button class="tab active" data-tab="performance" role="tab" aria-selected="true">My Territory</button>
+            <button class="tab" data-tab="depletions" data-term="{dep}s" role="tab" aria-selected="false">Depletions</button>
+            <button class="tab" data-tab="distributor-detail" role="tab" aria-selected="false">Distributors</button>
+            <button class="tab" data-tab="inventory" role="tab" aria-selected="false">Inventory</button>
+            <button class="tab" data-tab="accounts" role="tab" aria-selected="false">Account Insights</button>
+            <button class="tab" data-tab="opportunities" role="tab" aria-selected="false">Opportunities</button>
+            <button class="tab" data-tab="reorder" role="tab" aria-selected="false">Reorder Forecast</button>
+            <button class="tab tab-accent-blue" data-tab="pipeline" role="tab" aria-selected="false">Customer Pipeline</button>
+            <button class="tab" data-tab="admin-settings" id="adminSettingsTab" style="display:none;" role="tab" aria-selected="false">Settings</button>
+            <button id="helpIconBtn" style="background:none;border:none;font-size:18px;cursor:pointer;color:#6B7280;padding:8px 12px;margin-left:auto;" title="Help & Legend" aria-label="Help and Legend">?</button>
+        </nav>
 
         <!-- Tab: My Territory -->
         <div id="performance" class="tab-content active">
@@ -1865,6 +1899,13 @@
         <div id="admin-settings" class="tab-content">
             <div style="max-width:1000px;margin:0 auto;">
                 <h2 style="font-size:22px;font-weight:700;margin-bottom:20px;color:#1F2937;">Platform Settings</h2>
+
+                <!-- Account Security Section -->
+                <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                    <h3 style="font-size:16px;font-weight:700;color:#374151;margin-bottom:12px;">Account Security</h3>
+                    <p style="font-size:13px;color:#6B7280;margin-bottom:12px;">Manage your account password and security settings.</p>
+                    <button onclick="showPasswordChangeModal()" class="btn btn-primary" style="padding:10px 20px;">Change Password</button>
+                </div>
 
                 <!-- Company Branding Section -->
                 <div style="background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
@@ -3545,11 +3586,11 @@ let dataThrough = '3/8/2026';
                 count.textContent = '(' + mentions.length + ')';
                 list.innerHTML = mentions.slice(0, 8).map(m => {
                     const noteHtml = renderNoteText(m.text);
-                    return `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #DBEAFE;font-size:13px;cursor:pointer;" onclick="openAccountPanel('${m.acct.replace(/'/g,"\\'")}')">
+                    return `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #DBEAFE;font-size:13px;cursor:pointer;" onclick="openAccountPanel('${escAttr(m.acct)}')">
                         <div style="flex:1;">
-                            <div style="font-weight:600;color:#1E3A5F;margin-bottom:2px;">${m.acct}</div>
+                            <div style="font-weight:600;color:#1E3A5F;margin-bottom:2px;">${esc(m.acct)}</div>
                             <div style="color:#374151;">${noteHtml}</div>
-                            <div style="font-size:11px;color:#6B7280;margin-top:2px;">${m.author || 'Unknown'} - ${m.date || new Date(m.ts).toLocaleDateString()}</div>
+                            <div style="font-size:11px;color:#6B7280;margin-top:2px;">${esc(m.author || 'Unknown')} - ${esc(m.date || new Date(m.ts).toLocaleDateString())}</div>
                         </div>
                     </div>`;
                 }).join('');
@@ -3650,18 +3691,18 @@ let dataThrough = '3/8/2026';
                 const tagsHtml = a.tags.map(t => {
                     const tagColors = {VIP:'#7C3AED',  'At Risk':'#DC2626', 'Hot Lead':'#F59E0B', 'Needs Visit':'#2563EB', 'Follow Up':'#10b981', Chain:'#6B7280', Independent:'#6B7280', Seasonal:'#D97706'};
                     const bg = tagColors[t] || '#6B7280';
-                    return '<span style="padding:2px 6px;border-radius:8px;font-size:9px;font-weight:600;background:'+bg+'20;color:'+bg+';">'+t+'</span>';
+                    return '<span style="padding:2px 6px;border-radius:8px;font-size:9px;font-weight:600;background:'+bg+'20;color:'+bg+';">'+esc(t)+'</span>';
                 }).join('');
 
-                const actionHtml = a.nextAction ? '<span style="font-size:10px;color:#059669;font-weight:600;">'+a.nextAction+(a.followUp ? ' by '+a.followUp : '')+'</span>' : '';
+                const actionHtml = a.nextAction ? '<span style="font-size:10px;color:#059669;font-weight:600;">'+esc(a.nextAction)+(a.followUp ? ' by '+esc(a.followUp) : '')+'</span>' : '';
                 const isOverdue = a.followUp && a.followUp < todayStr;
                 const overdueFlag = isOverdue ? '<span style="font-size:9px;color:#DC2626;font-weight:700;margin-left:4px;">OVERDUE</span>' : '';
                 const notesBadge = a.noteCount > 0 ? '<span style="background:#E0E7FF;color:#4338CA;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:600;">'+a.noteCount+' note'+(a.noteCount>1?'s':'')+'</span>' : '';
 
-                return '<div class="myacct-row" onclick="openAccountPanel(\''+a.name.replace(/'/g,"\\'")+'\')">' +
+                return '<div class="myacct-row" onclick="openAccountPanel(\''+escAttr(a.name)+'\')">' +
                     '<div style="flex:1;min-width:0;">' +
-                        '<div style="font-weight:600;color:#0F766E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+a.name+'</div>' +
-                        '<div style="font-size:11px;color:#6B7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(a.dist || '--')+' - '+(a.st || '')+'</div>' +
+                        '<div style="font-weight:600;color:#0F766E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(a.name)+'</div>' +
+                        '<div style="font-size:11px;color:#6B7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(a.dist || '--')+' - '+esc(a.st || '')+'</div>' +
                     '</div>' +
                     '<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;justify-content:flex-end;">'+tagsHtml+notesBadge+'</div>' +
                     (actionHtml ? '<div style="min-width:100px;text-align:right;">'+actionHtml+overdueFlag+'</div>' : '') +
@@ -4512,7 +4553,7 @@ let dataThrough = '3/8/2026';
             let reEngHtml = '';
             reEngData.forEach(d => {
                 reEngHtml += `<tr>
-                    <td><span class="acct-clickable" onclick="openAccountPanel('${d.name.replace(/'/g,"\\'")}')">${esc(d.name)}</span></td>
+                    <td><span class="acct-clickable" onclick="openAccountPanel('${escAttr(d.name)}')">${esc(d.name)}</span></td>
                     <td>${esc(d.st)}</td>
                     <td>${d.priorAccts}</td>
                     <td>${d.priorCE.toFixed(1)}</td>
@@ -4524,7 +4565,7 @@ let dataThrough = '3/8/2026';
             let newWinsHtml = '';
             newWinsData.forEach(w => {
                 newWinsHtml += `<tr>
-                    <td><span class="acct-clickable" onclick="openAccountPanel('${w.acct.replace(/'/g,"\\'")}')">${esc(w.acct)}</span></td>
+                    <td><span class="acct-clickable" onclick="openAccountPanel('${escAttr(w.acct)}')">${esc(w.acct)}</span></td>
                     <td>${esc(w.dist)}</td>
                     <td>${esc(w.st)}</td>
                     <td>${w.ce.toFixed(1)}</td>
@@ -4990,6 +5031,34 @@ let dataThrough = '3/8/2026';
         }
     })();
 
+    // Tenant-scoped Firestore path helpers
+    function getTenantId() {
+        const tid = TENANT_CONFIG.tenantId;
+        if (!tid || tid === 'default') {
+            console.warn('No tenant configured - using localStorage fallback');
+            return null;
+        }
+        return tid;
+    }
+
+    function tenantAccountsCol() {
+        const tid = getTenantId();
+        if (!tid) return null;
+        return db.collection('tenants').doc(tid).collection('accounts');
+    }
+
+    function tenantPipelineCol() {
+        const tid = getTenantId();
+        if (!tid) return null;
+        return db.collection('tenants').doc(tid).collection('pipeline');
+    }
+
+    function tenantActivityCol() {
+        const tid = getTenantId();
+        if (!tid) return null;
+        return db.collection('tenants').doc(tid).collection('activityLog');
+    }
+
     // Storage abstraction - uses Firebase if available, localStorage fallback
     const AccountStore = {
         _localKey(acctId) { return 'mt_acct_' + acctId; },
@@ -4997,8 +5066,9 @@ let dataThrough = '3/8/2026';
 
         async getNotes(acctId) {
             const id = this._sanitizeId(acctId);
-            if(firebaseReady) {
-                const snap = await db.collection('accounts').doc(id).collection('notes').orderBy('ts','desc').get();
+            const col = tenantAccountsCol();
+            if(firebaseReady && col) {
+                const snap = await col.doc(id).collection('notes').orderBy('ts','desc').get();
                 return snap.docs.map(d => ({id:d.id, ...d.data()}));
             }
             const data = JSON.parse(localStorage.getItem(this._localKey(id)) || '{}');
@@ -5008,8 +5078,9 @@ let dataThrough = '3/8/2026';
         async addNote(acctId, text, author, mentions) {
             const id = this._sanitizeId(acctId);
             const note = {text, author, ts: Date.now(), date: new Date().toLocaleDateString(), mentions: mentions || []};
-            if(firebaseReady) {
-                await db.collection('accounts').doc(id).collection('notes').add(note);
+            const col = tenantAccountsCol();
+            if(firebaseReady && col) {
+                await col.doc(id).collection('notes').add(note);
                 return;
             }
             const data = JSON.parse(localStorage.getItem(this._localKey(id)) || '{}');
@@ -5020,8 +5091,9 @@ let dataThrough = '3/8/2026';
 
         async getMeta(acctId) {
             const id = this._sanitizeId(acctId);
-            if(firebaseReady) {
-                const doc = await db.collection('accounts').doc(id).get();
+            const col = tenantAccountsCol();
+            if(firebaseReady && col) {
+                const doc = await col.doc(id).get();
                 return doc.exists ? doc.data() : {};
             }
             const data = JSON.parse(localStorage.getItem(this._localKey(id)) || '{}');
@@ -5030,8 +5102,9 @@ let dataThrough = '3/8/2026';
 
         async setMeta(acctId, meta) {
             const id = this._sanitizeId(acctId);
-            if(firebaseReady) {
-                await db.collection('accounts').doc(id).set(meta, {merge: true});
+            const col = tenantAccountsCol();
+            if(firebaseReady && col) {
+                await col.doc(id).set(meta, {merge: true});
                 return;
             }
             const data = JSON.parse(localStorage.getItem(this._localKey(id)) || '{}');
@@ -5042,9 +5115,10 @@ let dataThrough = '3/8/2026';
         // Bulk load all account metadata (for filter views)
         async getAllMeta() {
             const result = {};
-            if (firebaseReady) {
+            const col = tenantAccountsCol();
+            if (firebaseReady && col) {
                 try {
-                    const snap = await db.collection('accounts').get();
+                    const snap = await col.get();
                     snap.docs.forEach(doc => {
                         result[doc.id] = doc.data();
                     });
@@ -5068,11 +5142,10 @@ let dataThrough = '3/8/2026';
         // Bulk load note counts for all accounts
         async getNoteCounts() {
             const result = {};
-            if (firebaseReady) {
+            const col = tenantAccountsCol();
+            if (firebaseReady && col) {
                 try {
-                    // Firestore doesn't support collection group count easily,
-                    // so we get accounts and check subcollections
-                    const snap = await db.collection('accounts').get();
+                    const snap = await col.get();
                     for (const doc of snap.docs) {
                         const noteSnap = await doc.ref.collection('notes').get();
                         if (noteSnap.size > 0) {
@@ -5130,8 +5203,9 @@ let dataThrough = '3/8/2026';
                 date: new Date().toLocaleDateString()
             };
 
-            if (firebaseReady) {
-                await db.collection('accounts').doc(id).collection('files').add(meta);
+            const col = tenantAccountsCol();
+            if (firebaseReady && col) {
+                await col.doc(id).collection('files').add(meta);
             } else {
                 const data = JSON.parse(localStorage.getItem('mt_files_' + id) || '[]');
                 data.push(meta);
@@ -5143,8 +5217,9 @@ let dataThrough = '3/8/2026';
         // Get all files for an account
         async getFiles(acctId) {
             const id = this._id(acctId);
-            if (firebaseReady) {
-                const snap = await db.collection('accounts').doc(id).collection('files').orderBy('ts', 'desc').get();
+            const col = tenantAccountsCol();
+            if (firebaseReady && col) {
+                const snap = await col.doc(id).collection('files').orderBy('ts', 'desc').get();
                 return snap.docs.map(d => ({id: d.id, ...d.data()}));
             }
             return JSON.parse(localStorage.getItem('mt_files_' + id) || '[]').sort((a, b) => b.ts - a.ts);
@@ -5156,8 +5231,9 @@ let dataThrough = '3/8/2026';
             if (storage && filePath) {
                 try { await storage.ref(filePath).delete(); } catch(e) { console.warn('Could not delete file from storage:', e); }
             }
-            if (firebaseReady) {
-                await db.collection('accounts').doc(id).collection('files').doc(fileId).delete();
+            const col = tenantAccountsCol();
+            if (firebaseReady && col) {
+                await col.doc(id).collection('files').doc(fileId).delete();
             }
         },
 
@@ -5175,8 +5251,9 @@ let dataThrough = '3/8/2026';
                 ts: Date.now(),
                 date: new Date().toLocaleDateString()
             };
-            if (firebaseReady) {
-                await db.collection('accounts').doc(id).collection('emails').add(entry);
+            const col = tenantAccountsCol();
+            if (firebaseReady && col) {
+                await col.doc(id).collection('emails').add(entry);
             } else {
                 const data = JSON.parse(localStorage.getItem('mt_emails_' + id) || '[]');
                 data.push(entry);
@@ -5188,8 +5265,9 @@ let dataThrough = '3/8/2026';
         // Get all emails for an account
         async getEmails(acctId) {
             const id = this._id(acctId);
-            if (firebaseReady) {
-                const snap = await db.collection('accounts').doc(id).collection('emails').orderBy('ts', 'desc').get();
+            const col = tenantAccountsCol();
+            if (firebaseReady && col) {
+                const snap = await col.doc(id).collection('emails').orderBy('ts', 'desc').get();
                 return snap.docs.map(d => ({id: d.id, ...d.data()}));
             }
             return JSON.parse(localStorage.getItem('mt_emails_' + id) || '[]').sort((a, b) => b.ts - a.ts);
@@ -5291,10 +5369,10 @@ let dataThrough = '3/8/2026';
                 '<span style="font-size:20px;">' + icon + '</span>' +
                 '<div style="flex:1;min-width:0;">' +
                     '<div style="font-size:13px;font-weight:600;color:#0F766E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
-                    (f.url ? '<a href="' + f.url + '" target="_blank" style="color:#0F766E;text-decoration:none;">' + f.name + '</a>' : f.name) + '</div>' +
-                    '<div style="font-size:11px;color:#6B7280;">' + formatFileSize(f.size) + ' &bull; ' + f.date + ' &bull; ' + (f.uploadedBy || '') + '</div>' +
+                    (f.url ? '<a href="' + escAttr(f.url) + '" target="_blank" style="color:#0F766E;text-decoration:none;">' + esc(f.name) + '</a>' : esc(f.name)) + '</div>' +
+                    '<div style="font-size:11px;color:#6B7280;">' + formatFileSize(f.size) + ' &bull; ' + esc(f.date) + ' &bull; ' + esc(f.uploadedBy || '') + '</div>' +
                 '</div>' +
-                (allowDelete && f.id ? '<button onclick="deleteFileFromAccount(\'' + acctName.replace(/'/g, "\\'") + '\',\'' + f.id + '\',\'' + (f.path || '').replace(/'/g, "\\'") + '\')" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:14px;padding:4px;" title="Delete">&#10005;</button>' : '') +
+                (allowDelete && f.id ? '<button onclick="deleteFileFromAccount(\'' + escAttr(acctName) + '\',\'' + escAttr(f.id) + '\',\'' + escAttr(f.path || '') + '\')" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:14px;padding:4px;" title="Delete">&#10005;</button>' : '') +
                 '</div>';
         });
         return html;
@@ -5319,12 +5397,12 @@ let dataThrough = '3/8/2026';
                 '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">' +
                     '<span style="color:' + dirColor + ';font-size:14px;">' + dirIcon + '</span>' +
                     '<span style="font-size:10px;font-weight:600;color:' + dirColor + ';text-transform:uppercase;">' + dirLabel + '</span>' +
-                    '<span style="font-size:11px;color:#6B7280;">' + e.date + '</span>' +
-                    '<span style="font-size:11px;color:#9ca3af;margin-left:auto;">logged by ' + (e.loggedBy || '') + '</span>' +
+                    '<span style="font-size:11px;color:#6B7280;">' + esc(e.date) + '</span>' +
+                    '<span style="font-size:11px;color:#9ca3af;margin-left:auto;">logged by ' + esc(e.loggedBy || '') + '</span>' +
                 '</div>' +
-                '<div style="font-size:13px;font-weight:600;color:#0F766E;margin-bottom:2px;">' + (e.subject || '(no subject)') + '</div>' +
-                '<div style="font-size:12px;color:#6B7280;">' + (e.direction === 'outbound' ? 'To: ' : 'From: ') + (e.direction === 'outbound' ? e.to : e.from) + '</div>' +
-                (e.body ? '<div style="font-size:12px;color:#374151;margin-top:6px;padding:8px;background:#f8fafc;border-radius:6px;max-height:80px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">' + e.body.substring(0, 500) + (e.body.length > 500 ? '...' : '') + '</div>' : '') +
+                '<div style="font-size:13px;font-weight:600;color:#0F766E;margin-bottom:2px;">' + esc(e.subject || '(no subject)') + '</div>' +
+                '<div style="font-size:12px;color:#6B7280;">' + (e.direction === 'outbound' ? 'To: ' : 'From: ') + esc(e.direction === 'outbound' ? e.to : e.from) + '</div>' +
+                (e.body ? '<div style="font-size:12px;color:#374151;margin-top:6px;padding:8px;background:#f8fafc;border-radius:6px;max-height:80px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">' + esc(e.body.substring(0, 500)) + (e.body.length > 500 ? '...' : '') + '</div>' : '') +
                 '</div>';
         });
         return html;
@@ -5332,7 +5410,7 @@ let dataThrough = '3/8/2026';
 
     // Log Email modal
     function showLogEmailModal(acctName, context, onComplete) {
-        const escapedName = acctName.replace(/'/g, "\\'");
+        const escapedName = escAttr(acctName);
         const overlay = document.createElement('div');
         overlay.id = 'emailLogOverlay';
         overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
@@ -5437,7 +5515,7 @@ let dataThrough = '3/8/2026';
         const ch = topData?.ch || reorderInfo?.ch || '--';
 
         document.getElementById('apName').textContent = acctName;
-        document.getElementById('apSub').innerHTML = `${dist} &bull; ${st} &bull; ${ch === 'ON' ? 'On-Premise' : ch === 'OFF' ? 'Off-Premise' : ch}`;
+        document.getElementById('apSub').innerHTML = `${esc(dist)} &bull; ${esc(st)} &bull; ${ch === 'ON' ? 'On-Premise' : ch === 'OFF' ? 'Off-Premise' : esc(ch)}`;
 
         // Build content
         let html = '';
@@ -5542,7 +5620,7 @@ let dataThrough = '3/8/2026';
         </div>`;
 
         // -- Files & Emails Section --
-        const apEscapedName = acctName.replace(/'/g, "\\'");
+        const apEscapedName = escAttr(acctName);
         html += `<div class="ap-section"><h3>Files & Emails</h3>
             <div id="apFileDropZone" style="border:2px dashed #d1d5db;border-radius:8px;padding:16px;text-align:center;cursor:pointer;background:#fafafa;margin-bottom:12px;transition:all 0.2s;" onclick="document.getElementById('apFileInput').click()">
                 <div style="font-size:20px;margin-bottom:4px;">&#128206;</div>
@@ -5874,9 +5952,10 @@ let dataThrough = '3/8/2026';
         if (typeof accountsTop !== 'undefined') accountsTop.forEach(a => allAccounts.add(a.acct));
         if (typeof reorderData !== 'undefined') reorderData.forEach(r => allAccounts.add(r.acct));
 
-        if (firebaseReady && db) {
+        const _acctCol = tenantAccountsCol();
+        if (firebaseReady && db && _acctCol) {
             try {
-                const snap = await db.collection('accounts').get();
+                const snap = await _acctCol.get();
                 const fbAccounts = {};
                 snap.forEach(doc => { fbAccounts[doc.id] = doc.data(); });
 
@@ -5886,13 +5965,13 @@ let dataThrough = '3/8/2026';
                     let noteCount = 0;
                     let lastNoteDate = '';
                     try {
-                        const notesSnap = await db.collection('accounts').doc(id).collection('notes').orderBy('ts','desc').limit(1).get();
+                        const notesSnap = await _acctCol.doc(id).collection('notes').orderBy('ts','desc').limit(1).get();
                         noteCount = notesSnap.size;
                         if (!notesSnap.empty) {
                             const lastNote = notesSnap.docs[0].data();
                             lastNoteDate = lastNote.date || new Date(lastNote.ts).toLocaleDateString();
                         }
-                        const allNotesSnap = await db.collection('accounts').doc(id).collection('notes').get();
+                        const allNotesSnap = await _acctCol.doc(id).collection('notes').get();
                         noteCount = allNotesSnap.size;
                     } catch(e) {}
                     if (meta.tags && meta.tags.length > 0 || meta.nextAction || meta.followUp) {
@@ -6004,7 +6083,7 @@ let dataThrough = '3/8/2026';
             alerts += '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;color:#991B1B;">';
             alerts += '<strong>Overdue Follow-Ups:</strong> ';
             alerts += overdueItems.slice(0, 5).map(i =>
-                '<span style="font-weight:600;cursor:pointer;text-decoration:underline;" onclick="openAccountPanel(\'' + i.acct.replace(/'/g, "\\'") + '\')">' + esc(i.acct) + '</span> (due ' + esc(i.followUp) + ')'
+                '<span style="font-weight:600;cursor:pointer;text-decoration:underline;" onclick="openAccountPanel(\'' + escAttr(i.acct) + '\')">' + esc(i.acct) + '</span> (due ' + esc(i.followUp) + ')'
             ).join(', ');
             if (overdueItems.length > 5) alerts += ' + ' + (overdueItems.length - 5) + ' more';
             alerts += '</div>';
@@ -6015,7 +6094,7 @@ let dataThrough = '3/8/2026';
             alerts += '<div style="background:#F5F3FF;border:1px solid #C4B5FD;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;color:#5B21B6;">';
             alerts += '<strong>VIP Alert:</strong> ' + vipStale.length + ' VIP account(s) with no order in 30+ days: ';
             alerts += vipStale.slice(0, 5).map(i =>
-                '<span style="font-weight:600;cursor:pointer;text-decoration:underline;" onclick="openAccountPanel(\'' + i.acct.replace(/'/g, "\\'") + '\')">' + esc(i.acct) + '</span> (' + i.daysSince + 'd)'
+                '<span style="font-weight:600;cursor:pointer;text-decoration:underline;" onclick="openAccountPanel(\'' + escAttr(i.acct) + '\')">' + esc(i.acct) + '</span> (' + i.daysSince + 'd)'
             ).join(', ');
             alerts += '</div>';
         }
@@ -6036,7 +6115,7 @@ let dataThrough = '3/8/2026';
             let cardsHtml = '';
             items.forEach(item => {
                 const tagBadges = item.tags.map(t =>
-                    '<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:' + (tagColors[t] || '#6B7280') + ';margin-right:3px;">' + t + '</span>'
+                    '<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:' + (tagColors[t] || '#6B7280') + ';margin-right:3px;">' + esc(t) + '</span>'
                 ).join('');
 
                 const dayColor = item.daysSince > 60 ? '#DC2626' : item.daysSince > 30 ? '#F59E0B' : '#059669';
@@ -6044,10 +6123,10 @@ let dataThrough = '3/8/2026';
 
                 cardsHtml += '<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;margin-bottom:10px;cursor:pointer;' + overdueStyle + 'transition:box-shadow 0.15s;" ' +
                     'onmouseover="this.style.boxShadow=\'0 2px 8px rgba(0,0,0,0.08)\'" onmouseout="this.style.boxShadow=\'none\'" ' +
-                    'onclick="openAccountPanel(\'' + item.acct.replace(/'/g, "\\'") + '\')">' +
+                    'onclick="openAccountPanel(\'' + escAttr(item.acct) + '\')">' +
                     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">' +
-                        '<div><span style="font-weight:700;font-size:14px;color:#0F766E;">' + item.acct + '</span>' +
-                        '<span style="margin-left:8px;font-size:11px;color:#6B7280;">' + item.dist + ' / ' + item.st + '</span></div>' +
+                        '<div><span style="font-weight:700;font-size:14px;color:#0F766E;">' + esc(item.acct) + '</span>' +
+                        '<span style="margin-left:8px;font-size:11px;color:#6B7280;">' + esc(item.dist) + ' / ' + esc(item.st) + '</span></div>' +
                         '<div style="text-align:right;">' +
                             (item.ce > 0 ? '<span style="font-size:12px;font-weight:600;color:#0F766E;">' + item.ce.toFixed(1) + ' CE</span>' : '') +
                         '</div>' +
@@ -6200,9 +6279,10 @@ let dataThrough = '3/8/2026';
     }
 
     async function initPipeline() {
-        if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
+        const plCol = tenantPipelineCol();
+        if (typeof firebaseReady !== 'undefined' && firebaseReady && db && plCol) {
             try {
-                const snap = await db.collection('pipeline').get();
+                const snap = await plCol.get();
                 snap.forEach(doc => { pipelineMeta[doc.id] = doc.data(); });
             } catch(e) { console.warn('Pipeline Firebase load failed', e); }
         } else {
@@ -6407,15 +6487,15 @@ let dataThrough = '3/8/2026';
 
             return '<tr style="border-bottom:1px solid #f1f5f9;cursor:pointer;" onclick="openPipelineDetail(\'' + escAttr(r.acct) + '\')">' +
                 '<td style="padding:8px 12px;font-weight:600;color:#0F766E;cursor:pointer;">' + esc(r.acct) + distBadge + '</td>' +
-                '<td style="padding:8px;text-align:center;"><span style="padding:2px 10px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:'+plTierColors[r.tier]+';">'+r.tier+'</span></td>' +
+                '<td style="padding:8px;text-align:center;"><span style="padding:2px 10px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:'+plTierColors[r.tier]+';">'+esc(r.tier)+'</span></td>' +
                 '<td style="padding:8px;text-align:center;"><span style="padding:2px 10px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:'+plStageColors[r.stage]+';">' + esc(r.stage) + '</span></td>' +
                 '<td style="padding:8px;text-align:center;font-size:11px;font-weight:600;color:'+daysColor+';">'+daysSinceStage+'</td>' +
                 '<td style="padding:8px;font-size:12px;">' + esc(r.owner) + '</td>' +
                 '<td style="padding:8px;font-size:12px;color:#6B7280;">'+esc(r.source || '--')+'</td>' +
                 '<td style="padding:8px;text-align:right;font-weight:600;">'+f$pl(r.estValue)+(r.hasCustom ? '<span style="color:#10b981;font-size:9px;margin-left:2px;">*</span>' : '')+'</td>' +
                 '<td style="padding:8px;text-align:right;color:#7C3AED;font-weight:600;">'+f$pl(r.weighted)+'</td>' +
-                '<td style="padding:8px;font-size:11px;">'+(r.nextStep || '<span style="color:#d1d5db;">--</span>')+'</td>' +
-                '<td style="padding:8px;text-align:center;font-size:11px;'+(isOverdue?'color:#DC2626;font-weight:700;':'')+'">'+(r.dueDate || '--')+'</td>' +
+                '<td style="padding:8px;font-size:11px;">'+(r.nextStep ? esc(r.nextStep) : '<span style="color:#d1d5db;">--</span>')+'</td>' +
+                '<td style="padding:8px;text-align:center;font-size:11px;'+(isOverdue?'color:#DC2626;font-weight:700;':'')+'">'+(r.dueDate ? esc(r.dueDate) : '--')+'</td>' +
                 '<td style="padding:8px;text-align:center;">'+(r.notes ? '<span style="background:#EEF2FF;color:#4338CA;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">Yes</span>' : '--')+'</td></tr>';
         }).join('');
         document.getElementById('pipelineSummary').textContent = 'Showing ' + rows.length + ' accounts | ' + f$pl(rows.reduce((s,r) => s + r.estValue, 0)) + ' total value';
@@ -6455,9 +6535,9 @@ let dataThrough = '3/8/2026';
         const hasCustom = meta.customValue && meta.customValue > 0;
         const tierDefaults = {Enterprise:'$118,500','On-Premise Natl':'$79,000',Regional:'$39,500',Emerging:'$7,900'};
         const typeBadge = acctType === 'Distributor' ? ' <span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">Distribution Partner</span>' : '';
-        const channelBadge = channel ? ' <span style="background:'+(channel==='On-Premise'?'#FEF3C7':'#E0E7FF')+';color:'+(channel==='On-Premise'?'#92400E':'#3730A3')+';padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">'+channel+'</span>' : '';
-        const stateBadge = acctState ? ' <span style="background:#F0FDF4;color:#166534;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">'+acctState+(regionMap[acctState]?' - '+regionMap[acctState]:'')+'</span>' : '';
-        const escapedName = acctName.replace(/'/g,"\\'");
+        const channelBadge = channel ? ' <span style="background:'+(channel==='On-Premise'?'#FEF3C7':'#E0E7FF')+';color:'+(channel==='On-Premise'?'#92400E':'#3730A3')+';padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">'+esc(channel)+'</span>' : '';
+        const stateBadge = acctState ? ' <span style="background:#F0FDF4;color:#166534;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">'+esc(acctState)+(regionMap[acctState]?' - '+esc(regionMap[acctState]):'')+'</span>' : '';
+        const escapedName = escAttr(acctName);
 
         // Stage date and days calc
         const stageDate = (meta.stageDate || acct.stageDate) ? new Date(meta.stageDate || acct.stageDate) : new Date('2026-02-15');
@@ -6657,7 +6737,7 @@ let dataThrough = '3/8/2026';
     }
 
     function renderPlFilesTab(acctName) {
-        const escapedName = acctName.replace(/'/g, "\\'");
+        const escapedName = escAttr(acctName);
         let html = '';
 
         // Upload drop zone
@@ -6741,8 +6821,9 @@ let dataThrough = '3/8/2026';
             updatedBy: (typeof currentUser !== 'undefined' && currentUser) ? currentUser.name : 'Unknown'
         };
         pipelineMeta[id] = data;
-        if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
-            try { await db.collection('pipeline').doc(id).set(data, {merge:true}); } catch(e) {}
+        const _plCol = tenantPipelineCol();
+        if (typeof firebaseReady !== 'undefined' && firebaseReady && db && _plCol) {
+            try { await _plCol.doc(id).set(data, {merge:true}); } catch(e) { showToast('Pipeline sync failed - saved locally', 'warning'); }
         }
         localStorage.setItem('sk_pipeline_meta', JSON.stringify(pipelineMeta));
         // Log changes
@@ -6858,8 +6939,9 @@ let dataThrough = '3/8/2026';
             isNew: true // flag so we know this was added via UI
         };
         pipelineMeta[id] = metaData;
-        if (typeof firebaseReady !== 'undefined' && firebaseReady && db) {
-            try { await db.collection('pipeline').doc(id).set(metaData, {merge:true}); } catch(e) {}
+        const _plCol2 = tenantPipelineCol();
+        if (typeof firebaseReady !== 'undefined' && firebaseReady && db && _plCol2) {
+            try { await _plCol2.doc(id).set(metaData, {merge:true}); } catch(e) { showToast('Pipeline sync failed - saved locally', 'warning'); }
         }
         localStorage.setItem('sk_pipeline_meta', JSON.stringify(pipelineMeta));
 
@@ -6890,13 +6972,13 @@ let dataThrough = '3/8/2026';
     // Payment Links are the simplest way to accept payments without a backend.
     // Create them at: https://dashboard.stripe.com/payment-links
     const STRIPE_CONFIG = {
-        // LIVE MODE links
-        starter: 'https://buy.stripe.com/3cIaEY1wY1w19KIdQV9sk02',
-        growth: 'https://buy.stripe.com/3cIdRacbC8Yt7CA4gl9sk01',
-        portalUrl: 'https://billing.stripe.com/p/login/5kQ8wObbGcMI0bu9lH9bO00',
         // TEST MODE links (for development/testing):
-        // starter: 'https://buy.stripe.com/test_7sY3cxef5avM9z27To3Nm00',
-        // growth: 'https://buy.stripe.com/test_eVqdRb6MD7jA9z2flQ3Nm01',
+        starter: 'https://buy.stripe.com/test_7sY3cxef5avM9z27To3Nm00',
+        growth: 'https://buy.stripe.com/test_eVqdRb6MD7jA9z2flQ3Nm01',
+        portalUrl: 'https://billing.stripe.com/p/login/5kQ8wObbGcMI0bu9lH9bO00',
+        // LIVE MODE links (swap these back for production):
+        // starter: 'https://buy.stripe.com/3cIaEY1wY1w19KIdQV9sk02',
+        // growth: 'https://buy.stripe.com/3cIdRacbC8Yt7CA4gl9sk01',
     };
 
     function startCheckout(plan) {
@@ -9859,12 +9941,193 @@ let dataThrough = '3/8/2026';
         }
     };
 
+    // ==================== KEYBOARD ACCESSIBILITY ====================
+    // Make all onclick elements keyboard-accessible via MutationObserver
+    function makeKeyboardAccessible(el) {
+        if (el.getAttribute('onclick') && !el.getAttribute('tabindex') && el.tagName !== 'BUTTON' && el.tagName !== 'A' && el.tagName !== 'INPUT') {
+            el.setAttribute('tabindex', '0');
+            el.setAttribute('role', 'button');
+            el.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    el.click();
+                }
+            });
+        }
+    }
+    // Initial pass
+    document.querySelectorAll('[onclick]').forEach(makeKeyboardAccessible);
+    // Watch for dynamically added elements
+    const a11yObserver = new MutationObserver(mutations => {
+        mutations.forEach(m => {
+            m.addedNodes.forEach(node => {
+                if (node.nodeType === 1) {
+                    if (node.getAttribute && node.getAttribute('onclick')) makeKeyboardAccessible(node);
+                    if (node.querySelectorAll) node.querySelectorAll('[onclick]').forEach(makeKeyboardAccessible);
+                }
+            });
+        });
+    });
+    a11yObserver.observe(document.body, {childList: true, subtree: true});
+
+    // ==================== SYNC STATUS INDICATOR ====================
+    function updateSyncStatus(status, label) {
+        const dot = document.getElementById('syncDot');
+        const lbl = document.getElementById('syncLabel');
+        if (!dot || !lbl) return;
+        const colors = { connected: '#4ade80', syncing: '#facc15', offline: '#f87171' };
+        dot.style.background = colors[status] || colors.connected;
+        lbl.textContent = label || status;
+    }
+
+    // Monitor Firebase connection state
+    if (firebaseReady && firebase.database) {
+        try {
+            const connRef = firebase.database().ref('.info/connected');
+            connRef.on('value', snap => {
+                updateSyncStatus(snap.val() ? 'connected' : 'offline', snap.val() ? 'Connected' : 'Offline');
+            });
+        } catch(e) {
+            // Realtime DB not configured - use Firestore connectivity check
+            updateSyncStatus(firebaseReady ? 'connected' : 'offline', firebaseReady ? 'Connected' : 'Offline');
+        }
+    } else {
+        updateSyncStatus(firebaseReady ? 'connected' : 'offline', firebaseReady ? 'Connected' : 'Local Only');
+    }
+
+    // ==================== PASSWORD CHANGE FLOW ====================
+    function showPasswordChangeModal() {
+        const overlay = document.createElement('div');
+        overlay.id = 'passwordChangeOverlay';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-label', 'Change Password');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.innerHTML = '<div style="background:#fff;border-radius:12px;padding:28px;width:400px;max-width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">' +
+                '<h3 style="margin:0;font-size:18px;font-weight:700;color:#0F766E;">Change Password</h3>' +
+                '<button onclick="document.getElementById(\'passwordChangeOverlay\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6B7280;" aria-label="Close">&times;</button></div>' +
+            '<div id="pwChangeError" style="display:none;background:#FEE2E2;color:#DC2626;padding:8px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;"></div>' +
+            '<div id="pwChangeSuccess" style="display:none;background:#D1FAE5;color:#059669;padding:8px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;"></div>' +
+            '<div style="margin-bottom:12px;">' +
+                '<label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Current Password</label>' +
+                '<input id="pwCurrentInput" type="password" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;"></div>' +
+            '<div style="margin-bottom:12px;">' +
+                '<label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">New Password</label>' +
+                '<input id="pwNewInput" type="password" placeholder="At least 6 characters" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;"></div>' +
+            '<div style="margin-bottom:16px;">' +
+                '<label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Confirm New Password</label>' +
+                '<input id="pwConfirmInput" type="password" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;"></div>' +
+            '<button onclick="doPasswordChange()" style="width:100%;padding:12px;background:#0F766E;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Update Password</button></div>';
+        document.body.appendChild(overlay);
+        document.getElementById('pwCurrentInput').focus();
+    }
+
+    async function doPasswordChange() {
+        const errEl = document.getElementById('pwChangeError');
+        const succEl = document.getElementById('pwChangeSuccess');
+        errEl.style.display = 'none';
+        succEl.style.display = 'none';
+
+        const current = document.getElementById('pwCurrentInput').value;
+        const newPw = document.getElementById('pwNewInput').value;
+        const confirm = document.getElementById('pwConfirmInput').value;
+
+        if (!current || !newPw || !confirm) {
+            errEl.textContent = 'Please fill in all fields';
+            errEl.style.display = 'block';
+            return;
+        }
+        if (newPw.length < 6) {
+            errEl.textContent = 'New password must be at least 6 characters';
+            errEl.style.display = 'block';
+            return;
+        }
+        if (newPw !== confirm) {
+            errEl.textContent = 'New passwords do not match';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        try {
+            const user = auth.currentUser;
+            const credential = firebase.auth.EmailAuthProvider.credential(user.email, current);
+            await user.reauthenticateWithCredential(credential);
+            await user.updatePassword(newPw);
+            succEl.textContent = 'Password updated successfully!';
+            succEl.style.display = 'block';
+            setTimeout(() => {
+                const el = document.getElementById('passwordChangeOverlay');
+                if (el) el.remove();
+            }, 2000);
+        } catch(e) {
+            errEl.textContent = e.code === 'auth/wrong-password' ? 'Current password is incorrect' : ('Error: ' + e.message);
+            errEl.style.display = 'block';
+        }
+    }
+
+    // ==================== PRIVACY POLICY & TERMS OF SERVICE ====================
+    function showPrivacyPolicy() {
+        showLegalModal('Privacy Policy', '<h3 style="color:#0F766E;margin-bottom:12px;">Privacy Policy</h3>' +
+            '<p style="margin-bottom:10px;">Last updated: March 2026</p>' +
+            '<p style="margin-bottom:10px;">Sidekick BI ("we", "us") respects your privacy and is committed to protecting your personal data. This policy explains how we collect, use, and safeguard your information.</p>' +
+            '<h4 style="color:#334155;margin:12px 0 6px;">Data We Collect</h4>' +
+            '<p style="margin-bottom:10px;">We collect the information you provide when creating an account (name, email), and data you upload to the platform (sales data, account information). We also collect usage analytics to improve the service.</p>' +
+            '<h4 style="color:#334155;margin:12px 0 6px;">How We Use Your Data</h4>' +
+            '<p style="margin-bottom:10px;">Your data is used solely to provide the Sidekick BI service. We do not sell your data to third parties. Sales data you upload remains scoped to your tenant and is not shared across accounts.</p>' +
+            '<h4 style="color:#334155;margin:12px 0 6px;">Data Storage & Security</h4>' +
+            '<p style="margin-bottom:10px;">Data is stored securely using Google Firebase with encryption at rest and in transit. Access is restricted to authenticated users within your tenant.</p>' +
+            '<h4 style="color:#334155;margin:12px 0 6px;">Contact</h4>' +
+            '<p>For privacy inquiries, contact us at privacy@sidekickbi.com.</p>');
+    }
+
+    function showTermsOfService() {
+        showLegalModal('Terms of Service', '<h3 style="color:#0F766E;margin-bottom:12px;">Terms of Service</h3>' +
+            '<p style="margin-bottom:10px;">Last updated: March 2026</p>' +
+            '<p style="margin-bottom:10px;">By using Sidekick BI, you agree to these terms. Please read them carefully.</p>' +
+            '<h4 style="color:#334155;margin:12px 0 6px;">Service Description</h4>' +
+            '<p style="margin-bottom:10px;">Sidekick BI is a sales intelligence platform that helps teams track depletions, manage accounts, and monitor pipeline activity.</p>' +
+            '<h4 style="color:#334155;margin:12px 0 6px;">Account Responsibilities</h4>' +
+            '<p style="margin-bottom:10px;">You are responsible for maintaining the confidentiality of your account credentials and for all activities under your account.</p>' +
+            '<h4 style="color:#334155;margin:12px 0 6px;">Data Ownership</h4>' +
+            '<p style="margin-bottom:10px;">You retain ownership of all data you upload to Sidekick BI. We do not claim any intellectual property rights over your content.</p>' +
+            '<h4 style="color:#334155;margin:12px 0 6px;">Limitation of Liability</h4>' +
+            '<p style="margin-bottom:10px;">Sidekick BI is provided "as is" without warranties. We are not liable for any indirect, incidental, or consequential damages arising from your use of the service.</p>' +
+            '<h4 style="color:#334155;margin:12px 0 6px;">Changes</h4>' +
+            '<p>We may update these terms from time to time. Continued use of the service constitutes acceptance of any changes.</p>');
+    }
+
+    function showLegalModal(title, content) {
+        const existing = document.getElementById('legalModal');
+        if (existing) existing.remove();
+        const overlay = document.createElement('div');
+        overlay.id = 'legalModal';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-label', title);
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+        overlay.innerHTML = '<div style="background:#fff;border-radius:12px;padding:28px;width:600px;max-width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">' +
+                '<h3 style="margin:0;font-size:18px;font-weight:700;color:#0F766E;">' + esc(title) + '</h3>' +
+                '<button onclick="document.getElementById(\'legalModal\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6B7280;" aria-label="Close">&times;</button></div>' +
+            '<div style="font-size:14px;line-height:1.7;color:#374151;">' + content + '</div></div>';
+        document.body.appendChild(overlay);
+    }
+
     </script>
 
-    <div class="account-panel-overlay" id="apOverlay" onclick="closeAccountPanel()"></div>
-    <div class="account-panel" id="accountPanel">
+    <!-- Privacy & Terms links in footer -->
+    <footer role="contentinfo" style="text-align:center;padding:20px;color:#9ca3af;font-size:11px;margin-top:20px;">
+        <span>&copy; 2026 Sidekick BI</span> &bull;
+        <button onclick="showPrivacyPolicy()" style="background:none;border:none;color:#9ca3af;font-size:11px;cursor:pointer;text-decoration:underline;">Privacy Policy</button> &bull;
+        <button onclick="showTermsOfService()" style="background:none;border:none;color:#9ca3af;font-size:11px;cursor:pointer;text-decoration:underline;">Terms of Service</button>
+    </footer>
+
+    <div class="account-panel-overlay" id="apOverlay" onclick="closeAccountPanel()" aria-hidden="true"></div>
+    <div class="account-panel" id="accountPanel" role="dialog" aria-label="Account Details" aria-modal="true">
         <div class="ap-header">
-            <button class="ap-close" onclick="closeAccountPanel()">&times;</button>
+            <button class="ap-close" onclick="closeAccountPanel()" aria-label="Close account panel">&times;</button>
             <h2 id="apName">--</h2>
             <div class="ap-sub" id="apSub">--</div>
         </div>

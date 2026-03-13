@@ -19,71 +19,97 @@ service cloud.firestore {
 
     // Helper: check if user belongs to a specific tenant
     function isTenantMember(tenantId) {
-      return isAuth() && (
-        getUserProfile().tenantId == tenantId ||
-        getUserProfile().territory == 'all' ||
-        isAdmin()
+      return isAuth() && getUserProfile().tenantId == tenantId;
+    }
+
+    // Helper: check if user is admin of a specific tenant
+    function isTenantAdmin(tenantId) {
+      return isAuth() && getUserProfile().role == 'admin' && getUserProfile().tenantId == tenantId;
+    }
+
+    // Users collection: users can read/write their own profile, tenant admins can manage their tenant's users
+    match /users/{userId} {
+      allow read: if isAuth() && (
+        request.auth.uid == userId ||
+        (getUserProfile().role == 'admin' && getUserProfile().tenantId == resource.data.tenantId)
       );
-    }
-
-    // Users collection: users can read/write their own profile, admins can manage all
-    match /users/{userId} {
-      allow read: if isAuth() && (request.auth.uid == userId || isAdmin());
       allow create: if isAuth() && request.auth.uid == userId;
-      allow update: if isAuth() && (request.auth.uid == userId || isAdmin());
-      allow delete: if isAdmin();
+      allow update: if isAuth() && (
+        request.auth.uid == userId ||
+        (getUserProfile().role == 'admin' && getUserProfile().tenantId == resource.data.tenantId)
+      );
+      allow delete: if isAuth() && getUserProfile().role == 'admin' && getUserProfile().tenantId == resource.data.tenantId;
+      allow list: if isAuth() && getUserProfile().role == 'admin';
     }
 
-    // Allow admins to list all users (for user management in Settings)
-    match /users/{userId} {
-      allow list: if isAdmin();
-    }
-
-    // Tenant config: only members of that tenant can read, only admins can write
+    // Tenant config: only members of that tenant can read, only tenant admins can write
     match /tenants/{tenantId} {
-      allow read: if isAuth();
-      allow write: if isAdmin();
+      allow read: if isTenantMember(tenantId);
+      allow write: if isTenantAdmin(tenantId);
 
       // Tenant data subcollections (uploaded data chunks)
       match /data/{fileType} {
-        allow read: if isAuth();
-        allow write: if isAdmin();
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantAdmin(tenantId);
 
         match /rows/{chunkId} {
-          allow read: if isAuth();
-          allow write: if isAdmin();
+          allow read: if isTenantMember(tenantId);
+          allow write: if isTenantAdmin(tenantId);
         }
       }
 
       // Upload audit logs
       match /uploadAudit/{auditId} {
-        allow read: if isAdmin();
-        allow write: if isAuth();
+        allow read: if isTenantAdmin(tenantId);
+        allow write: if isTenantMember(tenantId);
+      }
+
+      // Accounts scoped under tenant
+      match /accounts/{accountId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantMember(tenantId);
+
+        match /notes/{noteId} {
+          allow read, write: if isTenantMember(tenantId);
+        }
+
+        match /emails/{emailId} {
+          allow read, write: if isTenantMember(tenantId);
+        }
+
+        match /files/{fileId} {
+          allow read, write: if isTenantMember(tenantId);
+        }
+      }
+
+      // Pipeline scoped under tenant
+      match /pipeline/{docId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantMember(tenantId);
+      }
+
+      // Activity log scoped under tenant
+      match /activityLog/{logId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantMember(tenantId);
       }
     }
 
-    // Account-level data (notes, emails, files, pipeline)
+    // Legacy top-level accounts (redirect reads only, for migration)
     match /accounts/{accountId} {
       allow read: if isAuth();
-      allow write: if isAuth();
+      allow write: if false;
 
-      match /notes/{noteId} {
-        allow read, write: if isAuth();
-      }
-
-      match /emails/{emailId} {
-        allow read, write: if isAuth();
-      }
-
-      match /files/{fileId} {
-        allow read, write: if isAuth();
+      match /{subcoll}/{docId} {
+        allow read: if isAuth();
+        allow write: if false;
       }
     }
 
-    // Pipeline data
+    // Legacy top-level pipeline (redirect reads only, for migration)
     match /pipeline/{docId} {
       allow read: if isAuth();
-      allow write: if isAuth();
+      allow write: if false;
     }
 
     // Deny everything else by default
