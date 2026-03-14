@@ -7,6 +7,7 @@ import {
   UserBar,
   Footer,
   KpiCard,
+  MyTerritory,
 } from "./components";
 import useFilters from "./hooks/useFilters";
 import TENANT_CONFIG from "./config/tenant";
@@ -63,27 +64,22 @@ function App() {
         {/* === Tab Content Panels === */}
         {activeTab === "performance" && (
           <div id="performance" className="tab-content active">
-            <div className="section-header">
-              <h3>My Territory</h3>
-              <p>
-                Territory overview will be rendered here once data components
-                are migrated.
-              </p>
-            </div>
-            <div className="kpi-row">
-              <KpiCard label="Total CE" value="--" subtext="13W volume" />
-              <KpiCard label="4W CE" value="--" subtext="Short period" />
-              <KpiCard
-                label="Active Accounts"
-                value="--"
-                subtext="With activity"
-              />
-              <KpiCard
-                label="Pending Actions"
-                value="--"
-                subtext="Follow-ups due"
-              />
-            </div>
+            <MyTerritory
+              user={currentUser}
+              filters={filters}
+              distScorecard={[]}
+              reorderData={[]}
+              accountsTop={[]}
+              pipelineAccounts={[]}
+              pipelineMeta={{}}
+              qbDistOrders={{}}
+              newWins={[]}
+              recentActivity={[]}
+              myAccounts={[]}
+              onAccountClick={(name) =>
+                console.log("Open account panel:", name)
+              }
+            />
           </div>
         )}
 

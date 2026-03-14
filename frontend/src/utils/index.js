@@ -9,3 +9,5 @@ export { withRetry } from "./retry";
 export { t } from "./terminology";
 export { getDateRangeBounds, dateInRange } from "./dateFilters";
 export { resetSessionTimer, initSessionWatcher } from "./session";
+export { matchesUserTerritory } from "./territory";
+export { getFilteredData } from "./filterData";
