@@ -10,6 +10,7 @@ import PipelineBreakdowns from "./PipelineBreakdowns";
 import { matchesUserTerritory } from "../utils/territory";
 import { formatCurrency, esc } from "../utils/formatting";
 import TENANT_CONFIG from "../config/tenant";
+import { t } from "../utils/terminology";
 
 const STAGE_ORDER = [
   "Identified",
@@ -365,7 +366,7 @@ export default function CustomerPipeline({
         {filterSelect("Type", "type", [
           { value: "", label: "All Types" },
           { value: "Chain", label: "Chain Accounts" },
-          { value: "Distributor", label: "Distribution Partners" },
+          { value: "Distributor", label: `${t("distributor")} Partners` },
         ])}
         {filterSelect("Channel", "channel", [
           { value: "", label: "All Channels" },
@@ -427,7 +428,7 @@ export default function CustomerPipeline({
           <thead style={{ position: "sticky", top: 0, background: "#f8fafc", zIndex: 2 }}>
             <tr>
               {[
-                { key: "acct", label: "Account", align: "left" },
+                { key: "acct", label: t("account"), align: "left" },
                 { key: "tier", label: "Tier", align: "center" },
                 { key: "stage", label: "Stage", align: "center" },
                 { key: "days", label: "Days", align: "center" },

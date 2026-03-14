@@ -248,7 +248,7 @@ exports.aiMapper = functions
       throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { headers, sampleRows } = data;
+    const { headers, sampleRows, userRole = "supplier" } = data;
     if (!headers || !sampleRows) {
       throw new functions.https.HttpsError("invalid-argument", "headers and sampleRows required");
     }
@@ -261,13 +261,17 @@ exports.aiMapper = functions
     const Anthropic = require("@anthropic-ai/sdk");
     const client = new Anthropic({ apiKey });
 
+    const roleContext = userRole === "distributor"
+      ? "You are a data mapping expert for a beverage/CPG distributor CRM. The user is a distributor tracking suppliers/vendors and their own stores/locations."
+      : "You are a data mapping expert for a beverage/CPG supplier CRM. The user is a supplier tracking distributors and retail accounts.";
+
     const table = [
       headers.join(" | "),
       headers.map(() => "---").join(" | "),
       ...sampleRows.slice(0, 8).map((r) => headers.map((h) => String(r[h] ?? "").slice(0, 40)).join(" | ")),
     ].join("\n");
 
-    const prompt = `You are a data mapping expert for a beverage/CPG CRM. Map each column to an internal field.
+    const prompt = `${roleContext} Map each column to an internal field.
 
 INTERNAL FIELDS:
 ${INTERNAL_FIELDS.map((f) => `  ${f.field}: ${f.label}`).join("\n")}
@@ -314,7 +318,7 @@ exports.aiIngest = functions
       throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { headers, rows, tenantId = "default" } = data;
+    const { headers, rows, tenantId = "default", userRole = "supplier" } = data;
     if (!headers || !rows) {
       throw new functions.https.HttpsError("invalid-argument", "headers and rows required");
     }
@@ -339,7 +343,7 @@ exports.aiIngest = functions
     const mapResp = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 1500,
-      messages: [{ role: "user", content: `Map columns to CRM fields.\n\nFIELDS:\n${INTERNAL_FIELDS.map((f) => `${f.field}: ${f.label}`).join("\n")}\n\nDATA:\n${sampleTable}\n\nReturn JSON: { "mapping": {...}, "uploadType": "..." }\nOnly JSON.` }],
+      messages: [{ role: "user", content: `${userRole === "distributor" ? "You are mapping data for a distributor CRM. 'dist' = Supplier/Vendor, 'acct' = Store/Location." : "You are mapping data for a supplier CRM. 'dist' = Distributor, 'acct' = Account."} Map columns to CRM fields.\n\nFIELDS:\n${INTERNAL_FIELDS.map((f) => `${f.field}: ${f.label}`).join("\n")}\n\nDATA:\n${sampleTable}\n\nReturn JSON: { "mapping": {...}, "uploadType": "..." }\nOnly JSON.` }],
     });
 
     const mapText = mapResp.content[0].text;

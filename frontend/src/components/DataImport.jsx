@@ -6,7 +6,7 @@ import { useState, useRef, useCallback } from "react";
 import { useData } from "../context/DataContext";
 import parseFile from "../utils/parseFile";
 import { autoDetectMapping, detectUploadType, getFieldDefs } from "../utils/semanticMapper";
-import { getUserRole } from "../utils/terminology";
+import { getUserRole, t } from "../utils/terminology";
 import { aiAutoDetectMapping } from "../utils/aiMapper";
 import { transformAll, generateSummary } from "../utils/transformData";
 import { logUpload } from "../services/firestoreService";
@@ -101,9 +101,9 @@ export default function DataImport() {
 
   const proceedToPreview = () => {
     try {
-      const result = transformAll(parsed.rows, mapping, uploadType);
+      const result = transformAll(parsed.rows, mapping, uploadType, userRole);
       setPreview(result);
-      const summaryText = generateSummary(result.type || uploadType.type, result);
+      const summaryText = generateSummary(result.type || uploadType.type, result, userRole);
       setSummary(summaryText);
       setStep("preview");
     } catch (err) {
@@ -177,7 +177,7 @@ export default function DataImport() {
             Supports .csv, .xlsx, .xls &mdash; up to 10MB
           </div>
           <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
-            QuickBooks exports, distributor depletion reports, inventory files, pipeline data
+            QuickBooks exports, {t("distributor").toLowerCase()} reports, inventory files, pipeline data
           </div>
           <div
             onClick={(e) => e.stopPropagation()}

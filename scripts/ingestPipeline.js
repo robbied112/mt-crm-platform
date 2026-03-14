@@ -306,15 +306,19 @@ function transformQuickBooks(rows, mapping) {
   return { accountsTop, pipelineAccounts, pipelineMeta: {}, qbDistOrders, acctConcentration, reorderData };
 }
 
-function generateSummary(dataType, datasets) {
+function generateSummary(dataType, datasets, userRole = "supplier") {
   const parts = [];
+  const isDistributor = userRole === "distributor";
+  const entityName = isDistributor ? "supplier" : "distributor";
+  const acctName = isDistributor ? "store" : "customer";
+
   if (dataType === "quickbooks") {
     const acctCount = datasets.accountsTop?.length || 0;
     const totalRev = datasets.accountsTop?.reduce((s, a) => s + a.total, 0) || 0;
     const topAcct = datasets.accountsTop?.[0]?.acct || "N/A";
-    parts.push(`AI Pipeline processed QuickBooks data: ${acctCount} customers with $${totalRev.toLocaleString()} in total revenue.`);
-    parts.push(`Top account: "${topAcct}".`);
-    parts.push("Inventory and Reorder data not available from QuickBooks — upload a distributor depletion report to unlock those tabs.");
+    parts.push(`AI Pipeline processed QuickBooks data: ${acctCount} ${acctName}s with $${totalRev.toLocaleString()} in total revenue.`);
+    parts.push(`Top ${acctName}: "${topAcct}".`);
+    parts.push(`Inventory and Reorder data not available from QuickBooks — upload a ${entityName} report to unlock those tabs.`);
   } else {
     parts.push("Data processed successfully via AI Pipeline.");
   }
@@ -392,6 +396,7 @@ async function saveToFirestore(db, tenantId, datasets, summary) {
 async function main() {
   const args = process.argv.slice(2);
   const tenantId = args.find((a) => a.startsWith("--tenant="))?.split("=")[1] || "default";
+  const userRole = args.find((a) => a.startsWith("--role="))?.split("=")[1] || "supplier";
   const filePath = args.find((a) => !a.startsWith("--")) ||
     join(__dirname, "..", "Sample Data", "Yolo Brand Group, LLC_Sales by Customer Detail - RD.xlsx");
 
@@ -402,6 +407,7 @@ async function main() {
   console.log("╚══════════════════════════════════════════════════╝");
   console.log(`  File:   ${resolvedPath}`);
   console.log(`  Tenant: ${tenantId}`);
+  console.log(`  Role:   ${userRole}`);
   console.log();
 
   // ── Step 1: Read & Parse ──
@@ -424,7 +430,7 @@ async function main() {
   }
 
   console.log("\n[2/5] Running AI column mapper...");
-  const { mapping, confidence, unmapped, uploadType } = await aiAutoDetectMapping(headers, rows, ANTHROPIC_API_KEY);
+  const { mapping, confidence, unmapped, uploadType } = await aiAutoDetectMapping(headers, rows, ANTHROPIC_API_KEY, userRole);
 
   console.log(`  → Upload type: ${uploadType}`);
   console.log("  → Mapping:");
@@ -446,7 +452,7 @@ async function main() {
     datasets = transformQuickBooks(rows, mapping);
   }
 
-  const summary = generateSummary(uploadType, datasets);
+  const summary = generateSummary(uploadType, datasets, userRole);
   console.log(`  → ${datasets.accountsTop?.length || 0} accounts`);
   console.log(`  → ${datasets.pipelineAccounts?.length || 0} pipeline entries`);
   console.log(`  → ${datasets.reorderData?.length || 0} reorder entries`);

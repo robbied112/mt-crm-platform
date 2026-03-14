@@ -11,6 +11,7 @@ import ChartPanel from "./ChartPanel";
 import WarehousePanel from "./WarehousePanel";
 import InventoryTable from "./InventoryTable";
 import { getFilteredData } from "../utils/filterData";
+import { t } from "../utils/terminology";
 
 export default function Inventory({
   inventoryData = [],
@@ -70,7 +71,7 @@ export default function Inventory({
       data: {
         datasets: [
           {
-            label: "Distributors",
+            label: t("distributor") + "s",
             data: points,
             backgroundColor: "#0F766E",
           },
@@ -110,7 +111,7 @@ export default function Inventory({
         <KpiCard label="Total On Hand" value={totalOH.toFixed(1)} />
         <KpiCard label="Avg DOH" value={avgDOH} />
         <KpiCard label="Reorder Opportunities" value={reorderCount} />
-        <KpiCard label="Distributors Reviewed" value={data.length} />
+        <KpiCard label={`${t("distributor")}s Reviewed`} value={data.length} />
       </div>
 
       {/* Warehouse Panel */}

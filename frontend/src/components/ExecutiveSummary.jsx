@@ -3,15 +3,16 @@
  * at the top of the dashboard after data is imported.
  */
 import { useData } from "../context/DataContext";
+import { t } from "../utils/terminology";
 
 export default function ExecutiveSummary() {
   const { summary, availability } = useData();
 
   if (!summary || !availability.hasAnyData) return null;
 
-  // Build list of missing data types
+  // Build list of missing data types (role-aware)
   const missing = [];
-  if (!availability.depletions) missing.push("Depletion Data");
+  if (!availability.depletions) missing.push(`${t("depletion")} Data`);
   if (!availability.inventory) missing.push("Inventory Data");
   if (!availability.reorder) missing.push("Purchase History");
   if (!availability.pipeline) missing.push("Pipeline Data");

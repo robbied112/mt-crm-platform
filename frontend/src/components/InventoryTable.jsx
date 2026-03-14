@@ -305,7 +305,7 @@ export default function InventoryTable({ data = [], onExport }) {
   return (
     <div className="table-container">
       <div className="table-header">
-        <div className="table-title">Inventory Details by Distributor</div>
+        <div className="table-title">Inventory Details by {t("distributor")}</div>
         <div className="table-controls">
           <select
             className="dropdown-select"

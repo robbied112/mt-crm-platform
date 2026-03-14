@@ -9,6 +9,7 @@
 import { useState } from "react";
 import TENANT_CONFIG from "../config/tenant";
 import { t } from "../utils/terminology";
+import { useData } from "../context/DataContext";
 import DataImport from "./DataImport";
 
 function SettingsSection({ title, children, headerRight }) {
@@ -164,7 +165,25 @@ export default function Settings({
   onResetSettings,
   onManageBilling,
 }) {
+  const { updateTenantConfig } = useData();
   const [userRole, setUserRole] = useState(config.userRole || "supplier");
+  const [roleSaving, setRoleSaving] = useState(false);
+  const [roleSaved, setRoleSaved] = useState(false);
+
+  const saveRole = async () => {
+    setRoleSaving(true);
+    try {
+      await updateTenantConfig({ userRole });
+      // Also update the static config so terminology updates immediately
+      TENANT_CONFIG.userRole = userRole;
+      setRoleSaved(true);
+      setTimeout(() => setRoleSaved(false), 3000);
+    } catch (err) {
+      console.error("Failed to save role:", err);
+    } finally {
+      setRoleSaving(false);
+    }
+  };
 
   const [branding, setBranding] = useState({
     companyName: config.companyName || "",
@@ -224,9 +243,10 @@ export default function Settings({
         headerRight={
           <button
             className="btn btn-primary"
-            onClick={() => onSaveBranding?.({ userRole })}
+            onClick={saveRole}
+            disabled={roleSaving}
           >
-            Save Role
+            {roleSaving ? "Saving..." : roleSaved ? "Saved!" : "Save Role"}
           </button>
         }
       >

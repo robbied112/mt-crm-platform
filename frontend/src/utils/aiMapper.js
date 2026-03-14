@@ -86,7 +86,7 @@ Return ONLY valid JSON.`;
       const resp = await fetch(proxyUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ headers, sampleRows: rows.slice(0, 8) }),
+        body: JSON.stringify({ headers, sampleRows: rows.slice(0, 8), userRole }),
       });
       result = await resp.json();
     } else {
