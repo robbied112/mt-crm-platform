@@ -210,6 +210,158 @@ exports.stripeWebhook = functions
   });
 
 // -------------------------------------------------------------------
+// AI Column Mapper — callable Cloud Function
+// -------------------------------------------------------------------
+// Accepts file column headers + sample rows, calls Claude to map them
+// to internal CRM fields, and optionally transforms + saves to Firestore.
+//
+// Call from frontend:
+//   const aiMap = httpsCallable(functions, 'aiMapper');
+//   const result = await aiMap({ headers, sampleRows, tenantId });
+// -------------------------------------------------------------------
+
+const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
+
+const INTERNAL_FIELDS = [
+  { field: "acct",       label: "Account / Customer Name" },
+  { field: "dist",       label: "Distributor / Wholesaler" },
+  { field: "st",         label: "State" },
+  { field: "ch",         label: "Channel" },
+  { field: "sku",        label: "Product / SKU / Item" },
+  { field: "qty",        label: "Quantity / Volume" },
+  { field: "date",       label: "Date / Period" },
+  { field: "revenue",    label: "Revenue / Amount" },
+  { field: "stage",      label: "Pipeline Stage" },
+  { field: "owner",      label: "Owner / Sales Rep" },
+  { field: "estValue",   label: "Deal Value" },
+  { field: "oh",         label: "On Hand (Inventory)" },
+  { field: "doh",        label: "Days on Hand" },
+  { field: "lastOrder",  label: "Last Order Date" },
+  { field: "orderCycle", label: "Order Cycle" },
+];
+
+exports.aiMapper = functions
+  .runWith({ secrets: [anthropicApiKey], timeoutSeconds: 60, memory: "512MB" })
+  .https.onCall(async (data, context) => {
+    // Require authentication
+    if (!context.auth) {
+      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+    }
+
+    const { headers, sampleRows } = data;
+    if (!headers || !sampleRows) {
+      throw new functions.https.HttpsError("invalid-argument", "headers and sampleRows required");
+    }
+
+    const apiKey = anthropicApiKey.value();
+    if (!apiKey) {
+      throw new functions.https.HttpsError("failed-precondition", "ANTHROPIC_API_KEY not configured");
+    }
+
+    const Anthropic = require("@anthropic-ai/sdk");
+    const client = new Anthropic({ apiKey });
+
+    const table = [
+      headers.join(" | "),
+      headers.map(() => "---").join(" | "),
+      ...sampleRows.slice(0, 8).map((r) => headers.map((h) => String(r[h] ?? "").slice(0, 40)).join(" | ")),
+    ].join("\n");
+
+    const prompt = `You are a data mapping expert for a beverage/CPG CRM. Map each column to an internal field.
+
+INTERNAL FIELDS:
+${INTERNAL_FIELDS.map((f) => `  ${f.field}: ${f.label}`).join("\n")}
+
+SOURCE DATA:
+${table}
+
+Return JSON: { "mapping": { "<field>": "<column>" }, "monthColumns": [], "weekColumns": [], "uploadType": "quickbooks"|"depletion"|"sales"|"purchases"|"inventory"|"pipeline"|"unknown", "confidence": { "<field>": 0.0-1.0 } }
+
+Return ONLY valid JSON.`;
+
+    const response = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 1500,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const text = response.content[0].text.trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new functions.https.HttpsError("internal", "AI returned no valid JSON");
+    }
+
+    return JSON.parse(jsonMatch[0]);
+  });
+
+// -------------------------------------------------------------------
+// AI Ingest Pipeline — callable Cloud Function
+// -------------------------------------------------------------------
+// Processes a full file through the AI mapper + transform + Firestore save.
+// For use from admin tools or CLI.
+// -------------------------------------------------------------------
+
+const DATASETS = [
+  "distScorecard", "reorderData", "accountsTop", "pipelineAccounts",
+  "pipelineMeta", "inventoryData", "newWins", "distHealth",
+  "reEngagementData", "placementSummary", "qbDistOrders", "acctConcentration",
+];
+
+exports.aiIngest = functions
+  .runWith({ secrets: [anthropicApiKey], timeoutSeconds: 120, memory: "1GB" })
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+    }
+
+    const { headers, rows, tenantId = "default" } = data;
+    if (!headers || !rows) {
+      throw new functions.https.HttpsError("invalid-argument", "headers and rows required");
+    }
+
+    // Verify tenant membership
+    const userSnap = await db.collection("users").doc(context.auth.uid).get();
+    if (!userSnap.exists || userSnap.data().tenantId !== tenantId) {
+      throw new functions.https.HttpsError("permission-denied", "Not a member of this tenant");
+    }
+
+    // Step 1: AI mapping (reuse aiMapper logic inline)
+    const apiKey = anthropicApiKey.value();
+    const Anthropic = require("@anthropic-ai/sdk");
+    const client = new Anthropic({ apiKey });
+
+    const sampleTable = [
+      headers.join(" | "),
+      headers.map(() => "---").join(" | "),
+      ...rows.slice(0, 8).map((r) => headers.map((h) => String(r[h] ?? "").slice(0, 40)).join(" | ")),
+    ].join("\n");
+
+    const mapResp = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 1500,
+      messages: [{ role: "user", content: `Map columns to CRM fields.\n\nFIELDS:\n${INTERNAL_FIELDS.map((f) => `${f.field}: ${f.label}`).join("\n")}\n\nDATA:\n${sampleTable}\n\nReturn JSON: { "mapping": {...}, "uploadType": "..." }\nOnly JSON.` }],
+    });
+
+    const mapText = mapResp.content[0].text;
+    const mapJson = JSON.parse(mapText.match(/\{[\s\S]*\}/)[0]);
+    const mapping = mapJson.mapping;
+
+    // Step 2: Save datasets to Firestore
+    const batch = db.batch();
+    for (const [name, items] of Object.entries(data.datasets || {})) {
+      if (!DATASETS.includes(name)) continue;
+      const ref = db.collection("tenants").doc(tenantId).collection("data").doc(name);
+      batch.set(ref, {
+        ...(Array.isArray(items) ? { items } : items),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+    await batch.commit();
+
+    return { success: true, mapping, uploadType: mapJson.uploadType };
+  });
+
+// -------------------------------------------------------------------
 // Helper: Find tenant by Stripe customer ID
 // -------------------------------------------------------------------
 async function findTenantByCustomerId(customerId) {

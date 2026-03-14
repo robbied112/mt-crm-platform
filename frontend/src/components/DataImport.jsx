@@ -6,6 +6,7 @@ import { useState, useRef, useCallback } from "react";
 import { useData } from "../context/DataContext";
 import parseFile from "../utils/parseFile";
 import { autoDetectMapping, detectUploadType, FIELD_DEFS } from "../utils/semanticMapper";
+import { aiAutoDetectMapping } from "../utils/aiMapper";
 import { transformAll, generateSummary } from "../utils/transformData";
 import { logUpload } from "../services/firestoreService";
 import { useAuth } from "../context/AuthContext";
@@ -26,6 +27,8 @@ export default function DataImport() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [useAI, setUseAI] = useState(true);
+  const [aiLoading, setAiLoading] = useState(false);
   const inputRef = useRef();
 
   // ── Step 1: File Drop / Select ──
@@ -41,8 +44,29 @@ export default function DataImport() {
       }
       setParsed(result);
 
-      // Semantic mapping
-      const { mapping: autoMap, confidence: conf, unmapped } = autoDetectMapping(result.headers, result.rows);
+      let autoMap, conf;
+
+      // Try AI mapper first, fall back to rule-based
+      if (useAI) {
+        setAiLoading(true);
+        try {
+          const aiResult = await aiAutoDetectMapping(result.headers, result.rows);
+          autoMap = aiResult.mapping;
+          conf = aiResult.confidence;
+        } catch {
+          // AI failed, fall back
+          const ruleResult = autoDetectMapping(result.headers, result.rows);
+          autoMap = ruleResult.mapping;
+          conf = ruleResult.confidence;
+        } finally {
+          setAiLoading(false);
+        }
+      } else {
+        const ruleResult = autoDetectMapping(result.headers, result.rows);
+        autoMap = ruleResult.mapping;
+        conf = ruleResult.confidence;
+      }
+
       setMapping(autoMap);
       setConfidence(conf);
 
@@ -54,7 +78,7 @@ export default function DataImport() {
     } catch (err) {
       setError(err.message);
     }
-  }, []);
+  }, [useAI]);
 
   const onDrop = useCallback((e) => {
     e.preventDefault();
@@ -154,6 +178,26 @@ export default function DataImport() {
           <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
             QuickBooks exports, distributor depletion reports, inventory files, pipeline data
           </div>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ marginTop: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 12 }}
+          >
+            <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer", color: useAI ? "#0f766e" : "#9CA3AF" }}>
+              <input
+                type="checkbox"
+                checked={useAI}
+                onChange={(e) => setUseAI(e.target.checked)}
+                style={{ accentColor: "#0f766e" }}
+              />
+              AI-Powered Mapping
+            </label>
+            {useAI && <span style={{ color: "#0f766e", fontSize: 10 }}>(Claude)</span>}
+          </div>
+          {aiLoading && (
+            <div style={{ marginTop: 8, fontSize: 12, color: "#0f766e", fontWeight: 600 }}>
+              AI is analyzing your data...
+            </div>
+          )}
           <input
             ref={inputRef}
             type="file"
