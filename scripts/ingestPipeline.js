@@ -330,9 +330,21 @@ const DATASETS = [
 ];
 
 async function initFirestore() {
+  // Look for service account key in project root
+  const saKeyPath = join(__dirname, "..", "serviceAccountKey.json");
   try {
-    // Try Application Default Credentials first
-    admin.initializeApp({ projectId: FIREBASE_PROJECT_ID });
+    if (existsSync(saKeyPath)) {
+      const serviceAccount = JSON.parse(readFileSync(saKeyPath, "utf-8"));
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        projectId: FIREBASE_PROJECT_ID,
+      });
+      console.log("[Firestore] Authenticated via serviceAccountKey.json");
+    } else {
+      // Fall back to Application Default Credentials
+      admin.initializeApp({ projectId: FIREBASE_PROJECT_ID });
+      console.log("[Firestore] Using Application Default Credentials");
+    }
     const db = admin.firestore();
     // Test connection
     await db.collection("_ping").doc("test").get();
@@ -341,7 +353,6 @@ async function initFirestore() {
   } catch (err) {
     console.warn(`[Firestore] Could not connect: ${err.message}`);
     console.warn("[Firestore] Results will be saved to local JSON instead.");
-    console.warn("[Firestore] To connect: set GOOGLE_APPLICATION_CREDENTIALS to a service account key file.");
     return null;
   }
 }
