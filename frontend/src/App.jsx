@@ -13,6 +13,7 @@ import {
   Inventory,
   AccountInsights,
   Opportunities,
+  ReorderForecast,
 } from "./components";
 import useFilters from "./hooks/useFilters";
 import TENANT_CONFIG from "./config/tenant";
@@ -164,10 +165,17 @@ function App() {
 
         {activeTab === "reorder" && (
           <div id="reorder" className="tab-content active">
-            <div className="section-header">
-              <h3>Reorder Forecast</h3>
-              <p>Reorder prediction engine — pending migration.</p>
-            </div>
+            <ReorderForecast
+              reorderData={[]}
+              filters={filters}
+              user={currentUser}
+              onAccountClick={(name) =>
+                console.log("Open account panel:", name)
+              }
+              onExport={() =>
+                console.log("Export reorder — XLSX not yet wired")
+              }
+            />
           </div>
         )}
 
