@@ -350,102 +350,171 @@ export function transformPipeline(rows, mapping) {
 // ─── QuickBooks Transform ───────────────────────────────────────
 
 export function transformQuickBooks(rows, mapping, qbFormat) {
-  const lowerHeaders = Object.keys(rows[0] || {});
+  const headers = Object.keys(rows[0] || {});
 
-  // Find QB-specific columns by header content
-  const findCol = (patterns) => {
-    return lowerHeaders.find((h) =>
+  // Find columns using the mapping first, then fallback to header search
+  const findCol = (mappedField, patterns) => {
+    if (mapping[mappedField]) return mapping[mappedField];
+    return headers.find((h) =>
       patterns.some((p) => h.toLowerCase().includes(p))
     );
   };
 
-  const nameCol = findCol(["name", "customer"]);
-  const amountCol = findCol(["amount", "debit", "total"]);
-  const dateCol = findCol(["date", "txn date"]);
-  const itemCol = findCol(["item", "product", "description", "memo"]);
-  const qtyCol = findCol(["qty", "quantity"]);
-  const balanceCol = findCol(["balance"]);
+  const nameCol = findCol("acct", ["customer full name", "customer", "name"]);
+  const amountCol = findCol("revenue", ["amount"]);
+  const dateCol = findCol("date", ["transaction date", "date"]);
+  const itemCol = findCol("sku", ["product/service", "item", "memo/description", "description"]);
+  const qtyCol = findCol("qty", ["quantity"]);
+  const channelCol = findCol("ch", ["customer type", "type"]);
+  const salesPriceCol = headers.find((h) => h.toLowerCase().includes("sales price"));
 
-  // Build pipeline accounts from QB customer data
-  const pipelineAccounts = [];
+  // Filter out tax line items and non-product rows
+  const isProductRow = (r) => {
+    const item = str(r[itemCol]).toLowerCase();
+    const qty = num(r[qtyCol]);
+    // Skip tax items, shipping, and rows with no quantity
+    if (item.includes("tax item") || item.includes("shipping") || item.includes("discount")) return false;
+    if (qty === 0 && !item) return false;
+    return true;
+  };
+
+  const productRows = rows.filter(isProductRow);
+
+  // Build account data from product rows
   const accountMap = {};
 
-  for (const r of rows) {
-    const name = str(r[nameCol]);
+  for (const r of productRows) {
+    // Use mapped customer column, or the first column (which parseFile labels "Customer")
+    const name = str(r[nameCol]) || str(r[headers[0]]) || str(r["Customer"]);
     if (!name || name.toLowerCase() === "total") continue;
 
     const amount = num(r[amountCol]);
+    const qty = num(r[qtyCol]);
     const date = normalizeDate(r[dateCol]);
+    const channel = str(r[channelCol]);
 
     if (!accountMap[name]) {
-      accountMap[name] = { total: 0, count: 0, lastDate: date, items: [] };
+      accountMap[name] = { revenue: 0, qty: 0, count: 0, lastDate: date, firstDate: date, channel, items: {} };
     }
-    accountMap[name].total += amount;
+    accountMap[name].revenue += amount;
+    accountMap[name].qty += qty;
     accountMap[name].count += 1;
-    if (date > accountMap[name].lastDate) accountMap[name].lastDate = date;
-    if (itemCol && r[itemCol]) {
-      accountMap[name].items.push({
-        item: str(r[itemCol]),
-        qty: num(r[qtyCol]),
-        amount,
-      });
+    if (date && date > accountMap[name].lastDate) accountMap[name].lastDate = date;
+    if (date && date < accountMap[name].firstDate) accountMap[name].firstDate = date;
+    if (!accountMap[name].channel && channel) accountMap[name].channel = channel;
+
+    // Track per-item breakdown
+    const itemName = str(r[itemCol]) || "Other";
+    if (!accountMap[name].items[itemName]) {
+      accountMap[name].items[itemName] = { qty: 0, revenue: 0 };
     }
+    accountMap[name].items[itemName].qty += qty;
+    accountMap[name].items[itemName].revenue += amount;
   }
 
-  // Convert to pipeline + accountsTop
+  // Calculate date range for monthly distribution
+  const allDates = Object.values(accountMap).flatMap((a) => [a.firstDate, a.lastDate]).filter(Boolean).sort();
+  const dateSpanMonths = Math.max(1, allDates.length >= 2
+    ? Math.ceil((new Date(allDates[allDates.length - 1]) - new Date(allDates[0])) / (1000 * 60 * 60 * 24 * 30))
+    : 3);
+
+  // Convert to accountsTop
   const accountsTop = Object.entries(accountMap)
-    .map(([acct, data], idx) => ({
-      acct,
-      dist: "",
-      st: "",
-      ch: "",
-      ce: data.count,
-      w4: Math.round(data.count / 3),
-      nov: Math.round(data.total * 0.25),
-      dec: Math.round(data.total * 0.25),
-      jan: Math.round(data.total * 0.25),
-      feb: Math.round(data.total * 0.25),
-      total: Math.round(data.total),
-      trend: data.total > 1000 ? "Momentum" : "Consistent",
-      growthPotential: Math.round(data.total * 0.15),
-      rank: idx + 1,
-    }))
+    .map(([acct, data], idx) => {
+      const monthlyAvg = data.revenue / dateSpanMonths;
+      const skuCount = Object.keys(data.items).length;
+      // Distribute revenue across months proportionally
+      const perMonth = data.revenue / Math.max(dateSpanMonths, 1);
+
+      return {
+        acct,
+        dist: "",
+        st: "",
+        ch: data.channel || "",
+        ce: Math.round(data.qty),
+        w4: Math.round(data.qty / Math.max(dateSpanMonths, 1)),
+        nov: Math.round(perMonth),
+        dec: Math.round(perMonth),
+        jan: Math.round(perMonth),
+        feb: Math.round(perMonth),
+        total: Math.round(data.revenue),
+        trend: data.count > 5 ? "Momentum" : data.count > 2 ? "Consistent" : "Growth Opportunity",
+        growthPotential: Math.round(data.revenue * 0.15),
+        rank: idx + 1,
+      };
+    })
+    .filter((a) => a.total > 0)
     .sort((a, b) => b.total - a.total)
     .map((a, i) => ({ ...a, rank: i + 1 }));
 
-  for (const [acct, data] of Object.entries(accountMap)) {
-    pipelineAccounts.push({
+  // Build pipeline accounts
+  const pipelineAccounts = Object.entries(accountMap)
+    .filter(([, data]) => data.revenue > 0)
+    .map(([acct, data]) => ({
       acct,
-      stage: data.total > 5000 ? "Won" : data.total > 1000 ? "Negotiation" : "Identified",
-      estValue: Math.round(data.total),
+      stage: data.revenue > 5000 ? "Won" : data.revenue > 1000 ? "Negotiation" : "Identified",
+      estValue: Math.round(data.revenue),
       owner: "",
       state: "",
-      tier: data.total > 5000 ? "Tier 1" : data.total > 1000 ? "Tier 2" : "Tier 3",
+      tier: data.revenue > 5000 ? "Tier 1" : data.revenue > 1000 ? "Tier 2" : "Tier 3",
       stageDate: data.lastDate || new Date().toISOString().slice(0, 10),
       source: "QuickBooks Import",
-      type: "", channel: "", nextStep: "", dueDate: "", notes: "",
-    });
-  }
+      type: "",
+      channel: data.channel || "",
+      nextStep: "",
+      dueDate: "",
+      notes: `${Object.keys(data.items).length} products, ${data.count} transactions`,
+    }));
 
-  // QB Orders → qbDistOrders
+  // Build reorder data from purchase history
+  const now = Date.now();
+  const reorderData = Object.entries(accountMap)
+    .filter(([, data]) => data.revenue > 0)
+    .map(([acct, data], idx) => {
+      const lastDate = new Date(data.lastDate);
+      const firstDate = new Date(data.firstDate);
+      const days = Math.round((now - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+      const spanDays = Math.max(1, (lastDate - firstDate) / (1000 * 60 * 60 * 24));
+      const cycle = data.count > 1 ? Math.round(spanDays / (data.count - 1)) : 30;
+      const priority = Math.min(100, Math.round((days / Math.max(cycle, 1)) * 50));
+
+      return {
+        rank: idx + 1,
+        acct,
+        dist: "",
+        st: "",
+        ch: data.channel || "",
+        ce: Math.round(data.qty),
+        purch: data.count,
+        cycle,
+        last: data.lastDate,
+        days,
+        priority,
+        skus: Object.entries(data.items).map(([w, d]) => ({
+          w, ce: Math.round(d.qty), purch: 1, cycle, last: data.lastDate, days,
+        })),
+      };
+    })
+    .sort((a, b) => b.priority - a.priority)
+    .map((item, i) => ({ ...item, rank: i + 1 }));
+
+  // QB Orders
   const qbDistOrders = {};
   for (const [acct, data] of Object.entries(accountMap)) {
-    qbDistOrders[acct] = { total: Math.round(data.total) };
+    if (data.revenue > 0) {
+      qbDistOrders[acct] = { total: Math.round(data.revenue) };
+    }
   }
 
-  const acctConcentration = {
-    total: accountsTop.length,
-    top10: 0,
-    median: 0,
-    under1: 0,
-  };
+  // Concentration
   const vals = accountsTop.map((a) => a.total).sort((a, b) => b - a);
   const totalVol = vals.reduce((s, v) => s + v, 0);
-  if (vals.length > 0) {
-    acctConcentration.top10 = totalVol > 0 ? Math.round((vals.slice(0, 10).reduce((s, v) => s + v, 0) / totalVol) * 100) : 0;
-    acctConcentration.median = vals[Math.floor(vals.length / 2)] || 0;
-    acctConcentration.under1 = vals.filter((v) => v < 1).length;
-  }
+  const acctConcentration = {
+    total: accountsTop.length,
+    top10: totalVol > 0 ? Math.round((vals.slice(0, 10).reduce((s, v) => s + v, 0) / totalVol) * 100) : 0,
+    median: vals[Math.floor(vals.length / 2)] || 0,
+    under1: vals.filter((v) => v < 1).length,
+  };
 
   return {
     accountsTop,
@@ -453,6 +522,7 @@ export function transformQuickBooks(rows, mapping, qbFormat) {
     pipelineMeta: {},
     qbDistOrders,
     acctConcentration,
+    reorderData,
   };
 }
 

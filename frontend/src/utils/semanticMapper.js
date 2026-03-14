@@ -30,7 +30,7 @@ const FIELD_DEFS = [
   {
     field: "acct",
     label: "Account Name",
-    headerAliases: ["account", "account name", "customer", "outlet", "retailer", "location", "store", "buyer", "customer name", "name", "customer:job", "ship to name", "bill to name", "sold to"],
+    headerAliases: ["account", "account name", "customer", "outlet", "retailer", "location", "store", "buyer", "customer name", "name", "customer:job", "ship to name", "bill to name", "sold to", "customer full name", "customer company"],
     testValues: (vals) => {
       // Account names: mostly strings, many unique, often contain business words
       const businessWords = /\b(bar|grill|tavern|restaurant|store|liquor|market|pub|cafe|lounge|bistro|inn|hotel|club|wine|beer|pizza|bbq|brew|tap|bottle)\b/i;
@@ -63,7 +63,7 @@ const FIELD_DEFS = [
   {
     field: "ch",
     label: "Channel",
-    headerAliases: ["channel", "trade channel", "premise", "segment", "class of trade", "class"],
+    headerAliases: ["channel", "trade channel", "premise", "segment", "class of trade", "class", "customer type", "type"],
     testValues: (vals) => {
       const matches = vals.filter((v) => CHANNEL_VALUES.has(String(v).toLowerCase().trim()));
       return matches.length >= 2 ? 0.9 : 0;
@@ -72,7 +72,7 @@ const FIELD_DEFS = [
   {
     field: "sku",
     label: "Product / SKU",
-    headerAliases: ["product", "sku", "item", "item name", "brand", "product name", "description", "item description", "upc"],
+    headerAliases: ["product", "sku", "item", "item name", "brand", "product name", "description", "item description", "upc", "product/service full name", "product/service", "memo/description"],
     testValues: () => 0, // Rely on header matching
   },
   {
@@ -87,7 +87,7 @@ const FIELD_DEFS = [
   {
     field: "date",
     label: "Date / Period",
-    headerAliases: ["date", "period", "week", "month", "invoice date", "order date", "ship date", "transaction date", "txn date", "create date", "due date", "posting date"],
+    headerAliases: ["date", "period", "week", "month", "invoice date", "order date", "ship date", "transaction date", "txn date", "create date", "due date", "posting date", "transaction date"],
     testValues: (vals) => {
       const datePattern = /^\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4}$|^\d{4}[/\-]\d{1,2}[/\-]\d{1,2}$|^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i;
       const matches = vals.filter((v) => datePattern.test(String(v).trim()));

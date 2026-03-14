@@ -2,6 +2,8 @@
  * File parser — handles CSV and XLSX/XLS files.
  * Automatically detects and skips metadata/title rows
  * (common in QuickBooks, VIP, and other report exports).
+ * Handles QB grouped formats where customer names appear on
+ * separate rows above their transactions.
  * Returns { headers: string[], rows: object[] }
  */
 import Papa from "papaparse";
@@ -22,7 +24,6 @@ function findHeaderRow(rawRows) {
     const nonEmpty = row.filter((cell) => cell !== null && cell !== undefined && String(cell).trim() !== "");
     if (nonEmpty.length < 3) continue;
 
-    // Check that most non-empty cells look like header labels (strings, not pure numbers/dates)
     const textCells = nonEmpty.filter((cell) => {
       const s = String(cell).trim();
       return isNaN(Number(s)) && !/^\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4}$/.test(s);
@@ -32,24 +33,19 @@ function findHeaderRow(rawRows) {
       return i;
     }
   }
-  return 0; // fallback to first row
+  return 0;
 }
 
 /**
- * Clean up header names:
- * - Trim whitespace
- * - Replace empty headers with the column letter (A, B, C...)
- * - Deduplicate by appending _2, _3, etc.
+ * Clean up header names.
  */
 function cleanHeaders(headers) {
   const seen = {};
   return headers.map((h, i) => {
     let name = h == null ? "" : String(h).trim();
-    // Replace empty or "__EMPTY" style headers
     if (!name || /^__EMPTY/.test(name) || /^empty\s*\d*$/i.test(name)) {
       name = `Column_${String.fromCharCode(65 + (i % 26))}${i >= 26 ? Math.floor(i / 26) : ""}`;
     }
-    // Deduplicate
     if (seen[name]) {
       seen[name]++;
       name = `${name}_${seen[name]}`;
@@ -60,28 +56,130 @@ function cleanHeaders(headers) {
   });
 }
 
+/**
+ * Detect if the data uses a QB-style grouped layout:
+ * - Some rows have only column 0 filled (group header = customer name)
+ * - Following rows have column 0 empty but other columns filled (transactions)
+ * - "Total for X" rows appear as subtotals
+ */
+function detectGroupedFormat(rawRows, headerIdx) {
+  let groupHeaders = 0;
+  let dataWithEmpty0 = 0;
+  const sampleEnd = Math.min(rawRows.length, headerIdx + 30);
+
+  for (let i = headerIdx + 1; i < sampleEnd; i++) {
+    const row = rawRows[i];
+    if (!row) continue;
+    const col0 = String(row[0] || "").trim();
+    const otherFilled = row.slice(1).filter((c) => c !== null && c !== undefined && String(c).trim() !== "").length;
+
+    if (col0 && otherFilled === 0 && !col0.startsWith("Total")) {
+      groupHeaders++;
+    } else if (!col0 && otherFilled >= 2) {
+      dataWithEmpty0++;
+    }
+  }
+
+  return groupHeaders >= 2 && dataWithEmpty0 >= 3;
+}
+
+/**
+ * Process QB-style grouped data:
+ * 1. Propagate group name (column 0) down to transaction rows
+ * 2. Filter out "Total for X" and pure summary rows
+ * 3. Label column 0 as "Customer" if it was empty in the header
+ */
+function processGroupedRows(rawRows, headerIdx) {
+  const headerRow = rawRows[headerIdx].map((c) => (c == null ? "" : String(c)));
+
+  // If column 0 header is empty, label it "Customer"
+  if (!headerRow[0].trim()) {
+    headerRow[0] = "Customer";
+  }
+
+  const headers = cleanHeaders(headerRow);
+  const dataRows = [];
+  let currentGroup = "";
+
+  for (let i = headerIdx + 1; i < rawRows.length; i++) {
+    const row = rawRows[i];
+    if (!row) continue;
+
+    const col0 = String(row[0] || "").trim();
+    const otherFilled = row.slice(1).filter((c) => c !== null && c !== undefined && String(c).trim() !== "").length;
+
+    // Skip footer metadata
+    if (col0.toLowerCase().startsWith("accrual basis") || col0.toLowerCase().startsWith("cash basis")) continue;
+
+    // Group header row (customer name only, no other data)
+    if (col0 && otherFilled === 0 && !col0.startsWith("Total")) {
+      currentGroup = col0;
+      continue;
+    }
+
+    // "Total for X" row — skip
+    if (col0.startsWith("Total for ") || col0 === "TOTAL" || col0 === "Total") continue;
+
+    // Grand total row at the end
+    if (row.slice(1).some((c) => String(c).trim() === "TOTAL")) continue;
+
+    // Regular data row — propagate group name
+    if (otherFilled >= 1) {
+      const obj = {};
+      headers.forEach((h, j) => {
+        let val = row[j] ?? "";
+        // Fill column 0 with group name if empty
+        if (j === 0 && !String(val).trim() && currentGroup) {
+          val = currentGroup;
+        }
+        obj[h] = val;
+      });
+      dataRows.push(obj);
+    }
+  }
+
+  return { headers, rows: dataRows };
+}
+
+/**
+ * Standard (non-grouped) row processing.
+ */
+function processStandardRows(rawRows, headerIdx) {
+  const headerRow = cleanHeaders(rawRows[headerIdx].map((c) => (c == null ? "" : String(c))));
+
+  const dataRows = rawRows.slice(headerIdx + 1)
+    .filter((r) => r.some((cell) => cell !== null && cell !== undefined && String(cell).trim() !== ""))
+    .map((r) => {
+      const obj = {};
+      headerRow.forEach((h, i) => { obj[h] = r[i] ?? ""; });
+      return obj;
+    })
+    .filter((r) => {
+      const firstVal = String(Object.values(r)[0] || "").toLowerCase().trim();
+      return firstVal !== "total" && firstVal !== "grand total" && firstVal !== "";
+    });
+
+  return { headers: headerRow, rows: dataRows };
+}
+
 export default function parseFile(file) {
   return new Promise((resolve, reject) => {
     const ext = file.name.split(".").pop().toLowerCase();
 
     if (ext === "csv" || ext === "tsv") {
-      // First pass: parse without headers to detect the real header row
       Papa.parse(file, {
         header: false,
         skipEmptyLines: true,
         complete: (result) => {
           const rawRows = result.data;
           const headerIdx = findHeaderRow(rawRows);
-          const headerRow = cleanHeaders(rawRows[headerIdx]);
-          const dataRows = rawRows.slice(headerIdx + 1)
-            .filter((r) => r.some((cell) => cell !== null && cell !== undefined && String(cell).trim() !== ""))
-            .map((r) => {
-              const obj = {};
-              headerRow.forEach((h, i) => { obj[h] = r[i] ?? ""; });
-              return obj;
-            });
+          const isGrouped = detectGroupedFormat(rawRows, headerIdx);
 
-          resolve({ headers: headerRow, rows: dataRows });
+          if (isGrouped) {
+            resolve(processGroupedRows(rawRows, headerIdx));
+          } else {
+            resolve(processStandardRows(rawRows, headerIdx));
+          }
         },
         error: (err) => reject(new Error(`CSV parse error: ${err.message}`)),
       });
@@ -93,32 +191,20 @@ export default function parseFile(file) {
           const sheetName = wb.SheetNames[0];
           const sheet = wb.Sheets[sheetName];
 
-          // Convert to 2D array first to find the real header row
           const rawRows = XLSX.utils.sheet_to_json(sheet, {
-            header: 1,     // output as 2D array
+            header: 1,
             defval: "",
             raw: false,
           });
 
           const headerIdx = findHeaderRow(rawRows);
-          const headerRow = cleanHeaders(rawRows[headerIdx].map((c) => (c == null ? "" : String(c))));
+          const isGrouped = detectGroupedFormat(rawRows, headerIdx);
 
-          // Convert data rows to objects using detected headers
-          const dataRows = rawRows.slice(headerIdx + 1)
-            .filter((r) => r.some((cell) => cell !== null && cell !== undefined && String(cell).trim() !== ""))
-            .map((r) => {
-              const obj = {};
-              headerRow.forEach((h, i) => { obj[h] = r[i] ?? ""; });
-              return obj;
-            });
-
-          // Filter out summary/total rows at the bottom
-          const filteredRows = dataRows.filter((r) => {
-            const firstVal = String(Object.values(r)[0] || "").toLowerCase().trim();
-            return firstVal !== "total" && firstVal !== "grand total" && firstVal !== "";
-          });
-
-          resolve({ headers: headerRow, rows: filteredRows });
+          if (isGrouped) {
+            resolve(processGroupedRows(rawRows, headerIdx));
+          } else {
+            resolve(processStandardRows(rawRows, headerIdx));
+          }
         } catch (err) {
           reject(new Error(`Excel parse error: ${err.message}`));
         }
