@@ -4,11 +4,17 @@
  *
  * Supplier view:  dist = Distributor, acct = Account
  * Distributor view: dist = Supplier, acct = Store
+ *
+ * Two usage patterns:
+ *   1. React components: useTerminology() hook — triggers re-renders on role change
+ *   2. Non-React code:   t(key) — reads current role (updated by DataContext)
  */
 
+import { useCallback } from "react";
+import { useData } from "../context/DataContext";
 import TENANT_CONFIG from "../config/tenant";
 
-const ROLE_DEFAULTS = {
+export const ROLE_DEFAULTS = {
   supplier: {
     volume: "CE",
     longPeriod: "13W",
@@ -50,27 +56,41 @@ const ROLE_DEFAULTS = {
 };
 
 /**
- * Get the tenant-specific term for a given key.
- * Checks tenant overrides first, then role-specific defaults.
- *
- * @param {string} key - Term key (e.g., "distributor", "account", "healthTab")
- * @returns {string}
+ * Resolve a terminology key for a given role and overrides.
  */
-export function t(key) {
-  // Tenant-level overrides always win
-  const terms = TENANT_CONFIG.terminology || {};
-  if (terms[key]) return terms[key];
-
-  // Role-specific defaults
-  const role = TENANT_CONFIG.userRole || "supplier";
+function resolve(key, role, termOverrides) {
+  if (termOverrides?.[key]) return termOverrides[key];
   const roleDefaults = ROLE_DEFAULTS[role] || ROLE_DEFAULTS.supplier;
   return roleDefaults[key] || key;
 }
 
 /**
- * Get the current user role.
- * @returns {"supplier" | "distributor"}
+ * Static t() — reads from TENANT_CONFIG (updated by DataContext on role change).
+ * Use in non-React code (transforms, scripts). For React components, prefer useTerminology().
+ */
+export function t(key) {
+  const terms = TENANT_CONFIG.terminology || {};
+  const role = TENANT_CONFIG.userRole || "supplier";
+  return resolve(key, role, terms);
+}
+
+/**
+ * Get the current user role from static config.
  */
 export function getUserRole() {
   return TENANT_CONFIG.userRole || "supplier";
+}
+
+/**
+ * React hook — returns a reactive t() that re-renders when role/config changes.
+ * Use this in React components instead of importing t() directly.
+ */
+export function useTerminology() {
+  const { tenantConfig } = useData();
+  const role = tenantConfig?.userRole || "supplier";
+  const terms = tenantConfig?.terminology || {};
+
+  const term = useCallback((key) => resolve(key, role, terms), [role, terms]);
+
+  return { t: term, userRole: role };
 }

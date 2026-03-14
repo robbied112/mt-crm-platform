@@ -2,20 +2,22 @@
   "meta": {
     "file": "/workspaces/mt-crm-platform/Sample Data/Yolo Brand Group, LLC_Sales by Customer Detail - RD.xlsx",
     "tenant": "default",
-    "uploadType": "quickbooks",
+    "uploadType": "sales",
     "mapping": {
       "acct": "Customer",
+      "date": "Transaction date",
       "sku": "Product/Service full name",
       "qty": "Quantity",
       "revenue": "Amount",
-      "date": "Transaction date"
+      "ch": "Customer type"
     },
     "confidence": {
       "acct": 0.95,
+      "date": 0.99,
       "sku": 0.9,
-      "qty": 0.95,
+      "qty": 0.99,
       "revenue": 0.95,
-      "date": 0.98
+      "ch": 0.6
     },
     "unmapped": [
       "Transaction type",
@@ -24,4704 +26,1879 @@
       "Sales price",
       "Balance",
       "Customer full name",
-      "Customer company",
-      "Customer type"
+      "Customer company"
     ],
-    "processedAt": "2026-03-14T18:27:39.303Z",
+    "processedAt": "2026-03-14T19:10:00.384Z",
     "rowCount": 1944,
-    "accountCount": 59
+    "accountCount": 109
   },
-  "summary": "AI Pipeline processed QuickBooks data: 59 customers with $188,364 in total revenue. Top account: \"QVC\". Inventory and Reorder data not available from QuickBooks — upload a distributor depletion report to unlock those tabs.",
+  "summary": "Your portfolio is heavily concentrated in distributor relationships with Winebow CA and Republic National accounting for 46% of your $9.2K revenue, creating significant dependency risk on just two partners. Despite 109 total accounts, zero accounts show positive momentum and only one qualifies as a growth opportunity, indicating a stalled growth trajectory that demands immediate intervention in your go-to-market strategy. Your urgent priority should be identifying why your distributor base isn't expanding—whether it's pricing, product-market fit, or sales execution—and converting that single growth opportunity into a pipeline to reduce concentration risk and reignite momentum.",
   "datasets": {
-    "accountsTop": [
+    "distScorecard": [
       {
-        "acct": "QVC",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 1,
-        "w4": 0,
-        "nov": 13759,
-        "dec": 13759,
-        "jan": 13759,
-        "feb": 13759,
-        "total": 41276,
-        "trend": "Growth Opportunity",
-        "growthPotential": 6191,
-        "rank": 1
-      },
+        "name": "Unknown",
+        "st": "--",
+        "ce": 9198,
+        "w4": 2832,
+        "momentum": "+0%",
+        "con": 1,
+        "weekly": [
+          708,
+          708,
+          708,
+          708,
+          708,
+          708,
+          708,
+          708,
+          708,
+          708,
+          708,
+          708,
+          708
+        ]
+      }
+    ],
+    "accountsTop": [
       {
         "acct": "Winebow CA",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
+        "ch": "Distributors",
         "ce": 2576,
         "w4": 859,
-        "nov": 9717,
-        "dec": 9717,
-        "jan": 9717,
-        "feb": 9717,
-        "total": 29150,
-        "trend": "Momentum",
-        "growthPotential": 4372,
+        "nov": 644,
+        "dec": 644,
+        "jan": 644,
+        "feb": 644,
+        "total": 2576,
+        "trend": "Consistent",
+        "growthPotential": 515,
+        "rank": 1
+      },
+      {
+        "acct": "Republic National Distributing Company, LLC",
+        "dist": "",
+        "st": "",
+        "ch": "Distributors",
+        "ce": 1638,
+        "w4": 546,
+        "nov": 410,
+        "dec": 410,
+        "jan": 410,
+        "feb": 410,
+        "total": 1638,
+        "trend": "Consistent",
+        "growthPotential": 328,
         "rank": 2
       },
       {
         "acct": "Amazon customer",
         "dist": "",
         "st": "",
-        "ch": "Sales Receipt",
+        "ch": "Website / DTC (FBM)",
         "ce": 744,
         "w4": 248,
-        "nov": 6582,
-        "dec": 6582,
-        "jan": 6582,
-        "feb": 6582,
-        "total": 19746,
-        "trend": "Momentum",
-        "growthPotential": 2962,
-        "rank": 3
-      },
-      {
-        "acct": "Republic National Distributing Company, LLC",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 1638,
-        "w4": 546,
-        "nov": 6317,
-        "dec": 6317,
-        "jan": 6317,
-        "feb": 6317,
-        "total": 18951,
-        "trend": "Momentum",
-        "growthPotential": 2843,
-        "rank": 4
-      },
-      {
-        "acct": "The Zero Proof",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 368,
-        "w4": 123,
-        "nov": 3060,
-        "dec": 3060,
-        "jan": 3060,
-        "feb": 3060,
-        "total": 9180,
+        "nov": 186,
+        "dec": 186,
+        "jan": 186,
+        "feb": 186,
+        "total": 744,
         "trend": "Consistent",
-        "growthPotential": 1377,
-        "rank": 5
+        "growthPotential": 149,
+        "rank": 3
       },
       {
         "acct": "Gosling's Limited",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
+        "ch": "Direct to Trade - Off Premise",
         "ce": 728,
         "w4": 243,
-        "nov": 2924,
-        "dec": 2924,
-        "jan": 2924,
-        "feb": 2924,
-        "total": 8771,
-        "trend": "Momentum",
-        "growthPotential": 1316,
-        "rank": 6
-      },
-      {
-        "acct": "Premiere Beverage Company (Miramar)",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 392,
-        "w4": 131,
-        "nov": 2924,
-        "dec": 2924,
-        "jan": 2924,
-        "feb": 2924,
-        "total": 8771,
-        "trend": "Momentum",
-        "growthPotential": 1316,
-        "rank": 7
-      },
-      {
-        "acct": "CARISAM / SAMUEL MEISEL (FL)",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 56,
-        "w4": 19,
-        "nov": 2865,
-        "dec": 2865,
-        "jan": 2865,
-        "feb": 2865,
-        "total": 8596,
-        "trend": "Growth Opportunity",
-        "growthPotential": 1289,
-        "rank": 8
-      },
-      {
-        "acct": "Tryon Distributing LLC",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 217,
-        "w4": 72,
-        "nov": 2542,
-        "dec": 2542,
-        "jan": 2542,
-        "feb": 2542,
-        "total": 7627,
-        "trend": "Momentum",
-        "growthPotential": 1144,
-        "rank": 9
-      },
-      {
-        "acct": "Shangy's Inc.",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 40,
-        "w4": 13,
-        "nov": 2088,
-        "dec": 2088,
-        "jan": 2088,
-        "feb": 2088,
-        "total": 6265,
+        "nov": 182,
+        "dec": 182,
+        "jan": 182,
+        "feb": 182,
+        "total": 728,
         "trend": "Consistent",
-        "growthPotential": 940,
-        "rank": 10
-      },
-      {
-        "acct": "Premier Beverage Company (Tampa)",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 193,
-        "w4": 64,
-        "nov": 1363,
-        "dec": 1363,
-        "jan": 1363,
-        "feb": 1363,
-        "total": 4088,
-        "trend": "Consistent",
-        "growthPotential": 613,
-        "rank": 11
-      },
-      {
-        "acct": "AOC",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 123,
-        "w4": 41,
-        "nov": 877,
-        "dec": 877,
-        "jan": 877,
-        "feb": 877,
-        "total": 2630,
-        "trend": "Consistent",
-        "growthPotential": 394,
-        "rank": 12
+        "growthPotential": 146,
+        "rank": 4
       },
       {
         "acct": "Nugget/F4L Corp Office",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
+        "ch": "Direct to Trade - Off Premise",
         "ce": 411,
         "w4": 137,
-        "nov": 559,
-        "dec": 559,
-        "jan": 559,
-        "feb": 559,
-        "total": 1676,
-        "trend": "Momentum",
-        "growthPotential": 251,
+        "nov": 103,
+        "dec": 103,
+        "jan": 103,
+        "feb": 103,
+        "total": 411,
+        "trend": "Consistent",
+        "growthPotential": 82,
+        "rank": 5
+      },
+      {
+        "acct": "Premiere Beverage Company (Miramar)",
+        "dist": "",
+        "st": "",
+        "ch": "Distributors",
+        "ce": 392,
+        "w4": 131,
+        "nov": 98,
+        "dec": 98,
+        "jan": 98,
+        "feb": 98,
+        "total": 392,
+        "trend": "Consistent",
+        "growthPotential": 78,
+        "rank": 6
+      },
+      {
+        "acct": "The Zero Proof",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 368,
+        "w4": 123,
+        "nov": 92,
+        "dec": 92,
+        "jan": 92,
+        "feb": 92,
+        "total": 368,
+        "trend": "Consistent",
+        "growthPotential": 74,
+        "rank": 7
+      },
+      {
+        "acct": "Tryon Distributing LLC",
+        "dist": "",
+        "st": "",
+        "ch": "Distributors",
+        "ce": 217,
+        "w4": 72,
+        "nov": 54,
+        "dec": 54,
+        "jan": 54,
+        "feb": 54,
+        "total": 217,
+        "trend": "Consistent",
+        "growthPotential": 43,
+        "rank": 8
+      },
+      {
+        "acct": "Premier Beverage Company (Tampa)",
+        "dist": "",
+        "st": "",
+        "ch": "Distributors",
+        "ce": 193,
+        "w4": 64,
+        "nov": 48,
+        "dec": 48,
+        "jan": 48,
+        "feb": 48,
+        "total": 193,
+        "trend": "Consistent",
+        "growthPotential": 39,
+        "rank": 9
+      },
+      {
+        "acct": "Honig, Stephanie",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 127,
+        "w4": 42,
+        "nov": 32,
+        "dec": 32,
+        "jan": 32,
+        "feb": 32,
+        "total": 127,
+        "trend": "Consistent",
+        "growthPotential": 25,
+        "rank": 10
+      },
+      {
+        "acct": "AOC",
+        "dist": "",
+        "st": "",
+        "ch": "Distributors",
+        "ce": 123,
+        "w4": 41,
+        "nov": 31,
+        "dec": 31,
+        "jan": 31,
+        "feb": 31,
+        "total": 123,
+        "trend": "Consistent",
+        "growthPotential": 25,
+        "rank": 11
+      },
+      {
+        "acct": "Beth Adams",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 72,
+        "w4": 24,
+        "nov": 18,
+        "dec": 18,
+        "jan": 18,
+        "feb": 18,
+        "total": 72,
+        "trend": "Consistent",
+        "growthPotential": 14,
+        "rank": 12
+      },
+      {
+        "acct": "Robbie Davis",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 72,
+        "w4": 24,
+        "nov": 18,
+        "dec": 18,
+        "jan": 18,
+        "feb": 18,
+        "total": 72,
+        "trend": "Consistent",
+        "growthPotential": 14,
         "rank": 13
-      },
-      {
-        "acct": "Quail Distributing, Inc.",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 10,
-        "w4": 3,
-        "nov": 518,
-        "dec": 518,
-        "jan": 518,
-        "feb": 518,
-        "total": 1553,
-        "trend": "Growth Opportunity",
-        "growthPotential": 233,
-        "rank": 14
-      },
-      {
-        "acct": "Dry Humour",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 41,
-        "w4": 14,
-        "nov": 332,
-        "dec": 332,
-        "jan": 332,
-        "feb": 332,
-        "total": 996,
-        "trend": "Momentum",
-        "growthPotential": 149,
-        "rank": 15
-      },
-      {
-        "acct": "Avra Moynihan",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 4,
-        "w4": 1,
-        "nov": 286,
-        "dec": 286,
-        "jan": 286,
-        "feb": 286,
-        "total": 858,
-        "trend": "Growth Opportunity",
-        "growthPotential": 129,
-        "rank": 16
       },
       {
         "acct": "K&L Wine Merchants - Culver City",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
+        "ch": "Direct to Trade - Off Premise",
         "ce": 66,
         "w4": 22,
-        "nov": 280,
-        "dec": 280,
-        "jan": 280,
-        "feb": 280,
-        "total": 840,
-        "trend": "Momentum",
-        "growthPotential": 126,
-        "rank": 17
+        "nov": 17,
+        "dec": 17,
+        "jan": 17,
+        "feb": 17,
+        "total": 66,
+        "trend": "Consistent",
+        "growthPotential": 13,
+        "rank": 14
       },
       {
         "acct": "K&L Wine Merchants - Hollywood",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
+        "ch": "Direct to Trade - Off Premise",
         "ce": 66,
         "w4": 22,
-        "nov": 280,
-        "dec": 280,
-        "jan": 280,
-        "feb": 280,
-        "total": 840,
-        "trend": "Momentum",
-        "growthPotential": 126,
-        "rank": 18
+        "nov": 17,
+        "dec": 17,
+        "jan": 17,
+        "feb": 17,
+        "total": 66,
+        "trend": "Consistent",
+        "growthPotential": 13,
+        "rank": 15
       },
       {
         "acct": "K&L Wine Merchants - Redwood City",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
+        "ch": "Direct to Trade - Off Premise",
         "ce": 66,
         "w4": 22,
-        "nov": 280,
-        "dec": 280,
-        "jan": 280,
-        "feb": 280,
-        "total": 840,
-        "trend": "Momentum",
-        "growthPotential": 126,
-        "rank": 19
+        "nov": 17,
+        "dec": 17,
+        "jan": 17,
+        "feb": 17,
+        "total": 66,
+        "trend": "Consistent",
+        "growthPotential": 13,
+        "rank": 16
       },
       {
         "acct": "K&L Wine Merchants - San Francisco",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
+        "ch": "Direct to Trade - Off Premise",
         "ce": 66,
         "w4": 22,
-        "nov": 280,
-        "dec": 280,
-        "jan": 280,
-        "feb": 280,
-        "total": 840,
-        "trend": "Momentum",
-        "growthPotential": 126,
+        "nov": 17,
+        "dec": 17,
+        "jan": 17,
+        "feb": 17,
+        "total": 66,
+        "trend": "Consistent",
+        "growthPotential": 13,
+        "rank": 17
+      },
+      {
+        "acct": "CARISAM / SAMUEL MEISEL (FL)",
+        "dist": "",
+        "st": "",
+        "ch": "Distributors",
+        "ce": 56,
+        "w4": 19,
+        "nov": 14,
+        "dec": 14,
+        "jan": 14,
+        "feb": 14,
+        "total": 56,
+        "trend": "Consistent",
+        "growthPotential": 11,
+        "rank": 18
+      },
+      {
+        "acct": "Wine.com",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 56,
+        "w4": 19,
+        "nov": 14,
+        "dec": 14,
+        "jan": 14,
+        "feb": 14,
+        "total": 56,
+        "trend": "Consistent",
+        "growthPotential": 11,
+        "rank": 19
+      },
+      {
+        "acct": "Yolo Brand Group, LLC",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 54,
+        "w4": 18,
+        "nov": 14,
+        "dec": 14,
+        "jan": 14,
+        "feb": 14,
+        "total": 54,
+        "trend": "Consistent",
+        "growthPotential": 11,
         "rank": 20
       },
       {
         "acct": "Vintage ‘78 Wine Bar",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
+        "ch": "Direct to Trade - On Premise",
         "ce": 52,
         "w4": 17,
-        "nov": 249,
-        "dec": 249,
-        "jan": 249,
-        "feb": 249,
-        "total": 748,
-        "trend": "Momentum",
-        "growthPotential": 112,
-        "rank": 21
-      },
-      {
-        "acct": "Wine.com",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 56,
-        "w4": 19,
-        "nov": 230,
-        "dec": 230,
-        "jan": 230,
-        "feb": 230,
-        "total": 689,
+        "nov": 13,
+        "dec": 13,
+        "jan": 13,
+        "feb": 13,
+        "total": 52,
         "trend": "Consistent",
-        "growthPotential": 103,
-        "rank": 22
-      },
-      {
-        "acct": "Turks Head Wines",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 4,
-        "w4": 1,
-        "nov": 225,
-        "dec": 225,
-        "jan": 225,
-        "feb": 225,
-        "total": 676,
-        "trend": "Growth Opportunity",
-        "growthPotential": 101,
-        "rank": 23
-      },
-      {
-        "acct": "Le Ono",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 36,
-        "w4": 12,
-        "nov": 224,
-        "dec": 224,
-        "jan": 224,
-        "feb": 224,
-        "total": 672,
-        "trend": "Momentum",
-        "growthPotential": 101,
-        "rank": 24
-      },
-      {
-        "acct": "St. Regis Deer Valley",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 40,
-        "w4": 13,
-        "nov": 224,
-        "dec": 224,
-        "jan": 224,
-        "feb": 224,
-        "total": 672,
-        "trend": "Momentum",
-        "growthPotential": 101,
-        "rank": 25
+        "growthPotential": 10,
+        "rank": 21
       },
       {
         "acct": "Westside Wine & Spirits",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
+        "ch": "Off-Premise",
         "ce": 52,
         "w4": 17,
-        "nov": 216,
-        "dec": 216,
-        "jan": 216,
-        "feb": 216,
-        "total": 648,
+        "nov": 13,
+        "dec": 13,
+        "jan": 13,
+        "feb": 13,
+        "total": 52,
         "trend": "Consistent",
-        "growthPotential": 97,
-        "rank": 26
+        "growthPotential": 10,
+        "rank": 22
       },
       {
-        "acct": "Avra Madison",
+        "acct": "Nancy Lerner",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
-        "ce": 3,
-        "w4": 1,
-        "nov": 210,
-        "dec": 210,
-        "jan": 210,
-        "feb": 210,
-        "total": 630,
-        "trend": "Growth Opportunity",
-        "growthPotential": 95,
-        "rank": 27
-      },
-      {
-        "acct": "Sixty Vines Reston",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 3,
-        "w4": 1,
-        "nov": 210,
-        "dec": 210,
-        "jan": 210,
-        "feb": 210,
-        "total": 630,
-        "trend": "Growth Opportunity",
-        "growthPotential": 95,
-        "rank": 28
-      },
-      {
-        "acct": "Federal Beverage Co.",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 39,
-        "w4": 13,
-        "nov": 205,
-        "dec": 205,
-        "jan": 205,
-        "feb": 205,
-        "total": 615,
+        "ch": "Website / DTC (FBM)",
+        "ce": 48,
+        "w4": 16,
+        "nov": 12,
+        "dec": 12,
+        "jan": 12,
+        "feb": 12,
+        "total": 48,
         "trend": "Consistent",
-        "growthPotential": 92,
-        "rank": 29
-      },
-      {
-        "acct": "The Avra Group",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 15,
-        "w4": 5,
-        "nov": 204,
-        "dec": 204,
-        "jan": 204,
-        "feb": 204,
-        "total": 612,
-        "trend": "Consistent",
-        "growthPotential": 92,
-        "rank": 30
+        "growthPotential": 10,
+        "rank": 23
       },
       {
         "acct": "Lana Restaurant",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
+        "ch": "Direct to Trade - On Premise",
         "ce": 47,
         "w4": 16,
-        "nov": 198,
-        "dec": 198,
-        "jan": 198,
-        "feb": 198,
-        "total": 595,
-        "trend": "Momentum",
-        "growthPotential": 89,
-        "rank": 31
+        "nov": 12,
+        "dec": 12,
+        "jan": 12,
+        "feb": 12,
+        "total": 47,
+        "trend": "Consistent",
+        "growthPotential": 9,
+        "rank": 24
       },
       {
-        "acct": "Mustard's Grill",
+        "acct": "Dry Humour",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
+        "ch": "Direct to Trade - Off Premise",
         "ce": 41,
         "w4": 14,
-        "nov": 193,
-        "dec": 193,
-        "jan": 193,
-        "feb": 193,
-        "total": 580,
-        "trend": "Momentum",
-        "growthPotential": 87,
-        "rank": 32
-      },
-      {
-        "acct": "Cheeky & Dry Non-Alcoholic Bottle Shop",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 26,
-        "w4": 9,
-        "nov": 152,
-        "dec": 152,
-        "jan": 152,
-        "feb": 152,
-        "total": 456,
-        "trend": "Growth Opportunity",
-        "growthPotential": 68,
-        "rank": 33
-      },
-      {
-        "acct": "Westside Market NYC",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 39,
-        "w4": 13,
-        "nov": 152,
-        "dec": 152,
-        "jan": 152,
-        "feb": 152,
-        "total": 456,
-        "trend": "Momentum",
-        "growthPotential": 68,
-        "rank": 34
-      },
-      {
-        "acct": "Buzz Free Corporation",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 39,
-        "w4": 13,
-        "nov": 144,
-        "dec": 144,
-        "jan": 144,
-        "feb": 144,
-        "total": 432,
-        "trend": "Consistent",
-        "growthPotential": 65,
-        "rank": 35
-      },
-      {
-        "acct": "Mirah",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 3,
-        "w4": 1,
-        "nov": 144,
-        "dec": 144,
-        "jan": 144,
-        "feb": 144,
-        "total": 432,
-        "trend": "Growth Opportunity",
-        "growthPotential": 65,
-        "rank": 36
-      },
-      {
-        "acct": "Fleming's Denver",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 2,
-        "w4": 1,
-        "nov": 140,
-        "dec": 140,
-        "jan": 140,
-        "feb": 140,
-        "total": 420,
-        "trend": "Growth Opportunity",
-        "growthPotential": 63,
-        "rank": 37
-      },
-      {
-        "acct": "Fleming's Omaha",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 2,
-        "w4": 1,
-        "nov": 140,
-        "dec": 140,
-        "jan": 140,
-        "feb": 140,
-        "total": 420,
-        "trend": "Growth Opportunity",
-        "growthPotential": 63,
-        "rank": 38
-      },
-      {
-        "acct": "Sixty Vines Gaithersburg",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 2,
-        "w4": 1,
-        "nov": 140,
-        "dec": 140,
-        "jan": 140,
-        "feb": 140,
-        "total": 420,
-        "trend": "Growth Opportunity",
-        "growthPotential": 63,
-        "rank": 39
-      },
-      {
-        "acct": "Sixty Vines Nashville",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 2,
-        "w4": 1,
-        "nov": 140,
-        "dec": 140,
-        "jan": 140,
-        "feb": 140,
-        "total": 420,
-        "trend": "Growth Opportunity",
-        "growthPotential": 63,
-        "rank": 40
-      },
-      {
-        "acct": "Flight Wine Room",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 26,
-        "w4": 9,
-        "nov": 133,
-        "dec": 133,
-        "jan": 133,
-        "feb": 133,
-        "total": 398,
-        "trend": "Momentum",
-        "growthPotential": 60,
-        "rank": 41
-      },
-      {
-        "acct": "LE-SE AMSTERDAM 732 RESTAURANT, INC DBA Dive Bar",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 14,
-        "w4": 5,
-        "nov": 113,
-        "dec": 113,
-        "jan": 113,
-        "feb": 113,
-        "total": 338,
-        "trend": "Consistent",
-        "growthPotential": 51,
-        "rank": 42
-      },
-      {
-        "acct": "Gramercy Tavern",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 2,
-        "w4": 1,
-        "nov": 96,
-        "dec": 96,
-        "jan": 96,
-        "feb": 96,
-        "total": 288,
-        "trend": "Growth Opportunity",
-        "growthPotential": 43,
-        "rank": 43
-      },
-      {
-        "acct": "The Beverly Hills Hotel and Bungalows",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 2,
-        "w4": 1,
-        "nov": 76,
-        "dec": 76,
-        "jan": 76,
-        "feb": 76,
-        "total": 229,
-        "trend": "Growth Opportunity",
-        "growthPotential": 34,
-        "rank": 44
-      },
-      {
-        "acct": "Fleming's St. Louis",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 1,
-        "w4": 0,
-        "nov": 76,
-        "dec": 76,
-        "jan": 76,
-        "feb": 76,
-        "total": 228,
-        "trend": "Growth Opportunity",
-        "growthPotential": 34,
-        "rank": 45
-      },
-      {
-        "acct": "Morton's Pittsburgh",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 1,
-        "w4": 0,
-        "nov": 76,
-        "dec": 76,
-        "jan": 76,
-        "feb": 76,
-        "total": 228,
-        "trend": "Growth Opportunity",
-        "growthPotential": 34,
-        "rank": 46
-      },
-      {
-        "acct": "Fleming's Birmingham",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 1,
-        "w4": 0,
-        "nov": 76,
-        "dec": 76,
-        "jan": 76,
-        "feb": 76,
-        "total": 228,
-        "trend": "Growth Opportunity",
-        "growthPotential": 34,
-        "rank": 47
-      },
-      {
-        "acct": "Fleming's Walnut Creek",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 13,
-        "w4": 4,
-        "nov": 76,
-        "dec": 76,
-        "jan": 76,
-        "feb": 76,
-        "total": 228,
-        "trend": "Growth Opportunity",
-        "growthPotential": 34,
-        "rank": 48
-      },
-      {
-        "acct": "Oakville Wine Merchant",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 14,
-        "w4": 5,
-        "nov": 72,
-        "dec": 72,
-        "jan": 72,
-        "feb": 72,
-        "total": 217,
-        "trend": "Consistent",
-        "growthPotential": 33,
-        "rank": 49
-      },
-      {
-        "acct": "The Zero Co.",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 13,
-        "w4": 4,
-        "nov": 72,
-        "dec": 72,
-        "jan": 72,
-        "feb": 72,
-        "total": 217,
-        "trend": "Growth Opportunity",
-        "growthPotential": 33,
-        "rank": 50
-      },
-      {
-        "acct": "Verbena Free Spirited",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 13,
-        "w4": 4,
-        "nov": 72,
-        "dec": 72,
-        "jan": 72,
-        "feb": 72,
-        "total": 217,
-        "trend": "Growth Opportunity",
-        "growthPotential": 33,
-        "rank": 51
-      },
-      {
-        "acct": "Micah Martin",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 13,
-        "w4": 4,
-        "nov": 72,
-        "dec": 72,
-        "jan": 72,
-        "feb": 72,
-        "total": 216,
-        "trend": "Growth Opportunity",
-        "growthPotential": 32,
-        "rank": 52
-      },
-      {
-        "acct": "Dry Humor",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 15,
-        "w4": 5,
-        "nov": 54,
-        "dec": 54,
-        "jan": 54,
-        "feb": 54,
-        "total": 163,
-        "trend": "Consistent",
-        "growthPotential": 24,
-        "rank": 53
-      },
-      {
-        "acct": "KIMBERLY WHITE",
-        "dist": "",
-        "st": "",
-        "ch": "Sales Receipt",
-        "ce": 4,
-        "w4": 1,
-        "nov": 48,
-        "dec": 48,
-        "jan": 48,
-        "feb": 48,
-        "total": 145,
-        "trend": "Consistent",
-        "growthPotential": 22,
-        "rank": 54
-      },
-      {
-        "acct": "David Ziegler",
-        "dist": "",
-        "st": "",
-        "ch": "Sales Receipt",
-        "ce": 3,
-        "w4": 1,
-        "nov": 40,
-        "dec": 40,
-        "jan": 40,
-        "feb": 40,
-        "total": 120,
-        "trend": "Consistent",
-        "growthPotential": 18,
-        "rank": 55
-      },
-      {
-        "acct": "Gabriel McCormick",
-        "dist": "",
-        "st": "",
-        "ch": "Sales Receipt",
-        "ce": 3,
-        "w4": 1,
-        "nov": 27,
-        "dec": 27,
-        "jan": 27,
-        "feb": 27,
-        "total": 80,
-        "trend": "Consistent",
-        "growthPotential": 12,
-        "rank": 56
-      },
-      {
-        "acct": "Shopify - a04dif-qv Customer",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 2,
-        "w4": 1,
-        "nov": 17,
-        "dec": 17,
-        "jan": 17,
-        "feb": 17,
-        "total": 52,
-        "trend": "Growth Opportunity",
-        "growthPotential": 8,
-        "rank": 57
-      },
-      {
-        "acct": "PayPal customer",
-        "dist": "",
-        "st": "",
-        "ch": "Sales Receipt",
-        "ce": 1,
-        "w4": 0,
         "nov": 10,
         "dec": 10,
         "jan": 10,
         "feb": 10,
-        "total": 30,
-        "trend": "Growth Opportunity",
+        "total": 41,
+        "trend": "Consistent",
+        "growthPotential": 8,
+        "rank": 25
+      },
+      {
+        "acct": "Mustard's Grill",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 41,
+        "w4": 14,
+        "nov": 10,
+        "dec": 10,
+        "jan": 10,
+        "feb": 10,
+        "total": 41,
+        "trend": "Consistent",
+        "growthPotential": 8,
+        "rank": 26
+      },
+      {
+        "acct": "Shangy's Inc.",
+        "dist": "",
+        "st": "",
+        "ch": "Distributors",
+        "ce": 40,
+        "w4": 13,
+        "nov": 10,
+        "dec": 10,
+        "jan": 10,
+        "feb": 10,
+        "total": 40,
+        "trend": "Consistent",
+        "growthPotential": 8,
+        "rank": 27
+      },
+      {
+        "acct": "St. Regis Deer Valley",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 40,
+        "w4": 13,
+        "nov": 10,
+        "dec": 10,
+        "jan": 10,
+        "feb": 10,
+        "total": 40,
+        "trend": "Consistent",
+        "growthPotential": 8,
+        "rank": 28
+      },
+      {
+        "acct": "Buzz Free Corporation",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 39,
+        "w4": 13,
+        "nov": 10,
+        "dec": 10,
+        "jan": 10,
+        "feb": 10,
+        "total": 39,
+        "trend": "Consistent",
+        "growthPotential": 8,
+        "rank": 29
+      },
+      {
+        "acct": "Federal Beverage Co.",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 39,
+        "w4": 13,
+        "nov": 10,
+        "dec": 10,
+        "jan": 10,
+        "feb": 10,
+        "total": 39,
+        "trend": "Consistent",
+        "growthPotential": 8,
+        "rank": 30
+      },
+      {
+        "acct": "Westside Market NYC",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 39,
+        "w4": 13,
+        "nov": 10,
+        "dec": 10,
+        "jan": 10,
+        "feb": 10,
+        "total": 39,
+        "trend": "Consistent",
+        "growthPotential": 8,
+        "rank": 31
+      },
+      {
+        "acct": "Le Ono",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 36,
+        "w4": 12,
+        "nov": 9,
+        "dec": 9,
+        "jan": 9,
+        "feb": 9,
+        "total": 36,
+        "trend": "Consistent",
+        "growthPotential": 7,
+        "rank": 32
+      },
+      {
+        "acct": "Kelly Huibregtse",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 35,
+        "w4": 12,
+        "nov": 9,
+        "dec": 9,
+        "jan": 9,
+        "feb": 9,
+        "total": 35,
+        "trend": "Consistent",
+        "growthPotential": 7,
+        "rank": 33
+      },
+      {
+        "acct": "Cheeky & Dry Non-Alcoholic Bottle Shop",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 26,
+        "w4": 9,
+        "nov": 7,
+        "dec": 7,
+        "jan": 7,
+        "feb": 7,
+        "total": 26,
+        "trend": "Consistent",
+        "growthPotential": 5,
+        "rank": 34
+      },
+      {
+        "acct": "Flight Wine Room",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 26,
+        "w4": 9,
+        "nov": 7,
+        "dec": 7,
+        "jan": 7,
+        "feb": 7,
+        "total": 26,
+        "trend": "Consistent",
+        "growthPotential": 5,
+        "rank": 35
+      },
+      {
+        "acct": "Nugget Markets West Sacramento",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 26,
+        "w4": 9,
+        "nov": 6,
+        "dec": 6,
+        "jan": 6,
+        "feb": 6,
+        "total": 26,
+        "trend": "Consistent",
+        "growthPotential": 5,
+        "rank": 36
+      },
+      {
+        "acct": "Carisam-Samuel Meisel",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 18,
+        "w4": 6,
+        "nov": 5,
+        "dec": 5,
+        "jan": 5,
+        "feb": 5,
+        "total": 18,
+        "trend": "Consistent",
         "growthPotential": 4,
+        "rank": 37
+      },
+      {
+        "acct": "Dry Humor",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 15,
+        "w4": 5,
+        "nov": 4,
+        "dec": 4,
+        "jan": 4,
+        "feb": 4,
+        "total": 15,
+        "trend": "Consistent",
+        "growthPotential": 3,
+        "rank": 38
+      },
+      {
+        "acct": "The Avra Group",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 15,
+        "w4": 5,
+        "nov": 4,
+        "dec": 4,
+        "jan": 4,
+        "feb": 4,
+        "total": 15,
+        "trend": "Consistent",
+        "growthPotential": 3,
+        "rank": 39
+      },
+      {
+        "acct": "LE-SE AMSTERDAM 732 RESTAURANT, INC DBA Dive Bar",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 14,
+        "w4": 5,
+        "nov": 4,
+        "dec": 4,
+        "jan": 4,
+        "feb": 4,
+        "total": 14,
+        "trend": "Consistent",
+        "growthPotential": 3,
+        "rank": 40
+      },
+      {
+        "acct": "Oakville Wine Merchant",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 14,
+        "w4": 5,
+        "nov": 4,
+        "dec": 4,
+        "jan": 4,
+        "feb": 4,
+        "total": 14,
+        "trend": "Consistent",
+        "growthPotential": 3,
+        "rank": 41
+      },
+      {
+        "acct": "Micah Martin",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 13,
+        "w4": 4,
+        "nov": 3,
+        "dec": 3,
+        "jan": 3,
+        "feb": 3,
+        "total": 13,
+        "trend": "Consistent",
+        "growthPotential": 3,
+        "rank": 42
+      },
+      {
+        "acct": "Rennie Alba",
+        "dist": "",
+        "st": "",
+        "ch": "Promo",
+        "ce": 13,
+        "w4": 4,
+        "nov": 3,
+        "dec": 3,
+        "jan": 3,
+        "feb": 3,
+        "total": 13,
+        "trend": "Consistent",
+        "growthPotential": 3,
+        "rank": 43
+      },
+      {
+        "acct": "The Zero Co.",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 13,
+        "w4": 4,
+        "nov": 3,
+        "dec": 3,
+        "jan": 3,
+        "feb": 3,
+        "total": 13,
+        "trend": "Consistent",
+        "growthPotential": 3,
+        "rank": 44
+      },
+      {
+        "acct": "Verbena Free Spirited",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 13,
+        "w4": 4,
+        "nov": 3,
+        "dec": 3,
+        "jan": 3,
+        "feb": 3,
+        "total": 13,
+        "trend": "Consistent",
+        "growthPotential": 3,
+        "rank": 45
+      },
+      {
+        "acct": "Fleming's Walnut Creek",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 13,
+        "w4": 4,
+        "nov": 3,
+        "dec": 3,
+        "jan": 3,
+        "feb": 3,
+        "total": 13,
+        "trend": "Consistent",
+        "growthPotential": 3,
+        "rank": 46
+      },
+      {
+        "acct": "Alex Fine",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 12,
+        "w4": 4,
+        "nov": 3,
+        "dec": 3,
+        "jan": 3,
+        "feb": 3,
+        "total": 12,
+        "trend": "Consistent",
+        "growthPotential": 2,
+        "rank": 47
+      },
+      {
+        "acct": "Chris Bohinski",
+        "dist": "",
+        "st": "",
+        "ch": "Promo",
+        "ce": 12,
+        "w4": 4,
+        "nov": 3,
+        "dec": 3,
+        "jan": 3,
+        "feb": 3,
+        "total": 12,
+        "trend": "Consistent",
+        "growthPotential": 2,
+        "rank": 48
+      },
+      {
+        "acct": "David Creamer",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 12,
+        "w4": 4,
+        "nov": 3,
+        "dec": 3,
+        "jan": 3,
+        "feb": 3,
+        "total": 12,
+        "trend": "Consistent",
+        "growthPotential": 2,
+        "rank": 49
+      },
+      {
+        "acct": "Gabriel Valle",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 12,
+        "w4": 4,
+        "nov": 3,
+        "dec": 3,
+        "jan": 3,
+        "feb": 3,
+        "total": 12,
+        "trend": "Consistent",
+        "growthPotential": 2,
+        "rank": 50
+      },
+      {
+        "acct": "Last Bottle Wines",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 12,
+        "w4": 4,
+        "nov": 3,
+        "dec": 3,
+        "jan": 3,
+        "feb": 3,
+        "total": 12,
+        "trend": "Consistent",
+        "growthPotential": 2,
+        "rank": 51
+      },
+      {
+        "acct": "MS Walker",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 12,
+        "w4": 4,
+        "nov": 3,
+        "dec": 3,
+        "jan": 3,
+        "feb": 3,
+        "total": 12,
+        "trend": "Consistent",
+        "growthPotential": 2,
+        "rank": 52
+      },
+      {
+        "acct": "Price Eberts",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 12,
+        "w4": 4,
+        "nov": 3,
+        "dec": 3,
+        "jan": 3,
+        "feb": 3,
+        "total": 12,
+        "trend": "Consistent",
+        "growthPotential": 2,
+        "rank": 53
+      },
+      {
+        "acct": "Unfiltered Hospitality",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 12,
+        "w4": 4,
+        "nov": 3,
+        "dec": 3,
+        "jan": 3,
+        "feb": 3,
+        "total": 12,
+        "trend": "Consistent",
+        "growthPotential": 2,
+        "rank": 54
+      },
+      {
+        "acct": "Point Reyes Cheese",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 10,
+        "w4": 3,
+        "nov": 3,
+        "dec": 3,
+        "jan": 3,
+        "feb": 3,
+        "total": 10,
+        "trend": "Consistent",
+        "growthPotential": 2,
+        "rank": 55
+      },
+      {
+        "acct": "Quail Distributing, Inc.",
+        "dist": "",
+        "st": "",
+        "ch": "Distributors",
+        "ce": 10,
+        "w4": 3,
+        "nov": 3,
+        "dec": 3,
+        "jan": 3,
+        "feb": 3,
+        "total": 10,
+        "trend": "Consistent",
+        "growthPotential": 2,
+        "rank": 56
+      },
+      {
+        "acct": "Joanna Cervini",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 9,
+        "w4": 3,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 9,
+        "trend": "Consistent",
+        "growthPotential": 2,
+        "rank": 57
+      },
+      {
+        "acct": "Princess Cruises",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 9,
+        "w4": 3,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 9,
+        "trend": "Consistent",
+        "growthPotential": 2,
         "rank": 58
       },
       {
+        "acct": "Grocery Outlet",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 8,
+        "w4": 3,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 8,
+        "trend": "Consistent",
+        "growthPotential": 2,
+        "rank": 59
+      },
+      {
+        "acct": "Casa Madrona/MetWest Terra",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 7,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 7,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 60
+      },
+      {
+        "acct": "Manouschka Guerrier",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 7,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 7,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 61
+      },
+      {
+        "acct": "Mastro's Ocean Club Irvine",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 7,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 7,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 62
+      },
+      {
+        "acct": "Mike Planeta",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 7,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 7,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 63
+      },
+      {
+        "acct": "Saige Toohey",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 7,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 7,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 64
+      },
+      {
+        "acct": "Susie Evans",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 7,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 7,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 65
+      },
+      {
+        "acct": "Victor Ikem",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 7,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 7,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 66
+      },
+      {
+        "acct": "Amy Mascena",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 6,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 6,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 67
+      },
+      {
+        "acct": "Angela Kirkpatrick",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 6,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 6,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 68
+      },
+      {
+        "acct": "Chris Kahle",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 6,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 6,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 69
+      },
+      {
+        "acct": "Hekate Cafe",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 6,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 6,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 70
+      },
+      {
+        "acct": "Ilana Solomon",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 6,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 6,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 71
+      },
+      {
+        "acct": "Jane-Paige D’Huyvetter",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 6,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 6,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 72
+      },
+      {
+        "acct": "Melissa Miller",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 6,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 6,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 73
+      },
+      {
+        "acct": "Molly Ferguson",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 6,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 6,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 74
+      },
+      {
+        "acct": "Renee Demott",
+        "dist": "",
+        "st": "",
+        "ch": "Promo",
+        "ce": 6,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 6,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 75
+      },
+      {
+        "acct": "Rothmans Restaurant Group",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 6,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 6,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 76
+      },
+      {
+        "acct": "Virginia Philip Wine Spirits & Academy",
+        "dist": "",
+        "st": "",
+        "ch": "Promo",
+        "ce": 6,
+        "w4": 2,
+        "nov": 2,
+        "dec": 2,
+        "jan": 2,
+        "feb": 2,
+        "total": 6,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 77
+      },
+      {
+        "acct": "Big Hammer Wines",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 5,
+        "w4": 2,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 5,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 78
+      },
+      {
+        "acct": "Emeril Lagasse foundation",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 5,
+        "w4": 2,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 5,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 79
+      },
+      {
+        "acct": "Nicholas Steege",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 5,
+        "w4": 2,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 5,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 80
+      },
+      {
+        "acct": "Octavia Monelli",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 5,
+        "w4": 2,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 5,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 81
+      },
+      {
+        "acct": "Steve Schwartz",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 5,
+        "w4": 2,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 5,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 82
+      },
+      {
+        "acct": "KIMBERLY WHITE",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 4,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 4,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 83
+      },
+      {
+        "acct": "Popsugar",
+        "dist": "",
+        "st": "",
+        "ch": "Promo",
+        "ce": 4,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 4,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 84
+      },
+      {
+        "acct": "Sixty Vines Orlando",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 4,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 4,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 85
+      },
+      {
+        "acct": "Avra Moynihan",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 4,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 4,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 86
+      },
+      {
+        "acct": "Turks Head Wines",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 4,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 4,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 87
+      },
+      {
+        "acct": "David Ziegler",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 3,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 3,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 88
+      },
+      {
+        "acct": "Gabriel McCormick",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 3,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 3,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 89
+      },
+      {
+        "acct": "Mirah",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 3,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 3,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 90
+      },
+      {
+        "acct": "TCHO Chocolate",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 3,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 3,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 91
+      },
+      {
+        "acct": "Avra Madison",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 3,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 3,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 92
+      },
+      {
+        "acct": "Sixty Vines Reston",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 3,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 3,
+        "trend": "Consistent",
+        "growthPotential": 1,
+        "rank": 93
+      },
+      {
+        "acct": "East End Taste",
+        "dist": "",
+        "st": "",
+        "ch": "Promo",
+        "ce": 2,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 2,
+        "trend": "Consistent",
+        "growthPotential": 0,
+        "rank": 94
+      },
+      {
+        "acct": "Gramercy Tavern",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 2,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 2,
+        "trend": "Consistent",
+        "growthPotential": 0,
+        "rank": 95
+      },
+      {
+        "acct": "Shopify - a04dif-qv Customer",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 2,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 2,
+        "trend": "Consistent",
+        "growthPotential": 0,
+        "rank": 96
+      },
+      {
+        "acct": "The Beverly Hills Hotel and Bungalows",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 2,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 2,
+        "trend": "Consistent",
+        "growthPotential": 0,
+        "rank": 97
+      },
+      {
+        "acct": "The Zero Co",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 2,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 2,
+        "trend": "Consistent",
+        "growthPotential": 0,
+        "rank": 98
+      },
+      {
+        "acct": "Fleming's Denver",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 2,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 2,
+        "trend": "Consistent",
+        "growthPotential": 0,
+        "rank": 99
+      },
+      {
+        "acct": "Fleming's Omaha",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 2,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 2,
+        "trend": "Consistent",
+        "growthPotential": 0,
+        "rank": 100
+      },
+      {
+        "acct": "Sixty Vines Gaithersburg",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 2,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 2,
+        "trend": "Consistent",
+        "growthPotential": 0,
+        "rank": 101
+      },
+      {
+        "acct": "Sixty Vines Nashville",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 2,
+        "w4": 1,
+        "nov": 1,
+        "dec": 1,
+        "jan": 1,
+        "feb": 1,
+        "total": 2,
+        "trend": "Consistent",
+        "growthPotential": 0,
+        "rank": 102
+      },
+      {
         "acct": "Ashley Hollis",
         "dist": "",
         "st": "",
-        "ch": "Sales Receipt",
+        "ch": "Website / DTC (FBM)",
         "ce": 1,
         "w4": 0,
-        "nov": 8,
-        "dec": 8,
-        "jan": 8,
-        "feb": 8,
-        "total": 25,
+        "nov": 0,
+        "dec": 0,
+        "jan": 0,
+        "feb": 0,
+        "total": 1,
+        "trend": "Consistent",
+        "growthPotential": 0,
+        "rank": 103
+      },
+      {
+        "acct": "Fleming's St. Louis",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 1,
+        "w4": 0,
+        "nov": 0,
+        "dec": 0,
+        "jan": 0,
+        "feb": 0,
+        "total": 1,
+        "trend": "Consistent",
+        "growthPotential": 0,
+        "rank": 104
+      },
+      {
+        "acct": "Morton's Pittsburgh",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 1,
+        "w4": 0,
+        "nov": 0,
+        "dec": 0,
+        "jan": 0,
+        "feb": 0,
+        "total": 1,
+        "trend": "Consistent",
+        "growthPotential": 0,
+        "rank": 105
+      },
+      {
+        "acct": "PayPal customer",
+        "dist": "",
+        "st": "",
+        "ch": "Website / DTC (FBM)",
+        "ce": 1,
+        "w4": 0,
+        "nov": 0,
+        "dec": 0,
+        "jan": 0,
+        "feb": 0,
+        "total": 1,
+        "trend": "Consistent",
+        "growthPotential": 0,
+        "rank": 106
+      },
+      {
+        "acct": "QVC",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - Off Premise",
+        "ce": 1,
+        "w4": 0,
+        "nov": 0,
+        "dec": 0,
+        "jan": 0,
+        "feb": 0,
+        "total": 1,
+        "trend": "Consistent",
+        "growthPotential": 0,
+        "rank": 107
+      },
+      {
+        "acct": "Fleming's Birmingham",
+        "dist": "",
+        "st": "",
+        "ch": "Direct to Trade - On Premise",
+        "ce": 1,
+        "w4": 0,
+        "nov": 0,
+        "dec": 0,
+        "jan": 0,
+        "feb": 0,
+        "total": 1,
+        "trend": "Consistent",
+        "growthPotential": 0,
+        "rank": 108
+      },
+      {
+        "acct": "Mastro's Ocean Club",
+        "dist": "",
+        "st": "",
+        "ch": "Off-Premise",
+        "ce": 0,
+        "w4": 0,
+        "nov": 0,
+        "dec": 0,
+        "jan": 0,
+        "feb": 0,
+        "total": 0,
         "trend": "Growth Opportunity",
-        "growthPotential": 4,
-        "rank": 59
+        "growthPotential": 0,
+        "rank": 109
       }
     ],
-    "pipelineAccounts": [
+    "newWins": [
       {
-        "acct": "Amazon customer",
-        "stage": "Won",
-        "estValue": 19746,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 1",
-        "stageDate": "2026-02-13",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Sales Receipt",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "2 products, 680 transactions"
-      },
-      {
-        "acct": "AOC",
-        "stage": "Negotiation",
-        "estValue": 2630,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 2",
-        "stageDate": "2026-03-03",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "4 products, 4 transactions"
-      },
-      {
-        "acct": "Ashley Hollis",
-        "stage": "Identified",
-        "estValue": 25,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-09",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Sales Receipt",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 1 transactions"
-      },
-      {
-        "acct": "Buzz Free Corporation",
-        "stage": "Identified",
-        "estValue": 432,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-16",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "4 products, 4 transactions"
-      },
-      {
-        "acct": "CARISAM / SAMUEL MEISEL (FL)",
-        "stage": "Won",
-        "estValue": 8596,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 1",
-        "stageDate": "2026-02-24",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 1 transactions"
-      },
-      {
-        "acct": "Cheeky & Dry Non-Alcoholic Bottle Shop",
-        "stage": "Identified",
-        "estValue": 456,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-09",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "2 products, 2 transactions"
-      },
-      {
-        "acct": "David Ziegler",
-        "stage": "Identified",
-        "estValue": 120,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-07",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Sales Receipt",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 3 transactions"
-      },
-      {
-        "acct": "Dry Humor",
-        "stage": "Identified",
-        "estValue": 163,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-15",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "2 products, 3 transactions"
-      },
-      {
-        "acct": "Dry Humour",
-        "stage": "Identified",
-        "estValue": 996,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-13",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "7 products, 7 transactions"
-      },
-      {
-        "acct": "Federal Beverage Co.",
-        "stage": "Identified",
-        "estValue": 615,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-03",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "4 products, 4 transactions"
-      },
-      {
-        "acct": "Fleming's St. Louis",
-        "stage": "Identified",
-        "estValue": 228,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-09",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 1 transactions"
-      },
-      {
-        "acct": "Flight Wine Room",
-        "stage": "Identified",
-        "estValue": 398,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-10",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "8 products, 8 transactions"
-      },
-      {
-        "acct": "Gabriel McCormick",
-        "stage": "Identified",
-        "estValue": 80,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-03",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Sales Receipt",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 3 transactions"
-      },
-      {
-        "acct": "Gosling's Limited",
-        "stage": "Won",
-        "estValue": 8771,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 1",
-        "stageDate": "2026-01-19",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "8 products, 8 transactions"
-      },
-      {
-        "acct": "Gramercy Tavern",
-        "stage": "Identified",
-        "estValue": 288,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-06",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 1 transactions"
-      },
-      {
-        "acct": "KIMBERLY WHITE",
-        "stage": "Identified",
-        "estValue": 145,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-12",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Sales Receipt",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 4 transactions"
-      },
-      {
-        "acct": "K&L Wine Merchants - Culver City",
-        "stage": "Identified",
-        "estValue": 840,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-04",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "11 products, 11 transactions"
-      },
-      {
-        "acct": "K&L Wine Merchants - Hollywood",
-        "stage": "Identified",
-        "estValue": 840,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-04",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "11 products, 11 transactions"
-      },
-      {
-        "acct": "K&L Wine Merchants - Redwood City",
-        "stage": "Identified",
-        "estValue": 840,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-04",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "11 products, 11 transactions"
-      },
-      {
-        "acct": "K&L Wine Merchants - San Francisco",
-        "stage": "Identified",
-        "estValue": 840,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-04",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "11 products, 11 transactions"
-      },
-      {
-        "acct": "Lana Restaurant",
-        "stage": "Identified",
-        "estValue": 595,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-14",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "11 products, 15 transactions"
-      },
-      {
-        "acct": "Le Ono",
-        "stage": "Identified",
-        "estValue": 672,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-09",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "6 products, 7 transactions"
-      },
-      {
-        "acct": "LE-SE AMSTERDAM 732 RESTAURANT, INC DBA Dive Bar",
-        "stage": "Identified",
-        "estValue": 338,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-19",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "3 products, 3 transactions"
-      },
-      {
-        "acct": "Micah Martin",
-        "stage": "Identified",
-        "estValue": 216,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-27",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "2 products, 2 transactions"
-      },
-      {
-        "acct": "Mirah",
-        "stage": "Identified",
-        "estValue": 432,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-02",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 2 transactions"
-      },
-      {
-        "acct": "Morton's Pittsburgh",
-        "stage": "Identified",
-        "estValue": 228,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-03-02",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 1 transactions"
-      },
-      {
-        "acct": "Mustard's Grill",
-        "stage": "Identified",
-        "estValue": 580,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-18",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "3 products, 6 transactions"
-      },
-      {
-        "acct": "Nugget/F4L Corp Office",
-        "stage": "Negotiation",
-        "estValue": 1676,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 2",
-        "stageDate": "2026-01-14",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "5 products, 10 transactions"
-      },
-      {
-        "acct": "Oakville Wine Merchant",
-        "stage": "Identified",
-        "estValue": 217,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-02",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "3 products, 3 transactions"
-      },
-      {
-        "acct": "PayPal customer",
-        "stage": "Identified",
-        "estValue": 30,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-22",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Sales Receipt",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 1 transactions"
-      },
-      {
-        "acct": "Premier Beverage Company (Tampa)",
-        "stage": "Negotiation",
-        "estValue": 4088,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 2",
-        "stageDate": "2026-03-09",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "3 products, 3 transactions"
-      },
-      {
-        "acct": "Premiere Beverage Company (Miramar)",
-        "stage": "Won",
-        "estValue": 8771,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 1",
-        "stageDate": "2026-03-09",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "4 products, 6 transactions"
-      },
-      {
-        "acct": "Quail Distributing, Inc.",
-        "stage": "Negotiation",
-        "estValue": 1553,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 2",
-        "stageDate": "2026-02-10",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "2 products, 2 transactions"
-      },
-      {
-        "acct": "QVC",
-        "stage": "Won",
-        "estValue": 41276,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 1",
-        "stageDate": "2026-02-24",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 1 transactions"
-      },
-      {
-        "acct": "Republic National Distributing Company, LLC",
-        "stage": "Won",
-        "estValue": 18951,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 1",
-        "stageDate": "2026-01-15",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "8 products, 24 transactions"
-      },
-      {
-        "acct": "Shangy's Inc.",
-        "stage": "Won",
-        "estValue": 6265,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 1",
-        "stageDate": "2026-02-27",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "3 products, 3 transactions"
-      },
-      {
-        "acct": "Shopify - a04dif-qv Customer",
-        "stage": "Identified",
-        "estValue": 52,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-03-01",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 2 transactions"
-      },
-      {
-        "acct": "St. Regis Deer Valley",
-        "stage": "Identified",
-        "estValue": 672,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-20",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "7 products, 7 transactions"
-      },
-      {
-        "acct": "The Avra Group",
-        "stage": "Identified",
-        "estValue": 612,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-03-02",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "4 products, 4 transactions"
-      },
-      {
-        "acct": "Avra Madison",
-        "stage": "Identified",
-        "estValue": 630,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-02",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 1 transactions"
-      },
-      {
-        "acct": "Avra Moynihan",
-        "stage": "Identified",
-        "estValue": 858,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-03-09",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "2 products, 2 transactions"
-      },
-      {
-        "acct": "The Beverly Hills Hotel and Bungalows",
-        "stage": "Identified",
-        "estValue": 229,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-09",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "2 products, 2 transactions"
-      },
-      {
-        "acct": "The Zero Co.",
-        "stage": "Identified",
-        "estValue": 217,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-13",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "2 products, 2 transactions"
-      },
-      {
-        "acct": "The Zero Proof",
-        "stage": "Won",
-        "estValue": 9180,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 1",
-        "stageDate": "2026-02-27",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "4 products, 4 transactions"
-      },
-      {
-        "acct": "Tryon Distributing LLC",
-        "stage": "Won",
-        "estValue": 7627,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 1",
-        "stageDate": "2026-02-19",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "5 products, 9 transactions"
-      },
-      {
-        "acct": "Turks Head Wines",
-        "stage": "Identified",
-        "estValue": 676,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-05",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "2 products, 2 transactions"
-      },
-      {
-        "acct": "Verbena Free Spirited",
-        "stage": "Identified",
-        "estValue": 217,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-20",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "2 products, 2 transactions"
-      },
-      {
-        "acct": "Vintage ‘78 Wine Bar",
-        "stage": "Identified",
-        "estValue": 748,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-02",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "8 products, 8 transactions"
-      },
-      {
-        "acct": "Westside Market NYC",
-        "stage": "Identified",
-        "estValue": 456,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-10",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "6 products, 6 transactions"
-      },
-      {
-        "acct": "Westside Wine & Spirits",
-        "stage": "Identified",
-        "estValue": 648,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-03-04",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "4 products, 4 transactions"
-      },
-      {
-        "acct": "Winebow CA",
-        "stage": "Won",
-        "estValue": 29150,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 1",
-        "stageDate": "2026-03-05",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "11 products, 28 transactions"
-      },
-      {
-        "acct": "Wine.com",
-        "stage": "Identified",
-        "estValue": 689,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-26",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "5 products, 5 transactions"
-      },
-      {
-        "acct": "Fleming's Birmingham",
-        "stage": "Identified",
-        "estValue": 228,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-03-11",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 1 transactions"
-      },
-      {
-        "acct": "Fleming's Denver",
-        "stage": "Identified",
-        "estValue": 420,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-14",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 1 transactions"
-      },
-      {
-        "acct": "Fleming's Omaha",
-        "stage": "Identified",
-        "estValue": 420,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-20",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 1 transactions"
-      },
-      {
-        "acct": "Fleming's Walnut Creek",
-        "stage": "Identified",
-        "estValue": 228,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-03-09",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "2 products, 2 transactions"
-      },
-      {
-        "acct": "Sixty Vines Gaithersburg",
-        "stage": "Identified",
-        "estValue": 420,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-03-09",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 1 transactions"
-      },
-      {
-        "acct": "Sixty Vines Nashville",
-        "stage": "Identified",
-        "estValue": 420,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-01-20",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 1 transactions"
-      },
-      {
-        "acct": "Sixty Vines Reston",
-        "stage": "Identified",
-        "estValue": 630,
-        "owner": "",
-        "state": "",
-        "tier": "Tier 3",
-        "stageDate": "2026-02-23",
-        "source": "QuickBooks Import",
-        "type": "",
-        "channel": "Invoice",
-        "nextStep": "",
-        "dueDate": "",
-        "notes": "1 products, 2 transactions"
-      }
-    ],
-    "pipelineMeta": {},
-    "qbDistOrders": {
-      "Amazon customer": {
-        "total": 19746
-      },
-      "AOC": {
-        "total": 2630
-      },
-      "Ashley Hollis": {
-        "total": 25
-      },
-      "Buzz Free Corporation": {
-        "total": 432
-      },
-      "CARISAM / SAMUEL MEISEL (FL)": {
-        "total": 8596
-      },
-      "Cheeky & Dry Non-Alcoholic Bottle Shop": {
-        "total": 456
-      },
-      "David Ziegler": {
-        "total": 120
-      },
-      "Dry Humor": {
-        "total": 163
-      },
-      "Dry Humour": {
-        "total": 996
-      },
-      "Federal Beverage Co.": {
-        "total": 615
-      },
-      "Fleming's St. Louis": {
-        "total": 228
-      },
-      "Flight Wine Room": {
-        "total": 398
-      },
-      "Gabriel McCormick": {
-        "total": 80
-      },
-      "Gosling's Limited": {
-        "total": 8771
-      },
-      "Gramercy Tavern": {
-        "total": 288
-      },
-      "KIMBERLY WHITE": {
-        "total": 145
-      },
-      "K&L Wine Merchants - Culver City": {
-        "total": 840
-      },
-      "K&L Wine Merchants - Hollywood": {
-        "total": 840
-      },
-      "K&L Wine Merchants - Redwood City": {
-        "total": 840
-      },
-      "K&L Wine Merchants - San Francisco": {
-        "total": 840
-      },
-      "Lana Restaurant": {
-        "total": 595
-      },
-      "Le Ono": {
-        "total": 672
-      },
-      "LE-SE AMSTERDAM 732 RESTAURANT, INC DBA Dive Bar": {
-        "total": 338
-      },
-      "Micah Martin": {
-        "total": 216
-      },
-      "Mirah": {
-        "total": 432
-      },
-      "Morton's Pittsburgh": {
-        "total": 228
-      },
-      "Mustard's Grill": {
-        "total": 580
-      },
-      "Nugget/F4L Corp Office": {
-        "total": 1676
-      },
-      "Oakville Wine Merchant": {
-        "total": 217
-      },
-      "PayPal customer": {
-        "total": 30
-      },
-      "Premier Beverage Company (Tampa)": {
-        "total": 4088
-      },
-      "Premiere Beverage Company (Miramar)": {
-        "total": 8771
-      },
-      "Quail Distributing, Inc.": {
-        "total": 1553
-      },
-      "QVC": {
-        "total": 41276
-      },
-      "Republic National Distributing Company, LLC": {
-        "total": 18951
-      },
-      "Shangy's Inc.": {
-        "total": 6265
-      },
-      "Shopify - a04dif-qv Customer": {
-        "total": 52
-      },
-      "St. Regis Deer Valley": {
-        "total": 672
-      },
-      "The Avra Group": {
-        "total": 612
-      },
-      "Avra Madison": {
-        "total": 630
-      },
-      "Avra Moynihan": {
-        "total": 858
-      },
-      "The Beverly Hills Hotel and Bungalows": {
-        "total": 229
-      },
-      "The Zero Co.": {
-        "total": 217
-      },
-      "The Zero Proof": {
-        "total": 9180
-      },
-      "Tryon Distributing LLC": {
-        "total": 7627
-      },
-      "Turks Head Wines": {
-        "total": 676
-      },
-      "Verbena Free Spirited": {
-        "total": 217
-      },
-      "Vintage ‘78 Wine Bar": {
-        "total": 748
-      },
-      "Westside Market NYC": {
-        "total": 456
-      },
-      "Westside Wine & Spirits": {
-        "total": 648
-      },
-      "Winebow CA": {
-        "total": 29150
-      },
-      "Wine.com": {
-        "total": 689
-      },
-      "Fleming's Birmingham": {
-        "total": 228
-      },
-      "Fleming's Denver": {
-        "total": 420
-      },
-      "Fleming's Omaha": {
-        "total": 420
-      },
-      "Fleming's Walnut Creek": {
-        "total": 228
-      },
-      "Sixty Vines Gaithersburg": {
-        "total": 420
-      },
-      "Sixty Vines Nashville": {
-        "total": 420
-      },
-      "Sixty Vines Reston": {
-        "total": 630
-      }
-    },
-    "acctConcentration": {
-      "total": 59,
-      "top10": 84,
-      "median": 612,
-      "under1": 0
-    },
-    "reorderData": [
-      {
-        "rank": 1,
-        "acct": "Amazon customer",
-        "dist": "",
-        "st": "",
-        "ch": "Sales Receipt",
-        "ce": 744,
-        "purch": 680,
-        "cycle": 0,
-        "last": "2026-02-13",
-        "days": 30,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Amazon Sales Item",
-            "ce": 757,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-13",
-            "days": 30
-          },
-          {
-            "w": "Amazon refund item",
-            "ce": -13,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-13",
-            "days": 30
-          }
-        ]
-      },
-      {
-        "rank": 2,
-        "acct": "Buzz Free Corporation",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 39,
-        "purch": 4,
-        "cycle": 1,
-        "last": "2026-01-16",
-        "days": 58,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still Rose 12 Pack",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-16",
-            "days": 58
-          },
-          {
-            "w": "Bottle - 750:Bottle of Missing Thorn Non Alcoholic Still Rosé Wine",
-            "ce": 24,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-16",
-            "days": 58
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-16",
-            "days": 58
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-16",
-            "days": 58
-          }
-        ]
-      },
-      {
-        "rank": 3,
-        "acct": "Cheeky & Dry Non-Alcoholic Bottle Shop",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 26,
-        "purch": 2,
-        "cycle": 1,
-        "last": "2026-02-09",
-        "days": 34,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-09",
-            "days": 34
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 24,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-09",
-            "days": 34
-          }
-        ]
-      },
-      {
-        "rank": 4,
-        "acct": "David Ziegler",
-        "dist": "",
-        "st": "",
-        "ch": "Sales Receipt",
-        "ce": 3,
-        "purch": 3,
-        "cycle": 1,
-        "last": "2026-01-07",
-        "days": 67,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "PayPal sales item",
-            "ce": 3,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-07",
-            "days": 67
-          }
-        ]
-      },
-      {
-        "rank": 5,
-        "acct": "Dry Humor",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 15,
-        "purch": 3,
-        "cycle": 1,
-        "last": "2026-01-15",
-        "days": 59,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-15",
-            "days": 59
-          },
-          {
-            "w": "Set of Sample Bottles",
-            "ce": 3,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-15",
-            "days": 59
-          }
-        ]
-      },
-      {
-        "rank": 6,
-        "acct": "Dry Humour",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 41,
-        "purch": 7,
-        "cycle": 0,
-        "last": "2026-02-13",
-        "days": 30,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Still White",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-13",
-            "days": 30
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-13",
-            "days": 30
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-13",
-            "days": 30
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-13",
-            "days": 30
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-13",
-            "days": 30
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Sparkling White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-13",
-            "days": 30
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-13",
-            "days": 30
-          }
-        ]
-      },
-      {
-        "rank": 7,
-        "acct": "Federal Beverage Co.",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 39,
-        "purch": 4,
-        "cycle": 0,
-        "last": "2026-02-03",
-        "days": 40,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-03",
-            "days": 40
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Sparkling White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-03",
-            "days": 40
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-03",
-            "days": 40
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 24,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-03",
-            "days": 40
-          }
-        ]
-      },
-      {
-        "rank": 8,
-        "acct": "Flight Wine Room",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 26,
-        "purch": 8,
-        "cycle": 1,
-        "last": "2026-02-10",
-        "days": 33,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-10",
-            "days": 33
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-10",
-            "days": 33
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-10",
-            "days": 33
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 6,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-10",
-            "days": 33
-          },
-          {
-            "w": "Bottle - 750:Bottle of Missing Thorn Non Alcoholic Still Rosé Wine",
-            "ce": 6,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-10",
-            "days": 33
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Sparkling Rosé",
-            "ce": 6,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-10",
-            "days": 33
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-10",
-            "days": 33
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 6,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-10",
-            "days": 33
-          }
-        ]
-      },
-      {
-        "rank": 9,
-        "acct": "Gabriel McCormick",
-        "dist": "",
-        "st": "",
-        "ch": "Sales Receipt",
-        "ce": 3,
-        "purch": 3,
-        "cycle": 1,
-        "last": "2026-02-03",
-        "days": 40,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "PayPal sales item",
-            "ce": 3,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-03",
-            "days": 40
-          }
-        ]
-      },
-      {
-        "rank": 10,
-        "acct": "Gosling's Limited",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 728,
-        "purch": 8,
-        "cycle": 0,
-        "last": "2026-01-19",
-        "days": 55,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling White 12 Pack",
-            "ce": 14,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-19",
-            "days": 55
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Sparkling White Wine",
-            "ce": 168,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-19",
-            "days": 55
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling Rose 12 Pack",
-            "ce": 14,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-19",
-            "days": 55
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Sparkling Rosé",
-            "ce": 168,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-19",
-            "days": 55
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 14,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-19",
-            "days": 55
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 168,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-19",
-            "days": 55
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 14,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-19",
-            "days": 55
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 168,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-19",
-            "days": 55
-          }
-        ]
-      },
-      {
-        "rank": 11,
-        "acct": "KIMBERLY WHITE",
-        "dist": "",
-        "st": "",
-        "ch": "Sales Receipt",
-        "ce": 4,
-        "purch": 4,
-        "cycle": 0,
-        "last": "2026-01-12",
-        "days": 62,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "PayPal sales item",
-            "ce": 4,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-12",
-            "days": 62
-          }
-        ]
-      },
-      {
-        "rank": 12,
-        "acct": "K&L Wine Merchants - Culver City",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 66,
-        "purch": 11,
-        "cycle": 0,
-        "last": "2026-01-04",
-        "days": 70,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "CA CRV Collection",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle of Missing Thorn Non Alcoholic Still Rosé Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Sparkling White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Sparkling Rosé",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          }
-        ]
-      },
-      {
-        "rank": 13,
-        "acct": "K&L Wine Merchants - Hollywood",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 66,
-        "purch": 11,
-        "cycle": 0,
-        "last": "2026-01-04",
-        "days": 70,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle of Missing Thorn Non Alcoholic Still Rosé Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Sparkling White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Sparkling Rosé",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "CA CRV Collection",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          }
-        ]
-      },
-      {
-        "rank": 14,
-        "acct": "K&L Wine Merchants - Redwood City",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 66,
-        "purch": 11,
-        "cycle": 0,
-        "last": "2026-01-04",
-        "days": 70,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle of Missing Thorn Non Alcoholic Still Rosé Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Sparkling White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Sparkling Rosé",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "CA CRV Collection",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          }
-        ]
-      },
-      {
-        "rank": 15,
-        "acct": "K&L Wine Merchants - San Francisco",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 66,
-        "purch": 11,
-        "cycle": 0,
-        "last": "2026-01-04",
-        "days": 70,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle of Missing Thorn Non Alcoholic Still Rosé Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Sparkling Rosé",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Sparkling White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          },
-          {
-            "w": "CA CRV Collection",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-04",
-            "days": 70
-          }
-        ]
-      },
-      {
-        "rank": 16,
-        "acct": "Lana Restaurant",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 47,
-        "purch": 15,
-        "cycle": 1,
-        "last": "2026-01-14",
-        "days": 60,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Set of Sample Bottles",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 13,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 13,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          },
-          {
-            "w": "Bottle - 750:Bottle of Missing Thorn Non Alcoholic Still Rosé Wine",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Sparkling Rosé",
-            "ce": 13,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Sparkling White Wine",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          },
-          {
-            "w": "CA CRV Collection",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          },
-          {
-            "w": "Other",
-            "ce": 0,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          }
-        ]
-      },
-      {
-        "rank": 17,
-        "acct": "Le Ono",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 36,
-        "purch": 7,
-        "cycle": 0,
-        "last": "2026-01-09",
-        "days": 65,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling White",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-09",
-            "days": 65
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Still Rosé",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-09",
-            "days": 65
-          },
-          {
-            "w": "Sample:Sample Bottle Alcohol Removed Still Rosé",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-09",
-            "days": 65
-          },
-          {
-            "w": "Sample:Sample Bottle Alcohol Removed Sparkling White",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-09",
-            "days": 65
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-09",
-            "days": 65
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 28,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-09",
-            "days": 65
-          }
-        ]
-      },
-      {
-        "rank": 18,
-        "acct": "LE-SE AMSTERDAM 732 RESTAURANT, INC DBA Dive Bar",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 14,
-        "purch": 3,
-        "cycle": 1,
-        "last": "2026-01-19",
-        "days": 55,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-19",
-            "days": 55
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Still White",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-19",
-            "days": 55
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-19",
-            "days": 55
-          }
-        ]
-      },
-      {
-        "rank": 19,
-        "acct": "Micah Martin",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 13,
-        "purch": 2,
-        "cycle": 1,
-        "last": "2026-01-27",
-        "days": 47,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-27",
-            "days": 47
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Sparkling Rosé",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-27",
-            "days": 47
-          }
-        ]
-      },
-      {
-        "rank": 20,
-        "acct": "Mirah",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 3,
-        "purch": 2,
-        "cycle": 1,
-        "last": "2026-01-02",
-        "days": 72,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling White",
-            "ce": 3,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-02",
-            "days": 72
-          }
-        ]
-      },
-      {
-        "rank": 21,
-        "acct": "Mustard's Grill",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 41,
-        "purch": 6,
-        "cycle": 8,
-        "last": "2026-02-18",
-        "days": 25,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 3,
-            "purch": 1,
-            "cycle": 8,
-            "last": "2026-02-18",
-            "days": 25
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 36,
-            "purch": 1,
-            "cycle": 8,
-            "last": "2026-02-18",
-            "days": 25
-          },
-          {
-            "w": "CA CRV Collection",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 8,
-            "last": "2026-02-18",
-            "days": 25
-          }
-        ]
-      },
-      {
-        "rank": 22,
-        "acct": "Nugget/F4L Corp Office",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 411,
-        "purch": 10,
-        "cycle": 1,
-        "last": "2026-01-14",
-        "days": 60,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 15,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 15,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 180,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 180,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          },
-          {
-            "w": "CA CRV Collection",
-            "ce": 21,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-14",
-            "days": 60
-          }
-        ]
-      },
-      {
-        "rank": 23,
-        "acct": "Oakville Wine Merchant",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 14,
-        "purch": 3,
-        "cycle": 1,
-        "last": "2026-02-02",
-        "days": 41,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-02",
-            "days": 41
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-02",
-            "days": 41
-          },
-          {
-            "w": "CA CRV Collection",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-02",
-            "days": 41
-          }
-        ]
-      },
-      {
-        "rank": 24,
-        "acct": "Premier Beverage Company (Tampa)",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 193,
-        "purch": 3,
-        "cycle": 1,
-        "last": "2026-03-09",
-        "days": 6,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 14,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-03-09",
-            "days": 6
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 168,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-03-09",
-            "days": 6
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling Rosé",
-            "ce": 11,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-03-09",
-            "days": 6
-          }
-        ]
-      },
-      {
-        "rank": 25,
-        "acct": "Quail Distributing, Inc.",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 10,
-        "purch": 2,
-        "cycle": 1,
-        "last": "2026-02-10",
-        "days": 33,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Still White",
-            "ce": 3,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-10",
-            "days": 33
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling White",
-            "ce": 7,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-10",
-            "days": 33
-          }
-        ]
-      },
-      {
-        "rank": 26,
-        "acct": "Republic National Distributing Company, LLC",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 1638,
-        "purch": 24,
-        "cycle": 0,
-        "last": "2026-01-15",
-        "days": 59,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling White 12 Pack",
-            "ce": 33,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-15",
-            "days": 59
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 33,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-15",
-            "days": 59
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still Rose 12 Pack",
-            "ce": 30,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-15",
-            "days": 59
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 30,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-15",
-            "days": 59
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Sparkling White Wine",
-            "ce": 396,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-15",
-            "days": 59
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 396,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-15",
-            "days": 59
-          },
-          {
-            "w": "Bottle - 750:Bottle of Missing Thorn Non Alcoholic Still Rosé Wine",
-            "ce": 360,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-15",
-            "days": 59
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 360,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-15",
-            "days": 59
-          }
-        ]
-      },
-      {
-        "rank": 27,
-        "acct": "Shangy's Inc.",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 40,
-        "purch": 3,
-        "cycle": 1,
-        "last": "2026-02-27",
-        "days": 16,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Still Red",
-            "ce": 20,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-27",
-            "days": 16
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Still White",
-            "ce": 10,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-27",
-            "days": 16
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling White",
-            "ce": 10,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-27",
-            "days": 16
-          }
-        ]
-      },
-      {
-        "rank": 28,
-        "acct": "Shopify - a04dif-qv Customer",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 2,
-        "purch": 2,
-        "cycle": 1,
-        "last": "2026-03-01",
-        "days": 14,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Shopify Sales Item",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-03-01",
-            "days": 14
-          }
-        ]
-      },
-      {
-        "rank": 29,
-        "acct": "St. Regis Deer Valley",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 40,
-        "purch": 7,
-        "cycle": 0,
-        "last": "2026-01-20",
-        "days": 54,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-20",
-            "days": 54
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-20",
-            "days": 54
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-20",
-            "days": 54
-          },
-          {
-            "w": "Credit Card Processing Fee:Credit Card Processing Fee",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-20",
-            "days": 54
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Sparkling White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-20",
-            "days": 54
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-20",
-            "days": 54
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-20",
-            "days": 54
-          }
-        ]
-      },
-      {
-        "rank": 30,
-        "acct": "Avra Moynihan",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 4,
-        "purch": 2,
-        "cycle": 1,
-        "last": "2026-03-09",
-        "days": 6,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Still Red",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-03-09",
-            "days": 6
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling White",
-            "ce": 3,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-03-09",
-            "days": 6
-          }
-        ]
-      },
-      {
-        "rank": 31,
-        "acct": "The Beverly Hills Hotel and Bungalows",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 2,
-        "purch": 2,
-        "cycle": 1,
-        "last": "2026-02-09",
-        "days": 34,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling White",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-09",
-            "days": 34
-          },
-          {
-            "w": "CA CRV Collection",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-09",
-            "days": 34
-          }
-        ]
-      },
-      {
-        "rank": 32,
-        "acct": "The Zero Co.",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 13,
-        "purch": 2,
-        "cycle": 1,
-        "last": "2026-01-13",
-        "days": 61,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-13",
-            "days": 61
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-13",
-            "days": 61
-          }
-        ]
-      },
-      {
-        "rank": 33,
-        "acct": "The Zero Proof",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 368,
-        "purch": 4,
-        "cycle": 0,
-        "last": "2026-02-27",
-        "days": 16,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Still White",
-            "ce": 15,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-27",
-            "days": 16
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Still Rosé",
-            "ce": 15,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-27",
-            "days": 16
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 26,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-27",
-            "days": 16
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 312,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-27",
-            "days": 16
-          }
-        ]
-      },
-      {
-        "rank": 34,
         "acct": "Tryon Distributing LLC",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
         "ce": 217,
-        "purch": 9,
-        "cycle": 5,
-        "last": "2026-02-19",
-        "days": 24,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 14,
-            "purch": 1,
-            "cycle": 5,
-            "last": "2026-02-19",
-            "days": 24
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling Rosé",
-            "ce": 14,
-            "purch": 1,
-            "cycle": 5,
-            "last": "2026-02-19",
-            "days": 24
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling White",
-            "ce": 7,
-            "purch": 1,
-            "cycle": 5,
-            "last": "2026-02-19",
-            "days": 24
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Still White",
-            "ce": 14,
-            "purch": 1,
-            "cycle": 5,
-            "last": "2026-02-19",
-            "days": 24
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 168,
-            "purch": 1,
-            "cycle": 5,
-            "last": "2026-02-19",
-            "days": 24
-          }
-        ]
+        "skus": 1
       },
       {
-        "rank": 35,
-        "acct": "Turks Head Wines",
+        "acct": "Premier Beverage Company (Tampa)",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
-        "ce": 4,
-        "purch": 2,
-        "cycle": 1,
-        "last": "2026-01-05",
-        "days": 69,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Still Rosé",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-05",
-            "days": 69
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Still White",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-01-05",
-            "days": 69
-          }
-        ]
+        "ce": 193,
+        "skus": 1
       },
       {
-        "rank": 36,
-        "acct": "Verbena Free Spirited",
+        "acct": "Honig, Stephanie",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
-        "ce": 13,
-        "purch": 2,
-        "cycle": 1,
-        "last": "2026-02-20",
-        "days": 23,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-20",
-            "days": 23
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-02-20",
-            "days": 23
-          }
-        ]
+        "ce": 127,
+        "skus": 1
       },
       {
-        "rank": 37,
-        "acct": "Vintage ‘78 Wine Bar",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 52,
-        "purch": 8,
-        "cycle": 0,
-        "last": "2026-02-02",
-        "days": 41,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-02",
-            "days": 41
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-02",
-            "days": 41
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-02",
-            "days": 41
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-02",
-            "days": 41
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-02",
-            "days": 41
-          },
-          {
-            "w": "Bottle - 750:Bottle of Missing Thorn Non Alcoholic Still Rosé Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-02",
-            "days": 41
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Sparkling White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-02",
-            "days": 41
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Sparkling Rosé",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-02",
-            "days": 41
-          }
-        ]
-      },
-      {
-        "rank": 38,
-        "acct": "Westside Market NYC",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 39,
-        "purch": 6,
-        "cycle": 0,
-        "last": "2026-02-10",
-        "days": 33,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-10",
-            "days": 33
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-10",
-            "days": 33
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-10",
-            "days": 33
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-10",
-            "days": 33
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-10",
-            "days": 33
-          },
-          {
-            "w": "Bottle - 750:Bottle of Missing Thorn Non Alcoholic Still Rosé Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-02-10",
-            "days": 33
-          }
-        ]
-      },
-      {
-        "rank": 39,
-        "acct": "Westside Wine & Spirits",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 52,
-        "purch": 4,
-        "cycle": 0,
-        "last": "2026-03-04",
-        "days": 11,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-03-04",
-            "days": 11
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-03-04",
-            "days": 11
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 24,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-03-04",
-            "days": 11
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 24,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-03-04",
-            "days": 11
-          }
-        ]
-      },
-      {
-        "rank": 40,
-        "acct": "Winebow CA",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 2576,
-        "purch": 28,
-        "cycle": 2,
-        "last": "2026-03-05",
-        "days": 10,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 21,
-            "purch": 1,
-            "cycle": 2,
-            "last": "2026-03-05",
-            "days": 10
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still Rose 12 Pack",
-            "ce": 21,
-            "purch": 1,
-            "cycle": 2,
-            "last": "2026-03-05",
-            "days": 10
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 100,
-            "purch": 1,
-            "cycle": 2,
-            "last": "2026-03-05",
-            "days": 10
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling White 12 Pack",
-            "ce": 21,
-            "purch": 1,
-            "cycle": 2,
-            "last": "2026-03-05",
-            "days": 10
-          },
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling Rose 12 Pack",
-            "ce": 21,
-            "purch": 1,
-            "cycle": 2,
-            "last": "2026-03-05",
-            "days": 10
-          },
-          {
-            "w": "CA CRV Collection",
-            "ce": 184,
-            "purch": 1,
-            "cycle": 2,
-            "last": "2026-03-05",
-            "days": 10
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 252,
-            "purch": 1,
-            "cycle": 2,
-            "last": "2026-03-05",
-            "days": 10
-          },
-          {
-            "w": "Bottle - 750:Bottle of Missing Thorn Non Alcoholic Still Rosé Wine",
-            "ce": 252,
-            "purch": 1,
-            "cycle": 2,
-            "last": "2026-03-05",
-            "days": 10
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 1200,
-            "purch": 1,
-            "cycle": 2,
-            "last": "2026-03-05",
-            "days": 10
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Sparkling White Wine",
-            "ce": 252,
-            "purch": 1,
-            "cycle": 2,
-            "last": "2026-03-05",
-            "days": 10
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Sparkling Rosé",
-            "ce": 252,
-            "purch": 1,
-            "cycle": 2,
-            "last": "2026-03-05",
-            "days": 10
-          }
-        ]
-      },
-      {
-        "rank": 41,
-        "acct": "Wine.com",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 56,
-        "purch": 5,
-        "cycle": 0,
-        "last": "2026-01-26",
-        "days": 48,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-26",
-            "days": 48
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-26",
-            "days": 48
-          },
-          {
-            "w": "CA CRV Collection",
-            "ce": 4,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-26",
-            "days": 48
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 24,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-26",
-            "days": 48
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 24,
-            "purch": 1,
-            "cycle": 0,
-            "last": "2026-01-26",
-            "days": 48
-          }
-        ]
-      },
-      {
-        "rank": 42,
-        "acct": "Fleming's Denver",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 2,
-        "purch": 1,
-        "cycle": 30,
-        "last": "2026-01-14",
-        "days": 60,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling Rosé",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 30,
-            "last": "2026-01-14",
-            "days": 60
-          }
-        ]
-      },
-      {
-        "rank": 43,
-        "acct": "Fleming's Walnut Creek",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 13,
-        "purch": 2,
-        "cycle": 1,
-        "last": "2026-03-09",
-        "days": 6,
-        "priority": 100,
-        "skus": [
-          {
-            "w": "Missing Thorn Non Alcoholic Sparkling Rose 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-03-09",
-            "days": 6
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Sparkling Rosé",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 1,
-            "last": "2026-03-09",
-            "days": 6
-          }
-        ]
-      },
-      {
-        "rank": 44,
-        "acct": "Fleming's Omaha",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 2,
-        "purch": 1,
-        "cycle": 30,
-        "last": "2026-01-20",
-        "days": 54,
-        "priority": 90,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling Rosé",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 30,
-            "last": "2026-01-20",
-            "days": 54
-          }
-        ]
-      },
-      {
-        "rank": 45,
-        "acct": "Sixty Vines Nashville",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 2,
-        "purch": 1,
-        "cycle": 30,
-        "last": "2026-01-20",
-        "days": 54,
-        "priority": 90,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling Rosé",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 30,
-            "last": "2026-01-20",
-            "days": 54
-          }
-        ]
-      },
-      {
-        "rank": 46,
-        "acct": "PayPal customer",
-        "dist": "",
-        "st": "",
-        "ch": "Sales Receipt",
-        "ce": 1,
-        "purch": 1,
-        "cycle": 30,
-        "last": "2026-01-22",
-        "days": 52,
-        "priority": 87,
-        "skus": [
-          {
-            "w": "PayPal sales item",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 30,
-            "last": "2026-01-22",
-            "days": 52
-          }
-        ]
-      },
-      {
-        "rank": 47,
-        "acct": "Sixty Vines Reston",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 3,
-        "purch": 2,
-        "cycle": 14,
-        "last": "2026-02-23",
-        "days": 20,
-        "priority": 71,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling Rosé",
-            "ce": 3,
-            "purch": 1,
-            "cycle": 14,
-            "last": "2026-02-23",
-            "days": 20
-          }
-        ]
-      },
-      {
-        "rank": 48,
-        "acct": "Avra Madison",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 3,
-        "purch": 1,
-        "cycle": 30,
-        "last": "2026-02-02",
-        "days": 41,
-        "priority": 68,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling White",
-            "ce": 3,
-            "purch": 1,
-            "cycle": 30,
-            "last": "2026-02-02",
-            "days": 41
-          }
-        ]
-      },
-      {
-        "rank": 49,
-        "acct": "Gramercy Tavern",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 2,
-        "purch": 1,
-        "cycle": 30,
-        "last": "2026-02-06",
-        "days": 37,
-        "priority": 62,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Still Rosé",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 30,
-            "last": "2026-02-06",
-            "days": 37
-          }
-        ]
-      },
-      {
-        "rank": 50,
-        "acct": "Ashley Hollis",
-        "dist": "",
-        "st": "",
-        "ch": "Sales Receipt",
-        "ce": 1,
-        "purch": 1,
-        "cycle": 30,
-        "last": "2026-02-09",
-        "days": 34,
-        "priority": 57,
-        "skus": [
-          {
-            "w": "PayPal sales item",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 30,
-            "last": "2026-02-09",
-            "days": 34
-          }
-        ]
-      },
-      {
-        "rank": 51,
-        "acct": "Fleming's St. Louis",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 1,
-        "purch": 1,
-        "cycle": 30,
-        "last": "2026-02-09",
-        "days": 34,
-        "priority": 57,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling Rosé",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 30,
-            "last": "2026-02-09",
-            "days": 34
-          }
-        ]
-      },
-      {
-        "rank": 52,
         "acct": "AOC",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
         "ce": 123,
-        "purch": 4,
-        "cycle": 11,
-        "last": "2026-03-03",
-        "days": 12,
-        "priority": 55,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 7,
-            "purch": 1,
-            "cycle": 11,
-            "last": "2026-03-03",
-            "days": 12
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling Rosé",
-            "ce": 7,
-            "purch": 1,
-            "cycle": 11,
-            "last": "2026-03-03",
-            "days": 12
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 84,
-            "purch": 1,
-            "cycle": 11,
-            "last": "2026-03-03",
-            "days": 12
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Sparkling Rosé",
-            "ce": 25,
-            "purch": 1,
-            "cycle": 11,
-            "last": "2026-03-03",
-            "days": 12
-          }
-        ]
+        "skus": 1
       },
       {
-        "rank": 53,
-        "acct": "The Avra Group",
+        "acct": "Beth Adams",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
-        "ce": 15,
-        "purch": 4,
-        "cycle": 14,
-        "last": "2026-03-02",
-        "days": 13,
-        "priority": 46,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Still White",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 14,
-            "last": "2026-03-02",
-            "days": 13
-          },
-          {
-            "w": "Case Missing Thorn Non Alcoholic Still White 12 Pack",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 14,
-            "last": "2026-03-02",
-            "days": 13
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling White",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 14,
-            "last": "2026-03-02",
-            "days": 13
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Still White Wine",
-            "ce": 12,
-            "purch": 1,
-            "cycle": 14,
-            "last": "2026-03-02",
-            "days": 13
-          }
-        ]
+        "ce": 72,
+        "skus": 1
       },
       {
-        "rank": 54,
-        "acct": "CARISAM / SAMUEL MEISEL (FL)",
+        "acct": "Robbie Davis",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
-        "ce": 56,
-        "purch": 1,
-        "cycle": 30,
-        "last": "2026-02-24",
-        "days": 19,
-        "priority": 32,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling White",
-            "ce": 56,
-            "purch": 1,
-            "cycle": 30,
-            "last": "2026-02-24",
-            "days": 19
-          }
-        ]
+        "ce": 72,
+        "skus": 1
       },
       {
-        "rank": 55,
-        "acct": "QVC",
+        "acct": "K&L Wine Merchants - Culver City",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
-        "ce": 1,
-        "purch": 1,
-        "cycle": 30,
-        "last": "2026-02-24",
-        "days": 19,
-        "priority": 32,
-        "skus": [
-          {
-            "w": "QVC Sales",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 30,
-            "last": "2026-02-24",
-            "days": 19
-          }
-        ]
+        "ce": 66,
+        "skus": 1
       },
       {
-        "rank": 56,
-        "acct": "Premiere Beverage Company (Miramar)",
+        "acct": "K&L Wine Merchants - Hollywood",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
-        "ce": 392,
-        "purch": 6,
-        "cycle": 11,
-        "last": "2026-03-09",
-        "days": 6,
-        "priority": 27,
-        "skus": [
-          {
-            "w": "Case Missing Thorn Non Alcoholic Red 12 Pack",
-            "ce": 28,
-            "purch": 1,
-            "cycle": 11,
-            "last": "2026-03-09",
-            "days": 6
-          },
-          {
-            "w": "Bottle - 750:Bottle Missing Thorn Non Alcoholic Red Wine",
-            "ce": 336,
-            "purch": 1,
-            "cycle": 11,
-            "last": "2026-03-09",
-            "days": 6
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling Rosé",
-            "ce": 14,
-            "purch": 1,
-            "cycle": 11,
-            "last": "2026-03-09",
-            "days": 6
-          },
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Still White",
-            "ce": 14,
-            "purch": 1,
-            "cycle": 11,
-            "last": "2026-03-09",
-            "days": 6
-          }
-        ]
+        "ce": 66,
+        "skus": 1
       },
       {
-        "rank": 57,
-        "acct": "Morton's Pittsburgh",
+        "acct": "K&L Wine Merchants - Redwood City",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
-        "ce": 1,
-        "purch": 1,
-        "cycle": 30,
-        "last": "2026-03-02",
-        "days": 13,
-        "priority": 22,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling White",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 30,
-            "last": "2026-03-02",
-            "days": 13
-          }
-        ]
+        "ce": 66,
+        "skus": 1
       },
       {
-        "rank": 58,
-        "acct": "Sixty Vines Gaithersburg",
+        "acct": "K&L Wine Merchants - San Francisco",
         "dist": "",
         "st": "",
-        "ch": "Invoice",
-        "ce": 2,
-        "purch": 1,
-        "cycle": 30,
-        "last": "2026-03-09",
-        "days": 6,
-        "priority": 10,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling Rosé",
-            "ce": 2,
-            "purch": 1,
-            "cycle": 30,
-            "last": "2026-03-09",
-            "days": 6
-          }
-        ]
-      },
-      {
-        "rank": 59,
-        "acct": "Fleming's Birmingham",
-        "dist": "",
-        "st": "",
-        "ch": "Invoice",
-        "ce": 1,
-        "purch": 1,
-        "cycle": 30,
-        "last": "2026-03-11",
-        "days": 4,
-        "priority": 7,
-        "skus": [
-          {
-            "w": "Cases of NA Wine:Case of Missing Thorn Sparkling Rosé",
-            "ce": 1,
-            "purch": 1,
-            "cycle": 30,
-            "last": "2026-03-11",
-            "days": 4
-          }
-        ]
+        "ce": 66,
+        "skus": 1
       }
-    ]
+    ],
+    "placementSummary": [
+      {
+        "name": "",
+        "st": "--",
+        "net": 109,
+        "newA": 11,
+        "reEngageA": 5
+      }
+    ],
+    "reEngagementData": [
+      {
+        "name": "",
+        "st": "--",
+        "priorAccts": 16,
+        "priorCE": 920
+      }
+    ],
+    "acctConcentration": {
+      "total": 109,
+      "top10": 80,
+      "median": 10,
+      "under1": 1
+    }
   }
 }

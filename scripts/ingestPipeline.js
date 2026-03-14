@@ -306,6 +306,183 @@ function transformQuickBooks(rows, mapping) {
   return { accountsTop, pipelineAccounts, pipelineMeta: {}, qbDistOrders, acctConcentration, reorderData };
 }
 
+// ─── Depletion Transform ────────────────────────────────────────
+
+function transformDepletion(rows, mapping) {
+  const monthCols = mapping._monthColumns || [];
+  const weekCols = mapping._weekColumns || [];
+
+  const normalized = rows.map((r) => ({
+    acct: str(getMapped(r, mapping, "acct")),
+    dist: str(getMapped(r, mapping, "dist")),
+    st: normalizeState(getMapped(r, mapping, "st")),
+    ch: str(getMapped(r, mapping, "ch")) || "Off-Premise",
+    sku: str(getMapped(r, mapping, "sku")),
+    qty: num(getMapped(r, mapping, "qty")),
+    date: normalizeDate(getMapped(r, mapping, "date")),
+    revenue: num(getMapped(r, mapping, "revenue")),
+    months: monthCols.map((c) => num(r[c])),
+    weeks: weekCols.map((c) => num(r[c])),
+  }));
+
+  const distGroups = groupBy(normalized, (r) => `${r.dist}||${r.st}`);
+  const distScorecard = Object.entries(distGroups).map(([key, items]) => {
+    const [name, st] = key.split("||");
+    const totalCE = items.reduce((s, r) => s + r.qty, 0);
+    let weekly = [];
+    if (weekCols.length > 0) {
+      weekly = Array.from({ length: Math.min(weekCols.length, 13) }, (_, i) =>
+        items.reduce((s, r) => s + (r.weeks[i] || 0), 0));
+    } else if (monthCols.length > 0) {
+      for (const m of items[0].months) { const pw = m / 4; weekly.push(pw, pw, pw, pw); }
+      weekly = weekly.slice(0, 13);
+    } else {
+      weekly = Array(13).fill(Math.round(totalCE / 13));
+    }
+    const w4 = weekly.slice(-4).reduce((s, v) => s + v, 0);
+    const firstHalf = weekly.slice(0, 6).reduce((s, v) => s + v, 0) || 1;
+    const secondHalf = weekly.slice(7).reduce((s, v) => s + v, 0);
+    const momPct = Math.round(((secondHalf - firstHalf) / firstHalf) * 100);
+    const mean = totalCE / (weekly.length || 1);
+    const variance = weekly.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / (weekly.length || 1);
+    const con = mean > 0 ? Math.max(0, Math.min(1, 1 - Math.sqrt(variance) / mean)) : 0;
+    return { name: name || "Unknown", st: st || "--", ce: Math.round(totalCE), w4: Math.round(w4), momentum: `${momPct >= 0 ? "+" : ""}${momPct}%`, con: Math.round(con * 100) / 100, weekly: weekly.map(Math.round) };
+  });
+
+  const acctGroups = groupBy(normalized, (r) => `${r.acct}||${r.dist}||${r.st}`);
+  const accountsTop = Object.entries(acctGroups).map(([key, items], idx) => {
+    const [acct, dist, st] = key.split("||");
+    const totalCE = items.reduce((s, r) => s + r.qty, 0);
+    const ch = items[0]?.ch || "Off-Premise";
+    let nov = 0, dec = 0, jan = 0, feb = 0;
+    if (monthCols.length >= 4) {
+      nov = items.reduce((s, r) => s + (r.months[0] || 0), 0);
+      dec = items.reduce((s, r) => s + (r.months[1] || 0), 0);
+      jan = items.reduce((s, r) => s + (r.months[2] || 0), 0);
+      feb = items.reduce((s, r) => s + (r.months[3] || 0), 0);
+    } else { const q = totalCE / 4; nov = q; dec = q; jan = q; feb = q; }
+    const total = nov + dec + jan + feb;
+    const growth = ((jan + feb - (nov + dec || 1)) / (nov + dec || 1)) * 100;
+    const trend = growth > 10 ? "Momentum" : growth < -10 ? "Growth Opportunity" : "Consistent";
+    return { acct, dist, st, ch, ce: Math.round(totalCE), w4: Math.round(totalCE / 3), nov: Math.round(nov), dec: Math.round(dec), jan: Math.round(jan), feb: Math.round(feb), total: Math.round(total), trend, growthPotential: Math.max(0, Math.round(totalCE * 0.2)), rank: idx + 1 };
+  }).sort((a, b) => b.total - a.total).map((item, i) => ({ ...item, rank: i + 1 }));
+
+  const newWins = accountsTop.filter((a) => a.total > 0 && a.total < (accountsTop[0]?.total || 1) * 0.1).slice(0, 10).map((a) => ({ acct: a.acct, dist: a.dist, st: a.st, ce: a.total, skus: 1 }));
+
+  const distNames = [...new Set(normalized.map((r) => r.dist))];
+  const placementSummary = distNames.map((name) => { const items = normalized.filter((r) => r.dist === name); const accts = new Set(items.map((r) => r.acct)); return { name, st: items[0]?.st || "--", net: accts.size, newA: Math.round(accts.size * 0.1), reEngageA: Math.round(accts.size * 0.05) }; });
+  const reEngagementData = distNames.map((name) => { const items = normalized.filter((r) => r.dist === name); return { name, st: items[0]?.st || "--", priorAccts: Math.round(new Set(items.map((r) => r.acct)).size * 0.15), priorCE: Math.round(items.reduce((s, r) => s + r.qty, 0) * 0.1) }; });
+
+  const ceValues = accountsTop.map((a) => a.total).sort((a, b) => b - a);
+  const totalVol = ceValues.reduce((s, v) => s + v, 0);
+  const acctConcentration = { total: accountsTop.length, top10: totalVol > 0 ? Math.round((ceValues.slice(0, 10).reduce((s, v) => s + v, 0) / totalVol) * 100) : 0, median: ceValues[Math.floor(ceValues.length / 2)] || 0, under1: ceValues.filter((v) => v < 1).length };
+
+  return { distScorecard, accountsTop, newWins, placementSummary, reEngagementData, acctConcentration };
+}
+
+// ─── Purchases Transform ────────────────────────────────────────
+
+function transformPurchases(rows, mapping) {
+  const normalized = rows.map((r) => ({
+    acct: str(getMapped(r, mapping, "acct")),
+    dist: str(getMapped(r, mapping, "dist")),
+    st: normalizeState(getMapped(r, mapping, "st")),
+    ch: str(getMapped(r, mapping, "ch")) || "Off-Premise",
+    qty: num(getMapped(r, mapping, "qty")),
+    date: normalizeDate(getMapped(r, mapping, "date")),
+    sku: str(getMapped(r, mapping, "sku")),
+  }));
+
+  const acctGroups = groupBy(normalized, (r) => `${r.acct}||${r.dist}||${r.st}`);
+  const now = Date.now();
+
+  const reorderData = Object.entries(acctGroups).map(([key, items], idx) => {
+    const [acct, dist, st] = key.split("||");
+    const ch = items[0]?.ch || "Off-Premise";
+    const totalCE = items.reduce((s, r) => s + r.qty, 0);
+    const dates = items.map((r) => new Date(r.date).getTime()).filter((d) => !isNaN(d)).sort();
+    const purch = dates.length;
+    let cycle = 30;
+    if (dates.length >= 2) { const span = (dates[dates.length - 1] - dates[0]) / (1000 * 60 * 60 * 24); cycle = Math.max(7, Math.round(span / (dates.length - 1))); }
+    const lastDate = dates.length > 0 ? new Date(dates[dates.length - 1]) : new Date();
+    const days = Math.round((now - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+    const priority = Math.min(100, Math.round((days / Math.max(cycle, 1)) * 50));
+    const skuGroups = groupBy(items, (r) => r.sku || "All Products");
+    const skus = Object.entries(skuGroups).map(([w, skuItems]) => {
+      const skuDates = skuItems.map((r) => new Date(r.date).getTime()).filter((d) => !isNaN(d)).sort();
+      const skuLast = skuDates.length > 0 ? new Date(skuDates[skuDates.length - 1]) : new Date();
+      return { w, ce: Math.round(skuItems.reduce((s, r) => s + r.qty, 0)), purch: skuDates.length, cycle, last: skuLast.toISOString().slice(0, 10), days: Math.round((now - skuLast.getTime()) / (1000 * 60 * 60 * 24)) };
+    });
+    return { rank: idx + 1, acct, dist, st, ch, ce: Math.round(totalCE), purch, cycle, last: lastDate.toISOString().slice(0, 10), days, priority, skus };
+  }).sort((a, b) => b.priority - a.priority).map((item, i) => ({ ...item, rank: i + 1 }));
+
+  return { reorderData };
+}
+
+// ─── Inventory Transform ────────────────────────────────────────
+
+function transformInventory(rows, mapping) {
+  const normalized = rows.map((r) => ({
+    st: normalizeState(getMapped(r, mapping, "st")),
+    dist: str(getMapped(r, mapping, "dist")),
+    oh: num(getMapped(r, mapping, "oh")),
+    doh: num(getMapped(r, mapping, "doh")),
+    sku: str(getMapped(r, mapping, "sku")),
+  }));
+
+  const stateGroups = groupBy(normalized, (r) => r.st);
+  const inventoryData = Object.entries(stateGroups).map(([st, items]) => {
+    const oh = items.reduce((s, r) => s + r.oh, 0);
+    const doh = items.length > 0 ? Math.round(items.reduce((s, r) => s + r.doh, 0) / items.length) : 0;
+    const status = doh > 90 ? "Overstocked" : doh > 60 ? "Review Needed" : doh < 14 ? "Reorder Opportunity" : doh === 0 ? "Dead Stock" : "Healthy";
+    return { st, oh: Math.round(oh), doh, status };
+  });
+
+  const distGroups = groupBy(normalized, (r) => r.dist);
+  const distHealth = Object.entries(distGroups).map(([dist, items]) => {
+    const avgDOH = items.length > 0 ? Math.round(items.reduce((s, r) => s + r.doh, 0) / items.length) : 0;
+    const skuGroups2 = groupBy(items, (r) => r.sku || "All");
+    const skus = Object.entries(skuGroups2).map(([w, skuItems]) => {
+      const oh = skuItems.reduce((s, r) => s + r.oh, 0);
+      const doh = skuItems.length > 0 ? Math.round(skuItems.reduce((s, r) => s + r.doh, 0) / skuItems.length) : 0;
+      return { w, sellIn: 0, sellThru: 0, ratio: 0, oh: Math.round(oh), doh, wkSupply: Math.round(doh / 7 * 10) / 10, invAction: doh > 90 ? "Reduce" : doh < 14 ? "Reorder Now" : doh < 30 ? "Monitor" : "Healthy", ce: 0, days: 0, cycle: 0, purch: 0, last: "" };
+    });
+    return { dist: dist || "Unknown", totalSellIn: 0, totalSellThru: 0, totalRatio: 0, activeAccounts: 0, totalAccounts: 0, avgSkuBreadth: skus.length, established: 0, building: 0, emerging: 0, newAccts: 0, lostAccts: 0, nov: 0, dec: 0, jan: 0, feb: 0, doh: avgDOH, skus };
+  });
+
+  return { inventoryData, distHealth };
+}
+
+// ─── Pipeline Transform ─────────────────────────────────────────
+
+function transformPipeline(rows, mapping) {
+  const pipelineAccounts = rows.map((r) => ({
+    acct: str(getMapped(r, mapping, "acct")) || str(getMapped(r, mapping, "dist")) || "Unknown",
+    stage: str(getMapped(r, mapping, "stage")) || "Identified",
+    estValue: num(getMapped(r, mapping, "estValue")) || num(getMapped(r, mapping, "revenue")) || 0,
+    owner: str(getMapped(r, mapping, "owner")) || "",
+    state: normalizeState(getMapped(r, mapping, "st")),
+    tier: "Regional",
+    stageDate: normalizeDate(getMapped(r, mapping, "date")) || new Date().toISOString().slice(0, 10),
+    source: "", type: "", channel: str(getMapped(r, mapping, "ch")) || "",
+    nextStep: "", dueDate: "", notes: "",
+  }));
+  return { pipelineAccounts, pipelineMeta: {} };
+}
+
+// ─── Master Transform Dispatch ──────────────────────────────────
+
+function transformAll(rows, mapping, uploadType) {
+  if (uploadType === "quickbooks") return { type: "quickbooks", ...transformQuickBooks(rows, mapping) };
+  if (uploadType === "depletion" || uploadType === "sales") return { type: "depletion", ...transformDepletion(rows, mapping) };
+  if (uploadType === "purchases") return { type: "purchases", ...transformPurchases(rows, mapping) };
+  if (uploadType === "inventory") return { type: "inventory", ...transformInventory(rows, mapping) };
+  if (uploadType === "pipeline") return { type: "pipeline", ...transformPipeline(rows, mapping) };
+  // Fallback: try depletion if we have account + qty
+  if (mapping.acct && mapping.qty) return { type: "depletion", ...transformDepletion(rows, mapping) };
+  return { type: "quickbooks", ...transformQuickBooks(rows, mapping) };
+}
+
 function generateSummary(dataType, datasets, userRole = "supplier") {
   const parts = [];
   const isDistributor = userRole === "distributor";
@@ -325,6 +502,58 @@ function generateSummary(dataType, datasets, userRole = "supplier") {
   return parts.join(" ");
 }
 
+// ─── AI Executive Summary ───────────────────────────────────────
+
+async function generateAISummary(datasets, uploadType, userRole, apiKey) {
+  const Anthropic = (await import("@anthropic-ai/sdk")).default;
+  const client = new Anthropic({ apiKey });
+
+  const isDistributor = userRole === "distributor";
+  const entityName = isDistributor ? "supplier" : "distributor";
+  const acctName = isDistributor ? "store" : "account";
+
+  // Build a compact data snapshot for Claude
+  const snapshot = [];
+  if (datasets.accountsTop?.length) {
+    const total = datasets.accountsTop.reduce((s, a) => s + (a.total || 0), 0);
+    const top5 = datasets.accountsTop.slice(0, 5).map((a) => `${a.acct}: $${(a.total || 0).toLocaleString()}`);
+    const momentum = datasets.accountsTop.filter((a) => a.trend === "Momentum").length;
+    const growth = datasets.accountsTop.filter((a) => a.trend === "Growth Opportunity").length;
+    snapshot.push(`${datasets.accountsTop.length} ${acctName}s, $${total.toLocaleString()} total revenue`);
+    snapshot.push(`Top 5: ${top5.join("; ")}`);
+    snapshot.push(`${momentum} showing momentum, ${growth} growth opportunities`);
+  }
+  if (datasets.distScorecard?.length) {
+    const totalCE = datasets.distScorecard.reduce((s, d) => s + (d.ce || 0), 0);
+    const momCount = datasets.distScorecard.filter((d) => d.momentum && !d.momentum.startsWith("-") && d.momentum !== "+0%").length;
+    snapshot.push(`${datasets.distScorecard.length} ${entityName}s, ${totalCE.toLocaleString()} total CE`);
+    snapshot.push(`${momCount} ${entityName}s with positive momentum`);
+  }
+  if (datasets.reorderData?.length) {
+    const overdue = datasets.reorderData.filter((r) => r.days > r.cycle * 1.5).length;
+    snapshot.push(`${datasets.reorderData.length} ${acctName}s tracked for reorder, ${overdue} overdue`);
+  }
+  if (datasets.pipelineAccounts?.length) {
+    const pipeVal = datasets.pipelineAccounts.reduce((s, p) => s + (p.estValue || 0), 0);
+    snapshot.push(`${datasets.pipelineAccounts.length} pipeline deals worth $${pipeVal.toLocaleString()}`);
+  }
+
+  const prompt = `You are the AI analytics engine for a beverage/CPG ${isDistributor ? "distributor" : "supplier"} CRM platform. Based on this data snapshot, write a 2-3 sentence executive summary with actionable insights. Be specific with numbers. Focus on what matters most: trends, risks, and opportunities.
+
+DATA (${uploadType} import):
+${snapshot.join("\n")}
+
+Write the summary as if speaking to the ${isDistributor ? "distributor" : "brand"} owner. Be concise, direct, and highlight the single most important insight. No bullet points — just flowing prose.`;
+
+  const response = await client.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 300,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  return response.content[0].text.trim();
+}
+
 // ─── Firestore Integration ──────────────────────────────────────
 
 const DATASETS = [
@@ -334,16 +563,15 @@ const DATASETS = [
 ];
 
 async function initFirestore() {
-  // Look for service account key in project root
-  const saKeyPath = join(__dirname, "..", "serviceAccountKey.json");
   try {
-    if (existsSync(saKeyPath)) {
-      const serviceAccount = JSON.parse(readFileSync(saKeyPath, "utf-8"));
+    const b64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+    if (b64) {
+      const serviceAccount = JSON.parse(Buffer.from(b64, "base64").toString("utf-8"));
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
         projectId: FIREBASE_PROJECT_ID,
       });
-      console.log("[Firestore] Authenticated via serviceAccountKey.json");
+      console.log("[Firestore] Authenticated via FIREBASE_SERVICE_ACCOUNT_BASE64");
     } else {
       // Fall back to Application Default Credentials
       admin.initializeApp({ projectId: FIREBASE_PROJECT_ID });
@@ -382,7 +610,7 @@ async function saveToFirestore(db, tenantId, datasets, summary) {
   const uploadRef = db.collection("tenants").doc(tenantId).collection("uploads").doc();
   batch.set(uploadRef, {
     source: "AI Pipeline (CLI)",
-    dataType: "quickbooks",
+    dataType: "ai-pipeline",
     rowCount: datasets.accountsTop?.length || 0,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -444,22 +672,30 @@ async function main() {
 
   // ── Step 3: Transform ──
   console.log("\n[3/5] Transforming data...");
-  let datasets;
-  if (uploadType === "quickbooks") {
-    datasets = transformQuickBooks(rows, mapping);
-  } else {
-    // Fallback to QB transform for now (most sample data is QB)
-    datasets = transformQuickBooks(rows, mapping);
-  }
+  const result = transformAll(rows, mapping, uploadType);
+  const { type: resolvedType, ...datasets } = result;
 
-  const summary = generateSummary(uploadType, datasets, userRole);
+  const fallbackSummary = generateSummary(uploadType, datasets, userRole);
   console.log(`  → ${datasets.accountsTop?.length || 0} accounts`);
+  console.log(`  → ${datasets.distScorecard?.length || 0} scorecard entries`);
   console.log(`  → ${datasets.pipelineAccounts?.length || 0} pipeline entries`);
   console.log(`  → ${datasets.reorderData?.length || 0} reorder entries`);
+  console.log(`  → ${datasets.inventoryData?.length || 0} inventory entries`);
   console.log(`  → Total revenue: $${(datasets.accountsTop?.reduce((s, a) => s + a.total, 0) || 0).toLocaleString()}`);
 
-  // ── Step 4: Save to JSON (always, as backup) ──
-  console.log("\n[4/5] Saving local backup...");
+  // ── Step 4: AI Executive Summary ──
+  console.log("\n[4/6] Generating AI executive summary...");
+  let summary;
+  try {
+    summary = await generateAISummary(datasets, uploadType, userRole, ANTHROPIC_API_KEY);
+    console.log(`  → AI Summary: ${summary}`);
+  } catch (err) {
+    console.warn(`  → AI summary failed (${err.message}), using template`);
+    summary = fallbackSummary;
+  }
+
+  // ── Step 5: Save to JSON (always, as backup) ──
+  console.log("\n[5/6] Saving local backup...");
   const outputPath = join(__dirname, "pipeline-output.json");
   const output = {
     meta: {
@@ -479,8 +715,8 @@ async function main() {
   writeFileSync(outputPath, JSON.stringify(output, null, 2));
   console.log(`  → Saved to ${outputPath}`);
 
-  // ── Step 5: Save to Firestore ──
-  console.log("\n[5/5] Connecting to Firestore...");
+  // ── Step 6: Save to Firestore ──
+  console.log("\n[6/6] Connecting to Firestore...");
   const db = await initFirestore();
   if (db) {
     await saveToFirestore(db, tenantId, datasets, summary);

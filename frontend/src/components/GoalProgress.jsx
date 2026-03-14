@@ -4,6 +4,8 @@
  * Renders progress bars toward configured annual/quarterly goals.
  */
 
+import { t } from "../utils/terminology";
+
 function GoalBar({ label, current, target, unit, color }) {
   if (!target) return null;
   const pct = Math.min(100, Math.round((current / target) * 100));
@@ -141,7 +143,7 @@ export default function GoalProgress({
           color="#7C3AED"
         />
         <GoalBar
-          label="Active Distributors"
+          label={`Active ${t("distributor")}s`}
           current={activeDists}
           target={goals.totalDistributors}
           unit=""

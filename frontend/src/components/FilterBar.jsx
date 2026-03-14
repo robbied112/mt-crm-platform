@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { t } from "../utils/terminology";
 
 const DATE_RANGE_OPTIONS = [
   { value: "", label: "All Time" },
@@ -161,7 +162,7 @@ export default function FilterBar({
 
       {/* Distributor */}
       <div className="filter-group" style={{ minWidth: 130 }}>
-        <label>Distributor</label>
+        <label>{t("distributor")}</label>
         <select
           value={filters.distributor}
           onChange={(e) => onFilterChange("distributor", e.target.value)}
@@ -172,7 +173,7 @@ export default function FilterBar({
             fontSize: 12,
           }}
         >
-          <option value="">All Distributors</option>
+          <option value="">All {t("distributor")}s</option>
           {distributors.map((d) => (
             <option key={d} value={d}>
               {d}

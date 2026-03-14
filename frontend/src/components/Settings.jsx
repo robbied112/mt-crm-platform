@@ -174,8 +174,7 @@ export default function Settings({
     setRoleSaving(true);
     try {
       await updateTenantConfig({ userRole });
-      // Also update the static config so terminology updates immediately
-      TENANT_CONFIG.userRole = userRole;
+      // DataContext syncs TENANT_CONFIG automatically via useEffect
       setRoleSaved(true);
       setTimeout(() => setRoleSaved(false), 3000);
     } catch (err) {
@@ -373,7 +372,7 @@ export default function Settings({
             { key: "totalAccounts", label: "Total Active Accounts Target", placeholder: "e.g. 500" },
             { key: "newAccountsPerQuarter", label: "New Accounts Per Quarter", placeholder: "e.g. 50" },
             { key: "totalStates", label: "Total States Target", placeholder: "e.g. 15" },
-            { key: "totalDistributors", label: "Total Distributors Target", placeholder: "e.g. 30" },
+            { key: "totalDistributors", label: `Total ${t("distributor")}s Target`, placeholder: "e.g. 30" },
             { key: "annualRevenue", label: "Annual Revenue Target ($)", placeholder: "e.g. 500000" },
           ].map(({ key, label, placeholder }) => (
             <div key={key}>

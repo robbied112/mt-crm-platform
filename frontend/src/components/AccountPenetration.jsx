@@ -5,6 +5,7 @@
  */
 
 import ChartPanel from "./ChartPanel";
+import { t } from "../utils/terminology";
 
 export default function AccountPenetration({
   totalAccounts = 0,
@@ -45,7 +46,7 @@ export default function AccountPenetration({
   return (
     <div className="table-container">
       <div className="table-header">
-        <div className="table-title">Account Penetration</div>
+        <div className="table-title">{t("account")} Penetration</div>
       </div>
       <div style={{ padding: 16 }}>
         {/* Stats grid */}
@@ -68,7 +69,7 @@ export default function AccountPenetration({
             <div style={{ fontSize: 24, fontWeight: 700, color: "#2c3e50" }}>
               {totalAccounts}
             </div>
-            <div style={{ fontSize: 11, color: "#7f8c8d" }}>Total Accounts</div>
+            <div style={{ fontSize: 11, color: "#7f8c8d" }}>Total {t("account")}s</div>
           </div>
           <div
             style={{

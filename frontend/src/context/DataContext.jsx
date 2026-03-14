@@ -2,7 +2,7 @@
  * DataContext — provides all CRM data from Firestore to the app.
  * Also tracks which datasets have data for adaptive UI.
  */
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "./AuthContext";
 import {
   loadAllData,
@@ -139,6 +139,11 @@ export default function DataProvider({ children }) {
   }, [tenantId]);
 
   const userRole = tenantConfig.userRole || "supplier";
+
+  // Sync static TENANT_CONFIG so t() reads current values everywhere
+  useEffect(() => {
+    Object.assign(TENANT_CONFIG, tenantConfig);
+  }, [tenantConfig]);
 
   const value = {
     ...data,

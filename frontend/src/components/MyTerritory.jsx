@@ -193,7 +193,7 @@ export default function MyTerritory({
           No Data Yet
         </div>
         <div style={{ fontSize: 14 }}>
-          Upload your distributor data or explore with sample data to get started.
+          Upload your {t("distributor").toLowerCase()} data or explore with sample data to get started.
         </div>
       </div>
     );
