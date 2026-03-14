@@ -11,6 +11,7 @@ import TENANT_CONFIG from "../config/tenant";
 import { t } from "../utils/terminology";
 import { useData } from "../context/DataContext";
 import DataImport from "./DataImport";
+import CloudSyncSettings from "./CloudSyncSettings";
 
 function SettingsSection({ title, children, headerRight }) {
   return (
@@ -499,6 +500,11 @@ export default function Settings({
           {t("uploadHint")}
         </p>
         <DataImport />
+      </SettingsSection>
+
+      {/* Cloud Sync (Premium) */}
+      <SettingsSection title="Cloud Sync">
+        <CloudSyncSettings />
       </SettingsSection>
 
       {/* Billing (placeholder) */}

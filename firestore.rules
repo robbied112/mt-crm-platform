@@ -58,6 +58,22 @@ service cloud.firestore {
         }
       }
 
+      // Secrets — server-only (Cloud Functions via Admin SDK)
+      match /secrets/{doc} {
+        allow read, write: if false;
+      }
+
+      // Sync state and history — readable by tenant members, writable by server only
+      match /syncState/{doc} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if false;
+      }
+
+      match /syncHistory/{doc} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if false;
+      }
+
       // Upload audit logs
       match /uploadAudit/{auditId} {
         allow read: if isTenantAdmin(tenantId);
