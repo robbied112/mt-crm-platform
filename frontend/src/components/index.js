@@ -14,3 +14,6 @@ export { default as AttentionNeeded } from "./AttentionNeeded";
 export { default as PipelineSummary } from "./PipelineSummary";
 export { default as RecentActivity } from "./RecentActivity";
 export { default as MyAccountsList } from "./MyAccountsList";
+export { default as Depletions } from "./Depletions";
+export { default as ScorecardTable } from "./ScorecardTable";
+export { default as ChartPanel } from "./ChartPanel";

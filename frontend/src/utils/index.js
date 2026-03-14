@@ -11,3 +11,9 @@ export { getDateRangeBounds, dateInRange } from "./dateFilters";
 export { resetSessionTimer, initSessionWatcher } from "./session";
 export { matchesUserTerritory } from "./territory";
 export { getFilteredData } from "./filterData";
+export {
+  getStageBadge,
+  getMomentumBadge,
+  getVelTrendIndicator,
+  getSellThruColor,
+} from "./badges";

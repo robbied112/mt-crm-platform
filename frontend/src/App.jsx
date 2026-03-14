@@ -8,6 +8,7 @@ import {
   Footer,
   KpiCard,
   MyTerritory,
+  Depletions,
 } from "./components";
 import useFilters from "./hooks/useFilters";
 import TENANT_CONFIG from "./config/tenant";
@@ -85,26 +86,18 @@ function App() {
 
         {activeTab === "depletions" && (
           <div id="depletions" className="tab-content active">
-            <div className="kpi-row">
-              <KpiCard label="Total 13W CE" value="0" />
-              <KpiCard label="4W CE" value="0" />
-              <KpiCard label="Markets w/ Momentum" value="0" />
-              <KpiCard label="Consistency Score" value="0%" />
-            </div>
-            <div className="charts-row">
-              <div className="chart-container">
-                <div className="chart-title">Weekly CE by Top Distributors</div>
-                <div className="chart-wrapper">
-                  {/* Chart.js canvas will be mounted here */}
-                </div>
-              </div>
-              <div className="chart-container">
-                <div className="chart-title">SKU Mix</div>
-                <div className="chart-wrapper">
-                  {/* Chart.js canvas will be mounted here */}
-                </div>
-              </div>
-            </div>
+            <Depletions
+              distScorecard={[]}
+              filters={filters}
+              user={currentUser}
+              onDrillIn={(distName) => {
+                console.log("Drill into distributor:", distName);
+                setActiveTab("distributor-detail");
+              }}
+              onExport={() =>
+                console.log("Export scorecard — XLSX not yet wired")
+              }
+            />
           </div>
         )}
 
