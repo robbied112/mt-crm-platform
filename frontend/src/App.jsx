@@ -10,6 +10,7 @@ import {
   MyTerritory,
   Depletions,
   DistributorHealth,
+  Inventory,
 } from "./components";
 import useFilters from "./hooks/useFilters";
 import TENANT_CONFIG from "./config/tenant";
@@ -115,10 +116,15 @@ function App() {
 
         {activeTab === "inventory" && (
           <div id="inventory" className="tab-content active">
-            <div className="section-header">
-              <h3>Inventory</h3>
-              <p>Inventory tracking view — pending migration.</p>
-            </div>
+            <Inventory
+              inventoryData={[]}
+              warehouseInventory={null}
+              filters={filters}
+              user={currentUser}
+              onExport={() =>
+                console.log("Export inventory — XLSX not yet wired")
+              }
+            />
           </div>
         )}
 

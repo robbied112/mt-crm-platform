@@ -20,3 +20,6 @@ export { default as ChartPanel } from "./ChartPanel";
 export { default as DistributorHealth } from "./DistributorHealth";
 export { default as AccountPenetration } from "./AccountPenetration";
 export { default as HealthInventoryTable } from "./HealthInventoryTable";
+export { default as Inventory } from "./Inventory";
+export { default as InventoryTable } from "./InventoryTable";
+export { default as WarehousePanel } from "./WarehousePanel";
