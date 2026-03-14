@@ -5,7 +5,8 @@
 import { useState, useRef, useCallback } from "react";
 import { useData } from "../context/DataContext";
 import parseFile from "../utils/parseFile";
-import { autoDetectMapping, detectUploadType, FIELD_DEFS } from "../utils/semanticMapper";
+import { autoDetectMapping, detectUploadType, getFieldDefs } from "../utils/semanticMapper";
+import { getUserRole } from "../utils/terminology";
 import { aiAutoDetectMapping } from "../utils/aiMapper";
 import { transformAll, generateSummary } from "../utils/transformData";
 import { logUpload } from "../services/firestoreService";
@@ -14,7 +15,7 @@ import { useAuth } from "../context/AuthContext";
 const STEPS = ["upload", "mapping", "preview", "done"];
 
 export default function DataImport() {
-  const { importDatasets } = useData();
+  const { importDatasets, userRole } = useData();
   const { currentUser } = useAuth();
   const [step, setStep] = useState("upload");
   const [file, setFile] = useState(null);
@@ -55,14 +56,14 @@ export default function DataImport() {
           conf = aiResult.confidence;
         } catch {
           // AI failed, fall back
-          const ruleResult = autoDetectMapping(result.headers, result.rows);
+          const ruleResult = autoDetectMapping(result.headers, result.rows, userRole);
           autoMap = ruleResult.mapping;
           conf = ruleResult.confidence;
         } finally {
           setAiLoading(false);
         }
       } else {
-        const ruleResult = autoDetectMapping(result.headers, result.rows);
+        const ruleResult = autoDetectMapping(result.headers, result.rows, userRole);
         autoMap = ruleResult.mapping;
         conf = ruleResult.confidence;
       }
@@ -292,7 +293,7 @@ function MappingStep({ fileName, headers, rows, mapping, confidence, uploadType,
             </tr>
           </thead>
           <tbody>
-            {FIELD_DEFS.map((def) => {
+            {getFieldDefs(getUserRole()).map((def) => {
               const currentCol = mapping[def.field];
               const conf = confidence[def.field] || 0;
               const samples = currentCol

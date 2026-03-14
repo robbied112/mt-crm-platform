@@ -138,10 +138,13 @@ export default function DataProvider({ children }) {
     }
   }, [tenantId]);
 
+  const userRole = tenantConfig.userRole || "supplier";
+
   const value = {
     ...data,
     summary,
     tenantConfig,
+    userRole,
     availability,
     loading,
     error,

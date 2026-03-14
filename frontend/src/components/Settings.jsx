@@ -8,6 +8,7 @@
 
 import { useState } from "react";
 import TENANT_CONFIG from "../config/tenant";
+import { t } from "../utils/terminology";
 import DataImport from "./DataImport";
 
 function SettingsSection({ title, children, headerRight }) {
@@ -163,6 +164,8 @@ export default function Settings({
   onResetSettings,
   onManageBilling,
 }) {
+  const [userRole, setUserRole] = useState(config.userRole || "supplier");
+
   const [branding, setBranding] = useState({
     companyName: config.companyName || "",
     logo: config.logo || "",
@@ -191,7 +194,7 @@ export default function Settings({
     { key: "emailLogging", label: "Email Logging" },
     { key: "activityTimeline", label: "Activity Timeline" },
     { key: "pipeline", label: "Pipeline" },
-    { key: "distributorHealth", label: "Distributor Health" },
+    { key: "distributorHealth", label: `${t("distributor")} Health` },
     { key: "reorderForecast", label: "Reorder Forecast" },
   ];
 
@@ -213,6 +216,57 @@ export default function Settings({
         >
           Change Password
         </button>
+      </SettingsSection>
+
+      {/* Business Role */}
+      <SettingsSection
+        title="Business Role"
+        headerRight={
+          <button
+            className="btn btn-primary"
+            onClick={() => onSaveBranding?.({ userRole })}
+          >
+            Save Role
+          </button>
+        }
+      >
+        <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 12 }}>
+          Set your business type. This controls how data is interpreted, what labels appear throughout the dashboard, and how the AI mapper processes your uploads.
+        </p>
+        <div style={{ display: "flex", gap: 16 }}>
+          {[
+            { value: "supplier", label: "Supplier / Brand", desc: "You sell products through distributors to retail accounts" },
+            { value: "distributor", label: "Distributor / Wholesaler", desc: "You source from suppliers and sell through your own stores/locations" },
+          ].map(({ value, label, desc }) => (
+            <label
+              key={value}
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+                padding: 16,
+                background: userRole === value ? "#F0FDF4" : "#F9FAFB",
+                borderRadius: 10,
+                border: `2px solid ${userRole === value ? "#059669" : "#E5E7EB"}`,
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="radio"
+                name="userRole"
+                value={value}
+                checked={userRole === value}
+                onChange={(e) => setUserRole(e.target.value)}
+                style={{ marginTop: 2, accentColor: "#059669" }}
+              />
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 14, color: "#1F2937" }}>{label}</div>
+                <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>{desc}</div>
+              </div>
+            </label>
+          ))}
+        </div>
       </SettingsSection>
 
       {/* Company Branding */}
@@ -423,7 +477,7 @@ export default function Settings({
       {/* Data Upload */}
       <SettingsSection title="Data Upload">
         <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
-          Upload your distributor and sales data files. The system will automatically detect the format and map columns.
+          {t("uploadHint")}
         </p>
         <DataImport />
       </SettingsSection>

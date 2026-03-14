@@ -6,9 +6,9 @@
 const TABS = [
   { key: "performance", label: "My Territory", dataKey: null },
   { key: "depletions", label: "Depletions", termKey: "depletion", suffix: "s", dataKey: "depletions" },
-  { key: "distributor-detail", label: "Distributors", dataKey: "distributorHealth" },
+  { key: "distributor-detail", termKey: "distributor", suffix: "s", dataKey: "distributorHealth" },
   { key: "inventory", label: "Inventory", dataKey: "inventory" },
-  { key: "accounts", label: "Account Insights", dataKey: "accounts" },
+  { key: "accounts", termKey: "account", suffix: " Insights", dataKey: "accounts" },
   { key: "opportunities", label: "Opportunities", dataKey: "opportunities" },
   { key: "reorder", label: "Reorder Forecast", dataKey: "reorder" },
   { key: "pipeline", label: "Customer Pipeline", accent: true, dataKey: "pipeline" },

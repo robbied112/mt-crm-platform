@@ -10,6 +10,7 @@ import KpiCard from "./KpiCard";
 import ChartPanel from "./ChartPanel";
 import { getFilteredData } from "../utils/filterData";
 import { esc } from "../utils/formatting";
+import { t } from "../utils/terminology";
 
 export default function Opportunities({
   reEngagementData = [],
@@ -91,9 +92,7 @@ export default function Opportunities({
       <div className="section-header">
         <h3>Re-Engagement Opportunities</h3>
         <p>
-          These accounts previously carried your products and represent warm
-          leads for reconnection. Focus outreach here for highest conversion
-          probability.
+          {t("reEngageDescription")}
         </p>
       </div>
 
@@ -101,9 +100,9 @@ export default function Opportunities({
         <table>
           <thead>
             <tr>
-              <th>Distributor</th>
+              <th>{t("distributor")}</th>
               <th>State</th>
-              <th>Accounts to Re-engage</th>
+              <th>{t("account")}s to Re-engage</th>
               <th>Prior Volume (CE)</th>
             </tr>
           </thead>
@@ -145,8 +144,7 @@ export default function Opportunities({
       <div className="section-header">
         <h3>New Wins</h3>
         <p>
-          Recent new accounts — momentum builders for the brand. Ensure proper
-          stocking and distributor support.
+          {t("newWinsDescription")}
         </p>
       </div>
 
@@ -154,8 +152,8 @@ export default function Opportunities({
         <table>
           <thead>
             <tr>
-              <th>Account</th>
-              <th>Distributor</th>
+              <th>{t("account")}</th>
+              <th>{t("distributor")}</th>
               <th>State</th>
               <th>30D CE</th>
               <th>SKUs</th>
@@ -199,7 +197,7 @@ export default function Opportunities({
       {/* Net Placement Chart */}
       <div style={{ marginTop: 25 }}>
         <ChartPanel
-          title="Net Placement Activity by Distributor"
+          title={t("netPlacementTitle")}
           chartConfig={placementChartConfig}
         />
       </div>

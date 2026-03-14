@@ -8,7 +8,8 @@
  * Falls back to the rule-based semanticMapper if the AI call fails.
  */
 
-import { autoDetectMapping, detectUploadType } from "./semanticMapper";
+import { autoDetectMapping } from "./semanticMapper";
+import { getUserRole } from "./terminology";
 
 const INTERNAL_FIELDS = [
   { field: "acct",       label: "Account / Customer Name" },
@@ -50,16 +51,21 @@ function buildSampleTable(headers, rows) {
  */
 export async function aiAutoDetectMapping(headers, rows) {
   const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+  const userRole = getUserRole();
 
   if (!apiKey) {
     console.warn("[AI Mapper] No API key found, falling back to rule-based mapper");
-    return autoDetectMapping(headers, rows);
+    return autoDetectMapping(headers, rows, userRole);
   }
 
   try {
     const table = buildSampleTable(headers, rows);
 
-    const prompt = `You are a data mapping expert for a beverage/CPG CRM. Map each column to an internal field.
+    const roleContext = userRole === "distributor"
+      ? "You are a data mapping expert for a beverage/CPG distributor CRM. The user is a distributor tracking suppliers and their own stores."
+      : "You are a data mapping expert for a beverage/CPG supplier CRM. The user is a supplier tracking distributors and retail accounts.";
+
+    const prompt = `${roleContext} Map each column to an internal field.
 
 INTERNAL FIELDS:
 ${INTERNAL_FIELDS.map((f) => `  ${f.field}: ${f.label}`).join("\n")}
@@ -129,6 +135,6 @@ Return ONLY valid JSON.`;
     return { mapping, confidence, unmapped, uploadType: result.uploadType };
   } catch (err) {
     console.warn(`[AI Mapper] AI mapping failed: ${err.message}. Falling back to rule-based mapper.`);
-    return autoDetectMapping(headers, rows);
+    return autoDetectMapping(headers, rows, userRole);
   }
 }

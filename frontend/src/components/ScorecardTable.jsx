@@ -225,7 +225,7 @@ export default function ScorecardTable({ data = [], onDrillIn, onExport }) {
           {pageData.length === 0 && (
             <tr>
               <td colSpan={12} style={{ textAlign: "center", padding: 40, color: "#64748b" }}>
-                No distributor data available.
+                No {t("distributor").toLowerCase()} data available.
               </td>
             </tr>
           )}

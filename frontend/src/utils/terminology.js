@@ -1,25 +1,76 @@
 /**
  * Terminology helper — returns tenant-specific labels with fallbacks.
- * Extracted from index.html t() function.
+ * Role-aware: swaps "Distributor"/"Account" labels based on userRole.
+ *
+ * Supplier view:  dist = Distributor, acct = Account
+ * Distributor view: dist = Supplier, acct = Store
  */
 
 import TENANT_CONFIG from "../config/tenant";
 
-const DEFAULTS = {
-  volume: "CE",
-  longPeriod: "13W",
-  shortPeriod: "4W",
-  distributor: "Distributor",
-  account: "Account",
-  depletion: "Depletion",
+const ROLE_DEFAULTS = {
+  supplier: {
+    volume: "CE",
+    longPeriod: "13W",
+    shortPeriod: "4W",
+    distributor: "Distributor",
+    account: "Account",
+    depletion: "Depletion",
+    healthTab: "Distributor Health",
+    selectEntity: "Select Distributor",
+    chooseEntity: "Choose a distributor",
+    purchaseLabel: "Distributor Purchases",
+    entityScorecard: "Distributor Scorecard",
+    noEntityData: "No Distributor Data",
+    uploadEntityHint: "Upload distributor health data to populate this view.",
+    reEngageDescription: "These accounts previously carried your products and represent warm leads for reconnection. Focus outreach here for highest conversion probability.",
+    newWinsDescription: "Recent new accounts — momentum builders for the brand. Ensure proper stocking and distributor support.",
+    netPlacementTitle: "Net Placement Activity by Distributor",
+    uploadHint: "Upload your distributor and sales data files. The system will automatically detect the format and map columns.",
+  },
+  distributor: {
+    volume: "CE",
+    longPeriod: "13W",
+    shortPeriod: "4W",
+    distributor: "Supplier",
+    account: "Store",
+    depletion: "Sell-Through",
+    healthTab: "Supplier Health",
+    selectEntity: "Select Supplier",
+    chooseEntity: "Choose a supplier",
+    purchaseLabel: "Supplier Orders",
+    entityScorecard: "Supplier Scorecard",
+    noEntityData: "No Supplier Data",
+    uploadEntityHint: "Upload supplier data to populate this view.",
+    reEngageDescription: "These stores previously carried products from these suppliers and represent warm leads for restocking. Focus outreach here for highest conversion probability.",
+    newWinsDescription: "Recently added supplier products — momentum builders for the portfolio. Ensure proper stocking and shelf space.",
+    netPlacementTitle: "Net Placement Activity by Supplier",
+    uploadHint: "Upload your supplier and inventory data files. The system will automatically detect the format and map columns.",
+  },
 };
 
 /**
  * Get the tenant-specific term for a given key.
- * @param {string} key - One of: volume, longPeriod, shortPeriod, distributor, account, depletion
+ * Checks tenant overrides first, then role-specific defaults.
+ *
+ * @param {string} key - Term key (e.g., "distributor", "account", "healthTab")
  * @returns {string}
  */
 export function t(key) {
+  // Tenant-level overrides always win
   const terms = TENANT_CONFIG.terminology || {};
-  return terms[key] || DEFAULTS[key] || key;
+  if (terms[key]) return terms[key];
+
+  // Role-specific defaults
+  const role = TENANT_CONFIG.userRole || "supplier";
+  const roleDefaults = ROLE_DEFAULTS[role] || ROLE_DEFAULTS.supplier;
+  return roleDefaults[key] || key;
+}
+
+/**
+ * Get the current user role.
+ * @returns {"supplier" | "distributor"}
+ */
+export function getUserRole() {
+  return TENANT_CONFIG.userRole || "supplier";
 }

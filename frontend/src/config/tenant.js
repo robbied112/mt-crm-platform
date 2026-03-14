@@ -6,6 +6,7 @@
 
 const TENANT_CONFIG = {
   tenantId: "default",
+  userRole: "supplier",  // "supplier" | "distributor"
   companyName: "",
   logo: "",
   primaryColor: "#0F766E",

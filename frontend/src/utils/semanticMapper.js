@@ -25,12 +25,39 @@ const PIPELINE_STAGES = new Set([
 /**
  * Internal field definitions with header aliases and value testers.
  * Priority order matters — first match wins for ambiguous columns.
+ * Use getFieldDefs(userRole) for role-aware labels and aliases.
  */
-const FIELD_DEFS = [
+
+const ACCT_ALIASES_COMMON = ["account", "account name", "customer", "outlet", "retailer", "location", "store", "buyer", "customer name", "name", "customer:job", "ship to name", "bill to name", "sold to", "customer full name", "customer company"];
+const DIST_ALIASES_COMMON = ["distributor", "wholesaler", "dist", "dist name", "supplier", "vendor", "distributor name", "wholesale"];
+
+const ROLE_FIELD_OVERRIDES = {
+  supplier: {
+    acct: { label: "Account Name", extraAliases: [] },
+    dist: { label: "Distributor", extraAliases: [] },
+  },
+  distributor: {
+    acct: { label: "Store / Location", extraAliases: ["warehouse", "branch", "site", "depot"] },
+    dist: { label: "Supplier / Vendor", extraAliases: ["brand", "brand house", "manufacturer", "producer", "winery", "brewery", "distillery"] },
+  },
+};
+
+/**
+ * Get field definitions for a specific user role.
+ * @param {"supplier"|"distributor"} userRole
+ * @returns {Array}
+ */
+export function getFieldDefs(userRole = "supplier") {
+  const overrides = ROLE_FIELD_OVERRIDES[userRole] || ROLE_FIELD_OVERRIDES.supplier;
+  return buildFieldDefs(overrides);
+}
+
+function buildFieldDefs(overrides) {
+  return [
   {
     field: "acct",
-    label: "Account Name",
-    headerAliases: ["account", "account name", "customer", "outlet", "retailer", "location", "store", "buyer", "customer name", "name", "customer:job", "ship to name", "bill to name", "sold to", "customer full name", "customer company"],
+    label: overrides.acct.label,
+    headerAliases: [...ACCT_ALIASES_COMMON, ...overrides.acct.extraAliases],
     testValues: (vals) => {
       // Account names: mostly strings, many unique, often contain business words
       const businessWords = /\b(bar|grill|tavern|restaurant|store|liquor|market|pub|cafe|lounge|bistro|inn|hotel|club|wine|beer|pizza|bbq|brew|tap|bottle)\b/i;
@@ -40,8 +67,8 @@ const FIELD_DEFS = [
   },
   {
     field: "dist",
-    label: "Distributor",
-    headerAliases: ["distributor", "wholesaler", "dist", "dist name", "supplier", "vendor", "distributor name", "wholesale"],
+    label: overrides.dist.label,
+    headerAliases: [...DIST_ALIASES_COMMON, ...overrides.dist.extraAliases],
     testValues: (vals) => {
       const distWords = /\b(distribut|wholesale|beverage|wine.*spirit|republic|breakthru|southern|rndc|johnson|young|martignetti|empire|charmer)\b/i;
       const matchCount = vals.filter((v) => typeof v === "string" && distWords.test(v)).length;
@@ -150,6 +177,10 @@ const FIELD_DEFS = [
     testValues: () => 0,
   },
 ];
+}
+
+// Default FIELD_DEFS for backward compatibility (supplier role)
+const FIELD_DEFS = getFieldDefs("supplier");
 
 /**
  * Score how well a header matches a field definition.
@@ -171,9 +202,11 @@ function scoreHeaderMatch(header, aliases) {
  *
  * @param {string[]} headers - Column headers from the file
  * @param {object[]} rows - Parsed rows (first 5 used for sampling)
+ * @param {string} [userRole="supplier"] - User role for field definitions
  * @returns {{ mapping: object, confidence: object, unmapped: string[] }}
  */
-export function autoDetectMapping(headers, rows) {
+export function autoDetectMapping(headers, rows, userRole = "supplier") {
+  const fieldDefs = getFieldDefs(userRole);
   const sampleRows = rows.slice(0, 5);
   const mapping = {};       // { internalField: csvColumn }
   const confidence = {};    // { internalField: 0-1 }
@@ -181,7 +214,7 @@ export function autoDetectMapping(headers, rows) {
 
   // Score every (field, column) pair
   const scores = [];
-  for (const def of FIELD_DEFS) {
+  for (const def of fieldDefs) {
     for (const col of headers) {
       const headerScore = scoreHeaderMatch(col, def.headerAliases);
       const sampleValues = sampleRows.map((r) => r[col]).filter((v) => v !== "" && v != null);

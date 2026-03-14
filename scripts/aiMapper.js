@@ -44,24 +44,46 @@ function buildSampleTable(headers, rows) {
   return lines.join("\n");
 }
 
+const ROLE_CONTEXT = {
+  supplier: {
+    system: "You are a data mapping expert for a beverage/CPG supplier CRM. The user is a brand/supplier tracking product performance through distributors to retail accounts.",
+    distHint: "dist: Distributor / Wholesaler — the distribution company that carries the supplier's products",
+    acctHint: "acct: Account / Retail Outlet — the end customer (bar, restaurant, store, retailer)",
+  },
+  distributor: {
+    system: "You are a data mapping expert for a beverage/CPG distributor CRM. The user is a distributor tracking supplier/vendor relationships and performance across their own stores and locations.",
+    distHint: "dist: Supplier / Vendor — the brand house, manufacturer, or supplier whose products the distributor carries",
+    acctHint: "acct: Store / Location — the distributor's own store, warehouse, branch, or delivery point",
+  },
+};
+
 /**
  * AI-powered column mapping using Claude.
  *
  * @param {string[]} headers - Column headers from the parsed file
  * @param {object[]} rows    - Parsed data rows (objects keyed by header)
  * @param {string}   apiKey  - Anthropic API key
+ * @param {string}   [userRole="supplier"] - User role for context
  * @returns {Promise<{ mapping, confidence, unmapped, uploadType }>}
  */
-export async function aiAutoDetectMapping(headers, rows, apiKey) {
+export async function aiAutoDetectMapping(headers, rows, apiKey, userRole = "supplier") {
   const client = new Anthropic({ apiKey });
   const table = buildSampleTable(headers, rows);
+  const roleCtx = ROLE_CONTEXT[userRole] || ROLE_CONTEXT.supplier;
 
-  const systemPrompt = `You are a data mapping expert for a beverage/CPG CRM platform. Your job is to analyze uploaded spreadsheet data and map each column to the correct internal field. You understand QuickBooks exports, distributor depletion reports, inventory files, and sales pipeline data.`;
+  const systemPrompt = roleCtx.system;
+
+  // Override acct/dist descriptions based on role
+  const roleFields = INTERNAL_FIELDS.map((f) => {
+    if (f.field === "acct") return { ...f, description: roleCtx.acctHint.split(" — ")[1] };
+    if (f.field === "dist") return { ...f, description: roleCtx.distHint.split(" — ")[1] };
+    return f;
+  });
 
   const userPrompt = `Analyze these column headers and sample data rows. Map each source column to the most appropriate internal CRM field.
 
 INTERNAL CRM FIELDS:
-${INTERNAL_FIELDS.map((f) => `  ${f.field}: ${f.label} — ${f.description}`).join("\n")}
+${roleFields.map((f) => `  ${f.field}: ${f.label} — ${f.description}`).join("\n")}
 
 SOURCE DATA:
 ${table}

@@ -98,7 +98,7 @@ export default function DistributorHealth({
         labels: ["Nov", "Dec", "Jan", "Feb"],
         datasets: [
           {
-            label: "Distributor Purchases (CE)",
+            label: `${t("purchaseLabel")} (CE)`,
             data: [h.nov || 0, h.dec || 0, h.jan || 0, h.feb || 0],
             backgroundColor: [
               "rgba(155,89,182,0.7)",
@@ -128,13 +128,13 @@ export default function DistributorHealth({
       {/* Distributor Selector */}
       <div className="filter-bar">
         <div className="filter-group">
-          <label>Select Distributor</label>
+          <label>{t("selectEntity")}</label>
           <select
             className="dropdown-select"
             value={effectiveDist}
             onChange={(e) => setSelectedDist(e.target.value)}
           >
-            <option value="">-- Choose a distributor --</option>
+            <option value="">-- {t("chooseEntity")} --</option>
             {distributorOptions.map((dist) => (
               <option key={dist} value={dist}>
                 {dist}
@@ -244,10 +244,10 @@ export default function DistributorHealth({
               marginBottom: 8,
             }}
           >
-            Select a Distributor
+            {t("selectEntity")}
           </div>
           <div style={{ fontSize: 14 }}>
-            Choose a distributor above to see their health metrics, inventory
+            {t("chooseEntity")} above to see their health metrics, inventory
             coverage, and account penetration.
           </div>
         </div>
@@ -271,10 +271,10 @@ export default function DistributorHealth({
               marginBottom: 8,
             }}
           >
-            No Distributor Data
+            {t("noEntityData")}
           </div>
           <div style={{ fontSize: 14 }}>
-            Upload distributor health data to populate this view.
+            {t("uploadEntityHint")}
           </div>
         </div>
       )}

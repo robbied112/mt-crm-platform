@@ -528,23 +528,27 @@ export function transformQuickBooks(rows, mapping, qbFormat) {
 
 // ─── Executive Summary Generator ────────────────────────────────
 
-export function generateSummary(dataType, datasets) {
+export function generateSummary(dataType, datasets, userRole = "supplier") {
   const parts = [];
+  const isDistributor = userRole === "distributor";
+  const entityName = isDistributor ? "supplier" : "distributor";
+  const acctName = isDistributor ? "store" : "customer";
+  const dataLabel = isDistributor ? "sell-through" : "depletion";
 
   if (dataType === "quickbooks") {
     const acctCount = datasets.accountsTop?.length || 0;
     const totalRev = datasets.accountsTop?.reduce((s, a) => s + a.total, 0) || 0;
     const topAcct = datasets.accountsTop?.[0]?.acct || "N/A";
-    parts.push(`I've processed your QuickBooks data: ${acctCount} customers with $${totalRev.toLocaleString()} in total revenue.`);
-    parts.push(`Your top account is "${topAcct}".`);
-    parts.push("Inventory and Reorder data is not available from QuickBooks — upload a distributor depletion report to unlock those tabs.");
+    parts.push(`I've processed your QuickBooks data: ${acctCount} ${acctName}s with $${totalRev.toLocaleString()} in total revenue.`);
+    parts.push(`Your top ${acctName} is "${topAcct}".`);
+    parts.push(`Inventory and Reorder data is not available from QuickBooks — upload a ${entityName} ${dataLabel} report to unlock those tabs.`);
   } else if (dataType === "depletion") {
     const distCount = datasets.distScorecard?.length || 0;
     const acctCount = datasets.accountsTop?.length || 0;
     const totalCE = datasets.distScorecard?.reduce((s, d) => s + d.ce, 0) || 0;
-    const momentumDists = datasets.distScorecard?.filter((d) => d.momentum && !d.momentum.startsWith("-") && d.momentum !== "+0%").length || 0;
-    parts.push(`I've processed your depletion data: ${distCount} distributors, ${acctCount} accounts, ${totalCE.toLocaleString()} total CE.`);
-    parts.push(`${momentumDists} distributor${momentumDists !== 1 ? "s" : ""} showing positive momentum.`);
+    const momentumCount = datasets.distScorecard?.filter((d) => d.momentum && !d.momentum.startsWith("-") && d.momentum !== "+0%").length || 0;
+    parts.push(`I've processed your ${dataLabel} data: ${distCount} ${entityName}s, ${acctCount} ${acctName}s, ${totalCE.toLocaleString()} total CE.`);
+    parts.push(`${momentumCount} ${entityName}${momentumCount !== 1 ? "s" : ""} showing positive momentum.`);
     if (!datasets.reorderData?.length) {
       parts.push("Upload purchase history with dates to unlock Reorder Forecasting.");
     } else {
@@ -553,21 +557,21 @@ export function generateSummary(dataType, datasets) {
   } else if (dataType === "purchases") {
     const reorderCount = datasets.reorderData?.length || 0;
     const overdueCount = datasets.reorderData?.filter((r) => r.days > r.cycle * 1.5).length || 0;
-    parts.push(`I've processed your order history: ${reorderCount} accounts tracked.`);
-    parts.push(`${overdueCount} account${overdueCount !== 1 ? "s" : ""} are overdue for reorder.`);
-    parts.push("Upload depletion data to unlock Distributor Scorecards and Account Insights.");
+    parts.push(`I've processed your order history: ${reorderCount} ${acctName}s tracked.`);
+    parts.push(`${overdueCount} ${acctName}${overdueCount !== 1 ? "s" : ""} are overdue for reorder.`);
+    parts.push(`Upload ${dataLabel} data to unlock ${isDistributor ? "Supplier" : "Distributor"} Scorecards and ${isDistributor ? "Store" : "Account"} Insights.`);
   } else if (dataType === "inventory") {
     const stateCount = datasets.inventoryData?.length || 0;
     const reorderOpps = datasets.inventoryData?.filter((i) => i.status === "Reorder Opportunity").length || 0;
     parts.push(`I've processed inventory data across ${stateCount} states.`);
     parts.push(`${reorderOpps} state${reorderOpps !== 1 ? "s" : ""} flagged as reorder opportunities.`);
-    parts.push("Upload depletion data to see the full picture with distributor health.");
+    parts.push(`Upload ${dataLabel} data to see the full picture with ${entityName} health.`);
   } else if (dataType === "pipeline") {
     const dealCount = datasets.pipelineAccounts?.length || 0;
     const totalVal = datasets.pipelineAccounts?.reduce((s, p) => s + p.estValue, 0) || 0;
     parts.push(`I've imported ${dealCount} pipeline deals worth $${totalVal.toLocaleString()}.`);
     parts.push("Your pipeline is ready for tracking on the Customer Pipeline tab.");
-    parts.push("Upload depletion data to connect pipeline insights with market performance.");
+    parts.push(`Upload ${dataLabel} data to connect pipeline insights with market performance.`);
   } else {
     parts.push("I've processed your data file.");
     parts.push("Some fields could not be automatically detected — check the column mapping.");
@@ -579,7 +583,7 @@ export function generateSummary(dataType, datasets) {
 
 // ─── Master Transform ───────────────────────────────────────────
 
-export function transformAll(rows, mapping, uploadType) {
+export function transformAll(rows, mapping, uploadType, userRole = "supplier") {
   if (uploadType.type === "quickbooks") {
     return { type: "quickbooks", ...transformQuickBooks(rows, mapping, uploadType.subtype) };
   }

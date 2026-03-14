@@ -10,6 +10,7 @@ import KpiCard from "./KpiCard";
 import ChartPanel from "./ChartPanel";
 import { getFilteredData } from "../utils/filterData";
 import { esc } from "../utils/formatting";
+import { t } from "../utils/terminology";
 
 const PAGE_SIZE = 50;
 
@@ -302,8 +303,8 @@ export default function ReorderForecast({
 
   const columns = [
     { key: "rank", label: "#" },
-    { key: "acct", label: "Account" },
-    { key: "dist", label: "Distributor" },
+    { key: "acct", label: t("account") },
+    { key: "dist", label: t("distributor") },
     { key: "st", label: "State" },
     { key: "ch", label: "Channel" },
     { key: "ce", label: "4M CE" },

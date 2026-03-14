@@ -10,6 +10,7 @@ import KpiCard from "./KpiCard";
 import ChartPanel from "./ChartPanel";
 import { getFilteredData } from "../utils/filterData";
 import { esc } from "../utils/formatting";
+import { t } from "../utils/terminology";
 
 const PAGE_SIZE = 50;
 
@@ -149,8 +150,8 @@ export default function AccountInsights({
 
   const columns = [
     { key: "rank", label: "#" },
-    { key: "acct", label: "Account" },
-    { key: "dist", label: "Distributor" },
+    { key: "acct", label: t("account") },
+    { key: "dist", label: t("distributor") },
     { key: "st", label: "State" },
     { key: "ch", label: "Channel" },
     { key: "nov", label: "Nov" },
@@ -166,10 +167,10 @@ export default function AccountInsights({
     <div>
       {/* KPI Row */}
       <div className="kpi-row">
-        <KpiCard label="Total Accounts" value={data.length} />
-        <KpiCard label="Momentum Accounts" value={momentumAccounts} />
+        <KpiCard label={`Total ${t("account")}s`} value={data.length} />
+        <KpiCard label={`Momentum ${t("account")}s`} value={momentumAccounts} />
         <KpiCard label="Growth Opportunity" value={growthAccounts} />
-        <KpiCard label="Consistent Accounts" value={consistentAccounts} />
+        <KpiCard label={`Consistent ${t("account")}s`} value={consistentAccounts} />
       </div>
 
       {/* Trend Chart */}
@@ -186,12 +187,12 @@ export default function AccountInsights({
       {/* Accounts Table */}
       <div className="table-container">
         <div className="table-header">
-          <div className="table-title">Accounts</div>
+          <div className="table-title">{t("account")}s</div>
           <div className="table-controls">
             <input
               type="text"
               className="search-input"
-              placeholder="Search accounts..."
+              placeholder={`Search ${t("account").toLowerCase()}s...`}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
