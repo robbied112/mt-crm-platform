@@ -12,6 +12,7 @@ import {
   DistributorHealth,
   Inventory,
   AccountInsights,
+  Opportunities,
 } from "./components";
 import useFilters from "./hooks/useFilters";
 import TENANT_CONFIG from "./config/tenant";
@@ -148,12 +149,16 @@ function App() {
 
         {activeTab === "opportunities" && (
           <div id="opportunities" className="tab-content active">
-            <div className="section-header">
-              <h3>Opportunities</h3>
-              <p>
-                Re-engagement and new win opportunities — pending migration.
-              </p>
-            </div>
+            <Opportunities
+              reEngagementData={[]}
+              newWins={[]}
+              placementSummary={[]}
+              filters={filters}
+              user={currentUser}
+              onAccountClick={(name) =>
+                console.log("Open account panel:", name)
+              }
+            />
           </div>
         )}
 

@@ -24,3 +24,4 @@ export { default as Inventory } from "./Inventory";
 export { default as InventoryTable } from "./InventoryTable";
 export { default as WarehousePanel } from "./WarehousePanel";
 export { default as AccountInsights } from "./AccountInsights";
+export { default as Opportunities } from "./Opportunities";
