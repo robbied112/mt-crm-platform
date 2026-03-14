@@ -30,7 +30,7 @@ const FIELD_DEFS = [
   {
     field: "acct",
     label: "Account Name",
-    headerAliases: ["account", "account name", "customer", "outlet", "retailer", "location", "store", "buyer", "customer name", "name"],
+    headerAliases: ["account", "account name", "customer", "outlet", "retailer", "location", "store", "buyer", "customer name", "name", "customer:job", "ship to name", "bill to name", "sold to"],
     testValues: (vals) => {
       // Account names: mostly strings, many unique, often contain business words
       const businessWords = /\b(bar|grill|tavern|restaurant|store|liquor|market|pub|cafe|lounge|bistro|inn|hotel|club|wine|beer|pizza|bbq|brew|tap|bottle)\b/i;
@@ -78,7 +78,7 @@ const FIELD_DEFS = [
   {
     field: "qty",
     label: "Quantity / Volume",
-    headerAliases: ["qty", "quantity", "cases", "volume", "ce", "units", "amount sold", "total cases", "case equiv", "9le", "9l equiv", "units sold", "physical cases"],
+    headerAliases: ["qty", "quantity", "cases", "volume", "ce", "units", "amount sold", "total cases", "case equiv", "9le", "9l equiv", "units sold", "physical cases", "shipped qty", "ordered qty"],
     testValues: (vals) => {
       const nums = vals.filter((v) => !isNaN(parseFloat(v)) && parseFloat(v) > 0);
       return nums.length >= 4 ? 0.5 : 0; // Low confidence — many columns are numeric
@@ -87,7 +87,7 @@ const FIELD_DEFS = [
   {
     field: "date",
     label: "Date / Period",
-    headerAliases: ["date", "period", "week", "month", "invoice date", "order date", "ship date", "transaction date", "txn date"],
+    headerAliases: ["date", "period", "week", "month", "invoice date", "order date", "ship date", "transaction date", "txn date", "create date", "due date", "posting date"],
     testValues: (vals) => {
       const datePattern = /^\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4}$|^\d{4}[/\-]\d{1,2}[/\-]\d{1,2}$|^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i;
       const matches = vals.filter((v) => datePattern.test(String(v).trim()));
@@ -97,7 +97,7 @@ const FIELD_DEFS = [
   {
     field: "revenue",
     label: "Revenue / Dollar Amount",
-    headerAliases: ["revenue", "sales", "amount", "total", "price", "ext price", "extended price", "dollars", "debit", "credit", "balance", "net amount"],
+    headerAliases: ["revenue", "sales", "amount", "total", "price", "ext price", "extended price", "dollars", "debit", "credit", "balance", "net amount", "sales price", "avg price", "line total", "open balance"],
     testValues: (vals) => {
       const dollarPattern = /^\$?[\d,]+\.?\d*$/;
       const matches = vals.filter((v) => dollarPattern.test(String(v).trim().replace(/[()]/g, "")));
@@ -230,12 +230,21 @@ export function detectQuickBooksFormat(headers) {
   const qbSignatures = [
     // QB Transaction Detail
     ["date", "num", "name", "memo", "account", "debit", "credit"],
-    // QB Sales by Item
+    // QB Sales by Item Summary/Detail
     ["item", "qty", "amount", "balance"],
     // QB Customer report
     ["customer", "invoice", "amount", "balance"],
+    // QB Sales by Customer
+    ["customer:job", "amount"],
+    // QB Invoice list
+    ["date", "invoice", "name", "amount", "balance"],
     // QB Profit & Loss
     ["account", "total"],
+    // QB Estimates
+    ["date", "num", "customer", "amount"],
+    // QB General variants
+    ["type", "date", "name", "amount"],
+    ["date", "name", "amount", "open balance"],
   ];
 
   const lowerHeaders = headers.map((h) => h.toLowerCase().trim());
