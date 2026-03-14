@@ -8,6 +8,7 @@
 
 import { useState } from "react";
 import TENANT_CONFIG from "../config/tenant";
+import DataImport from "./DataImport";
 
 function SettingsSection({ title, children, headerRight }) {
   return (
@@ -419,27 +420,12 @@ export default function Settings({
         </div>
       </SettingsSection>
 
-      {/* Data Upload (placeholder) */}
+      {/* Data Upload */}
       <SettingsSection title="Data Upload">
         <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
-          Upload your distributor and sales data files. Supported formats: VIP depletion exports, QuickBooks sales reports (.xlsx)
+          Upload your distributor and sales data files. The system will automatically detect the format and map columns.
         </p>
-        <div
-          style={{
-            border: "2px dashed #D1D5DB",
-            borderRadius: 12,
-            padding: 40,
-            textAlign: "center",
-          }}
-        >
-          <div style={{ fontSize: 32, marginBottom: 8 }}>&#128202;</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: "#374151" }}>
-            Drop Excel files here or click to browse
-          </div>
-          <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 4 }}>
-            Supports .xlsx files up to 10MB
-          </div>
-        </div>
+        <DataImport />
       </SettingsSection>
 
       {/* Billing (placeholder) */}

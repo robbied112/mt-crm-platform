@@ -1,19 +1,18 @@
 /**
- * TabNav component
- * Extracted from index.html lines 1182-1193.
- * Horizontal tab navigation for the dashboard sections.
+ * TabNav component — adaptive tab navigation.
+ * Tabs requiring missing data show a "needs data" indicator.
  */
 
 const TABS = [
-  { key: "performance", label: "My Territory" },
-  { key: "depletions", label: "Depletions", termKey: "depletion", suffix: "s" },
-  { key: "distributor-detail", label: "Distributors" },
-  { key: "inventory", label: "Inventory" },
-  { key: "accounts", label: "Account Insights" },
-  { key: "opportunities", label: "Opportunities" },
-  { key: "reorder", label: "Reorder Forecast" },
-  { key: "pipeline", label: "Customer Pipeline", accent: true },
-  { key: "admin-settings", label: "Settings", adminOnly: true },
+  { key: "performance", label: "My Territory", dataKey: null },
+  { key: "depletions", label: "Depletions", termKey: "depletion", suffix: "s", dataKey: "depletions" },
+  { key: "distributor-detail", label: "Distributors", dataKey: "distributorHealth" },
+  { key: "inventory", label: "Inventory", dataKey: "inventory" },
+  { key: "accounts", label: "Account Insights", dataKey: "accounts" },
+  { key: "opportunities", label: "Opportunities", dataKey: "opportunities" },
+  { key: "reorder", label: "Reorder Forecast", dataKey: "reorder" },
+  { key: "pipeline", label: "Customer Pipeline", accent: true, dataKey: "pipeline" },
+  { key: "admin-settings", label: "Settings", adminOnly: true, dataKey: null },
 ];
 
 export default function TabNav({
@@ -22,8 +21,8 @@ export default function TabNav({
   onHelpClick,
   isAdmin = false,
   terminology,
+  availability,
 }) {
-  // Resolve the display label, applying terminology overrides if provided
   function getLabel(tab) {
     if (tab.termKey && terminology) {
       const term = terminology[tab.termKey];
@@ -38,6 +37,7 @@ export default function TabNav({
         if (tab.adminOnly && !isAdmin) return null;
 
         const isActive = activeTab === tab.key;
+        const hasData = !tab.dataKey || !availability || availability[tab.dataKey];
         let className = "tab";
         if (isActive) className += " active";
         if (tab.accent) className += " tab-accent-blue";
@@ -50,8 +50,19 @@ export default function TabNav({
             role="tab"
             aria-selected={isActive}
             onClick={() => onTabChange(tab.key)}
+            style={!hasData ? { opacity: 0.5 } : undefined}
           >
             {getLabel(tab)}
+            {!hasData && (
+              <span style={{
+                display: "inline-block",
+                width: 6, height: 6,
+                borderRadius: "50%",
+                background: "#d97706",
+                marginLeft: 5,
+                verticalAlign: "middle",
+              }} title="Data required" />
+            )}
           </button>
         );
       })}

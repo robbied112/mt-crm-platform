@@ -1,0 +1,88 @@
+/**
+ * ExecutiveSummary — displays the AI-generated summary banner
+ * at the top of the dashboard after data is imported.
+ */
+import { useData } from "../context/DataContext";
+
+export default function ExecutiveSummary() {
+  const { summary, availability } = useData();
+
+  if (!summary || !availability.hasAnyData) return null;
+
+  // Build list of missing data types
+  const missing = [];
+  if (!availability.depletions) missing.push("Depletion Data");
+  if (!availability.inventory) missing.push("Inventory Data");
+  if (!availability.reorder) missing.push("Purchase History");
+  if (!availability.pipeline) missing.push("Pipeline Data");
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.header}>
+        <span style={styles.icon}>&#9889;</span>
+        <span style={styles.title}>Data Intelligence</span>
+      </div>
+      <p style={styles.text}>{summary}</p>
+      {missing.length > 0 && missing.length < 4 && (
+        <div style={styles.missingRow}>
+          <span style={styles.missingLabel}>Unlock more tabs:</span>
+          {missing.map((m) => (
+            <span key={m} style={styles.missingBadge}>{m}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const styles = {
+  container: {
+    background: "linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%)",
+    border: "1px solid #99f6e4",
+    borderRadius: 12,
+    padding: "16px 20px",
+    marginBottom: 20,
+  },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 6,
+  },
+  icon: {
+    fontSize: 16,
+  },
+  title: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#0f766e",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+  },
+  text: {
+    fontSize: 14,
+    color: "#334155",
+    lineHeight: 1.6,
+    margin: 0,
+  },
+  missingRow: {
+    marginTop: 10,
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    flexWrap: "wrap",
+  },
+  missingLabel: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: "#6B7280",
+  },
+  missingBadge: {
+    fontSize: 11,
+    fontWeight: 600,
+    padding: "2px 8px",
+    background: "#fef3c7",
+    color: "#92400e",
+    borderRadius: 10,
+  },
+};

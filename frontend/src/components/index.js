@@ -31,3 +31,5 @@ export { default as PipelineFunnel } from "./PipelineFunnel";
 export { default as PipelineBreakdowns } from "./PipelineBreakdowns";
 export { default as Settings } from "./Settings";
 export { default as Login } from "./Login";
+export { default as DataImport } from "./DataImport";
+export { default as ExecutiveSummary } from "./ExecutiveSummary";
