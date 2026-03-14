@@ -17,3 +17,6 @@ export { default as MyAccountsList } from "./MyAccountsList";
 export { default as Depletions } from "./Depletions";
 export { default as ScorecardTable } from "./ScorecardTable";
 export { default as ChartPanel } from "./ChartPanel";
+export { default as DistributorHealth } from "./DistributorHealth";
+export { default as AccountPenetration } from "./AccountPenetration";
+export { default as HealthInventoryTable } from "./HealthInventoryTable";

@@ -9,6 +9,7 @@ import {
   KpiCard,
   MyTerritory,
   Depletions,
+  DistributorHealth,
 } from "./components";
 import useFilters from "./hooks/useFilters";
 import TENANT_CONFIG from "./config/tenant";
@@ -103,10 +104,12 @@ function App() {
 
         {activeTab === "distributor-detail" && (
           <div id="distributor-detail" className="tab-content active">
-            <div className="section-header">
-              <h3>Distributors</h3>
-              <p>Distributor health and detail view — pending migration.</p>
-            </div>
+            <DistributorHealth
+              distHealth={[]}
+              distScorecard={[]}
+              user={currentUser}
+              filters={filters}
+            />
           </div>
         )}
 
