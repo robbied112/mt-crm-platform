@@ -30,3 +30,4 @@ export { default as CustomerPipeline } from "./CustomerPipeline";
 export { default as PipelineFunnel } from "./PipelineFunnel";
 export { default as PipelineBreakdowns } from "./PipelineBreakdowns";
 export { default as Settings } from "./Settings";
+export { default as Login } from "./Login";

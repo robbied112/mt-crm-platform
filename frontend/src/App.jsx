@@ -16,16 +16,28 @@ import {
   ReorderForecast,
   CustomerPipeline,
   Settings,
+  Login,
 } from "./components";
 import useFilters from "./hooks/useFilters";
 import TENANT_CONFIG from "./config/tenant";
+import { useAuth } from "./context/AuthContext";
 
 function App() {
   const [activeTab, setActiveTab] = useState("performance");
   const { filters, updateFilter, clearAll } = useFilters();
+  const { currentUser, logout, loading } = useAuth();
 
-  // Placeholder user — will be wired to Firebase auth during migration
-  const [currentUser] = useState(null);
+  if (loading) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
+        <p style={{ color: "#64748b", fontSize: "15px" }}>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return <Login />;
+  }
 
   return (
     <>
@@ -36,7 +48,7 @@ function App() {
       <UserBar
         user={currentUser}
         visible={!!currentUser}
-        onLogout={() => {}}
+        onLogout={logout}
         onManageUsers={() => {}}
       />
 
@@ -58,7 +70,7 @@ function App() {
           reps={[]}
           products={TENANT_CONFIG.productLines}
           distributors={[]}
-          userName={currentUser?.name}
+          userName={currentUser?.displayName || currentUser?.email}
         />
 
         <TabNav
