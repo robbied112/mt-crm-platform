@@ -23,3 +23,4 @@ export { default as HealthInventoryTable } from "./HealthInventoryTable";
 export { default as Inventory } from "./Inventory";
 export { default as InventoryTable } from "./InventoryTable";
 export { default as WarehousePanel } from "./WarehousePanel";
+export { default as AccountInsights } from "./AccountInsights";

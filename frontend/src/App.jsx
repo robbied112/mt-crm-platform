@@ -11,6 +11,7 @@ import {
   Depletions,
   DistributorHealth,
   Inventory,
+  AccountInsights,
 } from "./components";
 import useFilters from "./hooks/useFilters";
 import TENANT_CONFIG from "./config/tenant";
@@ -130,10 +131,18 @@ function App() {
 
         {activeTab === "accounts" && (
           <div id="accounts" className="tab-content active">
-            <div className="section-header">
-              <h3>Account Insights</h3>
-              <p>Account analytics view — pending migration.</p>
-            </div>
+            <AccountInsights
+              accountsTop={[]}
+              acctConcentration={{}}
+              filters={filters}
+              user={currentUser}
+              onAccountClick={(name) =>
+                console.log("Open account panel:", name)
+              }
+              onExport={() =>
+                console.log("Export accounts — XLSX not yet wired")
+              }
+            />
           </div>
         )}
 
