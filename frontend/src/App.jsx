@@ -14,6 +14,7 @@ import {
   AccountInsights,
   Opportunities,
   ReorderForecast,
+  CustomerPipeline,
 } from "./components";
 import useFilters from "./hooks/useFilters";
 import TENANT_CONFIG from "./config/tenant";
@@ -181,10 +182,17 @@ function App() {
 
         {activeTab === "pipeline" && (
           <div id="pipeline" className="tab-content active">
-            <div className="section-header">
-              <h3>Customer Pipeline</h3>
-              <p>Sales pipeline management — pending migration.</p>
-            </div>
+            <CustomerPipeline
+              pipelineAccounts={[]}
+              pipelineMeta={{}}
+              user={currentUser}
+              onAccountClick={(name) =>
+                console.log("Open pipeline detail:", name)
+              }
+              onAddNew={() => console.log("Add new pipeline account")}
+              onExportCSV={() => console.log("Export CSV")}
+              onExportXLSX={() => console.log("Export XLSX")}
+            />
           </div>
         )}
 

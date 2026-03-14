@@ -26,3 +26,6 @@ export { default as WarehousePanel } from "./WarehousePanel";
 export { default as AccountInsights } from "./AccountInsights";
 export { default as Opportunities } from "./Opportunities";
 export { default as ReorderForecast } from "./ReorderForecast";
+export { default as CustomerPipeline } from "./CustomerPipeline";
+export { default as PipelineFunnel } from "./PipelineFunnel";
+export { default as PipelineBreakdowns } from "./PipelineBreakdowns";
