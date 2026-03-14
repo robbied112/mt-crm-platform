@@ -15,6 +15,7 @@ import {
   Opportunities,
   ReorderForecast,
   CustomerPipeline,
+  Settings,
 } from "./components";
 import useFilters from "./hooks/useFilters";
 import TENANT_CONFIG from "./config/tenant";
@@ -198,10 +199,20 @@ function App() {
 
         {activeTab === "admin-settings" && (
           <div id="admin-settings" className="tab-content active">
-            <div className="section-header">
-              <h3>Settings</h3>
-              <p>Admin settings panel — pending migration.</p>
-            </div>
+            <Settings
+              onChangePassword={() =>
+                console.log("Change password — not yet wired")
+              }
+              onSaveBranding={(b) => console.log("Save branding:", b)}
+              onSaveTerminology={(t) => console.log("Save terminology:", t)}
+              onSaveGoals={(g) => console.log("Save goals:", g)}
+              onResetSettings={() =>
+                console.log("Reset settings — not yet wired")
+              }
+              onManageBilling={() =>
+                console.log("Manage billing — not yet wired")
+              }
+            />
           </div>
         )}
 
