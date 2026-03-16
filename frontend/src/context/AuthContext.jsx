@@ -1,8 +1,10 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
+  createUserWithEmailAndPassword,
+  updateProfile,
 } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
@@ -18,7 +20,7 @@ export function useAuth() {
  * Fetch the user's profile from Firestore. If it doesn't exist,
  * auto-provision with default tenant and admin role.
  */
-async function fetchOrCreateProfile(user) {
+async function fetchOrCreateProfile(user, accountType) {
   const profileRef = doc(db, "users", user.uid);
   const snap = await getDoc(profileRef);
 
@@ -47,6 +49,7 @@ async function fetchOrCreateProfile(user) {
       companyName: "",
       createdBy: user.uid,
       createdAt: serverTimestamp(),
+      ...(accountType ? { userRole: accountType } : {}),
     });
 
     // Seed demo data for new tenants
@@ -65,6 +68,7 @@ export default function AuthProvider({ children }) {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
+  const pendingAccountTypeRef = useRef(null);
 
   // Derived values from profile
   const tenantId = userProfile?.tenantId || null;
@@ -79,12 +83,23 @@ export default function AuthProvider({ children }) {
     return signOut(auth);
   }
 
+  async function signup(email, password, name, accountType) {
+    pendingAccountTypeRef.current = accountType || null;
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    if (name) {
+      await updateProfile(cred.user, { displayName: name });
+    }
+    return cred;
+  }
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
           setAuthError(null);
-          const profile = await fetchOrCreateProfile(user);
+          const accountType = pendingAccountTypeRef.current;
+          pendingAccountTypeRef.current = null;
+          const profile = await fetchOrCreateProfile(user, accountType);
           setCurrentUser(user);
           setUserProfile(profile);
         } catch (err) {
@@ -110,6 +125,7 @@ export default function AuthProvider({ children }) {
     userRole,
     isAdmin,
     login,
+    signup,
     logout,
     loading,
     authError,
