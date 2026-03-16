@@ -1,8 +1,10 @@
 /**
  * DataContext — provides all CRM data from Firestore to the app.
  * Also tracks which datasets have data for adaptive UI.
+ *
+ * tenantId and userRole are sourced from AuthContext (single source of truth).
  */
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import {
   loadAllData,
@@ -36,14 +38,16 @@ const EMPTY = {
 };
 
 export default function DataProvider({ children }) {
-  const { currentUser } = useAuth();
+  const { currentUser, tenantId } = useAuth();
   const [data, setData] = useState(EMPTY);
   const [summary, setSummary] = useState(null);
   const [tenantConfig, setTenantConfig] = useState(TENANT_CONFIG);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const tenantId = tenantConfig.tenantId || "default";
+  // userRole for business context (supplier vs distributor) comes from tenant config,
+  // distinct from auth role (admin/rep/viewer) which comes from AuthContext.
+  const userRole = tenantConfig.userRole || "supplier";
 
   // Compute which datasets have data (for adaptive UI)
   const availability = {
@@ -59,9 +63,9 @@ export default function DataProvider({ children }) {
     ),
   };
 
-  // Load data on auth change
+  // Load data when tenantId becomes available
   useEffect(() => {
-    if (!currentUser) {
+    if (!currentUser || !tenantId) {
       setData(EMPTY);
       setSummary(null);
       setLoading(false);
@@ -94,6 +98,7 @@ export default function DataProvider({ children }) {
 
   // Save imported datasets + refresh
   const importDatasets = useCallback(async (datasets, summaryText) => {
+    if (!tenantId) throw new Error("No tenant context");
     try {
       await saveAllDatasets(tenantId, datasets);
       if (summaryText) {
@@ -115,6 +120,7 @@ export default function DataProvider({ children }) {
 
   // Refresh from Firestore
   const refreshData = useCallback(async () => {
+    if (!tenantId) return;
     setLoading(true);
     try {
       const allData = await loadAllData(tenantId);
@@ -130,6 +136,7 @@ export default function DataProvider({ children }) {
 
   // Save tenant config
   const updateTenantConfig = useCallback(async (patch) => {
+    if (!tenantId) throw new Error("No tenant context");
     try {
       await saveTenantConfigFS(tenantId, patch);
       setTenantConfig((prev) => ({ ...prev, ...patch }));
@@ -138,9 +145,7 @@ export default function DataProvider({ children }) {
     }
   }, [tenantId]);
 
-  const userRole = tenantConfig.userRole || "supplier";
-
-  // Sync static TENANT_CONFIG so t() reads current values everywhere
+  // Sync static TENANT_CONFIG so t() reads current values in non-React code
   useEffect(() => {
     Object.assign(TENANT_CONFIG, tenantConfig);
   }, [tenantConfig]);
@@ -148,6 +153,7 @@ export default function DataProvider({ children }) {
   const value = {
     ...data,
     summary,
+    tenantId,
     tenantConfig,
     userRole,
     availability,

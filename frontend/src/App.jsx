@@ -25,7 +25,7 @@ import { useData } from "./context/DataContext";
 function App() {
   const [activeTab, setActiveTab] = useState("performance");
   const { filters, updateFilter, clearAll } = useFilters();
-  const { currentUser, logout, loading: authLoading } = useAuth();
+  const { currentUser, logout, isAdmin, authError, loading: authLoading } = useAuth();
   const {
     distScorecard,
     reorderData,
@@ -49,6 +49,15 @@ function App() {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
         <p style={{ color: "#64748b", fontSize: "15px" }}>Loading...</p>
+      </div>
+    );
+  }
+
+  if (authError) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", flexDirection: "column", gap: 12 }}>
+        <p style={{ color: "#dc2626", fontSize: "15px" }}>{authError}</p>
+        <button className="btn btn-primary" onClick={logout}>Sign Out</button>
       </div>
     );
   }
@@ -97,7 +106,7 @@ function App() {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           onHelpClick={() => setActiveTab("admin-settings")}
-          isAdmin={true}
+          isAdmin={isAdmin}
           terminology={tenantConfig.terminology}
           availability={availability}
         />
@@ -263,7 +272,7 @@ function App() {
           </div>
         )}
 
-        {activeTab === "admin-settings" && (
+        {activeTab === "admin-settings" && isAdmin && (
           <div id="admin-settings" className="tab-content active">
             <Settings
               config={tenantConfig}

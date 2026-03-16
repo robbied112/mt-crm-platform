@@ -13,9 +13,10 @@ import { logUpload } from "../services/firestoreService";
 import { useAuth } from "../context/AuthContext";
 
 const STEPS = ["upload", "mapping", "preview", "done"];
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export default function DataImport() {
-  const { importDatasets, userRole } = useData();
+  const { importDatasets, userRole, tenantId } = useData();
   const { currentUser } = useAuth();
   const [step, setStep] = useState("upload");
   const [file, setFile] = useState(null);
@@ -36,6 +37,14 @@ export default function DataImport() {
 
   const handleFile = useCallback(async (f) => {
     setError("");
+    if (f.size > MAX_FILE_SIZE) {
+      setError(`File is too large (${(f.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 10MB.`);
+      return;
+    }
+    if (f.size === 0) {
+      setError("File is empty.");
+      return;
+    }
     setFile(f);
     try {
       const result = await parseFile(f);
@@ -119,7 +128,7 @@ export default function DataImport() {
     try {
       const { type, ...datasets } = preview;
       await importDatasets(datasets, summary);
-      await logUpload("default", {
+      await logUpload(tenantId, {
         fileName: file.name,
         rowCount: parsed.rows.length,
         type: uploadType.type,
