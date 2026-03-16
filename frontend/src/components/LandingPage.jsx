@@ -178,6 +178,11 @@ function PipelineMockup() {
    Main LandingPage
    ────────────────────────────────────────────── */
 export default function LandingPage({ onGetStarted, onSignIn }) {
+  const scrollTo = (id) => (e) => {
+    e.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
   useEffect(() => {
     const id = "lp-keyframes";
     if (!document.getElementById(id)) {
@@ -204,8 +209,8 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
         <div style={s.navInner}>
           <span style={s.navLogo}>Sidekick BI</span>
           <div style={s.navLinks}>
-            <a href="#features" style={s.navLink}>Features</a>
-            <a href="#pricing" style={s.navLink}>Pricing</a>
+            <a href="#features" onClick={scrollTo("features")} style={s.navLink}>Features</a>
+            <a href="#pricing" onClick={scrollTo("pricing")} style={s.navLink}>Pricing</a>
             <button onClick={onSignIn} style={s.navLinkBtn}>Sign In</button>
             <button onClick={onGetStarted} style={s.navCta}>Get Started</button>
           </div>
@@ -228,7 +233,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
           </p>
           <div style={s.heroCtas}>
             <button onClick={onGetStarted} style={s.btnTeal}>Start Free Trial</button>
-            <a href="#features" style={s.btnGhost}>See How It Works</a>
+            <a href="#features" onClick={scrollTo("features")} style={s.btnGhost}>See How It Works</a>
           </div>
         </div>
 
