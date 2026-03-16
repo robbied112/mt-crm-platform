@@ -1,0 +1,596 @@
+import { useEffect } from "react";
+
+/* ──────────────────────────────────────────────
+   Dashboard Mockup — pure styled-div product UI
+   ────────────────────────────────────────────── */
+function DashboardMockup() {
+  const kpis = [
+    { label: "Revenue", value: "12.4k", sub: "cases this quarter", color: "#0f766e" },
+    { label: "Accounts", value: "847", sub: "active accounts", color: "#2563EB" },
+    { label: "Sell-Thru", value: "94.2%", sub: "avg across distros", color: "#059669" },
+  ];
+  const bars = [
+    { label: "Annual Volume Goal", pct: 72, color: "#0f766e" },
+    { label: "Distribution Target", pct: 58, color: "#2563EB" },
+  ];
+  const rows = [
+    { name: "Premium Wine Distributors", state: "CA", dot: "#059669" },
+    { name: "Atlantic Beverage Co.", state: "NY", dot: "#D97706" },
+    { name: "Midwest Spirits Group", state: "IL", dot: "#059669" },
+  ];
+
+  return (
+    <div style={{
+      background: "#1e293b", borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)",
+      padding: 28, maxWidth: 720, margin: "0 auto",
+      boxShadow: "0 0 80px rgba(15,118,110,0.18), 0 20px 60px rgba(0,0,0,0.4)",
+      animation: "float 6s ease-in-out infinite",
+      transform: "perspective(1200px) rotateX(2deg)",
+    }}>
+      {/* KPI row */}
+      <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
+        {kpis.map((k, i) => (
+          <div key={i} style={{
+            flex: 1, background: "#0f172a", borderRadius: 10, padding: "16px 18px",
+            border: "1px solid rgba(255,255,255,0.06)",
+          }}>
+            <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{k.label}</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: k.color, lineHeight: 1.2, marginTop: 4 }}>{k.value}</div>
+            <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{k.sub}</div>
+          </div>
+        ))}
+      </div>
+      {/* Progress bars */}
+      <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
+        {bars.map((b, i) => (
+          <div key={i} style={{ flex: 1 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>{b.label}</span>
+              <span style={{ fontSize: 12, color: b.color, fontWeight: 700 }}>{b.pct}%</span>
+            </div>
+            <div style={{ background: "#0f172a", borderRadius: 6, height: 8, overflow: "hidden" }}>
+              <div style={{ width: `${b.pct}%`, height: "100%", background: b.color, borderRadius: 6, transition: "width 1s ease" }} />
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Mini scorecard table */}
+      <div style={{ background: "#0f172a", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ display: "flex", padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <span style={{ flex: 2, fontSize: 11, color: "#64748b", fontWeight: 600, textTransform: "uppercase" }}>Distributor</span>
+          <span style={{ flex: 0.5, fontSize: 11, color: "#64748b", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>State</span>
+          <span style={{ flex: 0.5, fontSize: 11, color: "#64748b", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Health</span>
+        </div>
+        {rows.map((r, i) => (
+          <div key={i} style={{
+            display: "flex", alignItems: "center", padding: "10px 16px",
+            borderBottom: i < rows.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+          }}>
+            <span style={{ flex: 2, fontSize: 13, color: "#e2e8f0", fontWeight: 500 }}>{r.name}</span>
+            <span style={{ flex: 0.5, fontSize: 12, color: "#94a3b8", textAlign: "center" }}>{r.state}</span>
+            <span style={{ flex: 0.5, textAlign: "center" }}>
+              <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: r.dot }} />
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────
+   SVG Check icon for pricing
+   ────────────────────────────────────────────── */
+function Check() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ flexShrink: 0 }}>
+      <circle cx="9" cy="9" r="9" fill="#0f766e" opacity="0.15" />
+      <path d="M5.5 9.5L7.5 11.5L12.5 6.5" stroke="#0f766e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/* ──────────────────────────────────────────────
+   Mini feature mockups
+   ────────────────────────────────────────────── */
+function ScorecardMockup() {
+  const rows = [
+    { name: "Valley Wine Group", score: 92, dot: "#059669" },
+    { name: "Coastal Spirits", score: 78, dot: "#D97706" },
+    { name: "Metro Beverage", score: 45, dot: "#ef4444" },
+  ];
+  return (
+    <div style={{ background: "#f8fafc", borderRadius: 12, padding: 20, border: "1px solid #e2e8f0" }}>
+      <div style={{ display: "flex", padding: "8px 0", borderBottom: "1px solid #e2e8f0", marginBottom: 4 }}>
+        <span style={{ flex: 2, fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>Distributor</span>
+        <span style={{ flex: 0.6, fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Score</span>
+        <span style={{ flex: 0.4, fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Status</span>
+      </div>
+      {rows.map((r, i) => (
+        <div key={i} style={{ display: "flex", alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? "1px solid #f1f5f9" : "none" }}>
+          <span style={{ flex: 2, fontSize: 14, color: "#1e293b", fontWeight: 500 }}>{r.name}</span>
+          <span style={{ flex: 0.6, fontSize: 14, color: "#334155", fontWeight: 700, textAlign: "center" }}>{r.score}</span>
+          <span style={{ flex: 0.4, textAlign: "center" }}>
+            <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: r.dot }} />
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TerritoryMockup() {
+  const states = [
+    { abbr: "CA", rep: "Sarah M.", color: "#0f766e" },
+    { abbr: "NY", rep: "James K.", color: "#2563EB" },
+    { abbr: "TX", rep: "Maria L.", color: "#7c3aed" },
+    { abbr: "IL", rep: "David P.", color: "#D97706" },
+  ];
+  return (
+    <div style={{ background: "#f8fafc", borderRadius: 12, padding: 20, border: "1px solid #e2e8f0" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        {states.map((s, i) => (
+          <div key={i} style={{
+            background: "#fff", borderRadius: 8, padding: "12px 14px",
+            border: `2px solid ${s.color}20`, display: "flex", alignItems: "center", gap: 10,
+          }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 8, background: `${s.color}15`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 14, fontWeight: 800, color: s.color,
+            }}>{s.abbr}</div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#1e293b" }}>{s.rep}</div>
+              <div style={{ fontSize: 11, color: "#94a3b8" }}>Territory Rep</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PipelineMockup() {
+  const stages = [
+    { label: "Prospect", count: 24, pct: 100, color: "#94a3b8" },
+    { label: "Outreach", count: 18, pct: 75, color: "#2563EB" },
+    { label: "Sampling", count: 12, pct: 50, color: "#0f766e" },
+    { label: "Closed", count: 8, pct: 33, color: "#059669" },
+  ];
+  return (
+    <div style={{ background: "#f8fafc", borderRadius: 12, padding: 20, border: "1px solid #e2e8f0" }}>
+      {stages.map((s, i) => (
+        <div key={i} style={{ marginBottom: i < 3 ? 10 : 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+            <span style={{ fontSize: 13, color: "#475569", fontWeight: 500 }}>{s.label}</span>
+            <span style={{ fontSize: 13, color: s.color, fontWeight: 700 }}>{s.count} accounts</span>
+          </div>
+          <div style={{ background: "#e2e8f0", borderRadius: 6, height: 10, overflow: "hidden" }}>
+            <div style={{ width: `${s.pct}%`, height: "100%", background: s.color, borderRadius: 6 }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────
+   Main LandingPage
+   ────────────────────────────────────────────── */
+export default function LandingPage({ onGetStarted, onSignIn }) {
+  useEffect(() => {
+    const id = "lp-keyframes";
+    if (!document.getElementById(id)) {
+      const style = document.createElement("style");
+      style.id = id;
+      style.textContent = `
+        @keyframes float { 0%,100%{transform:perspective(1200px) rotateX(2deg) translateY(0)} 50%{transform:perspective(1200px) rotateX(2deg) translateY(-10px)} }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+      `;
+      document.head.appendChild(style);
+    }
+    return () => {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    };
+  }, []);
+
+  return (
+    <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", color: "#1a1a2e", lineHeight: 1.6 }}>
+
+      {/* ── Nav ──────────────────────────────── */}
+      <nav style={s.nav}>
+        <div style={s.navInner}>
+          <span style={s.navLogo}>Sidekick BI</span>
+          <div style={s.navLinks}>
+            <a href="#features" style={s.navLink}>Features</a>
+            <a href="#pricing" style={s.navLink}>Pricing</a>
+            <button onClick={onSignIn} style={s.navLinkBtn}>Sign In</button>
+            <button onClick={onGetStarted} style={s.navCta}>Get Started</button>
+          </div>
+        </div>
+      </nav>
+
+      {/* ── Hero ─────────────────────────────── */}
+      <section style={s.hero}>
+        <div style={{ maxWidth: 900, margin: "0 auto", animation: "fadeInUp 0.8s ease-out" }}>
+          <h1 style={s.heroH1}>
+            Your sales data,{" "}
+            <span style={{
+              background: "linear-gradient(135deg, #0f766e, #2563EB)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}>finally useful.</span>
+          </h1>
+          <p style={s.heroSub}>
+            The BI platform built for suppliers who sell through distributors.
+          </p>
+          <div style={s.heroCtas}>
+            <button onClick={onGetStarted} style={s.btnTeal}>Start Free Trial</button>
+            <a href="#features" style={s.btnGhost}>See How It Works</a>
+          </div>
+        </div>
+
+        {/* Product mockup */}
+        <div style={{ marginTop: 64, animation: "fadeInUp 1s ease-out 0.3s both" }}>
+          <DashboardMockup />
+        </div>
+
+        <p style={s.socialProof}>Trusted by wine &amp; spirits suppliers across 12 states</p>
+      </section>
+
+      {/* ── Why Sidekick (stat cards) ────────── */}
+      <section style={{ ...s.sectionWhite, paddingTop: 80, paddingBottom: 80 }}>
+        <div style={s.statsRow}>
+          {[
+            { num: "5 min", label: "Setup Time", desc: "Upload a spreadsheet and see insights immediately" },
+            { num: "10x", label: "Faster Than Spreadsheets", desc: "Auto-scored distributors, not manual vlookups" },
+            { num: "$0", label: "To Start", desc: "Free tier with no credit card required" },
+          ].map((item, i) => (
+            <div key={i} style={s.statCard}>
+              <div style={s.statNum}>{item.num}</div>
+              <div style={s.statLabel}>{item.label}</div>
+              <div style={s.statDesc}>{item.desc}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Features ─────────────────────────── */}
+      <section id="features" style={s.sectionWhite}>
+        <h2 style={s.sectionH2}>Built for how you actually sell</h2>
+        <p style={s.sectionSub}>Every feature is designed for suppliers who sell through distributors, brokers, and reps.</p>
+
+        {/* Feature 1: Scorecard — text left, mockup right */}
+        <div style={s.featureRow}>
+          <div style={s.featureText}>
+            <div style={s.featureTag}>Distributor Scorecard</div>
+            <h3 style={s.featureH3}>Know which distributors need attention — before problems start</h3>
+            <p style={s.featureP}>
+              Automatic health scores based on velocity, sell-through, and inventory turns.
+              Green, yellow, and red at a glance.
+            </p>
+          </div>
+          <div style={s.featureMockup}><ScorecardMockup /></div>
+        </div>
+
+        {/* Feature 2: Territory — mockup left, text right */}
+        <div style={{ ...s.featureRow, flexDirection: "row-reverse" }}>
+          <div style={s.featureText}>
+            <div style={s.featureTag}>Territory Intelligence</div>
+            <h3 style={s.featureH3}>Every rep sees their world, with action items built in</h3>
+            <p style={s.featureP}>
+              Assign reps to states, regions, or custom territories. Each rep sees only their
+              accounts with personalized insights.
+            </p>
+          </div>
+          <div style={s.featureMockup}><TerritoryMockup /></div>
+        </div>
+
+        {/* Feature 3: Pipeline — text left, mockup right */}
+        <div style={s.featureRow}>
+          <div style={s.featureText}>
+            <div style={s.featureTag}>Pipeline &amp; Forecasting</div>
+            <h3 style={s.featureH3}>Track every deal from prospect to placement</h3>
+            <p style={s.featureP}>
+              Visual pipeline with customizable stages. Reorder forecasting tells you who's
+              due before they go dark.
+            </p>
+          </div>
+          <div style={s.featureMockup}><PipelineMockup /></div>
+        </div>
+      </section>
+
+      {/* ── How It Works ─────────────────────── */}
+      <section style={{ ...s.sectionGray, paddingTop: 80, paddingBottom: 80 }}>
+        <h2 style={s.sectionH2}>Up and running in minutes</h2>
+        <div style={s.stepsRow}>
+          {[
+            {
+              step: "1", title: "Upload",
+              desc: "Drag & drop a distributor report — Excel, CSV, or depletion file.",
+              icon: (
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0f766e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+              ),
+            },
+            {
+              step: "2", title: "Auto-Map",
+              desc: "We detect your columns and map them to the right fields automatically.",
+              icon: (
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0f766e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+              ),
+            },
+            {
+              step: "3", title: "Insights",
+              desc: "Scorecards, health scores, and rep dashboards — live in minutes.",
+              icon: (
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0f766e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" />
+                </svg>
+              ),
+            },
+          ].map((item, i) => (
+            <div key={i} style={{ flex: 1, position: "relative" }}>
+              <div style={s.stepCard}>
+                <div style={s.stepIcon}>{item.icon}</div>
+                <div style={s.stepNumber}>{item.step}</div>
+                <h3 style={s.stepTitle}>{item.title}</h3>
+                <p style={s.stepDesc}>{item.desc}</p>
+              </div>
+              {i < 2 && <div style={s.stepConnector} />}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Pricing ──────────────────────────── */}
+      <section id="pricing" style={s.sectionWhite}>
+        <h2 style={s.sectionH2}>Simple, transparent pricing</h2>
+        <p style={s.sectionSub}>Start free. Upgrade when you're ready.</p>
+        <div style={s.pricingGrid}>
+          {pricingTiers.map((tier, i) => (
+            <div key={i} style={{
+              ...s.priceCard,
+              ...(tier.popular ? s.priceCardPop : {}),
+            }}>
+              {tier.popular && <div style={s.popBadge}>Most Popular</div>}
+              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: "#1e293b" }}>{tier.name}</h3>
+              <div style={s.priceAmount}>
+                {tier.price}<span style={s.priceUnit}>{tier.unit}</span>
+              </div>
+              <div style={s.priceDesc}>{tier.desc}</div>
+              <ul style={s.priceList}>
+                {tier.features.map((feat, j) => (
+                  <li key={j} style={s.priceLi}>
+                    <Check />
+                    <span>{feat}</span>
+                  </li>
+                ))}
+              </ul>
+              {tier.cta === "contact" ? (
+                <a href="mailto:hello@sidekickbi.com" style={{ ...s.btnGhost, display: "block", textAlign: "center", color: "#374151", borderColor: "#d1d5db" }}>Contact Sales</a>
+              ) : (
+                <button onClick={onGetStarted} style={{ ...s.btnTeal, width: "100%" }}>
+                  {tier.popular ? "Start Free Trial" : "Get Started"}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Final CTA ────────────────────────── */}
+      <section style={s.ctaSection}>
+        <h2 style={s.ctaH2}>Start making better decisions today</h2>
+        <p style={s.ctaSub}>Join hundreds of suppliers replacing spreadsheets with real intelligence.</p>
+        <button onClick={onGetStarted} style={s.btnCtaWhite}>Get Started Free</button>
+        <p style={s.ctaNote}>No credit card required</p>
+      </section>
+
+      {/* ── Footer ───────────────────────────── */}
+      <footer style={s.footer}>
+        <p>&copy; 2026 Sidekick BI. All rights reserved. | <a href="mailto:hello@sidekickbi.com" style={{ color: "#5eead4", textDecoration: "none" }}>hello@sidekickbi.com</a></p>
+      </footer>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────
+   Data
+   ────────────────────────────────────────────── */
+const pricingTiers = [
+  {
+    name: "Starter", price: "$49", unit: "/mo", desc: "For small teams getting started",
+    features: ["Up to 5 users", "Distributor health scores", "Territory management", "Pipeline tracking", "Excel data uploads", "Email support"],
+  },
+  {
+    name: "Growth", price: "$99", unit: "/mo", desc: "For growing sales organizations", popular: true,
+    features: ["Up to 15 users", "Everything in Starter", "Account CRM with files", "Email logging", "Reorder forecasting", "Priority support"],
+  },
+  {
+    name: "Enterprise", price: "Custom", unit: "", desc: "For large teams with custom needs", cta: "contact",
+    features: ["Unlimited users", "Everything in Growth", "Custom integrations", "API access", "Dedicated support", "Custom onboarding"],
+  },
+];
+
+/* ──────────────────────────────────────────────
+   Styles
+   ────────────────────────────────────────────── */
+const s = {
+  /* Nav */
+  nav: {
+    position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+    background: "rgba(10,15,26,0.85)", backdropFilter: "blur(12px)",
+    borderBottom: "1px solid rgba(255,255,255,0.06)",
+  },
+  navInner: {
+    maxWidth: 1200, margin: "0 auto", padding: "14px 24px",
+    display: "flex", alignItems: "center", justifyContent: "space-between",
+  },
+  navLogo: { fontSize: 22, fontWeight: 800, color: "#5eead4" },
+  navLinks: { display: "flex", gap: 24, alignItems: "center" },
+  navLink: { textDecoration: "none", color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: 500 },
+  navLinkBtn: {
+    background: "none", border: "none", color: "rgba(255,255,255,0.7)",
+    fontSize: 14, fontWeight: 500, cursor: "pointer", padding: 0,
+  },
+  navCta: {
+    background: "#0f766e", color: "#fff", padding: "8px 20px",
+    borderRadius: 8, fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer",
+  },
+
+  /* Hero */
+  hero: {
+    padding: "140px 24px 80px", textAlign: "center",
+    background: "linear-gradient(180deg, #0a0f1a 0%, #111827 60%, #1e293b 100%)",
+    overflow: "hidden",
+  },
+  heroH1: {
+    fontSize: 60, fontWeight: 900, lineHeight: 1.08,
+    color: "#f1f5f9", marginBottom: 20, letterSpacing: "-0.02em",
+  },
+  heroSub: {
+    fontSize: 20, color: "#94a3b8", maxWidth: 560, margin: "0 auto 36px", lineHeight: 1.6,
+  },
+  heroCtas: { display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" },
+  socialProof: {
+    fontSize: 14, color: "#475569", marginTop: 48, letterSpacing: "0.02em",
+  },
+
+  /* Buttons */
+  btnTeal: {
+    background: "#0f766e", color: "#fff", padding: "14px 32px", borderRadius: 10,
+    fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer",
+    textDecoration: "none", display: "inline-block",
+  },
+  btnGhost: {
+    background: "transparent", color: "#fff", padding: "14px 32px", borderRadius: 10,
+    fontSize: 16, fontWeight: 600, border: "2px solid rgba(255,255,255,0.2)",
+    cursor: "pointer", textDecoration: "none", display: "inline-block",
+  },
+
+  /* Sections */
+  sectionWhite: { padding: "60px 24px 80px", maxWidth: 1100, margin: "0 auto" },
+  sectionGray: { padding: "60px 24px", background: "#f9fafb" },
+  sectionH2: {
+    fontSize: 38, fontWeight: 800, textAlign: "center", marginBottom: 16,
+    color: "#0f172a", letterSpacing: "-0.01em",
+  },
+  sectionSub: {
+    fontSize: 18, color: "#64748b", textAlign: "center", maxWidth: 560,
+    margin: "0 auto 56px", lineHeight: 1.6,
+  },
+
+  /* Why Sidekick stats */
+  statsRow: {
+    display: "flex", gap: 32, maxWidth: 1000, margin: "0 auto", flexWrap: "wrap",
+    justifyContent: "center",
+  },
+  statCard: {
+    flex: "1 1 260px", textAlign: "center", padding: 32,
+    background: "#fff", borderRadius: 16, border: "1px solid #e2e8f0",
+  },
+  statNum: {
+    fontSize: 48, fontWeight: 900, color: "#0f766e", lineHeight: 1,
+    background: "linear-gradient(135deg, #0f766e, #2563EB)",
+    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+  },
+  statLabel: { fontSize: 16, fontWeight: 700, color: "#1e293b", marginTop: 8 },
+  statDesc: { fontSize: 14, color: "#64748b", marginTop: 4, lineHeight: 1.5 },
+
+  /* Feature rows */
+  featureRow: {
+    display: "flex", gap: 48, alignItems: "center", marginBottom: 64,
+    flexWrap: "wrap",
+  },
+  featureText: { flex: "1 1 320px", minWidth: 280 },
+  featureMockup: { flex: "1 1 340px", minWidth: 300 },
+  featureTag: {
+    display: "inline-block", fontSize: 12, fontWeight: 700, color: "#0f766e",
+    background: "#f0fdfa", padding: "4px 12px", borderRadius: 20,
+    textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 12,
+  },
+  featureH3: {
+    fontSize: 26, fontWeight: 800, color: "#0f172a", lineHeight: 1.2, marginBottom: 12,
+  },
+  featureP: { fontSize: 16, color: "#475569", lineHeight: 1.7 },
+
+  /* How It Works */
+  stepsRow: {
+    display: "flex", gap: 24, maxWidth: 900, margin: "40px auto 0",
+    flexWrap: "wrap", justifyContent: "center",
+  },
+  stepCard: {
+    background: "#fff", borderRadius: 16, padding: "32px 24px",
+    border: "1px solid #e2e8f0", textAlign: "center", position: "relative",
+  },
+  stepIcon: {
+    width: 56, height: 56, borderRadius: "50%", background: "#f0fdfa",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    margin: "0 auto 16px",
+  },
+  stepNumber: {
+    position: "absolute", top: 12, right: 16,
+    fontSize: 48, fontWeight: 900, color: "#f1f5f9", lineHeight: 1,
+  },
+  stepTitle: { fontSize: 18, fontWeight: 700, color: "#0f172a", marginBottom: 8 },
+  stepDesc: { fontSize: 14, color: "#64748b", lineHeight: 1.6 },
+  stepConnector: {
+    position: "absolute", top: "50%", right: -16, width: 8, height: 8,
+    borderTop: "2px solid #cbd5e1", borderRight: "2px solid #cbd5e1",
+    transform: "rotate(45deg) translateY(-50%)",
+  },
+
+  /* Pricing */
+  pricingGrid: {
+    display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: 24, maxWidth: 1000, margin: "0 auto",
+  },
+  priceCard: {
+    background: "#fff", borderRadius: 16, padding: 32, textAlign: "center",
+    position: "relative", border: "2px solid #e5e7eb",
+  },
+  priceCardPop: {
+    borderColor: "#0f766e",
+    boxShadow: "0 0 40px rgba(15,118,110,0.12)",
+  },
+  popBadge: {
+    position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)",
+    background: "#0f766e", color: "#fff", padding: "5px 18px", borderRadius: 20,
+    fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
+  },
+  priceAmount: { fontSize: 48, fontWeight: 900, color: "#111827", margin: "16px 0 4px" },
+  priceUnit: { fontSize: 16, fontWeight: 500, color: "#6b7280" },
+  priceDesc: { fontSize: 14, color: "#6b7280", marginBottom: 24 },
+  priceList: { listStyle: "none", textAlign: "left", marginBottom: 28, padding: 0 },
+  priceLi: {
+    padding: "7px 0", fontSize: 14, color: "#374151",
+    display: "flex", alignItems: "center", gap: 10,
+  },
+
+  /* Final CTA */
+  ctaSection: {
+    padding: "80px 24px", textAlign: "center",
+    background: "linear-gradient(180deg, #0a0f1a 0%, #111827 100%)",
+  },
+  ctaH2: { fontSize: 38, fontWeight: 800, color: "#f1f5f9", marginBottom: 16 },
+  ctaSub: {
+    fontSize: 18, color: "#94a3b8", maxWidth: 500, margin: "0 auto 32px", lineHeight: 1.6,
+  },
+  btnCtaWhite: {
+    background: "#fff", color: "#0f766e", padding: "14px 36px", borderRadius: 10,
+    fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer",
+  },
+  ctaNote: { fontSize: 13, color: "#475569", marginTop: 14 },
+
+  /* Footer */
+  footer: {
+    padding: "40px 24px", textAlign: "center", background: "#0a0f1a",
+    color: "#64748b", fontSize: 13, borderTop: "1px solid rgba(255,255,255,0.06)",
+  },
+};

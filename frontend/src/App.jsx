@@ -14,6 +14,7 @@ import {
   CustomerPipeline,
   Settings,
   Login,
+  LandingPage,
   ExecutiveSummary,
   DemoBanner,
   AccountsPage,
@@ -35,6 +36,7 @@ import { clearDemoData } from "./services/demoData";
 function App() {
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authView, setAuthView] = useState("landing"); // "landing" | "login" | "signup"
   const { filters, updateFilter, clearAll } = useFilters();
   const { currentUser, logout, isAdmin, authError, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -92,7 +94,20 @@ function App() {
   }
 
   if (!currentUser) {
-    return <Login />;
+    if (authView === "landing") {
+      return (
+        <LandingPage
+          onGetStarted={() => setAuthView("signup")}
+          onSignIn={() => setAuthView("login")}
+        />
+      );
+    }
+    return (
+      <Login
+        initialMode={authView === "signup" ? "signup" : "signin"}
+        onBackToLanding={() => setAuthView("landing")}
+      />
+    );
   }
 
   const goSettings = () => {
