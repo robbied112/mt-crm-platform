@@ -21,7 +21,7 @@ import {
   loadTenantConfig,
   saveTenantConfig as saveTenantConfigFS,
 } from "../services/firestoreService";
-import { normalizeRows } from "../../../packages/pipeline/src/normalize.js";
+import { normalizeRows } from "../utils/normalize.js";
 import TENANT_CONFIG from "../config/tenant";
 
 const DataContext = createContext(null);
@@ -144,16 +144,20 @@ export default function DataProvider({ children }) {
     }
   }, [tenantId, useNormalized]);
 
-  // Refresh from Firestore
+  // Refresh from Firestore (data, summary, and config)
   const refreshData = useCallback(async () => {
     if (!tenantId) return;
     setLoading(true);
     try {
       const collPath = useNormalized ? "views" : "data";
-      const allData = useNormalized ? await loadAllViews(tenantId) : await loadAllData(tenantId);
+      const [allData, summaryText, config] = await Promise.all([
+        useNormalized ? loadAllViews(tenantId) : loadAllData(tenantId),
+        loadSummary(tenantId, collPath),
+        loadTenantConfig(tenantId),
+      ]);
       setData({ ...EMPTY, ...allData });
-      const summaryText = await loadSummary(tenantId, collPath);
       setSummary(summaryText);
+      if (config) setTenantConfig((prev) => ({ ...prev, ...config }));
     } catch (err) {
       setError(err.message);
     } finally {

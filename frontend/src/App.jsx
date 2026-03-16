@@ -17,10 +17,12 @@ import {
   Settings,
   Login,
   ExecutiveSummary,
+  DemoBanner,
 } from "./components";
 import useFilters from "./hooks/useFilters";
 import { useAuth } from "./context/AuthContext";
 import { useData } from "./context/DataContext";
+import { clearDemoData } from "./services/demoData";
 
 function App() {
   const [activeTab, setActiveTab] = useState("performance");
@@ -40,9 +42,11 @@ function App() {
     qbDistOrders,
     acctConcentration,
     tenantConfig,
+    tenantId,
     availability,
     loading: dataLoading,
     updateTenantConfig,
+    refreshData,
   } = useData();
 
   if (authLoading) {
@@ -84,6 +88,14 @@ function App() {
           companyName={tenantConfig.companyName || "Sidekick BI"}
           logo={tenantConfig.logo}
           syncStatus={dataLoading ? "syncing" : "connected"}
+        />
+
+        <DemoBanner
+          onGoToSettings={() => setActiveTab("admin-settings")}
+          onClearDemo={async () => {
+            await clearDemoData(tenantId);
+            refreshData();
+          }}
         />
 
         <ExecutiveSummary />

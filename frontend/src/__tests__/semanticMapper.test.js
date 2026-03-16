@@ -95,6 +95,37 @@ describe("autoDetectMapping", () => {
       expect(mapping.acct).toBeTruthy();
     }
   });
+
+  it("maps Amount to revenue and Price to unitPrice when both exist", () => {
+    const headers = ["Account", "Product", "Price", "Qty", "Amount", "State"];
+    const rows = [
+      { "Account": "Wine Bar", "Product": "Pinot Noir", "Price": "25.00", "Qty": "10", "Amount": "250.00", "State": "NY" },
+      { "Account": "Bella Tavern", "Product": "Chardonnay", "Price": "20.00", "Qty": "8", "Amount": "160.00", "State": "CA" },
+      { "Account": "Cork Pub", "Product": "Cabernet", "Price": "30.00", "Qty": "12", "Amount": "360.00", "State": "CO" },
+      { "Account": "The Lounge", "Product": "Rosé", "Price": "18.00", "Qty": "6", "Amount": "108.00", "State": "IL" },
+      { "Account": "Vino Market", "Product": "Merlot", "Price": "22.00", "Qty": "15", "Amount": "330.00", "State": "NY" },
+    ];
+    const { mapping } = autoDetectMapping(headers, rows);
+
+    expect(mapping.revenue).toBe("Amount");
+    expect(mapping.unitPrice).toBe("Price");
+  });
+
+  it("maps new fields like invoiceNo, category, discount", () => {
+    const headers = ["Account", "Invoice Number", "Category", "Discount", "Zip Code", "State"];
+    const rows = [
+      { "Account": "Wine Bar", "Invoice Number": "INV-001", "Category": "Red", "Discount": "5%", "Zip Code": "10001", "State": "NY" },
+      { "Account": "Tavern", "Invoice Number": "INV-002", "Category": "White", "Discount": "10%", "Zip Code": "90210", "State": "CA" },
+      { "Account": "Pub", "Invoice Number": "INV-003", "Category": "Sparkling", "Discount": "0%", "Zip Code": "80301", "State": "CO" },
+      { "Account": "Lounge", "Invoice Number": "INV-004", "Category": "Rosé", "Discount": "15%", "Zip Code": "60601", "State": "IL" },
+    ];
+    const { mapping } = autoDetectMapping(headers, rows);
+
+    expect(mapping.invoiceNo).toBe("Invoice Number");
+    expect(mapping.category).toBe("Category");
+    expect(mapping.discount).toBe("Discount");
+    expect(mapping.zip).toBe("Zip Code");
+  });
 });
 
 describe("ROLE_FIELD_OVERRIDES", () => {

@@ -6,6 +6,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
+import { seedDemoData } from "../services/demoData";
 
 const AuthContext = createContext(null);
 
@@ -47,6 +48,13 @@ async function fetchOrCreateProfile(user) {
       createdBy: user.uid,
       createdAt: serverTimestamp(),
     });
+
+    // Seed demo data for new tenants
+    try {
+      await seedDemoData(tenantId);
+    } catch (err) {
+      console.warn("Demo data seeding failed:", err);
+    }
   }
 
   return { ...profile, createdAt: new Date() };

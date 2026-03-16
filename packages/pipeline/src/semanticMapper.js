@@ -146,12 +146,28 @@ function buildFieldDefs(overrides) {
   },
   {
     field: "revenue",
-    label: "Revenue / Dollar Amount",
-    headerAliases: ["revenue", "sales", "amount", "total", "price", "ext price", "extended price", "dollars", "debit", "credit", "balance", "net amount", "sales price", "avg price", "line total", "open balance"],
+    label: "Revenue / Total Amount",
+    headerAliases: ["revenue", "amount", "total", "sales", "ext price", "extended price", "dollars", "net amount", "line total", "total amount", "total sales", "total revenue", "net sales", "gross amount", "ext amount", "extended amount", "sales amount"],
     testValues: (vals) => {
       const dollarPattern = /^\$?[\d,]+\.?\d*$/;
-      const matches = vals.filter((v) => dollarPattern.test(String(v).trim().replace(/[()]/g, "")));
-      return matches.length >= 3 ? 0.6 : 0;
+      const nums = vals.filter((v) => dollarPattern.test(String(v).trim().replace(/[()]/g, "")));
+      if (nums.length < 3) return 0;
+      // Prefer columns with larger values (totals, not unit prices)
+      const avg = nums.reduce((s, v) => s + parseFloat(String(v).replace(/[$,()]/g, "")), 0) / nums.length;
+      return avg > 50 ? 0.75 : 0.55;
+    },
+  },
+  {
+    field: "unitPrice",
+    label: "Unit Price",
+    headerAliases: ["price", "unit price", "bottle price", "avg price", "sales price", "cost", "unit cost", "rate", "each", "price each", "case price", "msrp", "wholesale price", "retail price", "list price"],
+    testValues: (vals) => {
+      const dollarPattern = /^\$?[\d,]+\.?\d*$/;
+      const nums = vals.filter((v) => dollarPattern.test(String(v).trim().replace(/[()]/g, "")));
+      if (nums.length < 3) return 0;
+      // Prefer columns with smaller values (unit prices)
+      const avg = nums.reduce((s, v) => s + parseFloat(String(v).replace(/[$,()]/g, "")), 0) / nums.length;
+      return avg <= 50 ? 0.7 : 0.45;
     },
   },
   {
@@ -197,6 +213,76 @@ function buildFieldDefs(overrides) {
     field: "orderCycle",
     label: "Order Cycle (days)",
     headerAliases: ["cycle", "order cycle", "avg cycle", "reorder cycle", "frequency"],
+    testValues: () => 0,
+  },
+  {
+    field: "invoiceNo",
+    label: "Invoice / Order Number",
+    headerAliases: ["invoice", "invoice number", "invoice no", "inv", "order number", "order no", "po", "po number", "num", "ref", "reference", "transaction number", "txn no", "document number", "doc no", "confirmation"],
+    testValues: () => 0,
+  },
+  {
+    field: "category",
+    label: "Category / Varietal",
+    headerAliases: ["category", "varietal", "grape", "type", "wine type", "spirit type", "class", "subclass", "sub-category", "product type", "product category", "vintage", "appellation", "region of origin", "country"],
+    testValues: () => 0,
+  },
+  {
+    field: "size",
+    label: "Pack / Bottle Size",
+    headerAliases: ["size", "pack size", "bottle size", "pack", "bottles per case", "btl size", "format", "container size", "ml", "uom", "unit of measure", "pack type"],
+    testValues: () => 0,
+  },
+  {
+    field: "city",
+    label: "City",
+    headerAliases: ["city", "ship to city", "bill to city", "town", "municipality"],
+    testValues: () => 0,
+  },
+  {
+    field: "zip",
+    label: "Zip / Postal Code",
+    headerAliases: ["zip", "zip code", "postal code", "postal", "ship to zip", "bill to zip"],
+    testValues: (vals) => {
+      const zipPattern = /^\d{5}(-\d{4})?$/;
+      const matches = vals.filter((v) => zipPattern.test(String(v).trim()));
+      return matches.length >= 3 ? 0.95 : 0;
+    },
+  },
+  {
+    field: "contact",
+    label: "Contact Name",
+    headerAliases: ["contact", "contact name", "buyer name", "buyer", "attention", "attn"],
+    testValues: () => 0,
+  },
+  {
+    field: "discount",
+    label: "Discount",
+    headerAliases: ["discount", "discount %", "disc", "discount amount", "promo", "promotion", "allowance", "rebate"],
+    testValues: () => 0,
+  },
+  {
+    field: "debit",
+    label: "Debit",
+    headerAliases: ["debit", "debit amount", "dr"],
+    testValues: () => 0,
+  },
+  {
+    field: "credit",
+    label: "Credit",
+    headerAliases: ["credit", "credit amount", "cr", "payment"],
+    testValues: () => 0,
+  },
+  {
+    field: "balance",
+    label: "Balance",
+    headerAliases: ["balance", "open balance", "balance due", "outstanding", "amount due", "remaining"],
+    testValues: () => 0,
+  },
+  {
+    field: "notes",
+    label: "Notes / Memo",
+    headerAliases: ["notes", "memo", "comments", "description", "remark", "memo/description", "note"],
     testValues: () => 0,
   },
 ];

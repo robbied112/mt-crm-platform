@@ -9,7 +9,7 @@ import { autoDetectMapping, detectUploadType, getFieldDefs } from "../utils/sema
 import { getUserRole, t } from "../utils/terminology";
 import { aiAutoDetectMapping } from "../utils/aiMapper";
 import { transformAll, generateSummary } from "../utils/transformData";
-import { normalizeRows } from "../../../packages/pipeline/src/normalize.js";
+import { normalizeRows } from "../utils/normalize.js";
 import { logUpload } from "../services/firestoreService";
 import { useAuth } from "../context/AuthContext";
 
@@ -17,7 +17,7 @@ const STEPS = ["upload", "mapping", "preview", "done"];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export default function DataImport() {
-  const { importDatasets, userRole, tenantId, useNormalized } = useData();
+  const { importDatasets, userRole, tenantId, useNormalized, tenantConfig, updateTenantConfig } = useData();
   const { currentUser } = useAuth();
   const [step, setStep] = useState("upload");
   const [file, setFile] = useState(null);
@@ -143,12 +143,20 @@ export default function DataImport() {
       }
 
       await importDatasets(datasets, summary, importMeta);
-      await logUpload(tenantId, {
-        fileName: file.name,
-        rowCount: parsed.rows.length,
-        type: uploadType.type,
-        uploadedBy: currentUser?.email || "unknown",
-      });
+
+      // Clear demo data flag after real data is saved
+      if (tenantConfig?.demoData) {
+        await updateTenantConfig({ demoData: false });
+      }
+
+      if (tenantId) {
+        await logUpload(tenantId, {
+          fileName: file.name,
+          rowCount: parsed.rows.length,
+          type: uploadType.type,
+          uploadedBy: currentUser?.email || "unknown",
+        });
+      }
       setStep("done");
     } catch (err) {
       setError(err.message);

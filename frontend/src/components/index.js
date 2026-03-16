@@ -33,3 +33,4 @@ export { default as Settings } from "./Settings";
 export { default as Login } from "./Login";
 export { default as DataImport } from "./DataImport";
 export { default as ExecutiveSummary } from "./ExecutiveSummary";
+export { default as DemoBanner } from "./DemoBanner";
