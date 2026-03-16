@@ -11,6 +11,7 @@ import ChartPanel from "./ChartPanel";
 import { getFilteredData } from "../utils/filterData";
 import { esc } from "../utils/formatting";
 import { t } from "../utils/terminology";
+import { exportToXlsx } from "../utils/exportXlsx";
 
 const PAGE_SIZE = 50;
 
@@ -393,7 +394,10 @@ export default function ReorderForecast({
               </button>
             </div>
             {onExport && (
-              <button className="btn btn-secondary btn-small" onClick={onExport}>
+              <button className="btn btn-secondary btn-small" onClick={() => exportToXlsx(tableData, "reorder-forecast", "Reorder Forecast", {
+                columns: ["rank", "acct", "dist", "st", "ch", "ce", "purch", "cycle", "last", "days", "priority", "status"],
+                headers: { rank: "#", acct: t("account"), dist: t("distributor"), st: "State", ch: "Channel", ce: "4M CE", purch: "Purchases", cycle: "Avg Cycle", last: "Last Order", days: "Days Since", priority: "Priority", status: "Status" },
+              })}>
                 Export to Excel
               </button>
             )}

@@ -11,6 +11,7 @@ import ChartPanel from "./ChartPanel";
 import { getFilteredData } from "../utils/filterData";
 import { esc } from "../utils/formatting";
 import { t } from "../utils/terminology";
+import { exportToXlsx } from "../utils/exportXlsx";
 
 const PAGE_SIZE = 50;
 
@@ -222,7 +223,10 @@ export default function AccountInsights({
             {onExport && (
               <button
                 className="btn btn-secondary btn-small"
-                onClick={onExport}
+                onClick={() => exportToXlsx(tableData, "account-insights", "Accounts", {
+                  columns: ["rank", "acct", "dist", "st", "ch", "nov", "dec", "jan", "feb", "total", "trend", "growthPotential"],
+                  headers: { rank: "#", acct: t("account"), dist: t("distributor"), st: "State", ch: "Channel", nov: "Nov", dec: "Dec", jan: "Jan", feb: "Feb", total: "4M CE", trend: "Trend", growthPotential: "Growth Potential" },
+                })}
               >
                 Export to Excel
               </button>

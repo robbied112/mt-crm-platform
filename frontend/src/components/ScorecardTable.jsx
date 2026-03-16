@@ -12,6 +12,7 @@ import {
   getSellThruColor,
 } from "../utils/badges";
 import { t } from "../utils/terminology";
+import { exportToXlsx } from "../utils/exportXlsx";
 
 const PAGE_SIZE = 50;
 
@@ -189,7 +190,10 @@ export default function ScorecardTable({ data = [], onDrillIn, onExport }) {
         <div className="table-title">{t("distributor")} Scorecard</div>
         <div className="table-controls">
           {onExport && (
-            <button className="btn btn-secondary btn-small" onClick={onExport}>
+            <button className="btn btn-secondary btn-small" onClick={() => exportToXlsx(sorted, "distributor-scorecard", "Scorecard", {
+              columns: ["name", "st", "ce", "momentum", "w4", "w4trend", "oh", "doh", "net", "velTrend", "sellThru", "conLabel"],
+              headers: { name: t("distributor"), st: "State", ce: `${t("longPeriod")} ${t("volume")}`, momentum: "Momentum", w4: `${t("shortPeriod")} ${t("volume")}`, w4trend: `${t("shortPeriod")} Trend`, oh: "On Hand", doh: "DOH", net: "Net Placements", velTrend: "Trend", sellThru: "Sell-Thru", conLabel: "Stage" },
+            })}>
               Export to Excel
             </button>
           )}

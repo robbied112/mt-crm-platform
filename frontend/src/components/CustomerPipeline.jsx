@@ -11,6 +11,7 @@ import { matchesUserTerritory } from "../utils/territory";
 import { formatCurrency, esc } from "../utils/formatting";
 import TENANT_CONFIG from "../config/tenant";
 import { t } from "../utils/terminology";
+import { exportToXlsx } from "../utils/exportXlsx";
 
 const STAGE_ORDER = [
   "Identified",
@@ -416,7 +417,10 @@ export default function CustomerPipeline({
           </button>
         )}
         {onExportXLSX && (
-          <button onClick={onExportXLSX} style={{ padding: "6px 14px", background: "#1d4ed8", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+          <button onClick={() => exportToXlsx(sortedRows, "customer-pipeline", "Pipeline", {
+            columns: ["acct", "tier", "stage", "owner", "source", "estValue", "weighted", "nextStep", "dueDate", "notes"],
+            headers: { acct: t("account"), tier: "Tier", stage: "Stage", owner: "Owner", source: "Source", estValue: "Est. Value", weighted: "Weighted", nextStep: "Next Step", dueDate: "Due Date", notes: "Notes" },
+          })} style={{ padding: "6px 14px", background: "#1d4ed8", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
             Export Excel
           </button>
         )}

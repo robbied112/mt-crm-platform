@@ -9,6 +9,8 @@ const parseFile = require("./parseFile");
 const transformData = require("./transformData");
 const semanticMapper = require("./semanticMapper");
 const normalize = require("./normalize");
+const constants = require("./constants");
+const firestore = require("./firestore");
 
 module.exports = {
   // parseFile
@@ -39,4 +41,15 @@ module.exports = {
 
   // normalize
   normalizeRows: normalize.normalizeRows,
+
+  // constants
+  CHUNK_SIZE: constants.CHUNK_SIZE,
+  DATASETS: constants.DATASETS,
+  OBJECT_DATASETS: constants.OBJECT_DATASETS,
+
+  // firestore
+  writeChunked: firestore.writeChunked,
+  readChunked: firestore.readChunked,
+  createModularFirestoreAdapter: firestore.createModularFirestoreAdapter,
+  createAdminFirestoreAdapter: firestore.createAdminFirestoreAdapter,
 };

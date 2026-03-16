@@ -39,25 +39,27 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
+import {
+  DATASETS,
+  OBJECT_DATASETS,
+} from "../../../packages/pipeline/src/constants.js";
+import {
+  writeChunked,
+  readChunked,
+  createModularFirestoreAdapter,
+} from "../../../packages/pipeline/src/firestore.js";
 
-const CHUNK_SIZE = 500;
-
-const DATASETS = [
-  "distScorecard",
-  "reorderData",
-  "accountsTop",
-  "pipelineAccounts",
-  "pipelineMeta",
-  "inventoryData",
-  "newWins",
-  "distHealth",
-  "reEngagementData",
-  "placementSummary",
-  "qbDistOrders",
-  "acctConcentration",
-];
-
-const OBJECT_DATASETS = new Set(["pipelineMeta", "qbDistOrders", "acctConcentration"]);
+const firestoreAdapter = createModularFirestoreAdapter({
+  doc,
+  getDoc,
+  setDoc,
+  deleteDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  serverTimestamp,
+}, db);
 
 function emptyForDataset(name) {
   return OBJECT_DATASETS.has(name) ? {} : [];
@@ -74,35 +76,10 @@ function emptyForDataset(name) {
  */
 async function _loadDataset(tenantId, collPath, name) {
   try {
-    const metaRef = doc(db, "tenants", tenantId, collPath, name);
-    const metaSnap = await getDoc(metaRef);
-
-    if (!metaSnap.exists()) {
-      return emptyForDataset(name);
-    }
-
-    const meta = metaSnap.data();
-
-    // Non-chunked: items stored directly in the metadata doc
-    if (!meta.chunked) {
-      return meta.items ?? meta;
-    }
-
-    // Chunked: read all row documents for the current version
-    const rowsRef = collection(db, "tenants", tenantId, collPath, name, "rows");
-    const rowsQuery = query(rowsRef, where("version", "==", meta.version));
-    const rowsSnap = await getDocs(rowsQuery);
-
-    if (rowsSnap.empty) {
-      return emptyForDataset(name);
-    }
-
-    // Sort by chunk index and flatten
-    const chunks = rowsSnap.docs
-      .map((d) => ({ idx: d.data().idx, items: d.data().items }))
-      .sort((a, b) => a.idx - b.idx);
-
-    return chunks.flatMap((c) => c.items);
+    return await readChunked(db, ["tenants", tenantId, collPath, name], {
+      adapter: firestoreAdapter,
+      emptyValue: emptyForDataset(name),
+    });
   } catch {
     return emptyForDataset(name);
   }
@@ -113,73 +90,9 @@ async function _loadDataset(tenantId, collPath, name) {
  * Chunks if the array exceeds CHUNK_SIZE.
  */
 async function _saveDataset(tenantId, collPath, name, items) {
-  const metaRef = doc(db, "tenants", tenantId, collPath, name);
-  const isObject = !Array.isArray(items);
-
-  // Object datasets (pipelineMeta, etc.) or small arrays: single document
-  if (isObject || items.length <= CHUNK_SIZE) {
-    await setDoc(metaRef, {
-      ...(isObject ? items : { items }),
-      chunked: false,
-      updatedAt: serverTimestamp(),
-    });
-    await _deleteOldChunks(tenantId, collPath, name, -1);
-    return;
-  }
-
-  // Large arrays: chunked storage with version flag
-  const metaSnap = await getDoc(metaRef);
-  const prevVersion = metaSnap.exists() ? (metaSnap.data().version || 0) : 0;
-  const newVersion = prevVersion + 1;
-
-  await setDoc(metaRef, {
-    chunked: true,
-    version: newVersion,
-    count: items.length,
-    chunkCount: Math.ceil(items.length / CHUNK_SIZE),
-    updatedAt: serverTimestamp(),
+  await writeChunked(db, ["tenants", tenantId, collPath, name], items, {
+    adapter: firestoreAdapter,
   });
-
-  const chunkPromises = [];
-  for (let i = 0; i < items.length; i += CHUNK_SIZE) {
-    const chunkIdx = Math.floor(i / CHUNK_SIZE);
-    const chunk = items.slice(i, i + CHUNK_SIZE);
-    const chunkRef = doc(db, "tenants", tenantId, collPath, name, "rows", String(chunkIdx));
-    chunkPromises.push(
-      setDoc(chunkRef, {
-        idx: chunkIdx,
-        version: newVersion,
-        items: chunk,
-        updatedAt: serverTimestamp(),
-      })
-    );
-  }
-  await Promise.all(chunkPromises);
-
-  await _deleteOldChunks(tenantId, collPath, name, newVersion);
-}
-
-/**
- * Delete chunk documents with version < currentVersion.
- * Silently fails — stale chunks are harmless (filtered on read by version).
- */
-async function _deleteOldChunks(tenantId, collPath, name, currentVersion) {
-  try {
-    const rowsRef = collection(db, "tenants", tenantId, collPath, name, "rows");
-    const rowsSnap = await getDocs(rowsRef);
-    const deletePromises = [];
-    for (const d of rowsSnap.docs) {
-      const docVersion = d.data().version || 0;
-      if (docVersion < currentVersion) {
-        deletePromises.push(deleteDoc(d.ref));
-      }
-    }
-    if (deletePromises.length > 0) {
-      await Promise.all(deletePromises);
-    }
-  } catch {
-    // Stale chunks are filtered on read — cleanup failure is non-critical
-  }
 }
 
 /**
@@ -241,25 +154,18 @@ export async function saveImport(tenantId, meta, normalizedRows) {
   const importsRef = collection(db, "tenants", tenantId, "imports");
   const importRef = doc(importsRef);
   const importId = importRef.id;
-
-  // Write metadata
-  await setDoc(importRef, {
-    ...meta,
-    rowCount: normalizedRows.length,
-    createdAt: serverTimestamp(),
+  await writeChunked(db, ["tenants", tenantId, "imports", importId], normalizedRows, {
+    adapter: firestoreAdapter,
+    forceChunked: true,
+    version: 1,
+    cleanupStaleChunks: false,
+    updatedAtField: null,
+    meta: {
+      ...meta,
+      rowCount: normalizedRows.length,
+      createdAt: serverTimestamp(),
+    },
   });
-
-  // Write rows in chunks (no versioning — imports are immutable)
-  const chunkPromises = [];
-  for (let i = 0; i < normalizedRows.length; i += CHUNK_SIZE) {
-    const chunkIdx = Math.floor(i / CHUNK_SIZE);
-    const chunk = normalizedRows.slice(i, i + CHUNK_SIZE);
-    const chunkRef = doc(db, "tenants", tenantId, "imports", importId, "rows", String(chunkIdx));
-    chunkPromises.push(
-      setDoc(chunkRef, { idx: chunkIdx, items: chunk })
-    );
-  }
-  await Promise.all(chunkPromises);
 
   return importId;
 }
@@ -284,12 +190,11 @@ export async function loadImports(tenantId) {
  * Load all normalized rows for a specific import.
  */
 export async function loadImportRows(tenantId, importId) {
-  const rowsRef = collection(db, "tenants", tenantId, "imports", importId, "rows");
-  const snap = await getDocs(rowsRef);
-  return snap.docs
-    .map((d) => ({ idx: d.data().idx, items: d.data().items }))
-    .sort((a, b) => a.idx - b.idx)
-    .flatMap((c) => c.items);
+  return readChunked(db, ["tenants", tenantId, "imports", importId], {
+    adapter: firestoreAdapter,
+    emptyValue: [],
+    preferRows: true,
+  });
 }
 
 /**

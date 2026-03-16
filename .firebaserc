@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "mt-crm-platform"
+    "default": "mt-crm-platform",
+    "production": "mt-crm-platform",
+    "staging": "mt-crm-platform-staging"
   }
 }

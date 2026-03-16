@@ -16,6 +16,7 @@
  */
 
 const admin = require("firebase-admin");
+const { CHUNK_SIZE } = require("../lib/pipeline/index");
 
 const PROJECT_ID = "demo-test";
 const FIRESTORE_HOST = "127.0.0.1";
@@ -104,7 +105,6 @@ async function seedImport(db, tenantId, importId, meta, rows) {
   });
 
   // Chunk rows (500 per doc)
-  const CHUNK_SIZE = 500;
   for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
     const chunkIdx = Math.floor(i / CHUNK_SIZE);
     const chunk = rows.slice(i, i + CHUNK_SIZE);

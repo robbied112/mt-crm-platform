@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useData } from "../context/DataContext";
-import { useAuth } from "../context/AuthContext";
 import { loadSyncHistory } from "../services/firestoreService";
 import { getFunctions, httpsCallable } from "firebase/functions";
 
@@ -32,9 +31,7 @@ function StatusBadge({ status }) {
 }
 
 export default function CloudSyncSettings() {
-  const { tenantConfig, updateTenantConfig } = useData();
-  const { currentUser } = useAuth();
-  const tenantId = tenantConfig?.tenantId || "default";
+  const { tenantConfig, updateTenantConfig, tenantId } = useData();
   const subscription = tenantConfig?.subscription;
   const cloudSync = tenantConfig?.cloudSync;
   const isPremium = subscription?.status === "active" || subscription?.status === "trial";
@@ -171,8 +168,8 @@ export default function CloudSyncSettings() {
     setSyncing(true);
     setError(null);
     try {
-      const fn = httpsCallable(functions, "cloudSyncNow");
-      const result = await fn({ tenantId });
+      const fn = httpsCallable(functions, "cloudSyncSyncNow");
+      await fn({ tenantId });
       // Refresh history
       const history = await loadSyncHistory(tenantId, 10);
       setSyncHistory(history);

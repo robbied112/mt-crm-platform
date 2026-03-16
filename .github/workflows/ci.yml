@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            functions/package-lock.json
+
+      - name: Set up Java for Firebase emulators
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install functions dependencies
+        working-directory: functions
+        run: npm ci
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm test
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Check functions syntax
+        run: find functions -name '*.js' -print0 | xargs -0 -n1 node --check
+
+      - name: Run functions integration tests
+        working-directory: functions
+        run: npm run test:integration
+
+  deploy_staging:
+    name: Deploy Staging
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate staging configuration
+        env:
+          FIREBASE_PROJECT_STAGING: ${{ vars.FIREBASE_PROJECT_STAGING }}
+          GCP_SA_KEY_STAGING: ${{ secrets.GCP_SA_KEY_STAGING }}
+        run: |
+          test -n "$FIREBASE_PROJECT_STAGING" || { echo "Missing repository variable FIREBASE_PROJECT_STAGING"; exit 1; }
+          test -n "$GCP_SA_KEY_STAGING" || { echo "Missing repository secret GCP_SA_KEY_STAGING"; exit 1; }
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_STAGING }}
+          create_credentials_file: true
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy to Firebase staging
+        env:
+          FIREBASE_PROJECT_STAGING: ${{ vars.FIREBASE_PROJECT_STAGING }}
+        run: firebase deploy --project "$FIREBASE_PROJECT_STAGING" --non-interactive
