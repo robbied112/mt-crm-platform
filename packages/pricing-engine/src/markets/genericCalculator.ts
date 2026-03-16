@@ -248,7 +248,25 @@ export function calculateMarketPricing(
   // Add landed subtotal to waterfall (before distribution layers)
   // We'll add this in a second pass for proper ordering
 
-  // ---- Step 6: Apply final taxes (VAT/GST) ----
+  // ---- Step 6: Apply wholesale-level taxes (e.g., WET) ----
+  // WET applies to wholesale value and must be added before final taxes (GST is inclusive of WET)
+  const wholesaleTaxes = activeTaxes.filter((t) => resolveTiming(t, pathway) === 'on_wholesale');
+  for (const tax of wholesaleTaxes) {
+    const taxRate = (inputs.taxes[tax.id] ?? tax.defaultValue) / 100;
+    const wetAmount = wholesaleCase * taxRate;
+    srpCase += wetAmount;
+    waterfall.push({
+      id: `tax-${tax.id}`,
+      label: tax.label,
+      category: 'tax',
+      perCase: wetAmount,
+      perBottle: casePack > 0 ? wetAmount / casePack : 0,
+      helper: `${(inputs.taxes[tax.id] ?? tax.defaultValue).toFixed(1)}% of wholesale value`,
+    });
+  }
+
+  // ---- Step 7: Apply final taxes (VAT/GST) ----
+  // These apply on the final price, inclusive of any wholesale-level taxes
   const finalTaxes = activeTaxes.filter((t) => resolveTiming(t, pathway) === 'on_final');
   for (const tax of finalTaxes) {
     const taxAmount = computeTax(tax, inputs, srpCase, casePack);
@@ -262,29 +280,6 @@ export function calculateMarketPricing(
         perBottle: casePack > 0 ? srpCase / casePack : 0,
         helper: `${(inputs.taxes[tax.id] ?? tax.defaultValue).toFixed(1)}% on retail price`,
         highlight: true,
-      });
-    }
-  }
-
-  // ---- Step 7: Apply wholesale-level taxes (e.g., WET) ----
-  // These need to be recalculated — WET applies to wholesale value
-  // and gets passed through to the retailer
-  const wholesaleTaxes = activeTaxes.filter((t) => resolveTiming(t, pathway) === 'on_wholesale');
-  if (wholesaleTaxes.length > 0) {
-    // Recalculate: WET is applied on the wholesale value, added to retailer cost
-    // This is a simplification — in practice WET calculation is more complex
-    for (const tax of wholesaleTaxes) {
-      const taxRate = (inputs.taxes[tax.id] ?? tax.defaultValue) / 100;
-      const wetAmount = wholesaleCase * taxRate;
-      // WET is already factored into the chain walk above via the running cost
-      // We just need a waterfall entry for visibility
-      waterfall.splice(-1, 0, {
-        id: `tax-${tax.id}`,
-        label: tax.label,
-        category: 'tax',
-        perCase: wetAmount,
-        perBottle: casePack > 0 ? wetAmount / casePack : 0,
-        helper: `${(inputs.taxes[tax.id] ?? tax.defaultValue).toFixed(1)}% of wholesale value`,
       });
     }
   }

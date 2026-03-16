@@ -61,7 +61,7 @@ export default function MarketInputForm({
   const hasPathways = market.pathways && market.pathways.length > 1;
 
   const liveRate = liveRates ? getRateForMarket(market, liveRates.rates) : null;
-  const effectiveRate = inputs.exchangeRate * (1 + (inputs.fxBuffer || 0) / 100);
+  const effectiveRate = inputs.exchangeRate * (1 + (inputs.exchangeBuffer || 0) / 100);
 
   const activePathway = hasPathways
     ? market.pathways.find((p) => p.id === inputs.pathway)
@@ -106,8 +106,8 @@ export default function MarketInputForm({
           <div className="pricing-input-grid">
             <NumInput
               label="Bottle size (ml)"
-              value={inputs.bottleSize || 0}
-              onChange={(val) => onSetInput('bottleSize', val)}
+              value={inputs.bottleSizeMl || 0}
+              onChange={(val) => onSetInput('bottleSizeMl', val)}
               step="1"
               suffix="ml"
             />
@@ -157,8 +157,8 @@ export default function MarketInputForm({
             />
             <NumInput
               label="FX buffer"
-              value={inputs.fxBuffer || 0}
-              onChange={(val) => onSetInput('fxBuffer', val)}
+              value={inputs.exchangeBuffer || 0}
+              onChange={(val) => onSetInput('exchangeBuffer', val)}
               suffix="%"
             />
           </div>
