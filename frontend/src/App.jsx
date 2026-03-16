@@ -16,6 +16,11 @@ import {
   Login,
   ExecutiveSummary,
   DemoBanner,
+  AccountsPage,
+  AccountDetailPage,
+  ContactsPage,
+  ActivitiesPage,
+  TasksPage,
 } from "./components";
 import Sidebar from "./components/Sidebar";
 import CommandPalette from "./components/CommandPalette";
@@ -90,6 +95,12 @@ function App() {
     return <Login />;
   }
 
+  const goSettings = () => {
+    if (isAdmin) {
+      navigate("/settings");
+    }
+  };
+
   return (
     <>
       <a href="#mainContent" className="skip-link">Skip to main content</a>
@@ -119,7 +130,7 @@ function App() {
           {/* Top bar */}
           <div className="topbar">
             <DemoBanner
-              onGoToSettings={() => navigate("/settings")}
+              onGoToSettings={goSettings}
               onClearDemo={async () => {
                 await clearDemoData(tenantId);
                 refreshData();
@@ -213,7 +224,7 @@ function App() {
               />
 
               <Route
-                path="/accounts"
+                path="/account-insights"
                 element={
                   <DataGate dataKey="accounts" tabLabel="Account Insights">
                     <AccountInsights
@@ -275,6 +286,13 @@ function App() {
                   </DataGate>
                 }
               />
+
+              {/* CRM routes */}
+              <Route path="/accounts" element={<AccountsPage />} />
+              <Route path="/accounts/:id" element={<AccountDetailPage />} />
+              <Route path="/contacts" element={<ContactsPage />} />
+              <Route path="/activities" element={<ActivitiesPage />} />
+              <Route path="/tasks" element={<TasksPage />} />
 
               {isAdmin && (
                 <Route

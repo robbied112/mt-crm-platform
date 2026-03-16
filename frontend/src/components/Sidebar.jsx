@@ -63,6 +63,33 @@ const ICONS = {
       <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M15.8 4.2l-1.4 1.4M5.6 14.4l-1.4 1.4" />
     </svg>
   ),
+  // CRM icons
+  crmAccounts: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="14" height="14" rx="2" />
+      <path d="M7 8h6M7 11h4" />
+    </svg>
+  ),
+  contacts: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="7" cy="7" r="2.5" />
+      <circle cx="13" cy="7" r="2.5" />
+      <path d="M2 16c0-2.5 2-4.5 5-4.5s5 2 5 4.5" />
+      <path d="M13 11.5c2 0 4 1.5 4 4.5" />
+    </svg>
+  ),
+  activities: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4v12M4 8h8M4 12h6" />
+      <circle cx="14" cy="6" r="2" />
+    </svg>
+  ),
+  tasks: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="14" height="14" rx="2" />
+      <path d="M7 10l2 2 4-4" />
+    </svg>
+  ),
 };
 
 export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClose }) {
@@ -104,6 +131,11 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
   };
 
   const user = currentUser;
+
+  // Split routes into sections
+  const mainRoutes = ROUTES.filter((r) => !r.adminOnly && r.section !== "crm");
+  const crmRoutes = ROUTES.filter((r) => r.section === "crm");
+  const adminRoutes = ROUTES.filter((r) => r.adminOnly);
 
   return (
     <aside className={`sidebar ${collapsed ? "sidebar--collapsed" : ""} ${mobileOpen ? "sidebar--mobile-open" : ""}`}>
@@ -164,8 +196,8 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
       {/* Nav links */}
       <nav className="sidebar__nav">
         <div className="sidebar__nav-section">
-          {!collapsed && <span className="sidebar__section-label">Navigation</span>}
-          {ROUTES.filter((r) => !r.adminOnly).map((route) => (
+          {!collapsed && <span className="sidebar__section-label">Analytics</span>}
+          {mainRoutes.map((route) => (
             <NavLink
               key={route.key}
               to={route.path}
@@ -192,10 +224,28 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
           ))}
         </div>
 
+        <div className="sidebar__nav-section">
+          {!collapsed && <span className="sidebar__section-label">CRM</span>}
+          {crmRoutes.map((route) => (
+            <NavLink
+              key={route.key}
+              to={route.path}
+              className={({ isActive }) =>
+                `sidebar__link ${isActive ? "sidebar__link--active" : ""}`
+              }
+              title={collapsed ? getLabel(route) : undefined}
+              onClick={onMobileClose}
+            >
+              <span className="sidebar__link-icon">{ICONS[route.icon]}</span>
+              {!collapsed && <span className="sidebar__link-label">{getLabel(route)}</span>}
+            </NavLink>
+          ))}
+        </div>
+
         {isAdmin && (
           <div className="sidebar__nav-section">
             {!collapsed && <span className="sidebar__section-label">Admin</span>}
-            {ROUTES.filter((r) => r.adminOnly).map((route) => (
+            {adminRoutes.map((route) => (
               <NavLink
                 key={route.key}
                 to={route.path}

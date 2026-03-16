@@ -41,9 +41,9 @@ export const ROUTES = [
     description: "Stock levels, days on hand, and reorder alerts",
   },
   {
-    key: "accounts",
-    path: "/accounts",
-    label: "Accounts",
+    key: "account-insights",
+    path: "/account-insights",
+    label: "Account Insights",
     icon: "accounts",
     termKey: "account",
     suffix: " Insights",
@@ -75,6 +75,40 @@ export const ROUTES = [
     dataKey: "pipeline",
     description: "Sales pipeline, funnel, and deal tracking",
   },
+  // CRM
+  {
+    key: "crm-accounts",
+    path: "/accounts",
+    label: "Accounts",
+    icon: "crmAccounts",
+    section: "crm",
+    description: "Manage accounts, contacts, and relationships",
+  },
+  {
+    key: "crm-contacts",
+    path: "/contacts",
+    label: "Contacts",
+    icon: "contacts",
+    section: "crm",
+    description: "Contact directory and communication history",
+  },
+  {
+    key: "crm-activities",
+    path: "/activities",
+    label: "Activities",
+    icon: "activities",
+    section: "crm",
+    description: "Activity log, visits, tastings, and follow-ups",
+  },
+  {
+    key: "crm-tasks",
+    path: "/tasks",
+    label: "Tasks",
+    icon: "tasks",
+    section: "crm",
+    description: "Task management and follow-up tracking",
+  },
+  // Admin
   {
     key: "admin-settings",
     path: "/settings",

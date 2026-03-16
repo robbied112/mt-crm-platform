@@ -4,7 +4,7 @@
 
 export { default as Header } from "./Header";
 export { default as FilterBar } from "./FilterBar";
-export { default as TabNav } from "./TabNav";
+export { default as Sidebar } from "./Sidebar";
 export { default as UserBar } from "./UserBar";
 export { default as Footer } from "./Footer";
 export { default as KpiCard } from "./KpiCard";
@@ -34,7 +34,15 @@ export { default as Login } from "./Login";
 export { default as DataImport } from "./DataImport";
 export { default as ExecutiveSummary } from "./ExecutiveSummary";
 export { default as DemoBanner } from "./DemoBanner";
-export { default as Sidebar } from "./Sidebar";
+export { default as AccountsPage } from "./AccountsPage";
+export { default as AccountDetailPage } from "./AccountDetailPage";
+export { default as AccountForm } from "./AccountForm";
+export { default as ContactsPage } from "./ContactsPage";
+export { default as ContactForm } from "./ContactForm";
+export { default as ActivitiesPage } from "./ActivitiesPage";
+export { default as LogActivityModal } from "./LogActivityModal";
+export { default as TasksPage } from "./TasksPage";
+export { default as TaskForm } from "./TaskForm";
 export { default as CommandPalette } from "./CommandPalette";
 export { default as DataGate } from "./DataGate";
 export { default as EmptyState } from "./EmptyState";

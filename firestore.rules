@@ -126,10 +126,22 @@ service cloud.firestore {
         allow write: if isTenantMember(tenantId);
       }
 
-      // Accounts scoped under tenant (created by Cloud Functions, editable by admins)
+      // Contacts scoped under tenant
+      match /contacts/{contactId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantMember(tenantId);
+      }
+
+      // Tasks scoped under tenant
+      match /tasks/{taskId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantMember(tenantId);
+      }
+
+      // Accounts scoped under tenant (readable/writable by all tenant members)
       match /accounts/{accountId} {
         allow read: if isTenantMember(tenantId);
-        allow write: if isTenantAdmin(tenantId);
+        allow write: if isTenantMember(tenantId);
 
         match /notes/{noteId} {
           allow read, write: if isTenantMember(tenantId);

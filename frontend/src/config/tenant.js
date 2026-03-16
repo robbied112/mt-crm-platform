@@ -60,6 +60,20 @@ const TENANT_CONFIG = {
     "Send Samples",
     "Follow Up",
     "Reorder Check",
+    "Schedule Tasting",
+    "Staff Training",
+  ],
+  accountTypes: ["on-premise", "off-premise", "hybrid"],
+  licenseTypes: ["restaurant", "bar", "retail", "hotel", "club", "other"],
+  wineProgramLevels: ["none", "basic", "moderate", "strong", "sommelier-driven"],
+  contactRoles: [
+    "sommelier", "beverage_director", "wine_buyer",
+    "gm", "owner", "bar_manager", "purchasing", "other",
+  ],
+  activityTypes: [
+    "call", "email", "visit", "tasting", "sample_drop",
+    "menu_placement", "wine_dinner", "staff_training",
+    "reorder_followup", "note",
   ],
   useNormalizedModel: false, // Feature flag: imports/ + views/ schema (TODO-021)
   features: {
