@@ -3,11 +3,13 @@
  * Inspired by Linear/HubSpot: icons + labels, sections, user menu at bottom.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { ROUTES } from "../config/routes";
 import { useAuth } from "../context/AuthContext";
 import { useData } from "../context/DataContext";
+
+import { ONBOARDING_STEPS } from "../config/reportGuides";
 
 const ICONS = {
   territory: (
@@ -111,6 +113,13 @@ const ICONS = {
       <path d="M10 12v4M7 16h6" />
     </svg>
   ),
+  setup: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 2v4M10 14v4M2 10h4M14 10h4" />
+      <circle cx="10" cy="10" r="3" />
+      <path d="M4.9 4.9l2.1 2.1M13 13l2.1 2.1M15.1 4.9l-2.1 2.1M7 13l-2.1 2.1" />
+    </svg>
+  ),
 };
 
 export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClose }) {
@@ -118,7 +127,7 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
     try { return localStorage.getItem("sidebar-collapsed") === "true"; } catch { return false; }
   });
   const { currentUser, logout, isAdmin } = useAuth();
-  const { availability, tenantConfig, loading: dataLoading } = useData();
+  const { availability, tenantConfig, loading: dataLoading, updateTenantConfig } = useData();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -154,11 +163,34 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
   const user = currentUser;
 
   // Split routes into sections
-  const mainRoutes = ROUTES.filter((r) => !r.adminOnly && r.section !== "crm" && r.section !== "billbacks");
+  const mainRoutes = ROUTES.filter((r) => !r.adminOnly && r.section !== "crm" && r.section !== "billbacks" && r.section !== "setup");
   const toolsRoutes = ROUTES.filter((r) => r.section === "tools");
   const crmRoutes = ROUTES.filter((r) => r.section === "crm");
   const billbackRoutes = ROUTES.filter((r) => r.section === "billbacks");
   const adminRoutes = ROUTES.filter((r) => r.adminOnly);
+
+  // Onboarding setup card state
+  const onboarding = tenantConfig?.onboarding;
+  const setupProgress = useMemo(() => {
+    if (!onboarding) return { show: true, completed: 0, total: ONBOARDING_STEPS.length };
+    if (onboarding.dismissedAt) return { show: false, completed: 0, total: ONBOARDING_STEPS.length };
+    const completed = (onboarding.completedSteps || []).length;
+    const allDone = completed >= ONBOARDING_STEPS.length;
+    return { show: !allDone, completed, total: ONBOARDING_STEPS.length };
+  }, [onboarding]);
+
+  const dismissSetup = async () => {
+    try {
+      await updateTenantConfig({
+        onboarding: {
+          ...(onboarding || {}),
+          dismissedAt: new Date().toISOString(),
+        },
+      });
+    } catch {
+      console.warn("Failed to dismiss setup card");
+    }
+  };
 
   return (
     <aside className={`sidebar ${collapsed ? "sidebar--collapsed" : ""} ${mobileOpen ? "sidebar--mobile-open" : ""}`}>
@@ -335,6 +367,41 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
           </div>
         )}
       </nav>
+
+      {/* Setup progress card */}
+      {setupProgress.show && (
+        collapsed ? (
+          <div className="sidebar__setup-icon" title={`Setup: ${setupProgress.completed}/${setupProgress.total} complete`}>
+            <NavLink to="/setup" className="sidebar__link" onClick={onMobileClose}>
+              <span className="sidebar__link-icon">{ICONS.setup}</span>
+              <span className="sidebar__setup-badge" />
+            </NavLink>
+          </div>
+        ) : (
+          <div className="sidebar__setup-card">
+            <div className="sidebar__setup-header">
+              <span className="sidebar__setup-title">Setup</span>
+              <button className="sidebar__setup-dismiss" onClick={dismissSetup} title="Dismiss" aria-label="Dismiss setup">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <path d="M2 2l8 8M10 2l-8 8" />
+                </svg>
+              </button>
+            </div>
+            <div className="sidebar__setup-progress-bar">
+              <div
+                className="sidebar__setup-progress-fill"
+                style={{ width: `${(setupProgress.completed / setupProgress.total) * 100}%` }}
+              />
+            </div>
+            <span className="sidebar__setup-status">
+              {setupProgress.completed}/{setupProgress.total} steps complete
+            </span>
+            <NavLink to="/setup" className="sidebar__setup-link" onClick={onMobileClose}>
+              Continue Setup
+            </NavLink>
+          </div>
+        )
+      )}
 
       {/* User section */}
       <div className="sidebar__user">
