@@ -86,6 +86,10 @@ jobs:
         with:
           node-version: 20
 
+      - name: Install functions dependencies
+        working-directory: functions
+        run: npm ci
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
         with:
