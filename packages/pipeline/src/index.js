@@ -7,6 +7,7 @@
 
 const parseFile = require("./parseFile");
 const transformData = require("./transformData");
+const transformBillback = require("./transformBillback");
 const semanticMapper = require("./semanticMapper");
 const normalize = require("./normalize");
 
@@ -36,6 +37,9 @@ module.exports = {
   autoDetectMapping: semanticMapper.autoDetectMapping,
   detectQuickBooksFormat: semanticMapper.detectQuickBooksFormat,
   detectUploadType: semanticMapper.detectUploadType,
+
+  // transformBillback
+  transformBillback: transformBillback.transformBillback,
 
   // normalize
   normalizeRows: normalize.normalizeRows,

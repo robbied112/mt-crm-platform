@@ -41,7 +41,7 @@ export default function CommandPalette({ isOpen, onClose }) {
   const inputRef = useRef(null);
   const listRef = useRef(null);
   const navigate = useNavigate();
-  const { distScorecard, accountsTop, pipelineAccounts, availability } = useData();
+  const { distScorecard, accountsTop, pipelineAccounts, availability, tenantConfig } = useData();
   const { isAdmin, logout } = useAuth();
 
   // Reset on open
@@ -60,6 +60,7 @@ export default function CommandPalette({ isOpen, onClose }) {
     // Navigation
     ROUTES.forEach((route) => {
       if (route.adminOnly && !isAdmin) return;
+      if (route.section === "billbacks" && !tenantConfig?.features?.billbacks) return;
       results.push({
         id: `nav-${route.key}`,
         group: "Navigation",

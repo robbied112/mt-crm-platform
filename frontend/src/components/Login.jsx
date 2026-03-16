@@ -2,10 +2,10 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
 const ACCOUNT_TYPES = [
-  "Winery / Vineyard",
-  "Importer / Négociant",
-  "Distributor / Wholesaler",
-  "Retailer / Restaurant / Bar",
+  { value: "winery", label: "Winery / Vineyard" },
+  { value: "importer", label: "Importer / Negociant" },
+  { value: "distributor", label: "Distributor / Wholesaler" },
+  { value: "retailer", label: "Retailer / Restaurant / Bar" },
 ];
 
 export default function Login({ initialMode = "signin", onBackToLanding }) {
@@ -15,7 +15,7 @@ export default function Login({ initialMode = "signin", onBackToLanding }) {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [accountType, setAccountType] = useState(ACCOUNT_TYPES[0]);
+  const [accountType, setAccountType] = useState(ACCOUNT_TYPES[0].value);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -128,7 +128,7 @@ export default function Login({ initialMode = "signin", onBackToLanding }) {
               style={styles.select}
             >
               {ACCOUNT_TYPES.map((t) => (
-                <option key={t} value={t}>{t}</option>
+                <option key={t.value} value={t.value}>{t.label}</option>
               ))}
             </select>
           </>

@@ -9,15 +9,17 @@ import { autoDetectMapping, detectUploadType, getFieldDefs } from "../utils/sema
 import { getUserRole, t } from "../utils/terminology";
 import { aiAutoDetectMapping } from "../utils/aiMapper";
 import { transformAll, generateSummary } from "../utils/transformData";
+import { transformBillback } from "../utils/transformBillback";
 import { normalizeRows } from "../utils/normalize.js";
 import { logUpload } from "../services/firestoreService";
 import { useAuth } from "../context/AuthContext";
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 const STEPS = ["upload", "mapping", "preview", "done"];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export default function DataImport() {
-  const { importDatasets, userRole, tenantId, useNormalized, tenantConfig, updateTenantConfig } = useData();
+  const { importDatasets, userRole, tenantId, useNormalized, tenantConfig, updateTenantConfig, refreshData } = useData();
   const { currentUser } = useAuth();
   const [step, setStep] = useState("upload");
   const [file, setFile] = useState(null);
@@ -34,6 +36,11 @@ export default function DataImport() {
   const [aiLoading, setAiLoading] = useState(false);
   const inputRef = useRef();
 
+  // Billback PDF state
+  const [billbackItems, setBillbackItems] = useState(null);
+  const [billbackMeta, setBillbackMeta] = useState(null);
+  const isBillbackEnabled = tenantConfig?.features?.billbacks;
+
   // ── Step 1: File Drop / Select ──
 
   const handleFile = useCallback(async (f) => {
@@ -47,6 +54,38 @@ export default function DataImport() {
       return;
     }
     setFile(f);
+
+    // PDF billback flow
+    if (f.type === "application/pdf" && isBillbackEnabled) {
+      setAiLoading(true);
+      try {
+        const reader = new FileReader();
+        const base64 = await new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result.split(",")[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(f);
+        });
+
+        const fns = getFunctions();
+        const parseBillback = httpsCallable(fns, "parseBillbackPDF");
+        const { data: result } = await parseBillback({ tenantId, pdfBase64: base64 });
+
+        if (!result.lineItems || result.lineItems.length === 0) {
+          setError("No billback line items could be extracted from this PDF. Try a different file.");
+          return;
+        }
+
+        setBillbackItems(result.lineItems);
+        setBillbackMeta(result.metadata || {});
+        setStep("billback-review");
+      } catch (err) {
+        setError(`PDF extraction failed: ${err.message}`);
+      } finally {
+        setAiLoading(false);
+      }
+      return;
+    }
+
     try {
       const result = await parseFile(f);
       if (result.rows.length === 0) {
@@ -89,7 +128,7 @@ export default function DataImport() {
     } catch (err) {
       setError(err.message);
     }
-  }, [useAI]);
+  }, [useAI, isBillbackEnabled, tenantId]);
 
   const onDrop = useCallback((e) => {
     e.preventDefault();
@@ -165,6 +204,65 @@ export default function DataImport() {
     }
   };
 
+  // ── Billback Confirm ──
+  const confirmBillbackImport = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      const normalizedRows = billbackItems.map((item) => ({
+        wine: item.wine || "",
+        producer: item.producer || "",
+        dist: item.distributor || billbackMeta?.distributor || "",
+        amount: item.amount || 0,
+        qty: item.qty || 0,
+        date: item.date || billbackMeta?.date || "",
+        type: item.type || "other",
+        invoiceNo: item.invoiceNo || billbackMeta?.invoiceNo || "",
+      }));
+
+      const importMeta = {
+        normalizedRows,
+        fileName: file.name,
+        type: "billback",
+        mapping: { wine: "wine", producer: "producer", dist: "dist", amount: "amount", qty: "qty", date: "date", type: "type", invoiceNo: "invoiceNo" },
+        uploadedBy: currentUser?.email || "unknown",
+      };
+
+      const datasets = transformBillback(normalizedRows, importMeta.mapping);
+      const { importId } = await importDatasets(
+        datasets,
+        `Imported ${normalizedRows.length} billback line items from ${file.name}.`,
+        importMeta
+      );
+
+      if (importId) {
+        const fns = getFunctions();
+        const extractWines = httpsCallable(fns, "extractWines");
+        await extractWines({ tenantId, importId });
+      }
+
+      if (tenantConfig?.demoData) {
+        await updateTenantConfig({ demoData: false });
+      }
+
+      if (tenantId) {
+        await logUpload(tenantId, {
+          fileName: file.name,
+          rowCount: normalizedRows.length,
+          type: "billback",
+          uploadedBy: currentUser?.email || "unknown",
+        });
+      }
+      await refreshData();
+      setStep("done");
+      setSummary(`Imported ${normalizedRows.length} billback line items from ${file.name}.`);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // ── Reset ──
   const reset = () => {
     setStep("upload");
@@ -176,6 +274,8 @@ export default function DataImport() {
     setPreview(null);
     setSummary("");
     setError("");
+    setBillbackItems(null);
+    setBillbackMeta(null);
   };
 
   // ── Render ──
@@ -206,7 +306,7 @@ export default function DataImport() {
             Drop your data file here, or click to browse
           </div>
           <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 6 }}>
-            Supports .csv, .xlsx, .xls &mdash; up to 10MB
+            Supports .csv, .xlsx, .xls{isBillbackEnabled ? ", .pdf (billbacks)" : ""} &mdash; up to 10MB
           </div>
           <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
             QuickBooks exports, {t("distributor").toLowerCase()} reports, inventory files, pipeline data
@@ -234,11 +334,32 @@ export default function DataImport() {
           <input
             ref={inputRef}
             type="file"
-            accept=".csv,.xlsx,.xls,.tsv"
+            accept={isBillbackEnabled ? ".csv,.xlsx,.xls,.tsv,.pdf" : ".csv,.xlsx,.xls,.tsv"}
             onChange={onFileSelect}
             style={{ display: "none" }}
           />
         </div>
+      )}
+
+      {step === "billback-review" && billbackItems && (
+        <BillbackReviewStep
+          fileName={file.name}
+          items={billbackItems}
+          metadata={billbackMeta}
+          saving={saving}
+          onUpdateItem={(idx, field, value) => {
+            setBillbackItems((prev) => {
+              const next = [...prev];
+              next[idx] = { ...next[idx], [field]: value };
+              return next;
+            });
+          }}
+          onDeleteItem={(idx) => {
+            setBillbackItems((prev) => prev.filter((_, i) => i !== idx));
+          }}
+          onConfirm={confirmBillbackImport}
+          onBack={reset}
+        />
       )}
 
       {step === "mapping" && parsed && (
@@ -447,6 +568,122 @@ function PreviewStep({ summary, preview, uploadType, saving, onConfirm, onBack }
   );
 }
 
+// ─── Billback Review Step Sub-Component ──────────────────────────
+
+function BillbackReviewStep({ fileName, items, metadata, saving, onUpdateItem, onDeleteItem, onConfirm, onBack }) {
+  const totalAmount = items.reduce((s, item) => s + (parseFloat(item.amount) || 0), 0);
+
+  return (
+    <div>
+      <div style={s.stepHeader}>
+        <div>
+          <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Review Billback Extraction</h4>
+          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B7280" }}>
+            {fileName} &mdash; {items.length} line items &mdash; ${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} total
+            <span style={s.typeBadge}>Billback PDF</span>
+          </p>
+          {metadata?.distributor && (
+            <p style={{ margin: "2px 0 0", fontSize: 11, color: "#9CA3AF" }}>
+              Distributor: {metadata.distributor}
+              {metadata.invoiceNo ? ` | Invoice: ${metadata.invoiceNo}` : ""}
+              {metadata.date ? ` | Date: ${metadata.date}` : ""}
+            </p>
+          )}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="btn btn-secondary" onClick={onBack} disabled={saving}>Back</button>
+          <button className="btn btn-primary" onClick={onConfirm} disabled={saving || items.length === 0}>
+            {saving ? "Saving..." : `Confirm & Import (${items.length})`}
+          </button>
+        </div>
+      </div>
+
+      <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#1e40af", marginBottom: 16 }}>
+        AI extracted these line items from your PDF. Review and edit before importing.
+      </div>
+
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+          <thead>
+            <tr style={{ background: "#f0fdfa" }}>
+              <th style={s.th}>Wine</th>
+              <th style={s.th}>Producer</th>
+              <th style={s.th}>Amount</th>
+              <th style={s.th}>Cases</th>
+              <th style={s.th}>Type</th>
+              <th style={s.th}>Date</th>
+              <th style={{ ...s.th, width: 40 }} />
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item, idx) => (
+              <tr key={idx} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                <td style={s.td}>
+                  <input
+                    type="text"
+                    value={item.wine || ""}
+                    onChange={(e) => onUpdateItem(idx, "wine", e.target.value)}
+                    style={{ ...s.editInput, minWidth: 160 }}
+                  />
+                </td>
+                <td style={s.td}>
+                  <input
+                    type="text"
+                    value={item.producer || ""}
+                    onChange={(e) => onUpdateItem(idx, "producer", e.target.value)}
+                    style={{ ...s.editInput, minWidth: 120 }}
+                  />
+                </td>
+                <td style={s.td}>
+                  <input
+                    type="text"
+                    value={item.amount ?? ""}
+                    onChange={(e) => onUpdateItem(idx, "amount", e.target.value)}
+                    style={{ ...s.editInput, width: 80, textAlign: "right" }}
+                  />
+                </td>
+                <td style={s.td}>
+                  <input
+                    type="text"
+                    value={item.qty ?? ""}
+                    onChange={(e) => onUpdateItem(idx, "qty", e.target.value)}
+                    style={{ ...s.editInput, width: 60, textAlign: "right" }}
+                  />
+                </td>
+                <td style={s.td}>
+                  <input
+                    type="text"
+                    value={item.type || ""}
+                    onChange={(e) => onUpdateItem(idx, "type", e.target.value)}
+                    style={{ ...s.editInput, minWidth: 100 }}
+                  />
+                </td>
+                <td style={s.td}>
+                  <input
+                    type="text"
+                    value={item.date || ""}
+                    onChange={(e) => onUpdateItem(idx, "date", e.target.value)}
+                    style={{ ...s.editInput, width: 100 }}
+                  />
+                </td>
+                <td style={s.td}>
+                  <button
+                    onClick={() => onDeleteItem(idx)}
+                    style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontSize: 16, padding: 4 }}
+                    title="Remove row"
+                  >
+                    &times;
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 // ─── Styles ─────────────────────────────────────────────────────
 
 const s = {
@@ -552,5 +789,13 @@ const s = {
     background: "#f0fdf4",
     borderRadius: 12,
     border: "1px solid #bbf7d0",
+  },
+  editInput: {
+    padding: "4px 8px",
+    borderRadius: 4,
+    border: "1px solid #e2e8f0",
+    fontSize: 12,
+    width: "100%",
+    background: "#fff",
   },
 };

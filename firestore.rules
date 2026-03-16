@@ -92,6 +92,18 @@ service cloud.firestore {
         allow write: if isTenantAdmin(tenantId);
       }
 
+      // Wine entities (auto-extracted from billback imports)
+      match /wines/{wineId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantMember(tenantId);
+      }
+
+      // Pending wine matches (AI dedup review queue for wines)
+      match /pendingWineMatches/{matchId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantAdmin(tenantId);
+      }
+
       // Rebuild history — readable by tenant, writable by server only
       match /rebuildHistory/{doc} {
         allow read: if isTenantMember(tenantId);
