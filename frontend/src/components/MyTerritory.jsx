@@ -56,6 +56,7 @@ export default function MyTerritory({
     () =>
       pipelineAccounts.filter((p) => {
         if (
+          !p.acct ||
           p.stage === "Closed Won" ||
           p.stage === "Closed Lost" ||
           p.stage === "Identified"
@@ -107,6 +108,7 @@ export default function MyTerritory({
     pipelineAccounts
       .filter((p) => {
         if (
+          !p.acct ||
           p.stage === "Identified" ||
           p.stage === "Closed Won" ||
           p.stage === "Closed Lost"

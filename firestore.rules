@@ -47,6 +47,12 @@ service cloud.firestore {
       allow read: if isTenantMember(tenantId);
       allow write: if isTenantAdmin(tenantId);
 
+      // Tenant config subcollection
+      match /config/{doc} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantAdmin(tenantId);
+      }
+
       // Tenant data subcollections — legacy pre-computed dashboards
       match /data/{fileType} {
         allow read: if isTenantMember(tenantId);
@@ -106,6 +112,12 @@ service cloud.firestore {
       match /syncHistory/{doc} {
         allow read: if isTenantMember(tenantId);
         allow write: if false;
+      }
+
+      // Upload logs
+      match /uploads/{uploadId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantAdmin(tenantId);
       }
 
       // Upload audit logs

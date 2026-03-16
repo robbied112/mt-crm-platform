@@ -1,45 +1,127 @@
 /**
- * Centralized route definitions.
- * Each route has a path, label, icon (emoji), and section for sidebar grouping.
+ * Centralized route definitions for the app.
+ * Used by Sidebar, App router, and CommandPalette.
  */
 
-export const ROUTES = {
-  // Analytics
-  TERRITORY:        { path: "/territory",          label: "My Territory",       icon: "\u{1F3E0}", section: "analytics", dataKey: null },
-  DEPLETIONS:       { path: "/depletions",         label: "Depletions",         icon: "\u{1F4C9}", section: "analytics", dataKey: "depletions",        termKey: "depletion", termSuffix: "s" },
-  DISTRIBUTOR:      { path: "/distributor-health",  label: "Distributors",       icon: "\u{1F3ED}", section: "analytics", dataKey: "distributorHealth", termKey: "distributor", termSuffix: "s" },
-  INVENTORY:        { path: "/inventory",          label: "Inventory",          icon: "\u{1F4E6}", section: "analytics", dataKey: "inventory" },
-  ACCOUNT_INSIGHTS: { path: "/account-insights",   label: "Account Insights",   icon: "\u{1F4CA}", section: "analytics", dataKey: "accounts",         termKey: "account", termSuffix: " Insights" },
-  OPPORTUNITIES:    { path: "/opportunities",      label: "Opportunities",      icon: "\u{1F31F}", section: "analytics", dataKey: "opportunities" },
-  REORDER:          { path: "/reorder",            label: "Reorder Forecast",   icon: "\u{1F504}", section: "analytics", dataKey: "reorder" },
-
+export const ROUTES = [
+  {
+    key: "performance",
+    path: "/",
+    label: "My Territory",
+    icon: "territory",
+    dataKey: null,
+    description: "Territory overview, KPIs, and action items",
+  },
+  {
+    key: "depletions",
+    path: "/depletions",
+    label: "Depletions",
+    icon: "depletions",
+    termKey: "depletion",
+    suffix: "s",
+    dataKey: "depletions",
+    description: "Volume trends, scorecard, and brand performance",
+  },
+  {
+    key: "distributor-detail",
+    path: "/distributors",
+    label: "Distributors",
+    icon: "distributors",
+    termKey: "distributor",
+    suffix: "s",
+    dataKey: "distributorHealth",
+    description: "Distributor health, sell-through, and inventory",
+  },
+  {
+    key: "inventory",
+    path: "/inventory",
+    label: "Inventory",
+    icon: "inventory",
+    dataKey: "inventory",
+    description: "Stock levels, days on hand, and reorder alerts",
+  },
+  {
+    key: "account-insights",
+    path: "/account-insights",
+    label: "Account Insights",
+    icon: "accounts",
+    termKey: "account",
+    suffix: " Insights",
+    dataKey: "accounts",
+    description: "Top accounts, trends, and concentration analysis",
+  },
+  {
+    key: "opportunities",
+    path: "/opportunities",
+    label: "Opportunities",
+    icon: "opportunities",
+    dataKey: "opportunities",
+    description: "Re-engagement targets, new wins, and growth",
+  },
+  {
+    key: "reorder",
+    path: "/reorder",
+    label: "Reorder Forecast",
+    icon: "reorder",
+    dataKey: "reorder",
+    description: "Predicted reorders, overdue alerts, and priorities",
+  },
+  {
+    key: "pipeline",
+    path: "/pipeline",
+    label: "Pipeline",
+    icon: "pipeline",
+    accent: true,
+    dataKey: "pipeline",
+    description: "Sales pipeline, funnel, and deal tracking",
+  },
   // CRM
-  ACCOUNTS:         { path: "/accounts",           label: "Accounts",           icon: "\u{1F4CB}", section: "crm" },
-  CONTACTS:         { path: "/contacts",           label: "Contacts",           icon: "\u{1F465}", section: "crm" },
-  PIPELINE:         { path: "/pipeline",           label: "Pipeline",           icon: "\u{1F4B0}", section: "crm",      dataKey: "pipeline" },
-  ACTIVITIES:       { path: "/activities",         label: "Activities",         icon: "\u{1F4DD}", section: "crm" },
-  TASKS:            { path: "/tasks",              label: "Tasks",              icon: "\u{2705}",  section: "crm" },
-
+  {
+    key: "crm-accounts",
+    path: "/accounts",
+    label: "Accounts",
+    icon: "crmAccounts",
+    section: "crm",
+    description: "Manage accounts, contacts, and relationships",
+  },
+  {
+    key: "crm-contacts",
+    path: "/contacts",
+    label: "Contacts",
+    icon: "contacts",
+    section: "crm",
+    description: "Contact directory and communication history",
+  },
+  {
+    key: "crm-activities",
+    path: "/activities",
+    label: "Activities",
+    icon: "activities",
+    section: "crm",
+    description: "Activity log, visits, tastings, and follow-ups",
+  },
+  {
+    key: "crm-tasks",
+    path: "/tasks",
+    label: "Tasks",
+    icon: "tasks",
+    section: "crm",
+    description: "Task management and follow-up tracking",
+  },
   // Admin
-  SETTINGS:         { path: "/settings",           label: "Settings",           icon: "\u{2699}\u{FE0F}",  section: "admin", adminOnly: true },
-};
-
-// Detail routes (not shown in sidebar)
-export const DETAIL_ROUTES = {
-  ACCOUNT_DETAIL:   { path: "/accounts/:id" },
-};
-
-export const SECTIONS = [
-  { key: "analytics", label: "Analytics" },
-  { key: "crm",       label: "CRM" },
-  { key: "admin",     label: "Admin" },
+  {
+    key: "admin-settings",
+    path: "/settings",
+    label: "Settings",
+    icon: "settings",
+    adminOnly: true,
+    dataKey: null,
+    description: "Branding, users, data import, and configuration",
+  },
 ];
 
-// Reverse lookups
-export const KEY_TO_PATH = Object.fromEntries(
-  Object.entries(ROUTES).map(([k, v]) => [k, v.path])
-);
+// Quick lookup: tab key → route path
+export const KEY_TO_PATH = Object.fromEntries(ROUTES.map((r) => [r.key, r.path]));
 
-export const PATH_TO_ROUTE = Object.fromEntries(
-  Object.entries(ROUTES).map(([k, v]) => [v.path, { key: k, ...v }])
-);
+// Quick lookup: path → route
+export const PATH_TO_ROUTE = Object.fromEntries(ROUTES.map((r) => [r.path, r]));
