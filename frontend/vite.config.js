@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
 
 /**
  * Minimal CJS→ESM plugin for the shared pipeline package.
@@ -56,6 +57,13 @@ function pipelineCjsPlugin() {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [pipelineCjsPlugin(), react()],
+  resolve: {
+    alias: {
+      // Resolve "xlsx" from frontend/node_modules even when imported
+      // from packages/pipeline/ (outside the frontend root)
+      xlsx: path.resolve(__dirname, 'node_modules/xlsx'),
+    },
+  },
   test: {
     environment: 'node',
     include: ['src/**/*.test.{js,jsx}'],
