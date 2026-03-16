@@ -3,17 +3,25 @@
  * Also tracks which datasets have data for adaptive UI.
  *
  * tenantId and userRole are sourced from AuthContext (single source of truth).
+ *
+ * Supports two storage modes (feature-flagged via tenantConfig.useNormalizedModel):
+ *   false → Legacy: read/write to data/ (pre-computed dashboards only)
+ *   true  → Normalized: save raw rows to imports/, compute views, read from views/
  */
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import {
   loadAllData,
+  loadAllViews,
   saveAllDatasets,
+  saveAllViews,
+  saveImport,
   loadSummary,
   saveSummary,
   loadTenantConfig,
   saveTenantConfig as saveTenantConfigFS,
 } from "../services/firestoreService";
+import { normalizeRows } from "../../../packages/pipeline/src/normalize.js";
 import TENANT_CONFIG from "../config/tenant";
 
 const DataContext = createContext(null);
@@ -48,6 +56,7 @@ export default function DataProvider({ children }) {
   // userRole for business context (supplier vs distributor) comes from tenant config,
   // distinct from auth role (admin/rep/viewer) which comes from AuthContext.
   const userRole = tenantConfig.userRole || "supplier";
+  const useNormalized = tenantConfig.useNormalizedModel === true;
 
   // Compute which datasets have data (for adaptive UI)
   const availability = {
@@ -77,9 +86,10 @@ export default function DataProvider({ children }) {
       setLoading(true);
       setError(null);
       try {
+        const collPath = useNormalized ? "views" : "data";
         const [allData, summaryText, config] = await Promise.all([
-          loadAllData(tenantId),
-          loadSummary(tenantId),
+          useNormalized ? loadAllViews(tenantId) : loadAllData(tenantId),
+          loadSummary(tenantId, collPath),
           loadTenantConfig(tenantId),
         ]);
         if (cancelled) return;
@@ -94,17 +104,33 @@ export default function DataProvider({ children }) {
     }
     load();
     return () => { cancelled = true; };
-  }, [currentUser, tenantId]);
+  }, [currentUser, tenantId, useNormalized]);
 
   // Save imported datasets + refresh
-  const importDatasets = useCallback(async (datasets, summaryText) => {
+  // When useNormalizedModel is true, also saves raw rows to imports/.
+  const importDatasets = useCallback(async (datasets, summaryText, importMeta) => {
     if (!tenantId) throw new Error("No tenant context");
     try {
-      await saveAllDatasets(tenantId, datasets);
+      const collPath = useNormalized ? "views" : "data";
+
+      // Save raw normalized rows when using normalized model
+      if (useNormalized && importMeta) {
+        const { normalizedRows, ...meta } = importMeta;
+        await saveImport(tenantId, meta, normalizedRows);
+      }
+
+      // Save pre-computed views/data
+      if (useNormalized) {
+        await saveAllViews(tenantId, datasets);
+      } else {
+        await saveAllDatasets(tenantId, datasets);
+      }
+
       if (summaryText) {
-        await saveSummary(tenantId, summaryText);
+        await saveSummary(tenantId, summaryText, collPath);
         setSummary(summaryText);
       }
+
       // Merge new data into state
       setData((prev) => {
         const next = { ...prev };
@@ -116,23 +142,24 @@ export default function DataProvider({ children }) {
     } catch (err) {
       throw new Error(`Failed to save data: ${err.message}`);
     }
-  }, [tenantId]);
+  }, [tenantId, useNormalized]);
 
   // Refresh from Firestore
   const refreshData = useCallback(async () => {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const allData = await loadAllData(tenantId);
+      const collPath = useNormalized ? "views" : "data";
+      const allData = useNormalized ? await loadAllViews(tenantId) : await loadAllData(tenantId);
       setData({ ...EMPTY, ...allData });
-      const summaryText = await loadSummary(tenantId);
+      const summaryText = await loadSummary(tenantId, collPath);
       setSummary(summaryText);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [tenantId]);
+  }, [tenantId, useNormalized]);
 
   // Save tenant config
   const updateTenantConfig = useCallback(async (patch) => {
@@ -156,6 +183,7 @@ export default function DataProvider({ children }) {
     tenantId,
     tenantConfig,
     userRole,
+    useNormalized,
     availability,
     loading,
     error,

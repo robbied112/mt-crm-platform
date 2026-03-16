@@ -6,7 +6,7 @@
 
 const TENANT_CONFIG = {
   tenantId: "default",
-  userRole: "supplier",  // "supplier" | "distributor"
+  userRole: "supplier",  // "winery" | "importer" | "distributor" | "retailer" (legacy: "supplier" = "winery")
   companyName: "",
   logo: "",
   primaryColor: "#0F766E",
@@ -61,6 +61,7 @@ const TENANT_CONFIG = {
     "Follow Up",
     "Reorder Check",
   ],
+  useNormalizedModel: false, // Feature flag: imports/ + views/ schema (TODO-021)
   features: {
     fileAttachments: true,
     emailLogging: true,

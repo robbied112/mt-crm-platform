@@ -47,7 +47,7 @@ service cloud.firestore {
       allow read: if isTenantMember(tenantId);
       allow write: if isTenantAdmin(tenantId);
 
-      // Tenant data subcollections (uploaded data chunks)
+      // Tenant data subcollections — legacy pre-computed dashboards
       match /data/{fileType} {
         allow read: if isTenantMember(tenantId);
         allow write: if isTenantAdmin(tenantId);
@@ -56,6 +56,40 @@ service cloud.firestore {
           allow read: if isTenantMember(tenantId);
           allow write: if isTenantAdmin(tenantId);
         }
+      }
+
+      // Normalized model: raw imports (source of truth)
+      match /imports/{importId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantAdmin(tenantId);
+
+        match /rows/{chunkId} {
+          allow read: if isTenantMember(tenantId);
+          allow write: if isTenantAdmin(tenantId);
+        }
+      }
+
+      // Normalized model: pre-computed views (dashboards)
+      match /views/{viewName} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantAdmin(tenantId);
+
+        match /rows/{chunkId} {
+          allow read: if isTenantMember(tenantId);
+          allow write: if isTenantAdmin(tenantId);
+        }
+      }
+
+      // Pending account matches (AI dedup review queue)
+      match /pendingMatches/{matchId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isTenantAdmin(tenantId);
+      }
+
+      // Rebuild history — readable by tenant, writable by server only
+      match /rebuildHistory/{doc} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if false;
       }
 
       // Secrets — server-only (Cloud Functions via Admin SDK)
@@ -80,10 +114,10 @@ service cloud.firestore {
         allow write: if isTenantMember(tenantId);
       }
 
-      // Accounts scoped under tenant
+      // Accounts scoped under tenant (created by Cloud Functions, editable by admins)
       match /accounts/{accountId} {
         allow read: if isTenantMember(tenantId);
-        allow write: if isTenantMember(tenantId);
+        allow write: if isTenantAdmin(tenantId);
 
         match /notes/{noteId} {
           allow read, write: if isTenantMember(tenantId);

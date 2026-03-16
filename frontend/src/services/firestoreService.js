@@ -1,6 +1,19 @@
 /**
  * Firestore Service — CRUD operations for tenant data.
  *
+ * ─── Storage Layout ──────────────────────────────────────────
+ *
+ *  tenants/{tenantId}/
+ *  ├── data/{name}/rows/{chunk}     # Legacy pre-computed dashboards
+ *  ├── imports/{importId}/          # Normalized model: source of truth
+ *  │   └── rows/{chunk}            #   Raw normalized rows
+ *  ├── views/{name}/rows/{chunk}   # Normalized model: pre-computed dashboards
+ *  └── config/main                 # Tenant settings
+ *
+ *  Feature flag: tenantConfig.useNormalizedModel
+ *    false → read/write to data/ (legacy)
+ *    true  → write imports/ + views/, read from views/
+ *
  * ─── Chunked Storage ───────────────────────────────────────
  *
  *  SAVE FLOW (for arrays > CHUNK_SIZE items):
@@ -50,14 +63,18 @@ function emptyForDataset(name) {
   return OBJECT_DATASETS.has(name) ? {} : [];
 }
 
-// ─── Dataset Load ────────────────────────────────────────────
+// ─── Internal Chunked Load/Save ─────────────────────────────
+//
+// Parameterized by collPath (e.g. "data", "views") so the same
+// chunking logic serves both legacy and normalized model paths.
 
 /**
- * Load a single dataset, handling both chunked and non-chunked storage.
+ * Load a single dataset from tenants/{tenantId}/{collPath}/{name}.
+ * Handles both chunked and non-chunked storage.
  */
-async function loadDataset(tenantId, name) {
+async function _loadDataset(tenantId, collPath, name) {
   try {
-    const metaRef = doc(db, "tenants", tenantId, "data", name);
+    const metaRef = doc(db, "tenants", tenantId, collPath, name);
     const metaSnap = await getDoc(metaRef);
 
     if (!metaSnap.exists()) {
@@ -72,7 +89,7 @@ async function loadDataset(tenantId, name) {
     }
 
     // Chunked: read all row documents for the current version
-    const rowsRef = collection(db, "tenants", tenantId, "data", name, "rows");
+    const rowsRef = collection(db, "tenants", tenantId, collPath, name, "rows");
     const rowsQuery = query(rowsRef, where("version", "==", meta.version));
     const rowsSnap = await getDocs(rowsQuery);
 
@@ -92,24 +109,11 @@ async function loadDataset(tenantId, name) {
 }
 
 /**
- * Load all datasets for a tenant (parallel).
+ * Save a single dataset to tenants/{tenantId}/{collPath}/{name}.
+ * Chunks if the array exceeds CHUNK_SIZE.
  */
-export async function loadAllData(tenantId) {
-  const result = {};
-  const promises = DATASETS.map(async (name) => {
-    result[name] = await loadDataset(tenantId, name);
-  });
-  await Promise.all(promises);
-  return result;
-}
-
-// ─── Dataset Save ────────────────────────────────────────────
-
-/**
- * Save a single dataset, chunking if the array exceeds CHUNK_SIZE.
- */
-export async function saveDataset(tenantId, name, items) {
-  const metaRef = doc(db, "tenants", tenantId, "data", name);
+async function _saveDataset(tenantId, collPath, name, items) {
+  const metaRef = doc(db, "tenants", tenantId, collPath, name);
   const isObject = !Array.isArray(items);
 
   // Object datasets (pipelineMeta, etc.) or small arrays: single document
@@ -119,8 +123,7 @@ export async function saveDataset(tenantId, name, items) {
       chunked: false,
       updatedAt: serverTimestamp(),
     });
-    // Clean up any leftover chunks from a previous chunked save
-    await deleteOldChunks(tenantId, name, -1);
+    await _deleteOldChunks(tenantId, collPath, name, -1);
     return;
   }
 
@@ -129,7 +132,6 @@ export async function saveDataset(tenantId, name, items) {
   const prevVersion = metaSnap.exists() ? (metaSnap.data().version || 0) : 0;
   const newVersion = prevVersion + 1;
 
-  // Write metadata first
   await setDoc(metaRef, {
     chunked: true,
     version: newVersion,
@@ -138,12 +140,11 @@ export async function saveDataset(tenantId, name, items) {
     updatedAt: serverTimestamp(),
   });
 
-  // Write chunks in parallel
   const chunkPromises = [];
   for (let i = 0; i < items.length; i += CHUNK_SIZE) {
     const chunkIdx = Math.floor(i / CHUNK_SIZE);
     const chunk = items.slice(i, i + CHUNK_SIZE);
-    const chunkRef = doc(db, "tenants", tenantId, "data", name, "rows", String(chunkIdx));
+    const chunkRef = doc(db, "tenants", tenantId, collPath, name, "rows", String(chunkIdx));
     chunkPromises.push(
       setDoc(chunkRef, {
         idx: chunkIdx,
@@ -155,17 +156,16 @@ export async function saveDataset(tenantId, name, items) {
   }
   await Promise.all(chunkPromises);
 
-  // Delete old version chunks
-  await deleteOldChunks(tenantId, name, newVersion);
+  await _deleteOldChunks(tenantId, collPath, name, newVersion);
 }
 
 /**
  * Delete chunk documents with version < currentVersion.
  * Silently fails — stale chunks are harmless (filtered on read by version).
  */
-async function deleteOldChunks(tenantId, name, currentVersion) {
+async function _deleteOldChunks(tenantId, collPath, name, currentVersion) {
   try {
-    const rowsRef = collection(db, "tenants", tenantId, "data", name, "rows");
+    const rowsRef = collection(db, "tenants", tenantId, collPath, name, "rows");
     const rowsSnap = await getDocs(rowsRef);
     const deletePromises = [];
     for (const d of rowsSnap.docs) {
@@ -183,16 +183,123 @@ async function deleteOldChunks(tenantId, name, currentVersion) {
 }
 
 /**
- * Save multiple datasets at once (parallel).
+ * Save/load multiple datasets at once (parallel).
  */
-export async function saveAllDatasets(tenantId, datasets) {
+async function _saveAllDatasets(tenantId, collPath, datasets) {
   const promises = Object.entries(datasets).map(([name, items]) => {
     if (items !== undefined && DATASETS.includes(name)) {
-      return saveDataset(tenantId, name, items);
+      return _saveDataset(tenantId, collPath, name, items);
     }
     return Promise.resolve();
   });
   await Promise.all(promises);
+}
+
+async function _loadAllDatasets(tenantId, collPath) {
+  const result = {};
+  const promises = DATASETS.map(async (name) => {
+    result[name] = await _loadDataset(tenantId, collPath, name);
+  });
+  await Promise.all(promises);
+  return result;
+}
+
+// ─── Legacy Data Path (data/) ───────────────────────────────
+
+export async function loadAllData(tenantId) {
+  return _loadAllDatasets(tenantId, "data");
+}
+
+export async function saveDataset(tenantId, name, items) {
+  return _saveDataset(tenantId, "data", name, items);
+}
+
+export async function saveAllDatasets(tenantId, datasets) {
+  return _saveAllDatasets(tenantId, "data", datasets);
+}
+
+// ─── Views Path (views/) — Normalized Model ─────────────────
+
+export async function loadAllViews(tenantId) {
+  return _loadAllDatasets(tenantId, "views");
+}
+
+export async function saveAllViews(tenantId, datasets) {
+  return _saveAllDatasets(tenantId, "views", datasets);
+}
+
+// ─── Imports (imports/) — Normalized Model ──────────────────
+//
+//  tenants/{tenantId}/imports/{importId}       ← meta doc
+//  tenants/{tenantId}/imports/{importId}/rows/  ← chunked normalized rows
+
+/**
+ * Save a new import: metadata + chunked normalized rows.
+ * @returns {string} The generated import ID.
+ */
+export async function saveImport(tenantId, meta, normalizedRows) {
+  const importsRef = collection(db, "tenants", tenantId, "imports");
+  const importRef = doc(importsRef);
+  const importId = importRef.id;
+
+  // Write metadata
+  await setDoc(importRef, {
+    ...meta,
+    rowCount: normalizedRows.length,
+    createdAt: serverTimestamp(),
+  });
+
+  // Write rows in chunks (no versioning — imports are immutable)
+  const chunkPromises = [];
+  for (let i = 0; i < normalizedRows.length; i += CHUNK_SIZE) {
+    const chunkIdx = Math.floor(i / CHUNK_SIZE);
+    const chunk = normalizedRows.slice(i, i + CHUNK_SIZE);
+    const chunkRef = doc(db, "tenants", tenantId, "imports", importId, "rows", String(chunkIdx));
+    chunkPromises.push(
+      setDoc(chunkRef, { idx: chunkIdx, items: chunk })
+    );
+  }
+  await Promise.all(chunkPromises);
+
+  return importId;
+}
+
+/**
+ * Load all import metadata for a tenant (most recent first).
+ */
+export async function loadImports(tenantId) {
+  try {
+    const q = query(
+      collection(db, "tenants", tenantId, "imports"),
+      orderBy("createdAt", "desc")
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Load all normalized rows for a specific import.
+ */
+export async function loadImportRows(tenantId, importId) {
+  const rowsRef = collection(db, "tenants", tenantId, "imports", importId, "rows");
+  const snap = await getDocs(rowsRef);
+  return snap.docs
+    .map((d) => ({ idx: d.data().idx, items: d.data().items }))
+    .sort((a, b) => a.idx - b.idx)
+    .flatMap((c) => c.items);
+}
+
+/**
+ * Delete an import and all its row chunks.
+ */
+export async function deleteImport(tenantId, importId) {
+  const rowsRef = collection(db, "tenants", tenantId, "imports", importId, "rows");
+  const rowsSnap = await getDocs(rowsRef);
+  await Promise.all(rowsSnap.docs.map((d) => deleteDoc(d.ref)));
+  await deleteDoc(doc(db, "tenants", tenantId, "imports", importId));
 }
 
 // ─── Tenant Config ───────────────────────────────────────────
@@ -241,17 +348,21 @@ export async function logUpload(tenantId, metadata) {
 
 // ─── Executive Summary ───────────────────────────────────────
 
-export async function loadSummary(tenantId) {
+/**
+ * Load/save executive summary.
+ * @param {string} collPath - "data" (legacy) or "views" (normalized)
+ */
+export async function loadSummary(tenantId, collPath = "data") {
   try {
-    const snap = await getDoc(doc(db, "tenants", tenantId, "data", "_summary"));
+    const snap = await getDoc(doc(db, "tenants", tenantId, collPath, "_summary"));
     return snap.exists() ? snap.data().text : null;
   } catch {
     return null;
   }
 }
 
-export async function saveSummary(tenantId, text) {
-  await setDoc(doc(db, "tenants", tenantId, "data", "_summary"), {
+export async function saveSummary(tenantId, text, collPath = "data") {
+  await setDoc(doc(db, "tenants", tenantId, collPath, "_summary"), {
     text,
     updatedAt: serverTimestamp(),
   });

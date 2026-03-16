@@ -7,6 +7,8 @@ import {
   autoDetectMapping,
   detectUploadType,
   detectQuickBooksFormat,
+  getFieldDefs,
+  ROLE_FIELD_OVERRIDES,
 } from "../utils/semanticMapper";
 import {
   DEPLETION_HEADERS, DEPLETION_ROWS,
@@ -85,6 +87,56 @@ describe("autoDetectMapping", () => {
     // Should still find mappings — role changes labels not detection
     expect(mapping.acct).toBeTruthy();
     expect(mapping.dist).toBeTruthy();
+  });
+
+  it("supports all 4 industry roles", () => {
+    for (const role of ["winery", "importer", "distributor", "retailer"]) {
+      const { mapping } = autoDetectMapping(DEPLETION_HEADERS, DEPLETION_ROWS, role);
+      expect(mapping.acct).toBeTruthy();
+    }
+  });
+});
+
+describe("ROLE_FIELD_OVERRIDES", () => {
+  it("defines overrides for all 4 industry roles + legacy supplier", () => {
+    expect(Object.keys(ROLE_FIELD_OVERRIDES)).toEqual(
+      expect.arrayContaining(["supplier", "winery", "importer", "distributor", "retailer"])
+    );
+  });
+
+  it("each role has acct and dist overrides", () => {
+    for (const [role, overrides] of Object.entries(ROLE_FIELD_OVERRIDES)) {
+      expect(overrides.acct).toBeDefined();
+      expect(overrides.acct.label).toBeTruthy();
+      expect(overrides.dist).toBeDefined();
+      expect(overrides.dist.label).toBeTruthy();
+    }
+  });
+});
+
+describe("getFieldDefs", () => {
+  it("returns field definitions for each role", () => {
+    for (const role of ["supplier", "winery", "importer", "distributor", "retailer"]) {
+      const defs = getFieldDefs(role);
+      expect(defs.length).toBeGreaterThan(0);
+      const acctDef = defs.find((d) => d.field === "acct");
+      expect(acctDef).toBeDefined();
+      expect(acctDef.label).toBeTruthy();
+    }
+  });
+
+  it("winery acct label differs from distributor", () => {
+    const wineryDefs = getFieldDefs("winery");
+    const distDefs = getFieldDefs("distributor");
+    const wineryAcct = wineryDefs.find((d) => d.field === "acct");
+    const distAcct = distDefs.find((d) => d.field === "acct");
+    expect(wineryAcct.label).not.toBe(distAcct.label);
+  });
+
+  it("defaults to supplier when role is undefined", () => {
+    const defs = getFieldDefs();
+    const supplierDefs = getFieldDefs("supplier");
+    expect(defs.length).toBe(supplierDefs.length);
   });
 });
 
