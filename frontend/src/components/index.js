@@ -49,3 +49,4 @@ export { default as DataGate } from "./DataGate";
 export { default as EmptyState } from "./EmptyState";
 export { default as DataFreshnessBadge } from "./DataFreshnessBadge";
 export { default as ErrorBoundary } from "./ErrorBoundary";
+export { default as PricingStudio } from "./PricingStudio/PricingStudio";

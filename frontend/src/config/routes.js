@@ -75,6 +75,15 @@ export const ROUTES = [
     dataKey: "pipeline",
     description: "Sales pipeline, funnel, and deal tracking",
   },
+  // Tools
+  {
+    key: "pricing",
+    path: "/pricing",
+    label: "Pricing Studio",
+    icon: "pricing",
+    section: "tools",
+    description: "Wine pricing calculator across 8 global markets",
+  },
   // CRM
   {
     key: "crm-accounts",
