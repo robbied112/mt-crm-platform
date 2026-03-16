@@ -9,6 +9,7 @@ import { autoDetectMapping, detectUploadType, getFieldDefs } from "../utils/sema
 import { getUserRole, t } from "../utils/terminology";
 import { aiAutoDetectMapping } from "../utils/aiMapper";
 import { transformAll, generateSummary } from "../utils/transformData";
+import { normalizeRows } from "../../../packages/pipeline/src/normalize.js";
 import { logUpload } from "../services/firestoreService";
 import { useAuth } from "../context/AuthContext";
 
@@ -16,7 +17,7 @@ const STEPS = ["upload", "mapping", "preview", "done"];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export default function DataImport() {
-  const { importDatasets, userRole, tenantId } = useData();
+  const { importDatasets, userRole, tenantId, useNormalized } = useData();
   const { currentUser } = useAuth();
   const [step, setStep] = useState("upload");
   const [file, setFile] = useState(null);
@@ -127,7 +128,21 @@ export default function DataImport() {
     setError("");
     try {
       const { type, ...datasets } = preview;
-      await importDatasets(datasets, summary);
+
+      // When using normalized model, normalize raw rows and pass as import metadata
+      let importMeta;
+      if (useNormalized) {
+        const normalized = normalizeRows(parsed.rows, mapping);
+        importMeta = {
+          normalizedRows: normalized,
+          fileName: file.name,
+          type: uploadType.type,
+          mapping,
+          uploadedBy: currentUser?.email || "unknown",
+        };
+      }
+
+      await importDatasets(datasets, summary, importMeta);
       await logUpload(tenantId, {
         fileName: file.name,
         rowCount: parsed.rows.length,
