@@ -13,7 +13,7 @@ import {
   detectGroupedFormat,
   processGroupedRows,
   processStandardRows,
-} from "../../../packages/pipeline/src/parseFile.js";
+} from "../utils/parseFile.js";
 
 // ─── Tests ───────────────────────────────────────────────────
 

@@ -8,7 +8,7 @@ import {
   str,
   normalizeState,
   normalizeDate,
-} from "../../../packages/pipeline/src/normalize.js";
+} from "../utils/normalize.js";
 
 describe("helper functions", () => {
   describe("num", () => {

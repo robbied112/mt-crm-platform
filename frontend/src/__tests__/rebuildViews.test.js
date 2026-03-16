@@ -6,8 +6,8 @@
  * Integration tests with the emulator are in TODO-026.
  */
 import { describe, it, expect } from "vitest";
-import { transformAll } from "../../../packages/pipeline/src/transformData.js";
-import { normalizeRows } from "../../../packages/pipeline/src/normalize.js";
+import { transformAll } from "../utils/transformData.js";
+import { normalizeRows } from "../utils/normalize.js";
 
 // ─── Replicate the helper from functions/index.js ───────────
 // (This is the same function used in rebuildViews Cloud Function)
