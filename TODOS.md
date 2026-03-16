@@ -1,6 +1,7 @@
 # TODOS — Sidekick BI (MT CRM Platform)
 
-> Updated from CEO Disruption Review + Eng Review on 2026-03-16.
+> Updated from CEO App Review (Onboarding & Activation) on 2026-03-16.
+> Previous: CEO Disruption Review + Eng Review on 2026-03-16.
 > Previous: Cathedral Vision Review + Eng Review on 2026-03-15.
 > CEO review: SCOPE EXPANSION mode. Eng review: BIG CHANGE mode (full Phase 1).
 > Key eng review correction: full rebuild only (not incremental) — momentum/consistency need ALL rows.
@@ -14,6 +15,11 @@
 > - EXPORTS promoted to P1 — broken buttons = broken trust
 > - STAGING + CI before TODO-021 migration — non-negotiable safety
 > - VIEW VALIDATION added to TODO-022 — validate output before writing, warn on anomalies
+>
+> **Onboarding & Activation added 2026-03-16 (CEO App Review).**
+> Vision: Data Setup Assistant — role-aware, distributor-specific guided activation with report guides, data health tracking, and setup analytics. TODO-048 through TODO-054.
+> Key decisions: Static config for report guides (config/reportGuides.js). Non-blocking sidebar card (not forced wizard). Built-in analytics to Firestore (not Firebase Analytics dependency). Generic fallback + distributor request logging for unlisted systems.
+> TODO-015 (onboarding wizard) and TODO-031 (smart file detection) superseded by TODO-049 and TODO-053.
 >
 > **Billback / Trade Spend Intelligence added 2026-03-16.**
 > Vision: PDF billback ingestion → wine entity with AI dedup → spend dashboards → agreement reconciliation → producer allocation → predictive budgeting.
@@ -129,7 +135,7 @@
 - **Files:** `frontend/src/components/DataImport.jsx`
 - **Depends on:** TODO-021 (normalized model makes comparison trivial)
 
-### TODO-015: Guided onboarding wizard
+### ~~TODO-015: Guided onboarding wizard~~ SUPERSEDED by TODO-049
 - **What:** Replace bare "Welcome" screen with 3-step wizard: (1) Select business role (Winery/Importer/Distributor/Retailer), (2) Upload first file, (3) See dashboard. Progress indicator.
 - **Why:** First-time user experience is currently confusing. Guided flow drives activation. Role selection feeds into TODO-024.
 - **Effort:** M (2 hours)
@@ -178,7 +184,7 @@
 - **Files:** New component, `frontend/src/services/firestoreService.js`
 - **Depends on:** TODO-021 (imports collection)
 
-### TODO-031: Smart file type detection messaging ← PROMOTED TO P2 (CEO review)
+### ~~TODO-031: Smart file type detection messaging~~ SUPERSEDED by TODO-053
 - **What:** When a file is dropped, show a friendly detection message: "Looks like a VIP Depletion Report from Southern Glazer's — I see 2,400 rows across 3 states." or "This looks like a QuickBooks Sales by Customer report with 150 accounts."
 - **Why:** Builds trust in the AI. When the system correctly identifies your file type, you trust it to map columns correctly. This is the "wow" moment in onboarding.
 - **Effort:** S (30 min — AI mapper already detects type, just need better UX copy)
@@ -493,6 +499,112 @@
 
 ---
 
+## P1 — Onboarding & Activation (from CEO App Review 2026-03-16)
+
+> Added from CEO App Review on 2026-03-16. SCOPE EXPANSION mode.
+> Core insight: The app has 17 routes of deep functionality but near-zero guidance on what data to bring, from which distributor systems, or what workflow to follow. Users who sign up see demo data, think "cool," then bounce because they don't know how to replicate it with their own data. Every new user currently requires a white-glove onboarding call — that doesn't scale.
+> Vision: Data Setup Assistant — role-aware, distributor-specific guided activation. User selects their distributors, gets step-by-step report download instructions per system, uploads with confirmation ("Looks like a SGWS Weekly Depletion Report — 2,400 rows!"), and sees a Data Health Card tracking what's loaded and what's missing.
+> Architecture: Static config file (config/reportGuides.js), persistent sidebar card, /setup route, lightweight Firestore analytics. No new Cloud Functions. Fully reversible.
+
+### TODO-048: Report Guide Content System (config/reportGuides.js)
+- **What:** Static config file with structured report guides for major distributor systems. **Unified schema** serving both Setup Assistant UI (human text) and file detection (column signatures). Each guide entry includes: system name, shortName, portalName, logo URL, `headerSignatures[]` (arrays of column names for fingerprinting uploaded files), `filenamePatterns[]` (regexes for filename matching), and `reports{}` object with per-report-type entries containing title, steps[], tips[], expectedColumns[]. Start with 5 systems: Southern Glazer's (SGWS Portal), Breakthru Beverage (Encompass), Republic National (iDIG), Young's Market, and a Generic fallback. Each system has guides for 2-3 report types (Depletion, Inventory, Shipment). Include role-aware recommendations (wineries vs importers see different "start here" suggestions).
+- **Why:** This is the content that makes the Setup Assistant valuable. Without it, we're just another "upload a file" wizard. The specificity ("Go to Reports > Depletion > Weekly > Export as Excel") is what builds trust. The unified schema means one source of truth for both human guidance and automated file detection (DRY).
+- **Pros:** Version-controlled. No API calls. Easy to update. Unified schema prevents drift between guide content and detection logic. Can upgrade to CMS later without architectural changes.
+- **Cons:** Requires content research per distributor system. Screenshots may go stale as portals change.
+- **Effort:** M (3-4 hours — mostly content research + structuring)
+- **Priority:** P1 — blocks Setup Assistant
+- **Testing:** `reportGuides.test.js` — validates every guide has required fields (name, reports, headerSignatures), lookup works, generic fallback works, header signature matching returns correct distributor ID.
+- **Files:** New `frontend/src/config/reportGuides.js`
+- **Depends on:** Nothing
+
+### TODO-049: Setup Assistant Page (/setup route + SetupAssistant.jsx)
+- **What:** New `/setup` route with multi-section page: (1) Role confirmation — pre-filled from signup, editable. (2) Distributor selector — "Which distributors do you work with?" with checkboxes for major systems + "Other" free text field. (3) Report guide viewer — select a distributor, see step-by-step instructions for pulling each report type from config/reportGuides.js. Screenshots lazy-loaded. Text-only fallback when no screenshots. (4) Upload launcher — "Ready? Drop your file here" linking directly to DataImport. (5) Data Health Card (TODO-051) — visual progress meter showing which data types are loaded and what's still missing. Reads/writes onboarding state to `tenants/{id}/config/main.onboarding` (distributors[], completedSteps[], dataHealth{}, dismissedAt). Handles resume (user can leave and come back — state persists). Generic guide shown when user's distributor isn't in the guide list (with Firestore logging of requested distributor name for analytics). Responsive BEM CSS.
+- **Why:** This is the core activation flow. Turns "I signed up, now what?" into "I know exactly what to download, from where, and what happens next." Targets self-serve activation without white-glove onboarding calls.
+- **Pros:** Non-blocking (user can explore demo data alongside). Resumable. Role-aware. Builds on existing AuthContext/DataContext.
+- **Cons:** 6-8 hours of work. New route + component. Needs TODO-048 content to be useful.
+- **Context:** Onboarding state schema on config/main:
+  ```
+  onboarding: {
+    distributors: ["sgws", "breakthru"],
+    completedSteps: ["role", "distributors", "first-upload"],
+    dataHealth: { depletions: true, inventory: false, pipeline: false },
+    dismissedAt: null | timestamp
+  }
+  ```
+- **Effort:** L (6-8 hours)
+- **Priority:** P1
+- **Eng review decisions:** DistributorSelector and ReportGuide are INLINE in SetupAssistant.jsx (not separate files) — they're only used here. DataHealthCard.jsx IS a separate file (reused in MyTerritory). Always write the full `onboarding{}` object to Firestore, never partial patches (avoids shallow merge bugs).
+- **Testing:** `onboardingState.test.js` — state machine transitions (fresh→in-progress→complete). `sidebarSetupCard.test.js` — show/hide/dismiss/collapsed states.
+- **Files:** New `frontend/src/components/SetupAssistant.jsx`, new `frontend/src/components/DataHealthCard.jsx`, `frontend/src/config/routes.js`, `frontend/src/components/Sidebar.jsx`, `frontend/src/components/CommandPalette.jsx`
+- **Depends on:** TODO-048 (report guide content)
+
+### TODO-050: Setup Progress Sidebar Card
+- **What:** Persistent card in the sidebar (above user menu, below nav links) showing onboarding progress: "Setup: 2/4 complete" with mini progress bar and "Continue Setup →" link to /setup. Shows only when onboarding is not complete and not dismissed. Dismissable with X (stores `dismissedAt` timestamp on config/main.onboarding). Re-accessible anytime via /setup URL or Command Palette. Card styling: subtle background, consistent with sidebar BEM classes.
+- **Why:** The sidebar is always visible. This keeps the activation path in peripheral vision without blocking the user from exploring. The best onboarding doesn't force — it reminds.
+- **Pros:** Non-intrusive. Always visible. Dismissable. Re-accessible.
+- **Cons:** Adds visual element to sidebar. Need to handle collapsed sidebar state.
+- **Eng review decision:** Collapsed sidebar mode shows a small setup icon with progress dot/badge (like a notification indicator). Matches existing sidebar patterns where collapsed = icon-only. Full card renders when sidebar is expanded.
+- **Effort:** S (1-2 hours)
+- **Priority:** P1
+- **Files:** `frontend/src/components/Sidebar.jsx`
+- **Depends on:** TODO-049 (Setup Assistant page)
+
+### TODO-051: Data Health Card Component
+- **What:** Reusable `DataHealthCard.jsx` that computes and displays data completeness. Reads from DataContext availability flags to determine which data types are loaded (depletions, inventory, accounts, pipeline, billbacks). Shows: visual checklist with ✅/⬜ per data type, overall "health score" percentage, contextual nudge for the next recommended upload ("Upload inventory data to unlock reorder forecasting →"), and role-aware messaging (wineries see different recommendations than importers). Used on /setup page AND optionally on MyTerritory dashboard (replacing or enhancing WelcomeState for partial-data users).
+- **Why:** Solves the "what am I missing?" problem. Users who uploaded depletions but not inventory don't know they're leaving value on the table. Makes the invisible visible.
+- **Pros:** Reusable across setup page and dashboard. Reads from existing DataContext flags (no new queries). Role-aware.
+- **Cons:** Need to define "complete" per role (wineries need different data than importers).
+- **Effort:** M (2-3 hours)
+- **Priority:** P1
+- **Files:** New `frontend/src/components/DataHealthCard.jsx`
+- **Depends on:** TODO-049 (setup page uses it), but component is independently useful
+
+### TODO-052: Setup Analytics
+- **What:** Lightweight event tracking for the Setup Assistant activation funnel. Logs to Firestore at `tenants/{id}/analytics/setup/{eventId}`: setup_started, distributor_selected, guide_viewed, guide_not_found (with free-text distributor name for prioritizing new guides), upload_started_from_guide, setup_completed (with time_to_complete), setup_dismissed (with step_at_dismissal). No Firebase Analytics dependency. Simple batch-safe Firestore writes.
+- **Why:** The Setup Assistant is a growth feature. Without activation funnel data, you can't tell if it works, where users drop off, or which distributor guides to build next. This is the "test suite" for the feature.
+- **Eng review decisions:** NO global `distributorRequests/` collection — distributor names logged in tenant-scoped analytics only (guide_not_found event). Aggregate later with Cloud Function or manual query. This avoids new security rules for a global collection. Fire-and-forget pattern: catch all Firestore errors silently, `console.warn` only, never block UI or surface to user.
+- **Testing:** `setupAnalytics.test.js` — events dispatched correctly, Firestore errors swallowed (never throws).
+- **Effort:** S (1-2 hours)
+- **Priority:** P1 — ships with Setup Assistant
+- **Files:** New `frontend/src/services/setupAnalytics.js`, `firestore.rules` (add `analytics/` subcollection rules using existing `isTenantMember()` pattern)
+- **Depends on:** TODO-049
+
+### TODO-053: Smart File Detection Messaging (supersedes TODO-031)
+- **What:** After a file is dropped in DataImport, show a rich detection message referencing the distributor system: "Looks like a Weekly Depletion Report from Southern Glazer's — I see 2,400 rows across 3 states. Nice!" or "This looks like a QuickBooks Sales by Customer report with 150 accounts." Distributor system recognition via filename patterns and header column signatures (SGWS reports have "PREMISE TYPE", VIP has "CORP ITEM CD", Encompass has specific header patterns). When the user came from a Setup Assistant report guide, show: "✅ This matches the report type we recommended." Leverages existing AI mapper detection + adds system fingerprinting from reportGuides.js column signatures.
+- **Why:** This is the "wow" moment. When the system correctly identifies your specific distributor report, trust goes through the roof. Says "this tool was built for people like me." Directly addresses the activation problem — confirms users got the right report.
+- **Effort:** S (1-2 hours — AI mapper already detects type, this adds UX copy + distributor pattern matching)
+- **Priority:** P1 — ships with or right after Setup Assistant
+- **Files:** `frontend/src/components/DataImport.jsx`, reads from `frontend/src/config/reportGuides.js`
+- **Depends on:** TODO-048 (distributor system definitions with column signatures)
+
+### TODO-054: Post-Import "What's Next" Card
+- **What:** After a successful import (Step 4 of DataImport), replace the bare "Import Complete" message with a contextual "What's Next" card: (1) Direct link to the relevant dashboard tab ("Your depletions are live — check your Distributor Scorecard →"). (2) Data Health update ("Setup progress: 3/4 — upload inventory data to unlock reorder forecasting"). (3) First real import celebration: if this was the user's first non-demo import, show "Welcome to YOUR territory. Here's what your data tells us:" with 2-3 quick stats from the just-imported data (account count, weeks of history, states covered).
+- **Why:** The moment after first import is the highest-intent moment in the user journey. Right now it dead-ends at "Done." This turns it into a springboard to value discovery.
+- **Effort:** S (1-2 hours)
+- **Priority:** P2
+- **Files:** `frontend/src/components/DataImport.jsx`
+- **Depends on:** TODO-051 (Data Health Card), TODO-049 (onboarding state)
+
+### TODO-055: Unify data-type descriptions across EmptyState, WelcomeState, and DataHealthCard
+- **What:** Create a shared `DATA_TYPE_INFO` config (in `config/dataTypes.js` or similar) mapping each data type (depletions, inventory, pipeline, accounts, billbacks) to its description, benefits list, recommended action, and icon. Refactor `EmptyState.jsx`, `WelcomeState` (inline in MyTerritory), and `DataHealthCard.jsx` to all read from this single source instead of having their own copies of "what each data type enables."
+- **Why:** Three components currently describe the same information with overlapping but not identical copy. A fourth consumer will appear (landing page, onboarding emails). DRY violation accepted during initial Setup Assistant build but should be cleaned up before it spreads further.
+- **Pros:** Single source of truth. Adding a new data type updates all three places at once. Prevents copy drift.
+- **Cons:** Touches 3 existing files. Risk of subtle regression in existing empty state messaging.
+- **Effort:** S (1 hour)
+- **Priority:** P3 (cleanup)
+- **Files:** New `frontend/src/config/dataTypes.js`, `frontend/src/components/EmptyState.jsx`, `frontend/src/components/DataHealthCard.jsx`, MyTerritory WelcomeState
+- **Depends on:** TODO-051 (DataHealthCard exists first)
+
+### Onboarding Delight Items (from CEO App Review 2026-03-16)
+
+- **"Your Data Report Card"** — After first real import, show diagnostic: "Data Quality: A- — 847 accounts, 13 weeks of history, 3 states. Missing: inventory." Makes the system feel like it understood your data, not just ingested it. (S, 30 min)
+- **Animated dashboard unlock** — On MyTerritory, show all sections but dim/lock those without data. When user imports depletions, Distributor Scorecard animates to full color. Upload inventory → Reorder Forecast lights up. "Collecting power-ups" game feel without being cheesy. (M, 2 hours)
+- **Contextual "Did you know?" tips** — Small dismissable tip cards on MyTerritory, one per session, rotating: "Use ⌘K to jump to any page" / "Export any table as Excel" / "Try the Pricing Studio for margin modeling." Driven by config array, shown based on what user hasn't dismissed. Progressive feature discovery. (S, 1 hour)
+- **"Share with your team" prompt** — After first real import populates dashboard, one-time prompt: "Your territory is live! Invite your team." Links to Settings > Users. Catches user at peak enthusiasm. Multi-user tenants are stickier. (S, 30 min)
+- **Landing page system-specific social proof** — Show distributor logos and system-specific messaging: "Works with Southern Glazer's, Breakthru, Republic National." Add system-specific 3-step walkthrough selector. Signals "built for MY world" before signup. (M, 2 hours)
+
+---
+
 ## Phase Dependency Graph (Updated 2026-03-16)
 
 ```
@@ -525,14 +637,35 @@ REMAINING P1 — IMPLEMENTATION ORDER:
     ✅ TODO-028 (Daily Actions card) DONE
     TODO-034 (connector schema) ← schema in TODO-045, email connector P2
 
+    ── Phase D: Onboarding & Activation ──
+    TODO-048 (report guide content system) ← DO EARLY, no code deps
+        │   Eng review: unified schema with headerSignatures[] for detection
+        │
+        ├── TODO-049 (Setup Assistant page /setup)
+        │       │   Eng review: DistributorSelector + ReportGuide inline (not separate files)
+        │       │   Eng review: always write full onboarding{} object, never partial patches
+        │       │
+        │       ├── TODO-050 (sidebar setup card)
+        │       │       Eng review: collapsed mode = icon + badge (matches existing patterns)
+        │       ├── TODO-051 (Data Health Card component) ← separate file (reusable)
+        │       │       └── TODO-055 (unify data-type descriptions) ← P3 cleanup
+        │       └── TODO-052 (setup analytics)
+        │               Eng review: NO global distributorRequests/ collection
+        │               Log distributor name in tenant-scoped analytics only
+        │               Fire-and-forget: catch errors silently, console.warn only
+        │
+        └── TODO-053 (smart file detection messaging) ← supersedes TODO-031
+                Reads headerSignatures from reportGuides.js (unified config)
+
 P2+:
+    TODO-054 (post-import "What's Next" card) ← needs TODO-049, TODO-051
     TODO-027 (Account Detail Page) ← needs TODO-007 (DONE)
     TODO-025 (content hash dupe detection)
     TODO-014 (import comparison diff)
     TODO-030 (import timeline)
     TODO-013 (data freshness)
-    TODO-015 (onboarding wizard) ← needs TODO-024 (DONE)
-    TODO-031 (smart file detection UX) ← PROMOTED P2
+    ~~TODO-015 (onboarding wizard)~~ SUPERSEDED by TODO-049 (Setup Assistant)
+    ~~TODO-031 (smart file detection UX)~~ SUPERSEDED by TODO-053
     TODO-039 (morning greeting) ← P2 delight
     TODO-009 (OAuth HMAC signing) ← SECURITY, P1 before production
 
@@ -572,3 +705,13 @@ Compliance:
     TODO-035 (data deletion + privacy) ← P2, before paid customers
     TODO-037 (observability) ← P2
 ```
+
+---
+
+## Completed
+
+- **TODO-048: Report Guide Content System** — Static config (`config/reportGuides.js`) with unified schema for 5 distributor systems + role-aware recommendations. **Completed:** v0.3.0.0 (2026-03-16)
+- **TODO-049: Setup Assistant Page** — Full `/setup` route with 5-step guided onboarding flow, role/distributor selection, report guides, upload launcher, data health tracking. Onboarding state persisted to Firestore. **Completed:** v0.3.0.0 (2026-03-16)
+- **TODO-050: Setup Progress Sidebar Card** — Persistent card in sidebar showing setup progress ("2/5 complete"), dismissable, with collapsed-mode badge. **Completed:** v0.3.0.0 (2026-03-16)
+- **TODO-051: Data Health Card Component** — Reusable component showing data completeness across 5 types with health score, checklist, and nudge logic. **Completed:** v0.3.0.0 (2026-03-16)
+- **TODO-052: Setup Analytics** — Fire-and-forget Firestore event logging (setup_started, guide_viewed, guide_not_found, upload_started, setup_completed) with silent error handling. **Completed:** v0.3.0.0 (2026-03-16)

@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0.0] - 2026-03-16
+
+### Added
+- **Data Setup Assistant** (`/setup` route, `SetupAssistant.jsx`) — guided onboarding flow with role confirmation, distributor selection, step-by-step report download instructions, data upload launcher, and data health tracking
+- **Report Guide Content System** (`config/reportGuides.js`) — unified schema serving both UI guidance and file detection, supporting 5 major distributor systems (SGWS, Breakthru, RNDC, Young's, Generic) with role-aware recommendations
+- **Data Health Card** (`DataHealthCard.jsx`) — reusable component showing data completeness across 5 data types with visual checklist, health score percentage, and contextual nudge for next upload
+- **Setup Analytics** (`services/setupAnalytics.js`) — fire-and-forget event logging (setup_started, guide_viewed, guide_not_found, upload_started, setup_completed) with silent error handling
+- **Sidebar Setup Progress Card** — persistent non-blocking card showing onboarding progress (e.g., "2/5 steps complete") with dismiss button and continue link; collapsed sidebar mode shows icon with pulsing badge
+- 5 comprehensive test files (165+ tests) covering onboarding state machine transitions, distributor/filename matching, data health computation, analytics fire-and-forget pattern, and sidebar card visibility logic
+- Firestore security rules for `analytics/setup/events` subcollection with member write and admin read permissions
+
+### Changed
+- Deduplicated `ONBOARDING_STEPS` constant across SetupAssistant, Sidebar, and test files — now single export from `config/reportGuides.js`
+- Fixed Importer role secondary recommendations to exclude deferred "billback" data type (will be added when billback feature ships with matching DATA_TYPE entry)
+
 ## [0.2.1.0] - 2026-03-16
 
 ### Added
