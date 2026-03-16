@@ -15,10 +15,18 @@ vi.mock("../services/firestoreService", () => ({
 }));
 
 vi.mock("../services/crmService", () => ({
+  loadAccounts: vi.fn(async () => []),
+  loadContacts: vi.fn(async () => []),
+  loadActivities: vi.fn(async () => []),
+  loadTasks: vi.fn(async () => []),
   createAccount: vi.fn(async () => "mock-account-id"),
   createContact: vi.fn(async () => "mock-contact-id"),
   logActivity: vi.fn(async () => "mock-activity-id"),
   createTask: vi.fn(async () => "mock-task-id"),
+  deleteAccount: vi.fn(async () => {}),
+  deleteContact: vi.fn(async () => {}),
+  deleteActivity: vi.fn(async () => {}),
+  deleteTask: vi.fn(async () => {}),
 }));
 
 import { seedDemoData, clearDemoData, DEMO_DATASETS, DEMO_SUMMARY } from "../services/demoData";

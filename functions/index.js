@@ -344,6 +344,7 @@ const DATASETS = [
   "distScorecard", "reorderData", "accountsTop", "pipelineAccounts",
   "pipelineMeta", "inventoryData", "newWins", "distHealth",
   "reEngagementData", "placementSummary", "qbDistOrders", "acctConcentration",
+  "spendByWine", "spendByDistributor", "billbackSummary",
 ];
 
 exports.aiIngest = functions
@@ -532,6 +533,27 @@ exports.rebuildViews = functions
 
       for (const [type, rows] of Object.entries(rowsByType)) {
         if (rows.length === 0) continue;
+
+        // Billback imports use their own transform
+        if (type === "billback") {
+          try {
+            const { transformBillback } = require("./lib/pipeline/transformBillback");
+            // Billback rows are already in the right shape (not the standard mapping model)
+            const billbackMapping = { wine: "wine", producer: "producer", dist: "dist", amount: "amount", qty: "qty", date: "date", type: "type", invoiceNo: "invoiceNo" };
+            const billbackViews = transformBillback(rows, billbackMapping);
+            for (const [name, items] of Object.entries(billbackViews)) {
+              if (items !== undefined && DATASETS.includes(name)) {
+                mergedViews[name] = items;
+              }
+            }
+          } catch (err) {
+            console.error(`[rebuildViews] Billback transform failed for tenant ${tenantId}:`, {
+              error: err.message,
+              rowCount: rows.length,
+            });
+          }
+          continue;
+        }
 
         // Validate: warn on missing required fields
         const missingAcct = rows.filter((r) => !r.acct).length;
@@ -1383,3 +1405,10 @@ async function findTenantByCustomerId(customerId) {
 
   return null;
 }
+
+// -------------------------------------------------------------------
+// Billback Functions — re-export from functions/billback.js
+// -------------------------------------------------------------------
+const billback = require("./billback");
+exports.parseBillbackPDF = billback.parseBillbackPDF;
+exports.extractWines = billback.extractWines;

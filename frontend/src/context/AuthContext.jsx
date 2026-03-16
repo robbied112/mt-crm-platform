@@ -49,8 +49,14 @@ async function fetchOrCreateProfile(user, accountType) {
       companyName: "",
       createdBy: user.uid,
       createdAt: serverTimestamp(),
-      ...(accountType ? { userRole: accountType } : {}),
     });
+
+    if (accountType) {
+      await setDoc(doc(db, "tenants", tenantId, "config", "main"), {
+        userRole: accountType,
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+    }
 
     // Seed demo data for new tenants
     try {

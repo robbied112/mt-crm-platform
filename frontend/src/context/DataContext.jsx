@@ -19,6 +19,7 @@ import {
   loadSummary,
   saveSummary,
   loadTenantConfig,
+  loadWines,
   saveTenantConfig as saveTenantConfigFS,
 } from "../services/firestoreService";
 import { normalizeRows } from "../utils/normalize.js";
@@ -43,6 +44,10 @@ const EMPTY = {
   placementSummary: [],
   qbDistOrders: {},
   acctConcentration: {},
+  spendByWine: [],
+  spendByDistributor: [],
+  billbackSummary: {},
+  wines: [],
 };
 
 export default function DataProvider({ children }) {
@@ -67,6 +72,7 @@ export default function DataProvider({ children }) {
     pipeline: data.pipelineAccounts.length > 0,
     distributorHealth: data.distHealth.length > 0,
     opportunities: data.newWins.length > 0 || data.reEngagementData.length > 0,
+    billbacks: data.spendByWine.length > 0,
     hasAnyData: Object.values(data).some((v) =>
       Array.isArray(v) ? v.length > 0 : Object.keys(v).length > 0
     ),
@@ -87,13 +93,14 @@ export default function DataProvider({ children }) {
       setError(null);
       try {
         const collPath = useNormalized ? "views" : "data";
-        const [allData, summaryText, config] = await Promise.all([
+        const [allData, summaryText, config, wines] = await Promise.all([
           useNormalized ? loadAllViews(tenantId) : loadAllData(tenantId),
           loadSummary(tenantId, collPath),
           loadTenantConfig(tenantId),
+          loadWines(tenantId),
         ]);
         if (cancelled) return;
-        setData({ ...EMPTY, ...allData });
+        setData({ ...EMPTY, ...allData, wines });
         setSummary(summaryText);
         if (config) setTenantConfig((prev) => ({ ...prev, ...config }));
       } catch (err) {
@@ -112,11 +119,12 @@ export default function DataProvider({ children }) {
     if (!tenantId) throw new Error("No tenant context");
     try {
       const collPath = useNormalized ? "views" : "data";
+      let importId = null;
 
-      // Save raw normalized rows when using normalized model
-      if (useNormalized && importMeta) {
+      // Billback imports always need an import record for downstream extraction.
+      if (importMeta && (useNormalized || importMeta.type === "billback")) {
         const { normalizedRows, ...meta } = importMeta;
-        await saveImport(tenantId, meta, normalizedRows);
+        importId = await saveImport(tenantId, meta, normalizedRows);
       }
 
       // Save pre-computed views/data
@@ -139,6 +147,7 @@ export default function DataProvider({ children }) {
         }
         return next;
       });
+      return { importId };
     } catch (err) {
       throw new Error(`Failed to save data: ${err.message}`);
     }
@@ -150,12 +159,13 @@ export default function DataProvider({ children }) {
     setLoading(true);
     try {
       const collPath = useNormalized ? "views" : "data";
-      const [allData, summaryText, config] = await Promise.all([
+      const [allData, summaryText, config, wines] = await Promise.all([
         useNormalized ? loadAllViews(tenantId) : loadAllData(tenantId),
         loadSummary(tenantId, collPath),
         loadTenantConfig(tenantId),
+        loadWines(tenantId),
       ]);
-      setData({ ...EMPTY, ...allData });
+      setData({ ...EMPTY, ...allData, wines });
       setSummary(summaryText);
       if (config) setTenantConfig((prev) => ({ ...prev, ...config }));
     } catch (err) {

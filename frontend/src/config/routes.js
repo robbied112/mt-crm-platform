@@ -117,6 +117,24 @@ export const ROUTES = [
     section: "crm",
     description: "Task management and follow-up tracking",
   },
+  // Billbacks (feature-gated)
+  {
+    key: "billbacks",
+    path: "/billbacks",
+    label: "Trade Spend",
+    icon: "billbacks",
+    section: "billbacks",
+    dataKey: "billbacks",
+    description: "Billback spend by wine, distributor, and type",
+  },
+  {
+    key: "wines",
+    path: "/wines",
+    label: "Wines",
+    icon: "wines",
+    section: "billbacks",
+    description: "Wine catalog extracted from billback imports",
+  },
   // Admin
   {
     key: "admin-settings",

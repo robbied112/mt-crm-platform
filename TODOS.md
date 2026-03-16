@@ -4,6 +4,10 @@
 > CEO review: SCOPE EXPANSION mode. Eng review: BIG CHANGE mode (full Phase 1).
 > Key eng review correction: full rebuild only (not incremental) — momentum/consistency need ALL rows.
 > Phase 1 = Foundation, Phase 2 = CRM, Phase 3 = Intelligence, Phase 4 = Delight + Scale.
+>
+> **Billback / Trade Spend Intelligence added 2026-03-16.** CEO review: SCOPE EXPANSION.
+> Vision: PDF billback ingestion → wine entity with AI dedup → spend dashboards → agreement reconciliation → producer allocation → predictive budgeting.
+> Key decisions: Claude Vision API (single-call extract+map), extend DataImport (not separate page), wine entity follows account extraction pattern.
 
 ---
 
@@ -256,7 +260,6 @@
 - **Depends on:** Nothing
 
 ---
-
 ## P-Pricing — Pricing Studio Integration (from Wine Pricing Studio / port-louis)
 
 > Added from CEO Scope Expansion review on 2026-03-16.
@@ -341,6 +344,132 @@
 
 ---
 
+## P1 — Billback Phase 1: Trade Spend Ingestion (Must Ship After Phase 1 Foundation)
+
+> Added from Cathedral Vision Review on 2026-03-16. SCOPE EXPANSION mode.
+> Vision: Trade Spend Intelligence Engine — billback ingestion → agreement tracking → reconciliation → producer allocation → predictive budgeting.
+> Architecture: Claude Vision API for PDF extraction (single-call extract + map), wine entity with AI dedup, extend existing DataImport.
+> **Eng review refinements (2026-03-16):** Base64 callable (not Storage). Single Claude call with all pages (not per-page). Separate extractWines callable (not inside rebuildViews). New functions/billback.js (not in index.js monolith). Shared deduplicateEntities() helper (TODO-047). Vintage IS wine identity. Conditional DataContext loading behind feature flag. BillbackReviewStep sub-component in DataImport.
+
+### TODO-040: PDF Billback Extraction Cloud Function
+- **What:** New `parseBillbackPDF` callable Cloud Function in `functions/billback.js` (re-exported from `index.js`). Accepts PDF binary as base64 via `httpsCallable`. Sends ALL pages as multi-image in a SINGLE Claude Vision API call (Claude supports up to 20 images per message — full document context for best accuracy). Extracts structured billback line items (wine, producer, amount, quantity, rate, program type, distributor, period). Returns JSON array of line items + metadata (distributor name, billback date, page count). Handles both digital and scanned PDFs. Rate limited (max 10/hour per tenant, reuse existing pattern).
+- **Why:** Core new infrastructure — no PDF parsing exists today. Claude Vision handles digital + scanned PDFs in a single API call (~$0.02/page). The extraction + field mapping happens in ONE Claude call, which is architecturally simpler than a two-step parse-then-map pipeline.
+- **Pros:** Unlocks the entire billback feature. Reusable for future PDF imports (invoices, POs, price lists). Uses existing Anthropic SDK.
+- **Cons:** ~$0.02/page AI cost. Extraction accuracy depends on PDF quality. Requires user review step to catch hallucinations.
+- **Context:** Billback line item schema:
+  ```
+  {
+    wine: string,           // wine/product name as printed
+    producer: string,       // producer/winery name
+    sku: string,            // optional SKU/item code
+    programType: string,    // MDF, depletion incentive, volume discount, promo, etc.
+    amount: number,         // dollar amount (negative = credit memo)
+    quantity: number,       // cases/units (optional)
+    rate: number,           // per-unit rate (optional)
+    period: string,         // billing period
+    notes: string           // any additional text
+  }
+  ```
+- **Error handling:** Invalid/corrupt PDF → clear error. Password-protected → tell user. >20 pages → reject with message. Claude timeout → retry 2x with backoff. Malformed JSON → retry 1x. Claude refusal → log full response, return error. Empty extraction → suggest clearer scan.
+- **Security:** Sanitize any text extracted from PDF before including in downstream prompts. Validate amounts against reasonable ranges (flag >$100K or <$0.01). Prompt injection defense: sandwich PDF content between strong system prompt boundaries.
+- **Effort:** M (3-4 hours)
+- **Priority:** P1 — BLOCKS all billback work
+- **Testing:** Mock Anthropic client for CI (valid JSON, malformed, timeout, refusal, empty). Real PDF snapshot tests (skipped in CI, run on-demand) for extraction accuracy.
+- **Files:** New `functions/billback.js`, `functions/index.js` (re-export only), Cloud Function config
+- **Depends on:** TODO-020 (shared pipeline), TODO-021 (normalized model)
+
+### TODO-041: Wine/Product Entity with AI Dedup
+- **What:** New `wines/{wineId}` Firestore collection under each tenant. Auto-extract wine names from billback line items on import. `extractWines` is a SEPARATE callable Cloud Function (not inside rebuildViews — failure isolation). Uses shared `deduplicateEntities()` helper (TODO-047). Normalize → exact match → Claude fuzzy match → create new / link / queue for review. Schema: `{ name, normalizedName, displayName, producer, vintage, varietal, sku, region, sourceNames[], firstSeen, lastSeen, importIds[], metadata: {} }`. **Vintage IS identity** — "Margaux 2018" ≠ "Margaux 2019". Wine normalization: strip accents (chateau→chateau), remove bottle sizes (750ml), keep vintage years, handle abbreviations (Ch.→Chateau, Dom.→Domaine). Confidence thresholds: >0.85 auto-link, 0.5-0.85 pending review, <0.5 create new. New `pendingWineMatches/` subcollection for review queue. Add Firestore security rules for `wines/` and `pendingWineMatches/` (same pattern as accounts/).
+- **Why:** Wine-level tracking IS the value proposition. Without a wine entity, can't deduplicate "Chateau Margaux 750ml" vs "Chateau Margaux 2018 750" vs "MARG 750" across billbacks from different distributors. Also becomes the entity that connects billback spend to depletion volume (cross-source intelligence).
+- **Pros:** Completes the CRM entity model (accounts + contacts + wines). Enables spend-per-wine analytics. Reuses proven extractAccounts pattern.
+- **Cons:** New entity = new CRUD, new Firestore security rules, new UI pages. AI dedup cost (~$0.01/import). Wine names are messier than account names (vintages, abbreviations, foreign characters).
+- **Error handling:** Claude API timeout → retry 2x, skip dedup, create all as new (safe default). Malformed AI response → fall back to create new. NaN confidence → parseFloat guard, default 0 (routes to "create new"). Empty wine name → skip.
+- **Effort:** L (5-6 hours)
+- **Priority:** P1
+- **Files:** `functions/billback.js` (extractWines export), `firestore.rules` (add wines/ + pendingWineMatches/ rules), new `frontend/src/components/WineList.jsx`, new `frontend/src/components/WineDetail.jsx`
+- **Depends on:** TODO-040 (PDF extraction provides wine names), TODO-047 (shared dedup helper), TODO-023 (extractAccounts must exist to refactor into shared helper)
+
+### TODO-042: Billback Transforms + Spend Views
+- **What:** New `transformBillback()` in `packages/pipeline/`. Aggregates billback line items into dashboard views: `spendByWine` (total spend, avg rate, # of billbacks per wine, period trend), `spendByDistributor` (total spend, program breakdown per distributor), `billbackSummary` (total spend by period, program type breakdown, top wines, top distributors). Extend `rebuildViews` Cloud Function to call `transformBillback` when billback imports exist. Handle negative amounts (credit memos) as credits in totals.
+- **Why:** Without pre-computed views, every dashboard load scans all raw billback rows. Follows the exact pattern of `transformDepletion` → `distScorecard`/`accountsTop`.
+- **Pros:** Fast dashboard rendering. Consistent with existing architecture. Simple group-by + sum aggregations.
+- **Cons:** Another transform to maintain. Views must rebuild when any billback import changes.
+- **Context:** Guards: qty === 0 → avoid division by zero in spend-per-case. Missing amount → skip row with warning log. All-credits → show negative total (valid).
+- **Effort:** M (2-3 hours)
+- **Priority:** P1
+- **Testing:** Mandatory `transformBillback.test.js` with ~15-20 cases: happy path (multiple wines/dists/periods), empty input, single item, credits (negative amounts), missing amount (skip+warn), qty=0 (no divide), group-by-wine totals, group-by-dist totals, billbackSummary KPIs.
+- **Files:** New `packages/pipeline/src/transformBillback.js`, `functions/index.js` (extend rebuildViews)
+- **Depends on:** TODO-040, TODO-022 (rebuildViews)
+
+### TODO-043: Billback UI (DataImport Extension + Dashboard + Routes)
+- **What:** Three UI pieces: (1) Extend `DataImport.jsx` to accept PDFs — detect mime type (`application/pdf`), route to `parseBillbackPDF` Cloud Function, show `BillbackReviewStep` sub-component (editable table of extracted line items: amount, wine, producer, program type) before save. User must confirm before data is persisted (hallucination guard). Single component with conditional step rendering (not separate import page). (2) New `BillbackDashboard.jsx` — spend-by-wine table, spend-by-distributor table, program type breakdown chart, period filter, total spend KPI cards. DataContext loads billback views CONDITIONALLY behind `features.billbacks` flag (not unconditionally). (3) New routes in `config/routes.js`: `/billbacks` (dashboard), `/wines` (wine list), `/wines/:wineId` (wine detail with spend history). Add to sidebar navigation and command palette. Feature-gated: `tenantConfig.features.billbacks`.
+- **Why:** The user-facing layer that makes all the backend work visible. The review step is mandatory for AI hallucination protection. The dashboard is where the daily value lives.
+- **Pros:** Follows existing patterns (DataGate for empty states, sidebar routing, BEM CSS). Single DataImport entry point (DRY). Feature-flagged for safe rollout.
+- **Cons:** ~3 new components + route config. DataImport.jsx gets more complex (PDF branch alongside CSV/XLSX branch).
+- **Effort:** L (6-8 hours)
+- **Priority:** P1
+- **Files:** `frontend/src/components/DataImport.jsx` (extend), new `frontend/src/components/BillbackDashboard.jsx`, new `frontend/src/components/WineList.jsx`, new `frontend/src/components/WineDetail.jsx`, `frontend/src/config/routes.js`, `frontend/src/components/Sidebar.jsx`, `frontend/src/config/tenant.js` (add `features.billbacks`)
+- **Depends on:** TODO-040 (extraction), TODO-042 (views), TODO-041 (wines)
+
+### TODO-047: Extract shared deduplicateEntities() helper
+- **What:** Extract entity dedup logic from `extractAccounts` (functions/index.js:678-900) into a shared `deduplicateEntities()` function in `functions/entityDedup.js`. Parameters: `{ entityType, collectionPath, normalizeFn, sanitizeFn, aiPromptTemplate, rawNames, existingEntities, tenantId, importId, db, anthropicClient }`. Returns `{ created, linked, pending }`. Refactor `extractAccounts` to use this helper. Then `extractWines` in `functions/billback.js` calls the same helper with wine-specific normalization + prompt.
+- **Why:** DRY — ~150 LOC of dedup logic (sanitize, normalize, exact match, AI fuzzy match with retries, confidence routing to auto-link/pending/create-new, pending matches queue, fallback on AI failure) would otherwise be duplicated between accounts and wines. Bug fixes apply to both.
+- **Pros:** Single source of truth for dedup behavior. Easy to add future entity types. Wine-specific normalization is cleanly injected, not hardcoded.
+- **Cons:** Refactoring extractAccounts carries regression risk. Must verify existing behavior unchanged with tests.
+- **Context:** Key differences between account and wine dedup: (a) normalization rules (accounts strip Inc/LLC; wines strip accents, bottle sizes, keep vintage), (b) AI prompt (wine matching vs account matching), (c) Firestore collection paths (accounts/ vs wines/, pendingMatches/ vs pendingWineMatches/). The helper abstracts over these.
+- **Testing:** Mandatory tests: normalization per entity type, dedup flow with mocked AI (exact match, confidence routing, timeout fallback, malformed JSON fallback, NaN confidence), regression test that extractAccounts behavior is unchanged after refactor.
+- **Effort:** M (2-3 hours)
+- **Priority:** P1 — BLOCKS TODO-041
+- **Files:** New `functions/entityDedup.js`, refactor `functions/index.js` (extractAccounts), `functions/billback.js` (extractWines uses helper)
+- **Depends on:** TODO-023 (extractAccounts must exist first to refactor from)
+
+---
+
+## P2 — Billback Phase 2: Reconciliation
+
+### TODO-044: Agreement Management + Auto-Reconciliation
+- **What:** New `agreements/{agreementId}` Firestore collection. CRUD UI for marketing programs: define distributor, wine(s), program type (MDF, depletion incentive, volume discount, promo), agreed rate/amount, start/end date, terms text. Auto-reconciliation engine: when billbacks are imported, match line items against active agreements by distributor + wine + program type. Flag anomalies: wrong rate (>5% deviation from agreement), expired agreement, wine not covered by any agreement, duplicate charge (same wine + amount + period seen before). Show reconciliation status on billback dashboard with color-coded indicators (green = matches agreement, yellow = no agreement found, red = rate mismatch or anomaly).
+- **Why:** This is where billback tracking goes from "organized data" to "money-saving tool." Importers routinely get overcharged on billbacks and don't catch it because they can't cross-reference against agreements at scale. This is the 10x differentiator.
+- **Pros:** Direct ROI for users (catches billing errors = real money saved). Unique in the market. Natural extension of billback data.
+- **Cons:** Complex domain logic (agreement terms vary wildly across distributors and programs). Needs real billback data to validate schema. Significant UI surface (agreement CRUD + reconciliation views).
+- **Effort:** XL (10-15 hours)
+- **Priority:** P2
+- **Files:** New `frontend/src/components/Agreements.jsx`, new `frontend/src/components/ReconciliationView.jsx`, `functions/index.js` (reconciliation logic), `firestore.rules`
+- **Depends on:** TODO-040, TODO-041, TODO-042, TODO-043 (all Phase 1 billback)
+
+---
+
+## P3 — Billback Phase 3: Intelligence
+
+### TODO-045: Producer Allocation Dashboard
+- **What:** Dashboard view showing marketing spend allocated per producer. For importers representing multiple wineries/producers: total spend by producer over time, spend per case (marketing efficiency = billback spend ÷ depletion cases when depletion data exists), ROI analysis (spend vs depletion lift), one-click XLSX/PDF export for producer reporting ("here's what we invested in your wines this quarter"). Formatted professionally for direct emailing to producers.
+- **Why:** Importers NEED to report back to producers on marketing spend. Today this is a painful manual spreadsheet exercise. Automating it saves hours per quarter and looks more professional. Strengthens importer-producer relationships.
+- **Pros:** High-value, low-effort once wine entities and billback views exist. Differentiating feature. Natural extension.
+- **Cons:** Requires cross-source data (billbacks + depletions) for full ROI analysis. Export formatting takes effort.
+- **Effort:** M (3-4 hours)
+- **Priority:** P3
+- **Files:** New `frontend/src/components/ProducerAllocation.jsx`, extend `packages/pipeline/src/transformBillback.js`
+- **Depends on:** TODO-041 (wines), TODO-042 (spend views), ideally TODO-022 (depletion views for ROI)
+
+### TODO-046: Predictive Spend Budgeting
+- **What:** AI-powered spend forecasting. Based on historical billback patterns (6+ months of data), predict next quarter's marketing spend by wine, by distributor, by program type. Budget planning view: "Based on your history, expect ~$45K in billbacks next quarter — $18K from SGWS, $12K from RNDC..." Allow users to set budget targets per wine/distributor/program and get alerts when actuals deviate from budget (>15%).
+- **Why:** Transforms reactive spend tracking into proactive budget planning. The data to power this is a natural byproduct of Phase 1 ingestion over time.
+- **Pros:** Extremely high perceived value ("your CRM predicts your costs"). Low marginal effort once data exists.
+- **Cons:** Needs 6+ months of data to be meaningful. Prediction accuracy depends on data consistency. Could be misleading with sparse data — need minimum data threshold before showing predictions.
+- **Effort:** M (3-4 hours)
+- **Priority:** P3
+- **Files:** New `frontend/src/components/SpendForecast.jsx`, Cloud Function for AI forecasting
+- **Depends on:** TODO-042 (spend views), 6+ months of billback history
+
+### Billback Delight Items (S effort each, post-Phase 1)
+- **Smart billback summary toast** — After extraction: "SGWS Q4 — $14,200 across 8 wines. 2 wines not in portfolio." (30 min)
+- **Spend-per-case overlay** — On depletion dashboard, show marketing $/case per wine from billback data. (1 hour)
+- **Producer report export** — One-click PDF/XLSX "Marketing Investment Report for [Producer]." (1 hour)
+- **Duplicate charge detection** — Flag line items matching previous billbacks (same wine + amount + period). (1 hour)
+- **Billback email forwarding** — Tenant-specific ingest email address for auto-import. (L effort, 4-6 hours, needs email infra)
+
+---
+
 ## Phase Dependency Graph
 
 ```
@@ -350,13 +479,30 @@ TODO-020 (shared package)
     │       │
     │       ├── TODO-022 (rebuildViews Cloud Function)
     │       │       │
-    │       │       └── TODO-026 (Firebase Emulator + integration tests)
+    │       │       ├── TODO-026 (Firebase Emulator + integration tests)
+    │       │       │
+    │       │       └── TODO-042 (billback transforms + spend views)
+    │       │               │
+    │       │               ├── TODO-046 (predictive spend budgeting) ← Phase 3
+    │       │               └── TODO-043 (billback UI) ← also needs TODO-040, TODO-041
+    │       │                       │
+    │       │                       └── TODO-044 (agreement mgmt + reconciliation) ← Phase 2
     │       │
     │       ├── TODO-023 (account extraction + AI dedup)
     │       │       │
     │       │       ├── TODO-027 (Account Detail Page) ← also needs TODO-007
     │       │       ├── TODO-028 (Daily Actions card)
-    │       │       └── TODO-029 (Account hover cards)
+    │       │       ├── TODO-029 (Account hover cards)
+    │       │       └── TODO-047 (extract shared deduplicateEntities helper)
+    │       │               │
+    │       │               └── TODO-041 (wine entity + AI dedup) ← uses shared helper
+    │       │                       │
+    │       │                       └── TODO-045 (producer allocation dashboard) ← Phase 3
+    │       │
+    │       ├── TODO-040 (PDF billback extraction Cloud Fn) ← NEW INFRA
+    │       │       │
+    │       │       ├── TODO-041 (wine entity)
+    │       │       └── TODO-042 (billback transforms)
     │       │
     │       ├── TODO-025 (content hash dupe detection)
     │       ├── TODO-014 (import comparison diff)
