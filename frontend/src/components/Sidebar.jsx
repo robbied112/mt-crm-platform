@@ -63,6 +63,13 @@ const ICONS = {
       <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M15.8 4.2l-1.4 1.4M5.6 14.4l-1.4 1.4" />
     </svg>
   ),
+  // Tools icons
+  pricing: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 2v16M6 6l8 8M14 6l-8 8" />
+      <circle cx="10" cy="10" r="7" />
+    </svg>
+  ),
   // CRM icons
   crmAccounts: (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -148,6 +155,7 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
 
   // Split routes into sections
   const mainRoutes = ROUTES.filter((r) => !r.adminOnly && r.section !== "crm" && r.section !== "billbacks");
+  const toolsRoutes = ROUTES.filter((r) => r.section === "tools");
   const crmRoutes = ROUTES.filter((r) => r.section === "crm");
   const billbackRoutes = ROUTES.filter((r) => r.section === "billbacks");
   const adminRoutes = ROUTES.filter((r) => r.adminOnly);
@@ -238,6 +246,26 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
             </NavLink>
           ))}
         </div>
+
+        {toolsRoutes.length > 0 && (
+          <div className="sidebar__nav-section">
+            {!collapsed && <span className="sidebar__section-label">Tools</span>}
+            {toolsRoutes.map((route) => (
+              <NavLink
+                key={route.key}
+                to={route.path}
+                className={({ isActive }) =>
+                  `sidebar__link ${isActive ? "sidebar__link--active" : ""}`
+                }
+                title={collapsed ? getLabel(route) : undefined}
+                onClick={onMobileClose}
+              >
+                <span className="sidebar__link-icon">{ICONS[route.icon]}</span>
+                {!collapsed && <span className="sidebar__link-label">{getLabel(route)}</span>}
+              </NavLink>
+            ))}
+          </div>
+        )}
 
         <div className="sidebar__nav-section">
           {!collapsed && <span className="sidebar__section-label">CRM</span>}

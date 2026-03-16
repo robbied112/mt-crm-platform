@@ -25,6 +25,7 @@ import {
   BillbackDashboard,
   WineList,
   WineDetail,
+  PricingStudio,
 } from "./components";
 import Sidebar from "./components/Sidebar";
 import CommandPalette from "./components/CommandPalette";
@@ -332,6 +333,9 @@ function App() {
                   />
                 </>
               )}
+
+              {/* Tools routes */}
+              <Route path="/pricing" element={<PricingStudio />} />
 
               {/* CRM routes */}
               <Route path="/accounts" element={<AccountsPage />} />

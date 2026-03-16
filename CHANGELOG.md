@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1.0] - 2026-03-16
+
+### Added
+- Pricing engine shared TypeScript package (`packages/pricing-engine/`) — 8 international market configs (US Import, US Domestic, UK, Australia, NZ, South Africa, EU Internal, South America), generic market calculator, reverse pricing, FX sensitivity analysis, comparison engine, recap builder, presets
+- Pricing Studio page (`/pricing`) with market selector, dynamic input form, waterfall visualization, stakeholder P&L recap, scenario comparison with delta table, analysis panel (target price, FX risk, value chain decomposition), and multi-market overview
+- "Tools" section in sidebar navigation with Pricing Studio link
+- Vite resolve alias for `pricing-engine` package (TypeScript consumed natively by Vite)
+- 7 new pricing engine test files (319 tests total passing)
+- Margin guard: all margin inputs clamped to max 99.9% to prevent division-by-zero in `applyMarginOnSelling`
+- Bold product-led landing page redesign with pricing tiers, feature showcase, and streamlined signup flow
+
+### Fixed
+- Pricing component property access bugs: `result.summary.*` paths, `ChainLayer.label`, `TaxDef.inputLabel`/`defaultValue`, `LogisticsDef.label`/`defaultValue`, `LayerRecap.layerId`/`buyPrice`/`sellPrice`
+- `getRateForMarket()` and `formatRateAge()` function signature mismatches in MarketInputForm
+- Layer toggle state: `inputs.activeLayers` array (was incorrectly checking `inputs.layers` object)
+- Pathway button labels: `pw.label` (was `pw.name`, rendering empty buttons)
+
 ## [0.2.0.0] - 2026-03-15
 
 ### Added

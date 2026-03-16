@@ -2236,3 +2236,910 @@ input:focus-visible,
     min-width: unset;
   }
 }
+
+/* === Pricing Studio === */
+
+.pricing-studio {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.pricing-studio__header {
+  margin-bottom: 24px;
+}
+
+.pricing-studio__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.pricing-studio__subtitle {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.pricing-studio__grid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .pricing-studio__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pricing-studio__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pricing-studio__main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Cards */
+.pricing-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.pricing-card--accent {
+  border-color: var(--accent-light);
+}
+
+.pricing-card__header {
+  margin-bottom: 16px;
+}
+
+.pricing-card__kicker {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+.pricing-card__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 2px 0 0;
+}
+
+/* Market Selector */
+.pricing-markets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pricing-market-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 12px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  min-width: 72px;
+}
+
+.pricing-market-card:hover {
+  border-color: var(--text-dim);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
+}
+
+.pricing-market-card--active {
+  border-color: var(--accent);
+  background: var(--cream);
+}
+
+.pricing-market-card__flag {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.pricing-market-card__name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.pricing-market-card--active .pricing-market-card__name {
+  color: var(--accent);
+}
+
+/* Section titles */
+.pricing-section-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+/* Input groups */
+.pricing-input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.pricing-input {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pricing-input__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.pricing-input__field {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--text);
+  transition: border-color var(--transition-speed);
+}
+
+.pricing-input__field:focus-within {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-light);
+}
+
+.pricing-input__field input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.pricing-input__prefix,
+.pricing-input__suffix {
+  font-size: 12px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.pricing-input__prefix {
+  margin-right: 4px;
+}
+
+.pricing-input__suffix {
+  margin-left: 4px;
+}
+
+.pricing-input__hint {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.pricing-input__field--disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Toggle buttons (bottle/case, pathway) */
+.pricing-toggle {
+  display: flex;
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.pricing-toggle__btn {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  flex: 1;
+  text-align: center;
+}
+
+.pricing-toggle__btn--active {
+  background: var(--card);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.pricing-toggle__btn:hover:not(.pricing-toggle__btn--active) {
+  color: var(--text);
+}
+
+/* Waterfall */
+.pricing-waterfall__divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0 4px;
+}
+
+.pricing-waterfall__divider-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.pricing-waterfall__divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.pricing-waterfall__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--bg);
+}
+
+.pricing-waterfall__row:last-child {
+  border-bottom: none;
+}
+
+.pricing-waterfall__row--highlight {
+  background: var(--cream);
+  margin: 0 -12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.pricing-waterfall__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.pricing-waterfall__helper {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.pricing-waterfall__values {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.pricing-waterfall__case {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.pricing-waterfall__bottle {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Waterfall summary */
+.pricing-waterfall__summary {
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 2px solid var(--accent-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pricing-waterfall__srp-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.pricing-waterfall__srp-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.pricing-waterfall__srp-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.pricing-waterfall__srp-case {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Warnings */
+.pricing-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 8px;
+}
+
+.pricing-warning--error {
+  background: #fef2f2;
+  color: var(--red);
+}
+
+.pricing-warning--warn {
+  background: #fffbeb;
+  color: var(--yellow);
+}
+
+.pricing-warning--info {
+  background: #f0fdfa;
+  color: var(--accent);
+}
+
+.pricing-warning__icon {
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* Tabs (recap, analysis) */
+.pricing-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.pricing-tab {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  text-align: center;
+}
+
+.pricing-tab--active {
+  background: var(--card);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.pricing-tab:hover:not(.pricing-tab--active) {
+  color: var(--text);
+}
+
+/* Recap rows */
+.pricing-recap__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--bg);
+}
+
+.pricing-recap__row:last-child {
+  border-bottom: none;
+}
+
+.pricing-recap__label {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.pricing-recap__value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.pricing-recap__btl {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pricing-recap__margin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 8px;
+}
+
+.pricing-recap__margin-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.pricing-recap__margin-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Comparison delta table */
+.pricing-delta-table {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.pricing-delta-table__header {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.pricing-delta-table__row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--bg);
+}
+
+.pricing-delta-table__row:last-child {
+  border-bottom: none;
+}
+
+.pricing-delta--positive {
+  color: var(--green);
+  font-weight: 500;
+}
+
+.pricing-delta--negative {
+  color: var(--red);
+  font-weight: 500;
+}
+
+/* Analysis table */
+.pricing-analysis-table {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.pricing-analysis-table__header {
+  display: grid;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.pricing-analysis-table__row {
+  display: grid;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--bg);
+}
+
+.pricing-analysis-table__row:last-child {
+  border-bottom: none;
+}
+
+.pricing-analysis-table__row--highlight {
+  background: var(--cream);
+}
+
+.pricing-analysis-table__row--total {
+  background: var(--bg);
+  border-top: 2px solid var(--border);
+  font-weight: 700;
+}
+
+/* Value chain bar */
+.pricing-value-bar {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 36px;
+}
+
+.pricing-value-bar__segment {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed);
+}
+
+.pricing-value-bar__segment-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.pricing-value-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.pricing-value-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.pricing-value-legend__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Info callout box */
+.pricing-callout {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.pricing-callout--success {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.pricing-callout--danger {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.pricing-callout--accent {
+  background: var(--cream);
+  border: 1px solid var(--accent-light);
+}
+
+.pricing-callout__text {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.pricing-callout__text strong {
+  font-weight: 600;
+}
+
+/* FX live indicator */
+.pricing-fx-live {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pricing-fx-live__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+.pricing-fx-live__text {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.pricing-fx-live__refresh {
+  padding: 2px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color var(--transition-speed);
+  display: flex;
+  align-items: center;
+}
+
+.pricing-fx-live__refresh:hover {
+  color: var(--accent);
+}
+
+.pricing-fx-live__refresh--spinning {
+  animation: pricing-spin 1s linear infinite;
+}
+
+@keyframes pricing-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Effective rate badge */
+.pricing-effective-rate {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--cream);
+  border: 1px solid var(--accent-light);
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin-top: 8px;
+}
+
+.pricing-effective-rate__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.pricing-effective-rate__value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Checkbox for layer toggling */
+.pricing-layer {
+  transition: opacity var(--transition-speed);
+}
+
+.pricing-layer--disabled {
+  opacity: 0.5;
+}
+
+.pricing-layer__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.pricing-layer__checkbox {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+}
+
+.pricing-layer__name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* Comparison enable */
+.pricing-comparison-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.pricing-comparison-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+/* Multi-market overview */
+.pricing-overview-table {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.pricing-overview-table__header {
+  display: grid;
+  grid-template-columns: 1fr 100px 100px 80px;
+  gap: 16px;
+  padding: 8px 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.pricing-overview-table__row {
+  display: grid;
+  grid-template-columns: 1fr 100px 100px 80px;
+  gap: 16px;
+  padding: 10px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--bg);
+  cursor: pointer;
+  transition: background var(--transition-speed);
+}
+
+.pricing-overview-table__row:hover {
+  background: var(--bg);
+}
+
+.pricing-overview-table__row:last-child {
+  border-bottom: none;
+}
+
+.pricing-overview-table__row--active {
+  background: var(--cream);
+}
+
+.pricing-overview-table__market {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pricing-overview-table__flag {
+  font-size: 16px;
+}
+
+.pricing-overview-table__name {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.pricing-overview-table__name--active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Tabular nums utility */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* Scenario B label input */
+.pricing-scenario-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.pricing-scenario-label__input {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--card);
+  transition: border-color var(--transition-speed);
+}
+
+.pricing-scenario-label__input:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-light);
+}
+
+/* Collapsible card */
+.pricing-card__collapse-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--text-dim);
+  transition: transform var(--transition-speed);
+  display: flex;
+  align-items: center;
+}
+
+.pricing-card__collapse-btn--collapsed {
+  transform: rotate(-90deg);
+}
+
+.pricing-card__header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Apply live rate link */
+.pricing-apply-rate {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  transition: color var(--transition-speed);
+}
+
+.pricing-apply-rate:hover {
+  color: var(--accent2);
+}
+
+/* Reset button */
+.pricing-reset-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-dim);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.pricing-reset-btn:hover {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+
+/* Market description */
+.pricing-market-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 12px;
+}

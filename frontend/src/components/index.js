@@ -52,3 +52,4 @@ export { default as ErrorBoundary } from "./ErrorBoundary";
 export { default as BillbackDashboard } from "./BillbackDashboard";
 export { default as WineList } from "./WineList";
 export { default as WineDetail } from "./WineDetail";
+export { default as PricingStudio } from "./PricingStudio/PricingStudio";
