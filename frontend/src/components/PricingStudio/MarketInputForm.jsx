@@ -189,7 +189,7 @@ export default function MarketInputForm({
                 className={`pricing-toggle__btn${inputs.pathway === pw.id ? ' pricing-toggle__btn--active' : ''}`}
                 onClick={() => onSetPathway(pw.id)}
               >
-                {pw.name}
+                {pw.label}
               </button>
             ))}
           </div>
