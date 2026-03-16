@@ -13,12 +13,16 @@ const DATASETS = [
   "placementSummary",
   "qbDistOrders",
   "acctConcentration",
+  "spendByWine",
+  "spendByDistributor",
+  "billbackSummary",
 ];
 
 const OBJECT_DATASETS = new Set([
   "pipelineMeta",
   "qbDistOrders",
   "acctConcentration",
+  "billbackSummary",
 ]);
 
 module.exports = {

@@ -62,10 +62,15 @@ export default defineConfig({
       // Resolve "xlsx" from frontend/node_modules even when imported
       // from packages/pipeline/ (outside the frontend root)
       xlsx: path.resolve(__dirname, 'node_modules/xlsx'),
+      // Pricing engine package (TypeScript — Vite handles natively)
+      'pricing-engine': path.resolve(__dirname, '../packages/pricing-engine/src'),
     },
   },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.{js,jsx}'],
+    include: [
+      'src/**/*.test.{js,jsx}',
+      '../packages/pricing-engine/src/**/*.test.ts',
+    ],
   },
 })

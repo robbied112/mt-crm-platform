@@ -223,6 +223,9 @@ export async function loadTenantConfig(tenantId) {
     if (tenantData.subscription) {
       config.subscription = tenantData.subscription;
     }
+    if (!config.userRole && tenantData.userRole) {
+      config.userRole = tenantData.userRole;
+    }
     return Object.keys(config).length > 0 ? config : null;
   } catch {
     return null;
@@ -249,6 +252,17 @@ export async function logUpload(tenantId, metadata) {
     ...metadata,
     createdAt: serverTimestamp(),
   });
+}
+
+export async function loadWines(tenantId) {
+  const snap = await getDocs(collection(db, "tenants", tenantId, "wines"));
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => {
+      const aName = a.displayName || a.name || "";
+      const bName = b.displayName || b.name || "";
+      return aName.localeCompare(bName);
+    });
 }
 
 // ─── Executive Summary ───────────────────────────────────────

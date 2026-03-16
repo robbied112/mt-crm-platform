@@ -22,6 +22,10 @@ import {
   ContactsPage,
   ActivitiesPage,
   TasksPage,
+  BillbackDashboard,
+  WineList,
+  WineDetail,
+  PricingStudio,
 } from "./components";
 import Sidebar from "./components/Sidebar";
 import CommandPalette from "./components/CommandPalette";
@@ -53,6 +57,10 @@ function App() {
     placementSummary,
     qbDistOrders,
     acctConcentration,
+    spendByWine,
+    spendByDistributor,
+    billbackSummary,
+    wines,
     tenantConfig,
     tenantId,
     availability,
@@ -301,6 +309,33 @@ function App() {
                   </DataGate>
                 }
               />
+
+              {/* Billback routes (feature-gated) */}
+              {tenantConfig?.features?.billbacks && (
+                <>
+                  <Route
+                    path="/billbacks"
+                    element={
+                      <DataGate dataKey="billbacks" tabLabel="Trade Spend">
+                        <BillbackDashboard
+                          spendByWine={spendByWine}
+                          spendByDistributor={spendByDistributor}
+                          billbackSummary={billbackSummary}
+                          filters={filters}
+                        />
+                      </DataGate>
+                    }
+                  />
+                  <Route path="/wines" element={<WineList wines={wines} />} />
+                  <Route
+                    path="/wines/:wineId"
+                    element={<WineDetail wines={wines} spendByWine={spendByWine} />}
+                  />
+                </>
+              )}
+
+              {/* Tools routes */}
+              <Route path="/pricing" element={<PricingStudio />} />
 
               {/* CRM routes */}
               <Route path="/accounts" element={<AccountsPage />} />

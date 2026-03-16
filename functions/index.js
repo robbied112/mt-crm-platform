@@ -3,7 +3,14 @@ const { stripeWebhook } = require("./stripe");
 const { aiMapper, aiIngest } = require("./ai");
 const { rebuildViews } = require("./rebuild");
 const { extractAccounts } = require("./accounts");
-const { cloudSyncOAuthCallback, cloudSyncDisconnect, cloudSyncListFolders, cloudSyncSyncNow, scheduledCloudSync } = require("./sync");
+const {
+  cloudSyncOAuthCallback,
+  cloudSyncDisconnect,
+  cloudSyncListFolders,
+  cloudSyncSyncNow,
+  scheduledCloudSync,
+} = require("./sync");
+const { parseBillbackPDF, extractWines } = require("./billback");
 
 exports.stripeWebhook = stripeWebhook;
 exports.aiMapper = aiMapper;
@@ -15,3 +22,5 @@ exports.cloudSyncDisconnect = cloudSyncDisconnect;
 exports.cloudSyncListFolders = cloudSyncListFolders;
 exports.cloudSyncSyncNow = cloudSyncSyncNow;
 exports.scheduledCloudSync = scheduledCloudSync;
+exports.parseBillbackPDF = parseBillbackPDF;
+exports.extractWines = extractWines;

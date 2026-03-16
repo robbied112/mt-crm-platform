@@ -75,6 +75,15 @@ export const ROUTES = [
     dataKey: "pipeline",
     description: "Sales pipeline, funnel, and deal tracking",
   },
+  // Tools
+  {
+    key: "pricing",
+    path: "/pricing",
+    label: "Pricing Studio",
+    icon: "pricing",
+    section: "tools",
+    description: "Wine pricing calculator across 8 global markets",
+  },
   // CRM
   {
     key: "crm-accounts",
@@ -107,6 +116,24 @@ export const ROUTES = [
     icon: "tasks",
     section: "crm",
     description: "Task management and follow-up tracking",
+  },
+  // Billbacks (feature-gated)
+  {
+    key: "billbacks",
+    path: "/billbacks",
+    label: "Trade Spend",
+    icon: "billbacks",
+    section: "billbacks",
+    dataKey: "billbacks",
+    description: "Billback spend by wine, distributor, and type",
+  },
+  {
+    key: "wines",
+    path: "/wines",
+    label: "Wines",
+    icon: "wines",
+    section: "billbacks",
+    description: "Wine catalog extracted from billback imports",
   },
   // Admin
   {

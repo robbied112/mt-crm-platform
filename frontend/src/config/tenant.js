@@ -83,6 +83,7 @@ const TENANT_CONFIG = {
     pipeline: true,
     distributorHealth: true,
     reorderForecast: true,
+    billbacks: false,
   },
 };
 
