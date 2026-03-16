@@ -102,4 +102,4 @@ jobs:
       - name: Deploy to Firebase staging
         env:
           FIREBASE_PROJECT_STAGING: ${{ vars.FIREBASE_PROJECT_STAGING }}
-        run: firebase deploy --project "$FIREBASE_PROJECT_STAGING" --non-interactive
+        run: firebase deploy --only firestore,hosting --project "$FIREBASE_PROJECT_STAGING" --non-interactive
