@@ -263,26 +263,13 @@
 > Port-louis is a standalone React+TS pricing engine (8 US models, 8 international markets, reverse calc, What-If).
 > This phase integrates it into Sidekick BI as a shared package + full-featured pricing module.
 
-### TODO-032: Extract pricing engine as shared TypeScript package
-- **What:** Create `packages/pricing-engine/` by extracting port-louis's `src/engine/` directory. TypeScript package with barrel exports. Copy existing tests (4 test files). Add Vite resolve alias (same pattern as xlsx alias). Includes: core types/enums/math, 8 US model calculators, generic market calculator, 8 market configs, reverse calculator, comparison engine, recap builder, presets, FX fetch logic.
-- **Why:** Foundation for every pricing feature. DRY — single source of truth for pricing logic shared between frontend and (future) Cloud Functions. Engine is already built and tested in port-louis.
-- **Pros:** ~30 files of battle-tested code. Strong TypeScript types document the domain. Zero new logic to write.
-- **Cons:** Adds mixed TS/JS to the monorepo (Vite handles natively). ~30 files added.
-- **Effort:** M (2-3 hours)
-- **Priority:** P1 — BLOCKS all pricing work
-- **Files:** New `packages/pricing-engine/`, `vite.config.js`
-- **Depends on:** Nothing
+### ~~TODO-032: Extract pricing engine as shared TypeScript package~~ DONE
+- Created `packages/pricing-engine/` with 30+ TypeScript files. Vite resolve alias. 7 test files passing.
+- **Completed:** v0.2.1.0 (2026-03-16)
 
-### TODO-033: Pricing Studio page in Sidekick BI
-- **What:** New React Router route `/pricing` with full pricing calculator UI: market selector, input form (dynamic per market config), waterfall visualization, recap panel, comparison panel, analysis panel (reverse pricing, FX sensitivity, value chain decomposition, price tier analysis), multi-market overview. Port UI components from port-louis, adapting to MT-CRM's CSS patterns (BEM + CSS custom properties). State managed via useReducer in parent component. Sidebar navigation link in new "Tools" section.
-- **Why:** The core user-facing feature — the pricing calculator embedded in the CRM.
-- **Pros:** Most UI components already exist in port-louis. Adaptation, not creation.
-- **Cons:** Largest single piece of work. Port-louis uses Tailwind + Zustand; MT-CRM uses custom CSS + useReducer. UI adaptation needed.
-- **Effort:** L (6-8 hours)
-- **Priority:** P1
-- **Files:** New `frontend/src/components/PricingStudio/`, `frontend/src/config/routes.js`, `frontend/src/components/Sidebar.jsx`, `frontend/src/components/index.js`, `frontend/src/App.jsx`
-- **Depends on:** TODO-032
-- **Implementation note:** Margin inputs MUST be clamped to max 99.9%. `applyMarginOnSelling(cost, 100)` computes `cost / 0` = Infinity, which propagates silently through the waterfall. Port-louis's NumberInput has max props that prevent this — ensure the adapted MarketInputForm preserves this guard.
+### ~~TODO-033: Pricing Studio page in Sidekick BI~~ DONE
+- Full `/pricing` route with 8 components: MarketSelector, MarketInputForm, MarketWaterfall, RecapPanel, ComparisonPanel, AnalysisPanel, MultiMarketOverview, PricingStudio. BEM CSS. Sidebar "Tools" section. Margin guard (max 99.9%) implemented.
+- **Completed:** v0.2.1.0 (2026-03-16)
 
 ### TODO-034: Portfolio management in Firestore
 - **What:** New Firestore collection `tenants/{id}/pricing/portfolio/{wineId}` storing PortfolioWine documents. New PricingContext for state management. CRUD operations (add from calculator, edit, delete). Optional `productId` field for soft-link to tenant's productCatalog. Portfolio table view with sorting/filtering. Replaces port-louis's Zustand+localStorage with Firestore persistence.
@@ -380,9 +367,9 @@ TODO-020 (shared package)
             │
             └── TODO-015 (onboarding wizard)
 
-TODO-032 (pricing engine package) ◄── PRICING TREE
+TODO-032 (pricing engine package) ✓ DONE ◄── PRICING TREE
     │
-    ├── TODO-033 (Pricing Studio page)
+    ├── TODO-033 (Pricing Studio page) ✓ DONE
     │       │
     │       └── TODO-034 (portfolio in Firestore) ← also needs TODO-038
     │               │
