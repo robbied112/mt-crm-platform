@@ -4,7 +4,10 @@
   },
   "functions": {
     "source": "functions",
-    "runtime": "nodejs20"
+    "runtime": "nodejs20",
+    "predeploy": [
+      "rm -rf functions/lib/pipeline && cp -r packages/pipeline/src functions/lib/pipeline"
+    ]
   },
   "hosting": {
     "public": "frontend/dist",
@@ -21,5 +24,20 @@
     "predeploy": [
       "cd frontend && npm ci && npm run build"
     ]
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8080,
+      "host": "127.0.0.1"
+    },
+    "functions": {
+      "port": 5001,
+      "host": "127.0.0.1"
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    },
+    "singleProjectMode": true
   }
 }
