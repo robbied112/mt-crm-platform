@@ -154,7 +154,7 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
   const user = currentUser;
 
   // Split routes into sections
-  const mainRoutes = ROUTES.filter((r) => !r.adminOnly && r.section !== "crm" && r.section !== "billbacks");
+  const mainRoutes = ROUTES.filter((r) => !r.adminOnly && !r.section);
   const toolsRoutes = ROUTES.filter((r) => r.section === "tools");
   const crmRoutes = ROUTES.filter((r) => r.section === "crm");
   const billbackRoutes = ROUTES.filter((r) => r.section === "billbacks");
@@ -340,11 +340,11 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
       <div className="sidebar__user">
         <div className="sidebar__user-info" onClick={isAdmin ? () => navigate("/settings") : undefined} role={isAdmin ? "button" : undefined} tabIndex={isAdmin ? 0 : undefined} style={isAdmin ? { cursor: "pointer" } : undefined}>
           <div className="sidebar__avatar">
-            {user?.initials || "?"}
+            {(user?.displayName || user?.email || "?").split(/[\s@]/).filter(Boolean).map(s => s[0]).slice(0, 2).join("").toUpperCase() || "?"}
           </div>
           {!collapsed && (
             <div className="sidebar__user-text">
-              <span className="sidebar__user-name">{user?.name || user?.displayName || "User"}</span>
+              <span className="sidebar__user-name">{user?.displayName || user?.email?.split("@")[0] || "User"}</span>
               <span className="sidebar__user-role">{isAdmin ? "Admin" : "Rep"}</span>
             </div>
           )}
