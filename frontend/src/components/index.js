@@ -47,6 +47,7 @@ export { default as TaskForm } from "./TaskForm";
 export { default as CommandPalette } from "./CommandPalette";
 export { default as DataGate } from "./DataGate";
 export { default as EmptyState } from "./EmptyState";
+export { default as DailyActions } from "./DailyActions";
 export { default as DataFreshnessBadge } from "./DataFreshnessBadge";
 export { default as ErrorBoundary } from "./ErrorBoundary";
 export { default as BillbackDashboard } from "./BillbackDashboard";

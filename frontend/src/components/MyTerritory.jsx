@@ -7,6 +7,7 @@
 
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import DailyActions from "./DailyActions";
 import KpiCard from "./KpiCard";
 import GoalProgress from "./GoalProgress";
 import AttentionNeeded from "./AttentionNeeded";
@@ -240,6 +241,9 @@ export default function MyTerritory({
         </h2>
         <p style={{ margin: 0, opacity: 0.9, fontSize: 14 }}>{todayStr}</p>
       </div>
+
+      {/* Daily Actions */}
+      <DailyActions />
 
       {/* Quick Stats */}
       <div className="kpi-row" style={{ marginBottom: 24 }}>

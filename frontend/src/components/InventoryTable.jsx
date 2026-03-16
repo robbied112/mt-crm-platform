@@ -6,6 +6,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { t } from "../utils/terminology";
+import { exportToXlsx } from "../utils/exportXlsx";
 
 const PAGE_SIZE = 50;
 
@@ -324,7 +325,10 @@ export default function InventoryTable({ data = [], onExport }) {
             ))}
           </select>
           {onExport && (
-            <button className="btn btn-secondary btn-small" onClick={onExport}>
+            <button className="btn btn-secondary btn-small" onClick={() => exportToXlsx(sorted, "inventory-details", "Inventory", {
+              columns: ["name", "st", "oh", "rate", "doh", "dep90", "status", "proj"],
+              headers: { name: t("distributor"), st: "State", oh: "On Hand", rate: "Daily Rate", doh: "DOH", dep90: `90D ${t("depletion")}`, status: "Status", proj: "Proj Order" },
+            })}>
               Export to Excel
             </button>
           )}
