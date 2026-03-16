@@ -257,6 +257,90 @@
 
 ---
 
+## P-Pricing — Pricing Studio Integration (from Wine Pricing Studio / port-louis)
+
+> Added from CEO Scope Expansion review on 2026-03-16.
+> Port-louis is a standalone React+TS pricing engine (8 US models, 8 international markets, reverse calc, What-If).
+> This phase integrates it into Sidekick BI as a shared package + full-featured pricing module.
+
+### ~~TODO-032: Extract pricing engine as shared TypeScript package~~ DONE
+- Created `packages/pricing-engine/` with 30+ TypeScript files. Vite resolve alias. 7 test files passing.
+- **Completed:** v0.2.1.0 (2026-03-16)
+
+### ~~TODO-033: Pricing Studio page in Sidekick BI~~ DONE
+- Full `/pricing` route with 8 components: MarketSelector, MarketInputForm, MarketWaterfall, RecapPanel, ComparisonPanel, AnalysisPanel, MultiMarketOverview, PricingStudio. BEM CSS. Sidebar "Tools" section. Margin guard (max 99.9%) implemented.
+- **Completed:** v0.2.1.0 (2026-03-16)
+
+### TODO-034: Portfolio management in Firestore
+- **What:** New Firestore collection `tenants/{id}/pricing/portfolio/{wineId}` storing PortfolioWine documents. New PricingContext for state management. CRUD operations (add from calculator, edit, delete). Optional `productId` field for soft-link to tenant's productCatalog. Portfolio table view with sorting/filtering. Replaces port-louis's Zustand+localStorage with Firestore persistence.
+- **Why:** Turns the calculator from a one-shot tool into a living portfolio. Multi-user, multi-device, persistent. Foundation for What-If and account pricing.
+- **Pros:** Real persistence. Team collaboration. Links to CRM product catalog.
+- **Cons:** Firestore reads/writes per portfolio operation. Need optimistic UI for save latency.
+- **Effort:** M (3-4 hours)
+- **Priority:** P1
+- **Files:** New `frontend/src/context/PricingContext.jsx`, `frontend/src/services/firestoreService.js`, new `frontend/src/components/PricingStudio/PortfolioTable.jsx`
+- **Depends on:** TODO-032, TODO-033, TODO-038
+
+### TODO-035: What-If stress testing on portfolio
+- **What:** Port the What-If panel from port-louis. User adjusts global overrides (FX shift %, tariff override, freight delta per case) and sees real-time impact across entire portfolio. Shows delta SRP, delta wholesale, low-margin warnings, negative-margin flags. Saved What-If snapshots in `tenants/{id}/pricing/snapshots/{id}` for historical comparison.
+- **Why:** The #1 power feature. "Tariffs just went to 25% — show me the damage across my entire book." Pure client-side recalculation using `calculateWhatIf()` (already built and tested).
+- **Pros:** Engine logic already exists and is tested. Snapshots enable historical comparison.
+- **Cons:** Snapshot storage adds Firestore docs. UI needs to handle large portfolios (500+ wines) gracefully.
+- **Effort:** M (2-3 hours)
+- **Priority:** P2
+- **Files:** New `frontend/src/components/PricingStudio/WhatIfPanel.jsx`, PricingContext updates
+- **Depends on:** TODO-034
+
+### TODO-036: FX rate Cloud Function + Firestore cache
+- **What:** New callable Cloud Function `fetchExchangeRates()` that fetches from open.er-api.com, caches results in global `rates/latest` Firestore document with 1-hour TTL. Frontend reads cached rates on load via PricingContext. Falls back to MarketConfig defaults if cache stale + API down. Replaces port-louis's client-side fetch.
+- **Why:** Prevents CORS issues, API rate limits from many clients, gives all tenants same cached rates.
+- **Pros:** One API call per hour for all users. Reliable fallback chain (API → cache → defaults).
+- **Cons:** New Cloud Function to maintain. External API dependency (mitigated by cache + defaults).
+- **Effort:** S (1-2 hours)
+- **Priority:** P2
+- **Files:** `functions/index.js`, `frontend/src/context/PricingContext.jsx`
+- **Depends on:** Nothing
+
+### TODO-037: Account Detail pricing tab
+- **What:** New tab on Account Detail page (`/accounts/:accountId`) showing all portfolio wines linked to this account's products (via `productId` soft-link). Per-product waterfall, current margin, quick What-If. "Price a wine for this account" CTA when no products linked.
+- **Why:** Where CRM meets pricing. A sales rep clicks an account and sees margin intelligence alongside volume history.
+- **Pros:** Connects the two systems at the user workflow level. High perceived value.
+- **Cons:** Requires portfolio + product catalog linking. Query across pricing/ filtered by productId.
+- **Effort:** M (2-3 hours)
+- **Priority:** P2
+- **Files:** `frontend/src/components/AccountDetailPage.jsx`, new pricing tab component
+- **Depends on:** TODO-034, TODO-027 (already shipped)
+
+### TODO-038: Firestore security rules for pricing collection
+- **What:** Add Firestore rules for `tenants/{tenantId}/pricing/{document=**}` using existing `isTenantMember()` helper. Add rules for global `rates/` collection (read-only for authenticated users, write-only via Cloud Functions admin SDK).
+- **Why:** Security is not optional. Every new Firestore collection needs explicit rules.
+- **Pros:** ~10 lines. Follows proven pattern.
+- **Cons:** None.
+- **Effort:** XS (15 min)
+- **Priority:** P1 — BLOCKS deployment of any pricing persistence feature
+- **Files:** `firestore.rules`
+- **Depends on:** Nothing
+
+### TODO-039: Integration tests for pricing Firestore operations
+- **What:** Vitest integration tests using Firebase Emulator (already configured per TODO-026) for: portfolio CRUD (save/read/update/delete wine), tenant isolation (tenant A can't read tenant B's pricing data), FX rate Cloud Function (fetch/cache/stale fallback), What-If snapshot save/load.
+- **Why:** Portfolio data in Firestore is the new trust boundary. Mocks won't catch permission rule errors.
+- **Pros:** Real Firestore behavior. Catches security rule gaps. Emulator already set up.
+- **Cons:** ~5-10s per test. Worth it for data integrity.
+- **Effort:** S (1-2 hours)
+- **Priority:** P1
+- **Files:** New `functions/__tests__/pricing.integration.test.js`
+- **Depends on:** TODO-032, TODO-034, TODO-038
+
+### Vision Items (Delight Opportunities — <30 min each)
+
+- **"Price This SKU" from Account Detail** — Button on account page opens Pricing Studio pre-filled with account's market context. Depends on TODO-033, TODO-037.
+- **Margin traffic lights on portfolio** — Green/yellow/red dots on portfolio table based on margin thresholds (>25%, 15-25%, <15%). Depends on TODO-034.
+- **"Share Price Sheet" export** — Branded XLSX price list per market from portfolio, formatted for distributor consumption. Depends on TODO-034, TODO-018.
+- **FX alert badge** — Sidebar notification when exchange rates move >2% since last session. Depends on TODO-036.
+- **Product catalog auto-link** — On portfolio save, offer "Add to Product Catalog" when no matching product exists. Depends on TODO-034.
+
+---
+
 ## Phase Dependency Graph
 
 ```
@@ -283,8 +367,26 @@ TODO-020 (shared package)
             │
             └── TODO-015 (onboarding wizard)
 
+TODO-032 (pricing engine package) ✓ DONE ◄── PRICING TREE
+    │
+    ├── TODO-033 (Pricing Studio page) ✓ DONE
+    │       │
+    │       └── TODO-034 (portfolio in Firestore) ← also needs TODO-038
+    │               │
+    │               ├── TODO-035 (What-If stress testing)
+    │               ├── TODO-037 (Account Detail pricing tab) ← also needs TODO-027 ✓
+    │               └── Vision: margin lights, price sheet, auto-link
+    │
+    └── TODO-039 (pricing integration tests) ← also needs TODO-034, TODO-038
+
+Independent (pricing):
+    TODO-036 (FX rate Cloud Function)
+    TODO-038 (Firestore security rules for pricing)
+    Vision: FX alert badge ← needs TODO-036
+    Vision: "Price This SKU" ← needs TODO-033, TODO-037
+
 Independent:
-    TODO-007 (React Router)
+    TODO-007 (React Router) ✓ DONE
     TODO-009 (OAuth HMAC signing) ← SECURITY
     TODO-012 (audit trail)
     TODO-016 (quick actions)
