@@ -1,10 +1,14 @@
 {
   "name": "sidekick-bi-functions",
-  "description": "Cloud Functions for Sidekick BI - Stripe webhook handler",
+  "description": "Cloud Functions for Sidekick BI",
   "engines": {
     "node": "20"
   },
   "main": "index.js",
+  "scripts": {
+    "test": "node --test __tests__/**/*.unit.test.js",
+    "test:integration": "firebase emulators:exec --only firestore --project demo-test 'node --test __tests__/**/*.integration.test.js'"
+  },
   "dependencies": {
     "firebase-admin": "^11.11.0",
     "firebase-functions": "^4.5.0",
