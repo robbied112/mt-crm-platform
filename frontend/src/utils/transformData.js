@@ -163,9 +163,9 @@ export function transformDepletion(rows, mapping) {
     }));
 
   // ── reEngagementData & placementSummary from distributor grouping ──
-  const distNames = [...new Set(normalized.map((r) => r.dist))];
-  const placementSummary = distNames.map((name) => {
-    const items = normalized.filter((r) => r.dist === name);
+  // Use groupBy for O(n) instead of O(n*d) repeated filter calls
+  const distGroupsForSummary = groupBy(normalized, (r) => r.dist);
+  const placementSummary = Object.entries(distGroupsForSummary).map(([name, items]) => {
     const accts = new Set(items.map((r) => r.acct));
     return {
       name,
@@ -176,8 +176,7 @@ export function transformDepletion(rows, mapping) {
     };
   });
 
-  const reEngagementData = distNames.map((name) => {
-    const items = normalized.filter((r) => r.dist === name);
+  const reEngagementData = Object.entries(distGroupsForSummary).map(([name, items]) => {
     return {
       name,
       st: items[0]?.st || "--",

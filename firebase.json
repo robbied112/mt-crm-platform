@@ -7,11 +7,9 @@
     "runtime": "nodejs20"
   },
   "hosting": {
-    "public": ".",
+    "public": "frontend/dist",
     "ignore": [
       "firebase.json",
-      "firestore.rules",
-      "functions/**",
       "**/node_modules/**"
     ],
     "rewrites": [
@@ -19,6 +17,9 @@
         "source": "**",
         "destination": "/index.html"
       }
+    ],
+    "predeploy": [
+      "cd frontend && npm ci && npm run build"
     ]
   }
 }
