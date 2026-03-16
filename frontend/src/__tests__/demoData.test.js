@@ -14,6 +14,13 @@ vi.mock("../services/firestoreService", () => ({
   saveSummary: (...args) => mockSaveSummary(...args),
 }));
 
+vi.mock("../services/crmService", () => ({
+  createAccount: vi.fn(async () => "mock-account-id"),
+  createContact: vi.fn(async () => "mock-contact-id"),
+  logActivity: vi.fn(async () => "mock-activity-id"),
+  createTask: vi.fn(async () => "mock-task-id"),
+}));
+
 import { seedDemoData, clearDemoData, DEMO_DATASETS, DEMO_SUMMARY } from "../services/demoData";
 
 beforeEach(() => {

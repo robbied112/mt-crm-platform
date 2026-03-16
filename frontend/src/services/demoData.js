@@ -10,6 +10,12 @@ import {
   saveTenantConfig,
   saveSummary,
 } from "./firestoreService";
+import {
+  createAccount,
+  createContact,
+  logActivity,
+  createTask,
+} from "./crmService";
 
 // ─── Demo Datasets ──────────────────────────────────────────────
 
@@ -167,7 +173,107 @@ const DEMO_DATASETS = {
   acctConcentration,
 };
 
+// ─── CRM Demo Data ──────────────────────────────────────────────
+
+const DEMO_ACCOUNTS = [
+  { name: "The Wine Bar NYC", type: "on-premise", licenseType: "restaurant", wineProgram: "sommelier-driven", buyerName: "Sarah Chen", buyerTitle: "Head Sommelier", btgProgram: true, distributorName: "Breakthru Beverage NY", city: "New York", state: "NY", region: "Northeast", tags: ["VIP", "Key Account"], status: "active", channel: "On-Premise" },
+  { name: "Napa Valley Restaurant", type: "on-premise", licenseType: "restaurant", wineProgram: "strong", buyerName: "Marco Russo", buyerTitle: "Beverage Director", btgProgram: true, distributorName: "Southern Glazer's CA", city: "Napa", state: "CA", region: "West", tags: ["Key Account"], status: "active", channel: "On-Premise" },
+  { name: "Manhattan Bistro", type: "on-premise", licenseType: "restaurant", wineProgram: "moderate", buyerName: "David Kim", buyerTitle: "General Manager", btgProgram: true, distributorName: "Breakthru Beverage NY", city: "New York", state: "NY", region: "Northeast", tags: ["At Risk"], status: "active", channel: "On-Premise" },
+  { name: "Denver Wine Cellar", type: "off-premise", licenseType: "retail", wineProgram: "strong", buyerName: "Lisa Morales", buyerTitle: "Wine Buyer", btgProgram: false, distributorName: "Republic National CO", city: "Denver", state: "CO", region: "Mountain", tags: ["Hot Lead", "Expansion Target"], status: "active", channel: "Off-Premise" },
+  { name: "Chicago Steakhouse", type: "on-premise", licenseType: "restaurant", wineProgram: "strong", buyerName: "Tom Walsh", buyerTitle: "Beverage Director", btgProgram: true, distributorName: "Young's Market IL", city: "Chicago", state: "IL", region: "Midwest", tags: ["Key Account"], status: "active", channel: "On-Premise" },
+  { name: "LA Wine Lounge", type: "on-premise", licenseType: "bar", wineProgram: "sommelier-driven", buyerName: "Jessica Park", buyerTitle: "Sommelier", btgProgram: true, distributorName: "Southern Glazer's CA", city: "Los Angeles", state: "CA", region: "West", tags: ["VIP"], status: "active", channel: "On-Premise" },
+  { name: "Brooklyn Wine Shop", type: "off-premise", licenseType: "retail", wineProgram: "strong", buyerName: "Mike Torres", buyerTitle: "Wine Buyer", btgProgram: false, distributorName: "Breakthru Beverage NY", city: "Brooklyn", state: "NY", region: "Northeast", tags: ["New"], status: "active", channel: "Off-Premise" },
+  { name: "Aspen Fine Dining", type: "on-premise", licenseType: "restaurant", wineProgram: "sommelier-driven", buyerName: "Emily Richardson", buyerTitle: "Sommelier", btgProgram: true, distributorName: "Republic National CO", city: "Aspen", state: "CO", region: "Mountain", tags: ["VIP", "Seasonal"], status: "active", channel: "On-Premise" },
+  { name: "Evanston Wine Bar", type: "on-premise", licenseType: "bar", wineProgram: "moderate", buyerName: "Ryan O'Brien", buyerTitle: "Owner", btgProgram: true, distributorName: "Young's Market IL", city: "Evanston", state: "IL", region: "Midwest", tags: [], status: "active", channel: "On-Premise" },
+  { name: "SoHo Vintner", type: "off-premise", licenseType: "retail", wineProgram: "strong", buyerName: "Anna Petrov", buyerTitle: "Wine Buyer", btgProgram: false, distributorName: "Breakthru Beverage NY", city: "New York", state: "NY", region: "Northeast", tags: [], status: "active", channel: "Off-Premise" },
+  { name: "SF Wine Merchant", type: "off-premise", licenseType: "retail", wineProgram: "strong", buyerName: "Chris Huang", buyerTitle: "Owner", btgProgram: false, distributorName: "Southern Glazer's CA", city: "San Francisco", state: "CA", region: "West", tags: ["Priority"], status: "active", channel: "Off-Premise" },
+  { name: "Vail Resort Dining", type: "on-premise", licenseType: "hotel", wineProgram: "strong", buyerName: "Karen Brooks", buyerTitle: "F&B Director", btgProgram: true, distributorName: "Republic National CO", city: "Vail", state: "CO", region: "Mountain", tags: ["Seasonal", "VIP"], status: "active", channel: "On-Premise" },
+  { name: "Tribeca Table", type: "on-premise", licenseType: "restaurant", wineProgram: "moderate", buyerName: "James Wright", buyerTitle: "GM", btgProgram: false, distributorName: "Breakthru Beverage NY", city: "New York", state: "NY", region: "Northeast", tags: [], status: "prospect", channel: "On-Premise" },
+  { name: "Fort Collins Bistro", type: "on-premise", licenseType: "restaurant", wineProgram: "basic", buyerName: "Amy Chen", buyerTitle: "Owner", btgProgram: false, distributorName: "Republic National CO", city: "Fort Collins", state: "CO", region: "Mountain", tags: ["Needs Visit"], status: "prospect", channel: "On-Premise" },
+  { name: "Oak Park Liquors", type: "off-premise", licenseType: "retail", wineProgram: "moderate", buyerName: "Dave Johnson", buyerTitle: "Purchasing Manager", btgProgram: false, distributorName: "Young's Market IL", city: "Oak Park", state: "IL", region: "Midwest", tags: ["At Risk", "Inactive"], status: "inactive", channel: "Off-Premise" },
+];
+
+const DEMO_CONTACTS = [
+  { firstName: "Sarah", lastName: "Chen", title: "Head Sommelier", role: "sommelier", email: "sarah@winebarnyc.com", phone: "(212) 555-0101", preferredContact: "email", isPrimary: true, notes: "Prefers Burgundy and Rhone styles. Strong advocate for natural wines." },
+  { firstName: "James", lastName: "Park", title: "General Manager", role: "gm", email: "james@winebarnyc.com", phone: "(212) 555-0102", preferredContact: "phone", isPrimary: false, notes: "" },
+  { firstName: "Marco", lastName: "Russo", title: "Beverage Director", role: "beverage_director", email: "marco@napavalleyrest.com", phone: "(707) 555-0201", preferredContact: "email", isPrimary: true, notes: "Italian heritage, loves Nebbiolo. Decision maker for wine program." },
+  { firstName: "David", lastName: "Kim", title: "General Manager", role: "gm", email: "david@manhattanbistro.com", phone: "(212) 555-0301", preferredContact: "phone", isPrimary: true, notes: "Wants to expand wine list but budget-conscious." },
+  { firstName: "Lisa", lastName: "Morales", title: "Wine Buyer", role: "wine_buyer", email: "lisa@denverwinecellar.com", phone: "(303) 555-0401", preferredContact: "email", isPrimary: true, notes: "Loves our Pinot Noir. Looking for allocation of Cab." },
+  { firstName: "Tom", lastName: "Walsh", title: "Beverage Director", role: "beverage_director", email: "tom@chicagosteakhouse.com", phone: "(312) 555-0501", preferredContact: "text", isPrimary: true, notes: "Prefers big reds. Cab and Pinot are his favorites." },
+  { firstName: "Jessica", lastName: "Park", title: "Head Sommelier", role: "sommelier", email: "jessica@lawinelounge.com", phone: "(310) 555-0601", preferredContact: "email", isPrimary: true, notes: "Certified sommelier. Very influential in LA wine scene." },
+  { firstName: "Mike", lastName: "Torres", title: "Wine Buyer", role: "wine_buyer", email: "mike@brooklynwineshop.com", phone: "(718) 555-0701", preferredContact: "email", isPrimary: true, notes: "New account. Excited about our rosé and SB." },
+  { firstName: "Emily", lastName: "Richardson", title: "Sommelier", role: "sommelier", email: "emily@aspenfinedining.com", phone: "(970) 555-0801", preferredContact: "email", isPrimary: true, notes: "High-end clientele. Interested in reserve and library wines." },
+  { firstName: "Karen", lastName: "Brooks", title: "F&B Director", role: "beverage_director", email: "karen@vailresort.com", phone: "(970) 555-1201", preferredContact: "email", isPrimary: true, notes: "Seasonal buyer. Big orders for ski season Dec-Mar." },
+];
+
+const DEMO_ACTIVITIES = [
+  { type: "tasting", date: "2026-03-10", subject: "Spring allocation tasting", notes: "Presented 2022 Pinot Noir and 2023 Chardonnay. Sarah loved the Pinot — wants 6 cases. Interested in BTG for Chardonnay.", outcome: "positive", followUpDate: "2026-03-20", followUpAction: "Send Samples" },
+  { type: "visit", date: "2026-03-08", subject: "Quarterly check-in", notes: "Menu refresh coming in April. Marco wants to see new vintages. Competitive wines on list from Oregon producer.", outcome: "neutral", followUpDate: "2026-03-22", followUpAction: "Schedule Tasting" },
+  { type: "call", date: "2026-03-07", subject: "Re-engagement call", notes: "David mentioned they're considering reducing wine program. Budget pressures. Need to show value.", outcome: "negative", followUpDate: "2026-03-14", followUpAction: "Visit" },
+  { type: "sample_drop", date: "2026-03-05", subject: "New vintage samples", notes: "Left 2 bottles of 2023 SB and 1 bottle of Rosé with Lisa. She'll taste with her team this week.", outcome: "positive" },
+  { type: "wine_dinner", date: "2026-03-03", subject: "Winemaker dinner", notes: "Hosted 5-course dinner at Chicago Steakhouse. 24 guests. Tom ordered 12 cases of Cab after event.", outcome: "positive" },
+  { type: "visit", date: "2026-03-01", subject: "New account intro", notes: "First visit to Brooklyn Wine Shop. Mike is expanding his selection. Wants to start with Rosé and SB.", outcome: "positive", followUpDate: "2026-03-15", followUpAction: "Send Samples" },
+  { type: "staff_training", date: "2026-02-28", subject: "Staff wine training", notes: "Trained 8 servers on our portfolio. Jessica arranged private tasting room. Great engagement.", outcome: "positive" },
+  { type: "tasting", date: "2026-02-25", subject: "Library wine tasting", notes: "Emily tasted 2019 and 2020 Cabs. Interested in 3 cases of each for resort cellar.", outcome: "positive", followUpDate: "2026-03-05", followUpAction: "Follow Up" },
+  { type: "reorder_followup", date: "2026-02-22", subject: "Reorder check", notes: "Aspen running low on Chardonnay. Karen confirmed 10-case reorder through Republic National.", outcome: "positive" },
+  { type: "email", date: "2026-02-20", subject: "Spring pricing update", notes: "Sent updated pricing and allocation info to all key accounts. 12 recipients.", outcome: "neutral" },
+  { type: "menu_placement", date: "2026-02-18", subject: "BTG placement confirmed", notes: "Estate Cab added to by-the-glass menu at The Wine Bar NYC. 2-case weekly pull expected.", outcome: "positive" },
+  { type: "visit", date: "2026-02-15", subject: "Account review", notes: "Reviewed sales data with SoHo Vintner. Steady performer. Anna wants to do a tasting event.", outcome: "positive", followUpDate: "2026-03-01", followUpAction: "Email" },
+];
+
+const DEMO_TASKS = [
+  { title: "Follow up on Pinot tasting", description: "Sarah wants 6 cases of 2022 Pinot. Send allocation confirmation and pricing.", dueDate: "2026-03-20", priority: "high", status: "open" },
+  { title: "Schedule Marco tasting", description: "Present new vintages for April menu refresh at Napa Valley Restaurant.", dueDate: "2026-03-22", priority: "high", status: "open" },
+  { title: "Re-engagement visit — Manhattan Bistro", description: "David is considering reducing wine program. Need face-to-face meeting to show value.", dueDate: "2026-03-14", priority: "urgent", status: "open" },
+  { title: "Send samples to Denver Wine Cellar", description: "Lisa wants to taste 2023 SB and Rosé with her team.", dueDate: "2026-03-15", priority: "medium", status: "open" },
+  { title: "Process Brooklyn Wine Shop first order", description: "Mike wants to start with Rosé and SB. Coordinate with Breakthru.", dueDate: "2026-03-18", priority: "medium", status: "open" },
+  { title: "Plan Vail ski season allocation", description: "Karen needs big order for Dec-Mar season. Review inventory with Republic National.", dueDate: "2026-03-25", priority: "medium", status: "open" },
+  { title: "Follow up on Chicago winemaker dinner orders", description: "Tom ordered 12 cases of Cab after dinner. Confirm delivery.", dueDate: "2026-03-10", priority: "high", status: "completed" },
+  { title: "Send spring pricing to all accounts", description: "Updated allocation and pricing for Q2.", dueDate: "2026-02-20", priority: "medium", status: "completed" },
+  { title: "Staff training at LA Wine Lounge", description: "Train servers on full portfolio with Jessica.", dueDate: "2026-02-28", priority: "low", status: "completed" },
+  { title: "Confirm BTG placement at Wine Bar NYC", description: "Estate Cab on BTG menu — confirm with Sarah.", dueDate: "2026-02-18", priority: "high", status: "completed" },
+];
+
 // ─── Seed & Clear ────────────────────────────────────────────────
+
+async function seedCrmData(tenantId) {
+  try {
+    // Create accounts and map names to IDs for linking
+    const acctIds = {};
+    for (const acct of DEMO_ACCOUNTS) {
+      const id = await createAccount(tenantId, acct);
+      acctIds[acct.name] = id;
+    }
+
+    // Create contacts linked to accounts
+    const acctNames = DEMO_ACCOUNTS.map((a) => a.name);
+    for (let i = 0; i < DEMO_CONTACTS.length; i++) {
+      const contact = DEMO_CONTACTS[i];
+      // Link to matching account by index (first contacts map to first accounts)
+      const acctName = acctNames[i] || acctNames[0];
+      const accountId = acctIds[acctName] || "";
+      await createContact(tenantId, { ...contact, accountId, accountName: acctName });
+    }
+
+    // Log activities linked to accounts
+    for (let i = 0; i < DEMO_ACTIVITIES.length; i++) {
+      const activity = DEMO_ACTIVITIES[i];
+      const acctName = acctNames[i % acctNames.length];
+      const accountId = acctIds[acctName] || "";
+      await logActivity(tenantId, { ...activity, accountId, accountName: acctName, loggedByName: "Demo User" });
+    }
+
+    // Create tasks linked to accounts
+    for (let i = 0; i < DEMO_TASKS.length; i++) {
+      const task = DEMO_TASKS[i];
+      const acctName = acctNames[i % acctNames.length];
+      const accountId = acctIds[acctName] || "";
+      await createTask(tenantId, { ...task, accountId, accountName: acctName });
+    }
+  } catch (err) {
+    console.error("CRM demo seed error (non-blocking):", err);
+  }
+}
 
 export async function seedDemoData(tenantId) {
   await Promise.all([
@@ -178,6 +284,8 @@ export async function seedDemoData(tenantId) {
     }),
     saveSummary(tenantId, DEMO_SUMMARY),
   ]);
+  // Seed CRM data async (non-blocking — dashboard loads immediately)
+  seedCrmData(tenantId);
 }
 
 export async function clearDemoData(tenantId) {
@@ -190,6 +298,17 @@ export async function clearDemoData(tenantId) {
     }
   }
 
+  // Load all CRM docs so we can delete them
+  const { loadAccounts, loadContacts, loadActivities, loadTasks } = await import("./crmService");
+  const [accts, ctcts, acts, tsks] = await Promise.all([
+    loadAccounts(tenantId),
+    loadContacts(tenantId),
+    loadActivities(tenantId),
+    loadTasks(tenantId),
+  ]);
+
+  const { deleteAccount, deleteContact, deleteActivity, deleteTask } = await import("./crmService");
+
   await Promise.all([
     saveAllDatasets(tenantId, emptyDatasets),
     saveTenantConfig(tenantId, {
@@ -197,6 +316,10 @@ export async function clearDemoData(tenantId) {
       companyName: "",
     }),
     saveSummary(tenantId, ""),
+    ...accts.map((a) => deleteAccount(tenantId, a.id)),
+    ...ctcts.map((c) => deleteContact(tenantId, c.id)),
+    ...acts.map((a) => deleteActivity(tenantId, a.id)),
+    ...tsks.map((t) => deleteTask(tenantId, t.id)),
   ]);
 }
 

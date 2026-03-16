@@ -6,6 +6,7 @@
  */
 
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import KpiCard from "./KpiCard";
 import GoalProgress from "./GoalProgress";
 import AttentionNeeded from "./AttentionNeeded";
@@ -16,6 +17,7 @@ import { matchesUserTerritory } from "../utils/territory";
 import { getFilteredData } from "../utils/filterData";
 import { t } from "../utils/terminology";
 import TENANT_CONFIG from "../config/tenant";
+import { useCrm } from "../context/CrmContext";
 
 export default function MyTerritory({
   user,
@@ -283,6 +285,71 @@ export default function MyTerritory({
 
       {/* Recent Activity */}
       <RecentActivity activities={recentActivity} />
+
+      {/* Upcoming Tasks */}
+      <TasksWidget />
+    </div>
+  );
+}
+
+// ─── Tasks Widget ──────────────────────────────────────────────
+
+function TasksWidget() {
+  const navigate = useNavigate();
+  let tasks = [];
+  try {
+    const crm = useCrm();
+    tasks = crm.tasks || [];
+  } catch {
+    return null; // CrmProvider not available
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const openTasks = tasks.filter((t) => t.status !== "completed" && t.status !== "cancelled");
+  const overdue = openTasks.filter((t) => t.dueDate && t.dueDate < today);
+  const upcoming = openTasks.filter((t) => !t.dueDate || t.dueDate >= today).slice(0, 5);
+  const display = [...overdue.slice(0, 5), ...upcoming].slice(0, 8);
+
+  if (display.length === 0) return null;
+
+  const priorityColors = { urgent: "#dc2626", high: "#f97316", medium: "#d97706", low: "#64748b" };
+
+  return (
+    <div className="table-container" style={{ marginTop: 24 }}>
+      <div className="table-header">
+        <h3 className="table-title">
+          Upcoming Tasks
+          {overdue.length > 0 && (
+            <span style={{ marginLeft: 8, fontSize: 12, color: "#dc2626", fontWeight: 600 }}>
+              {overdue.length} overdue
+            </span>
+          )}
+        </h3>
+        <button className="btn btn-small btn-secondary" onClick={() => navigate("/tasks")}>
+          View All
+        </button>
+      </div>
+      {display.map((task) => {
+        const isOverdue = task.dueDate && task.dueDate < today;
+        return (
+          <div key={task.id} style={{
+            display: "flex", alignItems: "center", gap: 10, padding: "8px 0",
+            borderBottom: "1px solid var(--border)", fontSize: 13,
+          }}>
+            <span style={{
+              width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
+              background: priorityColors[task.priority] || "#64748b",
+            }} />
+            <span style={{ flex: 1, fontWeight: 500 }}>{task.title}</span>
+            {task.accountName && (
+              <span style={{ color: "var(--text-dim)", fontSize: 12 }}>{task.accountName}</span>
+            )}
+            <span style={{ fontSize: 12, color: isOverdue ? "#dc2626" : "var(--text-dim)", fontWeight: isOverdue ? 600 : 400 }}>
+              {task.dueDate || "No date"}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
