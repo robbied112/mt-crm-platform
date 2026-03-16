@@ -26,6 +26,7 @@ import {
   WineList,
   WineDetail,
   PricingStudio,
+  SetupAssistant,
 } from "./components";
 import Sidebar from "./components/Sidebar";
 import CommandPalette from "./components/CommandPalette";
@@ -336,6 +337,9 @@ function App() {
 
               {/* Tools routes */}
               <Route path="/pricing" element={<PricingStudio />} />
+
+              {/* Setup / Onboarding */}
+              <Route path="/setup" element={<SetupAssistant />} />
 
               {/* CRM routes */}
               <Route path="/accounts" element={<AccountsPage />} />

@@ -179,6 +179,12 @@ service cloud.firestore {
         allow read: if isTenantMember(tenantId);
         allow write: if isTenantMember(tenantId);
       }
+
+      // Analytics — tenant members can write events, admins can read
+      match /analytics/{category}/{subcoll}/{eventId} {
+        allow read: if isTenantAdmin(tenantId);
+        allow create: if isTenantMember(tenantId);
+      }
     }
 
     // Legacy top-level accounts (redirect reads only, for migration)

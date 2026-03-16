@@ -54,3 +54,5 @@ export { default as BillbackDashboard } from "./BillbackDashboard";
 export { default as WineList } from "./WineList";
 export { default as WineDetail } from "./WineDetail";
 export { default as PricingStudio } from "./PricingStudio/PricingStudio";
+export { default as SetupAssistant } from "./SetupAssistant";
+export { default as DataHealthCard } from "./DataHealthCard";

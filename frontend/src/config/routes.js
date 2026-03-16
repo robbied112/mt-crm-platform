@@ -135,6 +135,15 @@ export const ROUTES = [
     section: "billbacks",
     description: "Wine catalog extracted from billback imports",
   },
+  // Setup / Onboarding
+  {
+    key: "setup",
+    path: "/setup",
+    label: "Setup Assistant",
+    icon: "setup",
+    section: "setup",
+    description: "Guided setup — learn what reports to pull and upload your data",
+  },
   // Admin
   {
     key: "admin-settings",
