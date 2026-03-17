@@ -219,6 +219,32 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
         .lp-contact-btn:hover { background-color: #f9fafb !important; border-color: #6B1E1E !important; color: #6B1E1E !important; }
         .lp-contact-btn:focus-visible { box-shadow: 0 0 0 3px rgba(210,199,138,0.3); outline: none; }
 
+        /* Mobile responsive overrides */
+        @media (max-width: 768px) {
+          .lp-nav-link:not(.lp-nav-cta) { display: none !important; }
+          .lp-hero { padding: 100px 20px 60px !important; }
+          .lp-hero-h1 { font-size: 36px !important; line-height: 1.25 !important; }
+          .lp-hero-sub { font-size: 17px !important; }
+          .lp-section-h2 { font-size: 28px !important; }
+          .lp-stat-num { font-size: 36px !important; }
+          .lp-feature-h3 { font-size: 20px !important; }
+          .lp-feature-row { gap: 24px !important; }
+          .lp-steps-flow { flex-direction: column !important; gap: 24px !important; }
+          .lp-step-arrow { display: none !important; }
+          .lp-price-card-pop { transform: none !important; }
+          .lp-price-card:hover { transform: none !important; }
+          .lp-hero-mockup { margin-top: 40px !important; }
+          .lp-cta-section { padding: 64px 20px !important; }
+          .lp-cta-h2 { font-size: 28px !important; }
+          .lp-price-amount { font-size: 36px !important; }
+        }
+
+        /* Tablet adjustments */
+        @media (max-width: 1024px) and (min-width: 769px) {
+          .lp-hero-h1 { font-size: 48px !important; }
+          .lp-section-h2 { font-size: 32px !important; }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .lp-btn-primary, .lp-btn-ghost, .lp-btn-white, .lp-nav-link, .lp-nav-cta,
           .lp-price-card, .lp-footer-link, .lp-contact-btn { transition: none !important; }
@@ -251,9 +277,9 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
       </nav>
 
       {/* ── Hero ─────────────────────────────── */}
-      <section style={s.hero}>
+      <section className="lp-hero" style={s.hero}>
         <div style={{ maxWidth: 900, margin: "0 auto", animation: "fadeInUp 0.8s ease-out" }}>
-          <h1 style={s.heroH1}>
+          <h1 className="lp-hero-h1" style={s.heroH1}>
             Your sales data,{" "}
             <span style={{
               background: "linear-gradient(135deg, #6B1E1E, #8A2035)",
@@ -261,7 +287,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
               backgroundClip: "text",
             }}>finally useful.</span>
           </h1>
-          <p style={s.heroSub}>
+          <p className="lp-hero-sub" style={s.heroSub}>
             Depletion reports, distributor scorecards, and pipeline — built for the three-tier world.
           </p>
           <div style={s.heroCtas}>
@@ -271,7 +297,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
         </div>
 
         {/* Product mockup */}
-        <div style={{ marginTop: 64, animation: "fadeInUp 1s ease-out 0.3s both" }}>
+        <div className="lp-hero-mockup" style={{ marginTop: 64, animation: "fadeInUp 1s ease-out 0.3s both" }}>
           <DashboardMockup />
         </div>
 
@@ -287,7 +313,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
             { num: "$0", label: "To Start", desc: "Free tier — no credit card, no sales call" },
           ].map((item, i) => (
             <div key={i} style={s.statCard}>
-              <div style={s.statNum}>{item.num}</div>
+              <div className="lp-stat-num" style={s.statNum}>{item.num}</div>
               <div style={s.statLabel}>{item.label}</div>
               <div style={s.statDesc}>{item.desc}</div>
             </div>
@@ -297,14 +323,14 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
 
       {/* ── Features ─────────────────────────── */}
       <section id="features" style={{ ...s.sectionWhite, paddingTop: 80, paddingBottom: 80 }}>
-        <h2 style={{ ...s.sectionH2, textAlign: "left", maxWidth: 1200 }}>Built for how you actually sell</h2>
+        <h2 className="lp-section-h2" style={{ ...s.sectionH2, textAlign: "left", maxWidth: 1200 }}>Built for how you actually sell</h2>
         <p style={{ ...s.sectionSub, textAlign: "left", margin: "0 0 56px" }}>Every feature is designed for suppliers who sell through distributors, brokers, and reps.</p>
 
         {/* Feature 1: Scorecard — text left, mockup right */}
-        <div style={s.featureRow}>
+        <div className="lp-feature-row" style={s.featureRow}>
           <div style={s.featureText}>
             <div style={s.featureTag}>Distributor Scorecard</div>
-            <h3 style={s.featureH3}>See which distributors are selling through — and which aren't</h3>
+            <h3 className="lp-feature-h3" style={s.featureH3}>See which distributors are selling through — and which aren't</h3>
             <p style={s.featureP}>
               Health scores computed from depletion velocity, sell-through rate, and inventory turns.
               Green, yellow, and red at a glance.
@@ -314,10 +340,10 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
         </div>
 
         {/* Feature 2: Territory — mockup left, text right */}
-        <div style={{ ...s.featureRow, flexDirection: "row-reverse" }}>
+        <div className="lp-feature-row" style={{ ...s.featureRow, flexDirection: "row-reverse" }}>
           <div style={s.featureText}>
             <div style={s.featureTag}>Territory Intelligence</div>
-            <h3 style={s.featureH3}>Each rep sees their accounts, their numbers, their next move</h3>
+            <h3 className="lp-feature-h3" style={s.featureH3}>Each rep sees their accounts, their numbers, their next move</h3>
             <p style={s.featureP}>
               Assign reps to states, regions, or custom territories. Each rep sees only their
               accounts with personalized insights.
@@ -327,10 +353,10 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
         </div>
 
         {/* Feature 3: Pipeline — text left, mockup right */}
-        <div style={s.featureRow}>
+        <div className="lp-feature-row" style={s.featureRow}>
           <div style={s.featureText}>
             <div style={s.featureTag}>Pipeline &amp; Forecasting</div>
-            <h3 style={s.featureH3}>From prospect to placement — see every deal in motion</h3>
+            <h3 className="lp-feature-h3" style={s.featureH3}>From prospect to placement — see every deal in motion</h3>
             <p style={s.featureP}>
               Visual pipeline with customizable stages. Reorder forecasting flags accounts
               going quiet before they lapse.
@@ -342,8 +368,8 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
 
       {/* ── How It Works ─────────────────────── */}
       <section style={{ ...s.sectionGray, paddingTop: 80, paddingBottom: 80 }}>
-        <h2 style={s.sectionH2}>From raw depletion file to dashboard in three steps</h2>
-        <div style={s.stepsFlow}>
+        <h2 className="lp-section-h2" style={s.sectionH2}>From raw depletion file to dashboard in three steps</h2>
+        <div className="lp-steps-flow" style={s.stepsFlow}>
           {[
             { step: "1", title: "Drop your file", desc: "VIP export, distributor depletion report, or product sheet — Excel or CSV." },
             { step: "2", title: "We handle the mapping", desc: "AI reads your columns, normalizes product names, and flags duplicates." },
@@ -358,7 +384,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
                 </div>
               </div>
               {i < 2 && (
-                <div style={s.stepFlowArrow}>
+                <div className="lp-step-arrow" style={s.stepFlowArrow}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14M13 6l6 6-6 6" />
                   </svg>
@@ -371,17 +397,17 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
 
       {/* ── Pricing ──────────────────────────── */}
       <section id="pricing" style={s.sectionWhite}>
-        <h2 style={s.sectionH2}>One price, no per-report fees</h2>
+        <h2 className="lp-section-h2" style={s.sectionH2}>One price, no per-report fees</h2>
         <p style={s.sectionSub}>Start free. Add your team when you're ready.</p>
         <div style={s.pricingGrid}>
           {pricingTiers.map((tier, i) => (
-            <div key={i} className="lp-price-card" style={{
+            <div key={i} className={`lp-price-card${tier.popular ? " lp-price-card-pop" : ""}`} style={{
               ...s.priceCard,
               ...(tier.popular ? s.priceCardPop : {}),
             }}>
               {tier.popular && <div style={s.popBadge}>Most Popular</div>}
               <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8, color: "#2E2E2E", fontFamily: "'Inter Tight', Inter, sans-serif" }}>{tier.name}</h3>
-              <div style={s.priceAmount}>
+              <div className="lp-price-amount" style={s.priceAmount}>
                 {tier.price}<span style={s.priceUnit}>{tier.unit}</span>
               </div>
               <div style={s.priceDesc}>{tier.desc}</div>
@@ -406,8 +432,8 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
       </section>
 
       {/* ── Final CTA ────────────────────────── */}
-      <section style={s.ctaSection}>
-        <h2 style={s.ctaH2}>Stop rebuilding pivot tables every Monday</h2>
+      <section className="lp-cta-section" style={s.ctaSection}>
+        <h2 className="lp-cta-h2" style={s.ctaH2}>Stop rebuilding pivot tables every Monday</h2>
         <p style={s.ctaSub}>Suppliers across 12 states use CruFolio to turn distributor data into action.</p>
         <button onClick={onGetStarted} className="lp-btn-white" style={s.btnCtaWhite}>Get Started Free</button>
         <p style={s.ctaNote}>No credit card required</p>
