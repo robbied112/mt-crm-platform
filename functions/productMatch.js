@@ -6,22 +6,9 @@
  * in billback.js) to run AI fuzzy matching against the tenant's product
  * catalog, then updates matched product docs and returns results.
  */
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-const { defineSecret } = require("firebase-functions/params");
+const { functions, admin, db, anthropicApiKey, verifyTenantMembership } = require("./helpers");
 const { deduplicateEntities } = require("./entityDedup");
 const { buildNormalizedName, sanitizeProductName } = require("./lib/pipeline/productNormalize");
-
-const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
-const db = admin.firestore();
-
-async function verifyTenantMembership(uid, tenantId) {
-  const userSnap = await db.collection("users").doc(uid).get();
-  if (!userSnap.exists || userSnap.data().tenantId !== tenantId) {
-    throw new functions.https.HttpsError("permission-denied", "Not a member of this tenant");
-  }
-  return userSnap.data();
-}
 
 // ─── matchProductsFromImport ────────────────────────────────────
 
