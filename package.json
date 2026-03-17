@@ -1,5 +1,5 @@
 {
-  "name": "mt-crm-platform",
+  "name": "crufolio",
   "private": true,
   "scripts": {
     "setup": "cd frontend && (test -f .env || cp .env.example .env) && (test -d node_modules || npm install)",

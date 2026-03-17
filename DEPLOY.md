@@ -1,4 +1,4 @@
-# Sidekick BI - Deployment Guide
+# CruFolio - Deployment Guide
 
 ## Prerequisites
 
@@ -70,15 +70,47 @@ After deploying, note the function URL shown in the output. With v2 functions it
 3. Copy the portal URL
 4. Update `STRIPE_CONFIG.portalUrl` in `index.html` with the URL
 
-## Step 6: Deploy Hosting (if using Firebase Hosting)
+## Step 6: Deploy Hosting
 
 ```bash
 firebase deploy --only hosting
 ```
 
+## Step 7: Connect Custom Domain (crufolio.com)
+
+1. In the Firebase Console, go to **Hosting** > **Add custom domain**
+2. Enter `crufolio.com`
+3. Firebase will provide DNS records (A records) to add
+4. In Cloudflare DNS for crufolio.com, add the A records Firebase provides:
+   - **Important:** Set Cloudflare proxy to **DNS only** (gray cloud) for the verification step
+   - After Firebase verifies and provisions the SSL cert, you can re-enable the orange cloud proxy
+5. Also add `www.crufolio.com` as a custom domain and redirect it to `crufolio.com`
+6. Wait for SSL provisioning (usually 10-30 minutes, can take up to 24 hours)
+
+### Cloudflare DNS Settings
+
+| Type | Name | Content | Proxy |
+|------|------|---------|-------|
+| A | @ | (from Firebase) | DNS only |
+| A | @ | (from Firebase) | DNS only |
+| CNAME | www | crufolio.com | DNS only |
+
+### After Verification
+
+Once Firebase shows the domain as "Connected":
+- You can optionally re-enable Cloudflare proxy (orange cloud)
+- Update `VITE_FIREBASE_AUTH_DOMAIN` in `.env` to `crufolio.com` for branded auth
+- Redeploy hosting: `firebase deploy --only hosting`
+
+## Deploy Everything at Once
+
+```bash
+firebase deploy
+```
+
 ## Verify Everything Works
 
-1. Open the app and sign in
+1. Open https://crufolio.com and sign in
 2. Go to Settings > Billing
 3. Click "Upgrade to Starter" or "Upgrade to Growth"
 4. Complete a test purchase with Stripe test card (4242 4242 4242 4242)
@@ -100,3 +132,8 @@ Make sure you redeploy after setting secrets: `firebase deploy --only functions`
 
 ### Function URL changed after upgrading to v2
 v2 Cloud Functions use Cloud Run URLs instead of the old format. Update your Stripe webhook endpoint URL accordingly.
+
+### Custom domain not working
+- Ensure Cloudflare proxy is set to "DNS only" during initial setup
+- Check Firebase Console > Hosting for domain verification status
+- SSL provisioning can take up to 24 hours
