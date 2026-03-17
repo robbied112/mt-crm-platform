@@ -49,7 +49,7 @@ function DashboardMockup() {
               <span style={{ fontSize: 12, color: b.color, fontWeight: 700 }}>{b.pct}%</span>
             </div>
             <div style={{ background: "#0f172a", borderRadius: 6, height: 8, overflow: "hidden" }}>
-              <div style={{ width: `${b.pct}%`, height: "100%", background: b.color, borderRadius: 6, transition: "width 1s ease" }} />
+              <div style={{ width: `${b.pct}%`, height: "100%", background: b.color, borderRadius: 6, transition: "width 400ms ease-out" }} />
             </div>
           </div>
         ))}
@@ -186,7 +186,45 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
       style.textContent = `
         @keyframes float { 0%,100%{transform:perspective(1200px) rotateX(2deg) translateY(0)} 50%{transform:perspective(1200px) rotateX(2deg) translateY(-10px)} }
         @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+
+        /* Landing page interactive states */
+        .lp-btn-primary { transition: background-color 200ms ease-out, box-shadow 200ms ease-out, transform 200ms ease-out; }
+        .lp-btn-primary:hover { background-color: #8A2035 !important; }
+        .lp-btn-primary:focus-visible { box-shadow: 0 0 0 3px rgba(210,199,138,0.3); outline: none; }
+        .lp-btn-primary:active { transform: scale(0.98); }
+
+        .lp-btn-ghost { transition: border-color 200ms ease-out, color 200ms ease-out, background-color 200ms ease-out; }
+        .lp-btn-ghost:hover { border-color: rgba(255,255,255,0.5) !important; color: #fff !important; background-color: rgba(255,255,255,0.05) !important; }
+        .lp-btn-ghost:focus-visible { box-shadow: 0 0 0 3px rgba(210,199,138,0.3); outline: none; }
+
+        .lp-btn-white { transition: background-color 200ms ease-out, box-shadow 200ms ease-out, transform 200ms ease-out; }
+        .lp-btn-white:hover { background-color: #FDF8F0 !important; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .lp-btn-white:focus-visible { box-shadow: 0 0 0 3px rgba(210,199,138,0.3); outline: none; }
+        .lp-btn-white:active { transform: scale(0.98); }
+
+        .lp-nav-link { transition: color 200ms ease-out; }
+        .lp-nav-link:hover { color: #fff !important; }
+
+        .lp-nav-cta { transition: background-color 200ms ease-out, box-shadow 200ms ease-out; }
+        .lp-nav-cta:hover { background-color: #8A2035 !important; }
+        .lp-nav-cta:focus-visible { box-shadow: 0 0 0 3px rgba(210,199,138,0.3); outline: none; }
+
+        .lp-price-card { transition: transform 200ms ease-out, box-shadow 200ms ease-out; }
+        .lp-price-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+
+        .lp-footer-link { transition: color 200ms ease-out; }
+        .lp-footer-link:hover { color: #fff !important; }
+
+        .lp-contact-btn { transition: border-color 200ms ease-out, color 200ms ease-out, background-color 200ms ease-out; }
+        .lp-contact-btn:hover { background-color: #f9fafb !important; border-color: #6B1E1E !important; color: #6B1E1E !important; }
+        .lp-contact-btn:focus-visible { box-shadow: 0 0 0 3px rgba(210,199,138,0.3); outline: none; }
+
+        @media (prefers-reduced-motion: reduce) {
+          .lp-btn-primary, .lp-btn-ghost, .lp-btn-white, .lp-nav-link, .lp-nav-cta,
+          .lp-price-card, .lp-footer-link, .lp-contact-btn { transition: none !important; }
+          @keyframes float { 0%,100%,50%{transform:perspective(1200px) rotateX(2deg) translateY(0)} }
+          @keyframes fadeInUp { from{opacity:1;transform:none} to{opacity:1;transform:none} }
+        }
       `;
       document.head.appendChild(style);
     }
@@ -204,10 +242,10 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
         <div style={s.navInner}>
           <span style={s.navLogo}>CruFolio</span>
           <div style={s.navLinks}>
-            <a href="#features" style={s.navLink}>Features</a>
-            <a href="#pricing" style={s.navLink}>Pricing</a>
-            <button onClick={onSignIn} style={s.navLinkBtn}>Sign In</button>
-            <button onClick={onGetStarted} style={s.navCta}>Get Started</button>
+            <a href="#features" className="lp-nav-link" style={s.navLink}>Features</a>
+            <a href="#pricing" className="lp-nav-link" style={s.navLink}>Pricing</a>
+            <button onClick={onSignIn} className="lp-nav-link" style={s.navLinkBtn}>Sign In</button>
+            <button onClick={onGetStarted} className="lp-nav-cta" style={s.navCta}>Get Started</button>
           </div>
         </div>
       </nav>
@@ -227,8 +265,8 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
             The BI platform built for suppliers who sell through distributors.
           </p>
           <div style={s.heroCtas}>
-            <button onClick={onGetStarted} style={s.btnTeal}>Start Free Trial</button>
-            <a href="#features" style={s.btnGhost}>See How It Works</a>
+            <button onClick={onGetStarted} className="lp-btn-primary" style={s.btnTeal}>Start Free Trial</button>
+            <a href="#features" className="lp-btn-ghost" style={s.btnGhost}>See How It Works</a>
           </div>
         </div>
 
@@ -337,7 +375,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
         <p style={s.sectionSub}>Start free. Upgrade when you're ready.</p>
         <div style={s.pricingGrid}>
           {pricingTiers.map((tier, i) => (
-            <div key={i} style={{
+            <div key={i} className="lp-price-card" style={{
               ...s.priceCard,
               ...(tier.popular ? s.priceCardPop : {}),
             }}>
@@ -356,9 +394,9 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
                 ))}
               </ul>
               {tier.cta === "contact" ? (
-                <a href="mailto:hello@crufolio.com" style={{ ...s.btnGhost, display: "block", textAlign: "center", color: "#374151", borderColor: "#d1d5db" }}>Contact Sales</a>
+                <a href="mailto:hello@crufolio.com" className="lp-contact-btn" style={{ ...s.btnGhost, display: "block", textAlign: "center", color: "#2E2E2E", borderColor: "#E5E0DA" }}>Contact Sales</a>
               ) : (
-                <button onClick={onGetStarted} style={{ ...s.btnTeal, width: "100%" }}>
+                <button onClick={onGetStarted} className="lp-btn-primary" style={{ ...s.btnTeal, width: "100%" }}>
                   {tier.popular ? "Start Free Trial" : "Get Started"}
                 </button>
               )}
@@ -371,13 +409,13 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
       <section style={s.ctaSection}>
         <h2 style={s.ctaH2}>Start making better decisions today</h2>
         <p style={s.ctaSub}>Join hundreds of suppliers replacing spreadsheets with real intelligence.</p>
-        <button onClick={onGetStarted} style={s.btnCtaWhite}>Get Started Free</button>
+        <button onClick={onGetStarted} className="lp-btn-white" style={s.btnCtaWhite}>Get Started Free</button>
         <p style={s.ctaNote}>No credit card required</p>
       </section>
 
       {/* ── Footer ───────────────────────────── */}
       <footer style={s.footer}>
-        <p>&copy; 2026 CruFolio. All rights reserved. | <a href="mailto:hello@crufolio.com" style={{ color: "#D2C78A", textDecoration: "none", padding: "10px 4px" }}>hello@crufolio.com</a></p>
+        <p>&copy; 2026 CruFolio. All rights reserved. | <a href="mailto:hello@crufolio.com" className="lp-footer-link" style={{ color: "#D2C78A", textDecoration: "none", padding: "10px 4px" }}>hello@crufolio.com</a></p>
       </footer>
     </div>
   );
