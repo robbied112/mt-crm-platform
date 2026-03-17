@@ -2,13 +2,17 @@
  * ExecutiveSummary — displays the AI-generated summary banner
  * at the top of the dashboard after data is imported.
  */
+import { useState } from "react";
 import { useData } from "../context/DataContext";
 import { t } from "../utils/terminology";
 
 export default function ExecutiveSummary() {
   const { summary, availability } = useData();
+  const [dismissed, setDismissed] = useState(() => {
+    try { return localStorage.getItem("data-intel-dismissed") === "true"; } catch { return false; }
+  });
 
-  if (!summary || !availability.hasAnyData) return null;
+  if (!summary || !availability.hasAnyData || dismissed) return null;
 
   // Build list of missing data types (role-aware)
   const missing = [];
@@ -17,11 +21,31 @@ export default function ExecutiveSummary() {
   if (!availability.reorder) missing.push("Purchase History");
   if (!availability.pipeline) missing.push("Pipeline Data");
 
+  const handleDismiss = () => {
+    setDismissed(true);
+    try { localStorage.setItem("data-intel-dismissed", "true"); } catch {}
+  };
+
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <span style={styles.icon}>&#9889;</span>
-        <span style={styles.title}>Data Intelligence</span>
+      <div style={{ ...styles.header, justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={styles.icon}>&#9889;</span>
+          <span style={styles.title}>Data Intelligence</span>
+        </div>
+        <button
+          onClick={handleDismiss}
+          title="Dismiss"
+          aria-label="Dismiss data intelligence banner"
+          style={{
+            background: "none", border: "none", cursor: "pointer",
+            color: "#64748b", padding: 4, lineHeight: 1, borderRadius: 4,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M2 2l10 10M12 2L2 12" />
+          </svg>
+        </button>
       </div>
       <p style={styles.text}>{summary}</p>
       {missing.length > 0 && missing.length < 4 && (
