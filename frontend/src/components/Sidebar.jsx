@@ -231,7 +231,7 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
             <span className="sidebar__brand-status">
               <span
                 className="sidebar__status-dot"
-                style={{ background: dataLoading ? "#facc15" : "#4ade80" }}
+                style={{ background: dataLoading ? "#facc15" : "#1F865A" }}
               />
               {dataLoading ? "Syncing" : "Connected"}
             </span>

@@ -6,7 +6,7 @@
 
 export default function Header({ companyName, logo, syncStatus }) {
   const statusColors = {
-    connected: "#4ade80",
+    connected: "#1F865A",
     syncing: "#facc15",
     offline: "#f87171",
   };

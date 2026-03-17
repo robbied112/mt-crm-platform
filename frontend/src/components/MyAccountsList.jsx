@@ -19,7 +19,7 @@ const FILTER_OPTIONS = [
 ];
 
 const TAG_COLORS = {
-  VIP: "#7C3AED",
+  VIP: "#B87333",
   "At Risk": "#DC2626",
   "Hot Lead": "#F59E0B",
   "Needs Visit": "#2563EB",

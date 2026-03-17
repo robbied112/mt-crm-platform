@@ -132,7 +132,7 @@ export default function WarehousePanel({ warehouseInventory }) {
           gap: 16,
         }}
       >
-        {renderLineTable(wh.classic, line1Name, "#F3E8FF", "#7C3AED")}
+        {renderLineTable(wh.classic, line1Name, "rgba(184, 115, 51, 0.08)", "#B87333")}
         {renderLineTable(wh.contemporary, line2Name, "#DBEAFE", "#0F766E")}
       </div>
 

@@ -6,7 +6,7 @@ import { useState } from "react";
 const TYPE_COLORS = {
   "depletion allowance": "#6B1E1E",
   "marketing": "#2563eb",
-  "sampling": "#7c3aed",
+  "sampling": "#B87333",
   "placement fee": "#dc2626",
   "price reduction": "#d97706",
   "other": "#6b7280",
