@@ -110,6 +110,45 @@ const s = {
     width: "100%",
     background: "#fff",
   },
+  // ─── Queue Panel ──────────────────────────────────────────
+  queuePanel: {
+    border: "1px solid #E5E0DA",
+    borderRadius: 12,
+    background: "#fff",
+    overflow: "hidden",
+  },
+  queueHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "14px 16px",
+    borderBottom: "1px solid #f1f5f9",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  progressBar: {
+    height: 3,
+    background: "#f1f5f9",
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    background: "#6B1E1E",
+    transition: "width 0.4s ease",
+    borderRadius: 2,
+  },
+  queueList: {
+    maxHeight: 400,
+    overflowY: "auto",
+  },
+  queueItem: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "10px 16px",
+    borderBottom: "1px solid #f8f9fa",
+    gap: 12,
+  },
 };
 
 export default s;

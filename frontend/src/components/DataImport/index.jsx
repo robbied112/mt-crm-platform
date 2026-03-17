@@ -1,8 +1,12 @@
 /**
  * DataImport — full import flow with drag-drop, semantic mapping,
  * format detection, preview, and Firestore persistence.
+ *
+ * Supports multi-file upload: drop N files, the queue processes them
+ * sequentially. High-confidence mappings auto-confirm; low-confidence
+ * files pause for manual review. PDFs and product sheets always pause.
  */
-import { useReducer, useRef, useCallback } from "react";
+import { useReducer, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import { useCrm } from "../../context/CrmContext";
@@ -14,7 +18,7 @@ import { transformAll, generateSummary } from "../../utils/transformData";
 import { transformBillback } from "../../utils/transformBillback";
 import { normalizeRows } from "../../utils/normalize.js";
 import { clientExactMatch } from "../../utils/productNormalize";
-import { logUpload } from "../../services/firestoreService";
+import { logUpload, loadRecentUploads } from "../../services/firestoreService";
 import { useAuth } from "../../context/AuthContext";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import ProductSheetReviewStep from "../ProductSheetReviewStep";
@@ -22,9 +26,9 @@ import MappingStep from "./MappingStep";
 import PreviewStep from "./PreviewStep";
 import BillbackReviewStep from "./BillbackReviewStep";
 import ReportAnalysisCard from "./ReportAnalysisCard";
+import useFileQueue from "../../hooks/useFileQueue";
 import s from "./styles";
 
-const STEPS = ["upload", "mapping", "preview", "done"];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 // ─── Reducer ────────────────────────────────────────────────────
@@ -32,7 +36,6 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const initialState = {
   step: "upload",
   file: null,
-  files: [],
   parsed: null,
   mapping: {},
   confidence: {},
@@ -60,8 +63,6 @@ function reducer(state, action) {
       return { ...state, step: action.payload };
     case "SET_FILE":
       return { ...state, file: action.payload };
-    case "SET_FILES":
-      return { ...state, files: action.payload };
     case "SET_PARSED":
       return { ...state, parsed: action.payload };
     case "SET_MAPPING":
@@ -116,24 +117,144 @@ export default function DataImport() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const inputRef = useRef();
+  const processingRef = useRef(false);
+
+  const smartImportEnabled = !!tenantConfig?.features?.smartImport;
 
   const [state, dispatch] = useReducer(reducer, {
     ...initialState,
-    smartImportEnabled: !!tenantConfig?.features?.smartImport,
+    smartImportEnabled,
   });
 
   const {
-    step, file, files, parsed, mapping, confidence, uploadType,
+    step, file, parsed, mapping, confidence, uploadType,
     preview, summary, error, saving, dragOver, useAI, aiLoading,
     billbackItems, billbackMeta, unmatchedProducts,
-    analysis, analyses, integrationPlan, smartImportEnabled,
+    analysis, analyses,
   } = state;
 
   const isBillbackEnabled = tenantConfig?.features?.billbacks;
 
-  // ── Step 1: File Drop / Select ──
+  // ── Multi-file queue ──
 
-  const handleFile = useCallback(async (f) => {
+  const comprehendCallable = useCallback(async (args) => {
+    const fns = getFunctions();
+    const comprehendReport = httpsCallable(fns, "comprehendReport");
+    return comprehendReport(args);
+  }, []);
+
+  const fq = useFileQueue({
+    parseFile,
+    autoDetectMapping,
+    aiAutoDetectMapping,
+    detectUploadType,
+    comprehendReport: smartImportEnabled ? comprehendCallable : null,
+    loadRecentUploads,
+    useAI,
+    smartImportEnabled,
+    userRole,
+    tenantId,
+  });
+
+  const isBatchMode = fq.queue.length > 0;
+
+  // ── Auto-process queue: when a file is queued, process it ──
+
+  useEffect(() => {
+    if (processingRef.current) return;
+    const nextQueued = fq.queue.find((i) => i.status === "queued");
+    if (!nextQueued) return;
+
+    processingRef.current = true;
+    fq.processNext().finally(() => {
+      processingRef.current = false;
+    });
+  }, [fq.queue, fq.processNext]);
+
+  // ── Import a queue item (auto-confirmed or user-confirmed) ──
+
+  const importQueueFile = useCallback(async (item) => {
+    fq.markImporting(item.id);
+    try {
+      const { parsed: itemParsed, mapping: itemMapping, type: itemType, file: itemFile } = item;
+
+      // Product sheet — cannot auto-import, should be in needs-review
+      if (itemType?.type === "product_sheet") {
+        // This shouldn't happen for auto-confirmed, but guard anyway
+        return;
+      }
+
+      // Billback PDF — cannot auto-import
+      if (itemFile && /\.pdf$/i.test(itemFile.name)) {
+        return;
+      }
+
+      const result = transformAll(itemParsed.rows, itemMapping, itemType, userRole);
+      const summaryText = generateSummary(result.type || itemType?.type, result, userRole);
+      const { type: _t, ...datasets } = result;
+
+      let importMeta;
+      if (useNormalized) {
+        const normalized = normalizeRows(itemParsed.rows, itemMapping);
+        importMeta = {
+          normalizedRows: normalized,
+          fileName: itemFile.name,
+          type: itemType?.type,
+          mapping: itemMapping,
+          uploadedBy: currentUser?.email || "unknown",
+        };
+      }
+
+      await importDatasets(datasets, summaryText, importMeta);
+
+      if (tenantConfig?.demoData) {
+        await updateTenantConfig({ demoData: false });
+      }
+
+      if (tenantId) {
+        await logUpload(tenantId, {
+          fileName: itemFile.name,
+          rowCount: itemParsed.rows.length,
+          type: itemType?.type,
+          uploadedBy: currentUser?.email || "unknown",
+        });
+      }
+
+      fq.markDone(item.id, { rowCount: itemParsed.rows.length, type: itemType?.type });
+    } catch (err) {
+      fq.markError(item.id, err.message || String(err));
+    }
+  }, [fq, userRole, useNormalized, importDatasets, tenantConfig, updateTenantConfig, tenantId, currentUser]);
+
+  // ── Auto-import: when a file is auto-confirmed, import it ──
+
+  useEffect(() => {
+    const autoItem = fq.queue.find((i) => i.status === "auto-confirmed");
+    if (!autoItem) return;
+
+    importQueueFile(autoItem);
+  }, [fq.queue, importQueueFile]);
+
+  // ── Handle files dropped or selected ──
+
+  const handleFiles = useCallback(async (fileList) => {
+    dispatch({ type: "SET_ERROR", payload: "" });
+    const files = Array.from(fileList);
+    if (files.length === 0) return;
+
+    // Single file: use existing single-file flow (preserves billback/product-sheet review UX)
+    if (files.length === 1 && fq.queue.length === 0) {
+      handleSingleFile(files[0]);
+      return;
+    }
+
+    // Multi-file: add to queue
+    await fq.addFiles(files);
+  }, [fq]);
+
+  // ── Single file flow (original behavior) ──
+
+  const handleSingleFile = useCallback(async (f) => {
     dispatch({ type: "SET_ERROR", payload: "" });
 
     if (f.size > MAX_FILE_SIZE) {
@@ -185,43 +306,21 @@ export default function DataImport() {
       }
       dispatch({ type: "SET_PARSED", payload: result });
 
-      // Smart import path: call comprehendReport Cloud Function
+      // Smart import path
       if (smartImportEnabled) {
         dispatch({ type: "SET_AI_LOADING", payload: true });
         let comprehendResult = null;
         try {
-          const fns = getFunctions();
-          const comprehendReport = httpsCallable(fns, "comprehendReport");
-          // Smart sampling: first 20 + middle 20 + last 10 rows
-          const rows = result.rows;
-          const totalRows = rows.length;
-          let smartSample;
-          if (totalRows <= 50) {
-            smartSample = rows;
-          } else {
-            const first20 = rows.slice(0, 20);
-            const midStart = Math.floor(totalRows / 2) - 10;
-            const mid20 = rows.slice(midStart, midStart + 20);
-            const last10 = rows.slice(-10);
-            smartSample = [...first20, ...mid20, ...last10];
-          }
-          const { data } = await comprehendReport({
+          const { data } = await comprehendCallable({
             tenantId,
             fileName: f.name,
             headers: result.headers,
-            sampleRows: smartSample,
+            sampleRows: smartSampleRows(result.rows),
           });
-          if (data.error) {
-            // comprehendReport returned a structured error (not a throw)
-            dispatch({ type: "SET_ANALYSIS", payload: data });
-            dispatch({ type: "SET_ANALYSES", payload: { fileName: f.name, analysis: data } });
-          } else {
-            comprehendResult = data;
-            dispatch({ type: "SET_ANALYSIS", payload: data });
-            dispatch({ type: "SET_ANALYSES", payload: { fileName: f.name, analysis: data } });
-          }
+          if (!data.error) comprehendResult = data;
+          dispatch({ type: "SET_ANALYSIS", payload: data });
+          dispatch({ type: "SET_ANALYSES", payload: { fileName: f.name, analysis: data } });
         } catch (err) {
-          // AI comprehension failed — store error state, fall through to rule-based
           const errorAnalysis = {
             error: true,
             errorType: err.code || "unknown",
@@ -233,56 +332,44 @@ export default function DataImport() {
           dispatch({ type: "SET_AI_LOADING", payload: false });
         }
 
-        // Use extraction spec from AI if available
         let autoMap, conf;
         if (comprehendResult?.mapping) {
           autoMap = comprehendResult.mapping;
-          // Build confidence map from columnSemantics
           conf = {};
           if (comprehendResult.columnSemantics) {
             for (const [, semantic] of Object.entries(comprehendResult.columnSemantics)) {
               if (semantic.field) conf[semantic.field] = semantic.confidence || 0;
             }
           }
-        } else {
-          // Fall back to rule-based or regular AI mapper
-          if (useAI) {
-            dispatch({ type: "SET_AI_LOADING", payload: true });
-            try {
-              const aiResult = await aiAutoDetectMapping(result.headers, result.rows);
-              autoMap = aiResult.mapping;
-              conf = aiResult.confidence;
-            } catch {
-              const ruleResult = autoDetectMapping(result.headers, result.rows, userRole);
-              autoMap = ruleResult.mapping;
-              conf = ruleResult.confidence;
-            } finally {
-              dispatch({ type: "SET_AI_LOADING", payload: false });
-            }
-          } else {
+        } else if (useAI) {
+          dispatch({ type: "SET_AI_LOADING", payload: true });
+          try {
+            const aiResult = await aiAutoDetectMapping(result.headers, result.rows);
+            autoMap = aiResult.mapping;
+            conf = aiResult.confidence;
+          } catch {
             const ruleResult = autoDetectMapping(result.headers, result.rows, userRole);
             autoMap = ruleResult.mapping;
             conf = ruleResult.confidence;
+          } finally {
+            dispatch({ type: "SET_AI_LOADING", payload: false });
           }
+        } else {
+          const ruleResult = autoDetectMapping(result.headers, result.rows, userRole);
+          autoMap = ruleResult.mapping;
+          conf = ruleResult.confidence;
         }
 
         dispatch({ type: "SET_MAPPING", payload: autoMap });
         dispatch({ type: "SET_CONFIDENCE", payload: conf });
-
         const type = detectUploadType(result.headers, result.rows, autoMap);
         dispatch({ type: "SET_UPLOAD_TYPE", payload: type });
-
-        if (type?.type === "product_sheet") {
-          dispatch({ type: "SET_STEP", payload: "product-sheet-review" });
-        } else {
-          dispatch({ type: "SET_STEP", payload: "mapping" });
-        }
+        dispatch({ type: "SET_STEP", payload: type?.type === "product_sheet" ? "product-sheet-review" : "mapping" });
         return;
       }
 
-      // Standard path (smart import disabled)
+      // Standard path
       let autoMap, conf;
-
       if (useAI) {
         dispatch({ type: "SET_AI_LOADING", payload: true });
         try {
@@ -304,31 +391,49 @@ export default function DataImport() {
 
       dispatch({ type: "SET_MAPPING", payload: autoMap });
       dispatch({ type: "SET_CONFIDENCE", payload: conf });
-
       const type = detectUploadType(result.headers, result.rows, autoMap);
       dispatch({ type: "SET_UPLOAD_TYPE", payload: type });
-
-      if (type?.type === "product_sheet") {
-        dispatch({ type: "SET_STEP", payload: "product-sheet-review" });
-      } else {
-        dispatch({ type: "SET_STEP", payload: "mapping" });
-      }
+      dispatch({ type: "SET_STEP", payload: type?.type === "product_sheet" ? "product-sheet-review" : "mapping" });
     } catch (err) {
       dispatch({ type: "SET_ERROR", payload: err.message });
     }
-  }, [useAI, isBillbackEnabled, tenantId, smartImportEnabled, userRole]);
+  }, [useAI, isBillbackEnabled, tenantId, smartImportEnabled, userRole, comprehendCallable]);
 
   const onDrop = useCallback((e) => {
     e.preventDefault();
     dispatch({ type: "SET_DRAG_OVER", payload: false });
-    const f = e.dataTransfer?.files?.[0];
-    if (f) handleFile(f);
-  }, [handleFile]);
+    const droppedFiles = e.dataTransfer?.files;
+    if (droppedFiles?.length > 0) handleFiles(droppedFiles);
+  }, [handleFiles]);
 
   const onFileSelect = useCallback((e) => {
-    const f = e.target.files?.[0];
-    if (f) handleFile(f);
-  }, [handleFile]);
+    const selectedFiles = e.target.files;
+    if (selectedFiles?.length > 0) handleFiles(selectedFiles);
+    // Reset input so re-selecting the same file works
+    if (inputRef.current) inputRef.current.value = "";
+  }, [handleFiles]);
+
+  // ── Mapping step: handle a needs-review queue item ──
+
+  const handleReviewFile = useCallback((item) => {
+    dispatch({ type: "SET_FILE", payload: item.file });
+    dispatch({ type: "SET_PARSED", payload: item.parsed });
+    dispatch({ type: "SET_MAPPING", payload: item.mapping });
+    dispatch({ type: "SET_CONFIDENCE", payload: item.confidence });
+    dispatch({ type: "SET_UPLOAD_TYPE", payload: item.type });
+    if (item.analysis) {
+      dispatch({ type: "SET_ANALYSIS", payload: item.analysis });
+    }
+
+    if (item.type?.type === "product_sheet") {
+      dispatch({ type: "SET_STEP", payload: "product-sheet-review" });
+    } else if (item.file && /\.pdf$/i.test(item.file.name) && isBillbackEnabled) {
+      // PDF billback in queue — need to run through billback extraction
+      handleSingleFile(item.file);
+    } else {
+      dispatch({ type: "SET_STEP", payload: "mapping" });
+    }
+  }, [isBillbackEnabled, handleSingleFile]);
 
   // ── Step 2: Update mapping ──
 
@@ -383,7 +488,7 @@ export default function DataImport() {
         });
       }
 
-      // Product matching — extract SKU names, run client exact match, then AI for remainder
+      // Product matching
       if (mapping.sku && parsed?.rows?.length > 0) {
         const skuCol = mapping.sku;
         const rawProductNames = [...new Set(
@@ -409,6 +514,14 @@ export default function DataImport() {
             }
           }
         }
+      }
+
+      // If this was a queue item being reviewed, mark it done and go back to queue
+      const reviewingItem = fq.queue.find((i) => i.status === "needs-review" && i.file.name === file.name);
+      if (reviewingItem) {
+        fq.markDone(reviewingItem.id, { rowCount: parsed.rows.length, type: uploadType.type });
+        dispatch({ type: "SET_STEP", payload: "upload" });
+        return;
       }
 
       dispatch({ type: "SET_STEP", payload: "done" });
@@ -470,6 +583,15 @@ export default function DataImport() {
         });
       }
       await refreshData();
+
+      // If in queue, mark done
+      const reviewingItem = fq.queue.find((i) => i.status === "needs-review" && i.file.name === file.name);
+      if (reviewingItem) {
+        fq.markDone(reviewingItem.id, { rowCount: normalizedRows.length, type: "billback" });
+        dispatch({ type: "SET_STEP", payload: "upload" });
+        return;
+      }
+
       dispatch({ type: "SET_SUMMARY", payload: `Imported ${normalizedRows.length} billback line items from ${file.name}.` });
       dispatch({ type: "SET_STEP", payload: "done" });
     } catch (err) {
@@ -500,6 +622,14 @@ export default function DataImport() {
         });
       }
 
+      // If in queue, mark done
+      const reviewingItem = fq.queue.find((i) => i.status === "needs-review" && i.file.name === file.name);
+      if (reviewingItem) {
+        fq.markDone(reviewingItem.id, { rowCount: selectedProducts.length, type: "product_sheet" });
+        dispatch({ type: "SET_STEP", payload: "upload" });
+        return;
+      }
+
       dispatch({ type: "SET_SUMMARY", payload: `${selectedProducts.length} wine${selectedProducts.length !== 1 ? "s" : ""} added to your portfolio.` });
       dispatch({ type: "SET_STEP", payload: "done" });
     } catch (err) {
@@ -520,9 +650,9 @@ export default function DataImport() {
   const retryAnalysis = useCallback(() => {
     if (file) {
       dispatch({ type: "SET_ANALYSIS", payload: null });
-      handleFile(file);
+      handleSingleFile(file);
     }
-  }, [file, handleFile]);
+  }, [file, handleSingleFile]);
 
   // ── Render ──
 
@@ -535,7 +665,22 @@ export default function DataImport() {
         </div>
       )}
 
-      {step === "upload" && (
+      {/* ── Queue Panel (shown when multiple files are queued) ── */}
+      {isBatchMode && step === "upload" && (
+        <QueuePanel
+          queue={fq.queue}
+          progress={fq.progress}
+          batchDone={fq.batchDone}
+          batchResults={fq.batchResults}
+          onRemove={fq.removeFile}
+          onReview={handleReviewFile}
+          onReset={reset}
+          onAddMore={() => inputRef.current?.click()}
+        />
+      )}
+
+      {/* ── Drop Zone (shown when no batch is active, or batch is done) ── */}
+      {step === "upload" && !isBatchMode && (
         <div
           onDragOver={(e) => { e.preventDefault(); dispatch({ type: "SET_DRAG_OVER", payload: true }); }}
           onDragLeave={() => dispatch({ type: "SET_DRAG_OVER", payload: false })}
@@ -549,10 +694,10 @@ export default function DataImport() {
         >
           <div style={{ fontSize: 40, marginBottom: 8 }}>&#128202;</div>
           <div style={{ fontSize: 15, fontWeight: 600, color: "#374151" }}>
-            Drop your data file here, or click to browse
+            Drop your data files here, or click to browse
           </div>
           <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 6 }}>
-            Supports .csv, .xlsx, .xls{isBillbackEnabled ? ", .pdf (billbacks)" : ""} &mdash; up to 10MB
+            Supports .csv, .xlsx, .xls{isBillbackEnabled ? ", .pdf (billbacks)" : ""} &mdash; up to 10MB &mdash; multiple files supported
           </div>
           <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
             QuickBooks exports, {t("distributor").toLowerCase()} reports, inventory files, pipeline data
@@ -581,10 +726,23 @@ export default function DataImport() {
             ref={inputRef}
             type="file"
             accept={isBillbackEnabled ? ".csv,.xlsx,.xls,.tsv,.pdf" : ".csv,.xlsx,.xls,.tsv"}
+            multiple
             onChange={onFileSelect}
             style={{ display: "none" }}
           />
         </div>
+      )}
+
+      {/* Hidden file input for "add more" in batch mode */}
+      {isBatchMode && (
+        <input
+          ref={inputRef}
+          type="file"
+          accept={isBillbackEnabled ? ".csv,.xlsx,.xls,.tsv,.pdf" : ".csv,.xlsx,.xls,.tsv"}
+          multiple
+          onChange={onFileSelect}
+          style={{ display: "none" }}
+        />
       )}
 
       {step === "billback-review" && billbackItems && (
@@ -602,7 +760,16 @@ export default function DataImport() {
             dispatch({ type: "SET_BILLBACK", payload: { items: billbackItems.filter((_, i) => i !== idx), meta: billbackMeta } });
           }}
           onConfirm={confirmBillbackImport}
-          onBack={reset}
+          onBack={() => {
+            if (isBatchMode) {
+              // Skip this file back to queue
+              const item = fq.queue.find((i) => i.status === "needs-review" && i.file.name === file.name);
+              if (item) fq.markError(item.id, "Skipped by user");
+              dispatch({ type: "SET_STEP", payload: "upload" });
+            } else {
+              reset();
+            }
+          }}
         />
       )}
 
@@ -612,7 +779,15 @@ export default function DataImport() {
           headers={parsed.headers}
           mapping={mapping}
           onConfirm={confirmProductSheetImport}
-          onCancel={reset}
+          onCancel={() => {
+            if (isBatchMode) {
+              const item = fq.queue.find((i) => i.status === "needs-review" && i.file.name === file.name);
+              if (item) fq.markError(item.id, "Skipped by user");
+              dispatch({ type: "SET_STEP", payload: "upload" });
+            } else {
+              reset();
+            }
+          }}
         />
       )}
 
@@ -634,7 +809,14 @@ export default function DataImport() {
             uploadType={uploadType}
             onUpdateMapping={updateMapping}
             onProceed={proceedToPreview}
-            onBack={reset}
+            onBack={() => {
+              if (isBatchMode) {
+                // Go back to queue view (file stays needs-review)
+                dispatch({ type: "SET_STEP", payload: "upload" });
+              } else {
+                reset();
+              }
+            }}
           />
         </>
       )}
@@ -650,7 +832,7 @@ export default function DataImport() {
         />
       )}
 
-      {step === "done" && (
+      {step === "done" && !isBatchMode && (
         <div style={s.doneBox}>
           <div style={{ fontSize: 32, marginBottom: 8 }}>&#9989;</div>
           <h3 style={{ fontSize: 18, fontWeight: 700, color: "#166534", margin: "0 0 8px" }}>
@@ -681,6 +863,152 @@ export default function DataImport() {
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Smart sampling helper ──────────────────────────────────────
+
+function smartSampleRows(rows) {
+  if (rows.length <= 50) return rows;
+  const first20 = rows.slice(0, 20);
+  const midStart = Math.floor(rows.length / 2) - 10;
+  const mid20 = rows.slice(midStart, midStart + 20);
+  const last10 = rows.slice(-10);
+  return [...first20, ...mid20, ...last10];
+}
+
+// ─── Queue Panel Sub-Component ──────────────────────────────────
+
+const STATUS_LABELS = {
+  queued: "Queued",
+  parsing: "Analyzing...",
+  "auto-confirmed": "Auto-confirmed",
+  "needs-review": "Needs Review",
+  importing: "Importing...",
+  done: "Imported",
+  error: "Failed",
+};
+
+const STATUS_COLORS = {
+  queued: { bg: "#f3f4f6", color: "#6B7280" },
+  parsing: { bg: "#dbeafe", color: "#1e40af" },
+  "auto-confirmed": { bg: "#d1f5e8", color: "#059669" },
+  "needs-review": { bg: "#fef3c7", color: "#d97706" },
+  importing: { bg: "#dbeafe", color: "#1e40af" },
+  done: { bg: "#d1f5e8", color: "#059669" },
+  error: { bg: "#fee2e2", color: "#dc2626" },
+};
+
+function QueuePanel({ queue, progress, batchDone, batchResults, onRemove, onReview, onReset, onAddMore }) {
+  const totalRows = batchResults
+    .filter((r) => r.status === "done")
+    .reduce((sum, r) => sum + (r.rowCount || 0), 0);
+
+  return (
+    <div style={s.queuePanel}>
+      {/* Header */}
+      <div style={s.queueHeader}>
+        <div>
+          <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>
+            {batchDone ? "Import Complete" : "Importing Files"}
+          </h4>
+          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B7280" }}>
+            {batchDone
+              ? `${progress.done} of ${progress.total} files imported${totalRows > 0 ? ` \u2014 ${totalRows.toLocaleString()} rows` : ""}${progress.failed > 0 ? ` \u2014 ${progress.failed} failed` : ""}`
+              : `Processing ${progress.current} of ${progress.total} files...`
+            }
+          </p>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {!batchDone && (
+            <button className="btn btn-secondary" onClick={onAddMore} style={{ fontSize: 12 }}>
+              + Add Files
+            </button>
+          )}
+          {batchDone && (
+            <button className="btn btn-primary" onClick={onReset}>
+              Import More
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      {!batchDone && (
+        <div style={s.progressBar}>
+          <div style={{
+            ...s.progressFill,
+            width: `${Math.round(((progress.done + progress.failed) / progress.total) * 100)}%`,
+          }} />
+        </div>
+      )}
+
+      {/* File list */}
+      <div style={s.queueList}>
+        {queue.map((item) => {
+          const statusConf = STATUS_COLORS[item.status] || STATUS_COLORS.queued;
+          return (
+            <div key={item.id} style={s.queueItem}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "#374151", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {item.file.name}
+                  </span>
+                  {item.dupWarning && (
+                    <span style={{ ...s.typeBadge, background: "#fef3c7", color: "#d97706", marginLeft: 0, fontSize: 10 }}>
+                      Duplicate?
+                    </span>
+                  )}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
+                  <span style={{
+                    padding: "1px 8px",
+                    borderRadius: 10,
+                    fontSize: 10,
+                    fontWeight: 600,
+                    background: statusConf.bg,
+                    color: statusConf.color,
+                  }}>
+                    {STATUS_LABELS[item.status]}
+                  </span>
+                  {item.type?.type && (
+                    <span style={{ ...s.typeBadge, marginLeft: 0, fontSize: 10 }}>
+                      {item.type.type}
+                    </span>
+                  )}
+                  {item.error && (
+                    <span style={{ fontSize: 11, color: "#dc2626" }}>{item.error}</span>
+                  )}
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                {item.status === "needs-review" && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => onReview(item)}
+                    style={{ fontSize: 11, padding: "3px 10px" }}
+                  >
+                    Review
+                  </button>
+                )}
+                {item.status === "queued" && (
+                  <button
+                    onClick={() => onRemove(item.id)}
+                    style={{ background: "none", border: "none", color: "#9CA3AF", cursor: "pointer", fontSize: 16, padding: 4 }}
+                    title="Remove from queue"
+                  >
+                    &times;
+                  </button>
+                )}
+                {item.status === "done" && (
+                  <span style={{ fontSize: 14, color: "#059669" }}>&#10003;</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
