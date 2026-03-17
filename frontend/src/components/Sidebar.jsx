@@ -8,6 +8,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { ROUTES } from "../config/routes";
 import { useAuth } from "../context/AuthContext";
 import { useData } from "../context/DataContext";
+import { useCrm } from "../context/CrmContext";
 
 import { ONBOARDING_STEPS } from "../config/reportGuides";
 
@@ -113,6 +114,13 @@ const ICONS = {
       <path d="M10 12v4M7 16h6" />
     </svg>
   ),
+  portfolio: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 2h6l1 6c0 2.2-1.8 4-4 4s-4-1.8-4-4l1-6z" />
+      <path d="M10 12v4M7 16h6" />
+      <path d="M5 8h10" />
+    </svg>
+  ),
   setup: (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M10 2v4M10 14v4M2 10h4M14 10h4" />
@@ -128,6 +136,7 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
   });
   const { currentUser, logout, isAdmin } = useAuth();
   const { availability, tenantConfig, loading: dataLoading, updateTenantConfig } = useData();
+  const { products } = useCrm();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -163,9 +172,10 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
   const user = currentUser;
 
   // Split routes into sections
-  const mainRoutes = ROUTES.filter((r) => !r.adminOnly && r.section !== "crm" && r.section !== "billbacks" && r.section !== "setup");
+  const mainRoutes = ROUTES.filter((r) => !r.adminOnly && r.section !== "crm" && r.section !== "billbacks" && r.section !== "portfolio" && r.section !== "setup");
   const toolsRoutes = ROUTES.filter((r) => r.section === "tools");
   const crmRoutes = ROUTES.filter((r) => r.section === "crm");
+  const portfolioRoutes = ROUTES.filter((r) => r.section === "portfolio" && !r.hidden);
   const billbackRoutes = ROUTES.filter((r) => r.section === "billbacks");
   const adminRoutes = ROUTES.filter((r) => r.adminOnly);
 
@@ -316,6 +326,33 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
             </NavLink>
           ))}
         </div>
+
+        {portfolioRoutes.length > 0 && (
+          <div className="sidebar__nav-section">
+            {!collapsed && <span className="sidebar__section-label">Portfolio</span>}
+            {portfolioRoutes.map((route) => (
+              <NavLink
+                key={route.key}
+                to={route.path}
+                className={({ isActive }) =>
+                  `sidebar__link ${isActive ? "sidebar__link--active" : ""}`
+                }
+                title={collapsed ? getLabel(route) : undefined}
+                onClick={onMobileClose}
+              >
+                <span className="sidebar__link-icon">{ICONS[route.icon]}</span>
+                {!collapsed && (
+                  <>
+                    <span className="sidebar__link-label">{getLabel(route)}</span>
+                    {products.length > 0 && (
+                      <span className="sidebar__link-badge">{products.length}</span>
+                    )}
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
+        )}
 
         {tenantConfig?.features?.billbacks && billbackRoutes.length > 0 && (
           <div className="sidebar__nav-section">

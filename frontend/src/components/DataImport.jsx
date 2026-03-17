@@ -3,7 +3,9 @@
  * format detection, preview, and Firestore persistence.
  */
 import { useState, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useData } from "../context/DataContext";
+import { useCrm } from "../context/CrmContext";
 import parseFile from "../utils/parseFile";
 import { autoDetectMapping, detectUploadType, getFieldDefs } from "../utils/semanticMapper";
 import { getUserRole, t } from "../utils/terminology";
@@ -11,16 +13,20 @@ import { aiAutoDetectMapping } from "../utils/aiMapper";
 import { transformAll, generateSummary } from "../utils/transformData";
 import { transformBillback } from "../utils/transformBillback";
 import { normalizeRows } from "../utils/normalize.js";
+import { clientExactMatch } from "../utils/productNormalize";
 import { logUpload } from "../services/firestoreService";
 import { useAuth } from "../context/AuthContext";
 import { getFunctions, httpsCallable } from "firebase/functions";
+import ProductSheetReviewStep from "./ProductSheetReviewStep";
 
 const STEPS = ["upload", "mapping", "preview", "done"];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export default function DataImport() {
   const { importDatasets, userRole, tenantId, useNormalized, tenantConfig, updateTenantConfig, refreshData } = useData();
+  const { products, createProduct } = useCrm();
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [step, setStep] = useState("upload");
   const [file, setFile] = useState(null);
   const [parsed, setParsed] = useState(null);       // { headers, rows }
@@ -35,6 +41,9 @@ export default function DataImport() {
   const [useAI, setUseAI] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
   const inputRef = useRef();
+
+  // Product matching state
+  const [unmatchedProducts, setUnmatchedProducts] = useState([]);
 
   // Billback PDF state
   const [billbackItems, setBillbackItems] = useState(null);
@@ -124,7 +133,12 @@ export default function DataImport() {
       const type = detectUploadType(result.headers, result.rows, autoMap);
       setUploadType(type);
 
-      setStep("mapping");
+      // Product sheet flow — skip mapping, go straight to review
+      if (type?.type === "product_sheet") {
+        setStep("product-sheet-review");
+      } else {
+        setStep("mapping");
+      }
     } catch (err) {
       setError(err.message);
     }
@@ -181,7 +195,7 @@ export default function DataImport() {
         };
       }
 
-      await importDatasets(datasets, summary, importMeta);
+      const { importId } = await importDatasets(datasets, summary, importMeta);
 
       // Clear demo data flag after real data is saved
       if (tenantConfig?.demoData) {
@@ -196,6 +210,35 @@ export default function DataImport() {
           uploadedBy: currentUser?.email || "unknown",
         });
       }
+
+      // Product matching — extract SKU names, run client exact match, then AI for remainder
+      if (mapping.sku && parsed?.rows?.length > 0) {
+        const skuCol = mapping.sku;
+        const rawProductNames = [...new Set(
+          parsed.rows.map((r) => (r[skuCol] || "").trim()).filter(Boolean)
+        )];
+
+        if (rawProductNames.length > 0) {
+          const { unmatched: clientUnmatched } = clientExactMatch(rawProductNames, products);
+
+          if (clientUnmatched.length > 0 && importId && tenantId) {
+            try {
+              const fns = getFunctions();
+              const matchProducts = httpsCallable(fns, "matchProductsFromImport");
+              const { data: matchResult } = await matchProducts({
+                tenantId,
+                importId,
+                unmatchedNames: clientUnmatched,
+              });
+              setUnmatchedProducts(matchResult.unmatched || []);
+            } catch (err) {
+              console.error("[DataImport] Product matching failed:", err.message);
+              setUnmatchedProducts(clientUnmatched);
+            }
+          }
+        }
+      }
+
       setStep("done");
     } catch (err) {
       setError(err.message);
@@ -263,6 +306,35 @@ export default function DataImport() {
     }
   };
 
+  // ── Product Sheet Confirm ──
+  const confirmProductSheetImport = async (selectedProducts) => {
+    setSaving(true);
+    setError("");
+    try {
+      await Promise.all(selectedProducts.map((p) => createProduct(p)));
+
+      if (tenantConfig?.demoData) {
+        await updateTenantConfig({ demoData: false });
+      }
+
+      if (tenantId) {
+        await logUpload(tenantId, {
+          fileName: file.name,
+          rowCount: selectedProducts.length,
+          type: "product_sheet",
+          uploadedBy: currentUser?.email || "unknown",
+        });
+      }
+
+      setSummary(`${selectedProducts.length} wine${selectedProducts.length !== 1 ? "s" : ""} added to your portfolio.`);
+      setStep("done");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // ── Reset ──
   const reset = () => {
     setStep("upload");
@@ -276,6 +348,7 @@ export default function DataImport() {
     setError("");
     setBillbackItems(null);
     setBillbackMeta(null);
+    setUnmatchedProducts([]);
   };
 
   // ── Render ──
@@ -362,6 +435,16 @@ export default function DataImport() {
         />
       )}
 
+      {step === "product-sheet-review" && parsed && (
+        <ProductSheetReviewStep
+          rows={parsed.rows}
+          headers={parsed.headers}
+          mapping={mapping}
+          onConfirm={confirmProductSheetImport}
+          onCancel={reset}
+        />
+      )}
+
       {step === "mapping" && parsed && (
         <MappingStep
           fileName={file.name}
@@ -394,6 +477,25 @@ export default function DataImport() {
             Import Complete
           </h3>
           <p style={{ fontSize: 14, color: "#4B5563", marginBottom: 16 }}>{summary}</p>
+          {unmatchedProducts.length > 0 && (
+            <div className="import-unmatched">
+              <div className="import-unmatched__header">
+                <span className="import-unmatched__icon">&#128203;</span>
+                <span>{unmatchedProducts.length} products not in your catalog</span>
+              </div>
+              <div className="import-unmatched__list">
+                {unmatchedProducts.slice(0, 10).map((name) => (
+                  <div key={name} className="import-unmatched__item">{name}</div>
+                ))}
+                {unmatchedProducts.length > 10 && (
+                  <div className="import-unmatched__more">+{unmatchedProducts.length - 10} more</div>
+                )}
+              </div>
+              <button className="btn btn-secondary" onClick={() => navigate("/portfolio")}>
+                Add to Portfolio &rarr;
+              </button>
+            </div>
+          )}
           <button className="btn btn-primary" onClick={reset}>
             Import Another File
           </button>

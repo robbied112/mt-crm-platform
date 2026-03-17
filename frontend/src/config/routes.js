@@ -117,6 +117,23 @@ export const ROUTES = [
     section: "crm",
     description: "Task management and follow-up tracking",
   },
+  // Portfolio
+  {
+    key: "portfolio",
+    path: "/portfolio",
+    label: "Portfolio",
+    icon: "portfolio",
+    section: "portfolio",
+    description: "Wine portfolio — catalog, details, sell sheets",
+  },
+  {
+    key: "portfolio-detail",
+    path: "/portfolio/:productId",
+    label: "Wine Detail",
+    icon: "portfolio",
+    section: "portfolio",
+    hidden: true,
+  },
   // Billbacks (feature-gated)
   {
     key: "billbacks",
@@ -133,6 +150,7 @@ export const ROUTES = [
     label: "Wines",
     icon: "wines",
     section: "billbacks",
+    deprecated: true,
     description: "Wine catalog extracted from billback imports",
   },
   // Setup / Onboarding

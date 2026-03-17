@@ -28,6 +28,8 @@ import {
   PricingStudio,
   SetupAssistant,
   PipelineKanban,
+  PortfolioList,
+  ProductDetail,
 } from "./components";
 import Sidebar from "./components/Sidebar";
 import CommandPalette from "./components/CommandPalette";
@@ -62,7 +64,6 @@ function App() {
     spendByWine,
     spendByDistributor,
     billbackSummary,
-    wines,
     tenantConfig,
     tenantId,
     availability,
@@ -300,6 +301,10 @@ function App() {
                 element={<PipelineKanban />}
               />
 
+              {/* Portfolio routes */}
+              <Route path="/portfolio" element={<PortfolioList />} />
+              <Route path="/portfolio/:productId" element={<ProductDetail />} />
+
               {/* Billback routes (feature-gated) */}
               {tenantConfig?.features?.billbacks && (
                 <>
@@ -316,10 +321,10 @@ function App() {
                       </DataGate>
                     }
                   />
-                  <Route path="/wines" element={<WineList wines={wines} />} />
+                  <Route path="/wines" element={<WineList wines={[]} />} />
                   <Route
                     path="/wines/:wineId"
-                    element={<WineDetail wines={wines} spendByWine={spendByWine} />}
+                    element={<WineDetail wines={[]} spendByWine={spendByWine} />}
                   />
                 </>
               )}

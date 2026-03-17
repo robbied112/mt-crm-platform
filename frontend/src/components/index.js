@@ -58,3 +58,8 @@ export { default as SetupAssistant } from "./SetupAssistant";
 export { default as DataHealthCard } from "./DataHealthCard";
 export { default as PipelineKanban } from "./PipelineKanban";
 export { default as OpportunityForm } from "./OpportunityForm";
+export { default as ProductSheetReviewStep } from "./ProductSheetReviewStep";
+export { default as PortfolioList } from "./Portfolio/PortfolioList";
+export { default as ProductDetail } from "./Portfolio/ProductDetail";
+export { default as ProductForm } from "./Portfolio/ProductForm";
+export { default as SellSheetExport } from "./Portfolio/SellSheetExport";
