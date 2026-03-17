@@ -1,0 +1,633 @@
+const {
+  functions,
+  admin,
+  db,
+  anthropicApiKey,
+  verifyTenantMembership,
+  INTERNAL_FIELDS,
+} = require("./helpers");
+
+// ─── Rate Limit ──────────────────────────────────────────────────────────────
+// Max 20 comprehension calls per tenant per hour, tracked in Firestore.
+
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+/**
+ * Check and increment the rate limit counter for a tenant.
+ * Throws HttpsError if the tenant has exceeded the limit.
+ */
+async function checkRateLimit(tenantId) {
+  const ref = db
+    .collection("tenants")
+    .doc(tenantId)
+    .collection("rateLimits")
+    .doc("comprehend");
+
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const now = Date.now();
+
+    if (!snap.exists) {
+      tx.set(ref, { count: 1, windowStart: now });
+      return;
+    }
+
+    const { count, windowStart } = snap.data();
+
+    if (now - windowStart > RATE_LIMIT_WINDOW_MS) {
+      // Window expired — reset
+      tx.set(ref, { count: 1, windowStart: now });
+      return;
+    }
+
+    if (count >= RATE_LIMIT_MAX) {
+      throw new functions.https.HttpsError(
+        "resource-exhausted",
+        `Rate limit exceeded: max ${RATE_LIMIT_MAX} comprehension calls per hour per tenant`
+      );
+    }
+
+    tx.update(ref, { count: admin.firestore.FieldValue.increment(1) });
+  });
+}
+
+// ─── Tool Schemas ────────────────────────────────────────────────────────────
+
+const REPORT_ANALYSIS_TOOL = {
+  name: "report_analysis",
+  description:
+    "Analyze a wine/spirits distributor report file and return structured metadata " +
+    "describing its type, layout, column semantics, and extraction specification.",
+  input_schema: {
+    type: "object",
+    properties: {
+      reportType: {
+        type: "string",
+        enum: [
+          "distributor_velocity",
+          "quickbooks_revenue",
+          "inventory_health",
+          "lost_placements",
+          "new_placements",
+          "period_comparison",
+          "product_catalog",
+          "ar_aging",
+          "ap_aging",
+          "unknown",
+        ],
+        description: "The semantic category of this report",
+      },
+      dataStructure: {
+        type: "string",
+        enum: [
+          "standard",
+          "grouped_by_customer",
+          "pivot_weekly",
+          "pivot_monthly",
+          "multi_section",
+          "hierarchical",
+        ],
+        description: "How the data is laid out in the grid",
+      },
+      headerRow: {
+        type: "integer",
+        description: "0-indexed row number where the column headers live",
+      },
+      dataStartRow: {
+        type: "integer",
+        description: "0-indexed row number where the first data record begins",
+      },
+      confidence: {
+        type: "number",
+        description: "Overall classification confidence from 0 to 1",
+      },
+      humanSummary: {
+        type: "string",
+        description: "One-to-two sentence plain-English description of this file",
+      },
+      columnSemantics: {
+        type: "object",
+        description:
+          "Map of column header name → semantic annotation. " +
+          "Each value has: field (internal field name), confidence (0-1), reasoning (string).",
+        additionalProperties: {
+          type: "object",
+          properties: {
+            field: { type: "string" },
+            confidence: { type: "number" },
+            reasoning: { type: "string" },
+          },
+          required: ["field", "confidence", "reasoning"],
+        },
+      },
+      extractionSpec: {
+        type: "object",
+        description: "Machine-readable spec that tells the importer exactly how to read this file",
+        properties: {
+          headerRow: {
+            type: "integer",
+            description: "0-indexed header row",
+          },
+          dataStartRow: {
+            type: "integer",
+            description: "0-indexed first data row",
+          },
+          skipPatterns: {
+            type: "array",
+            description: "Row patterns to skip (e.g. subtotals, blank dividers)",
+            items: {
+              type: "object",
+              properties: {
+                column: { type: "integer" },
+                pattern: { type: "string" },
+              },
+              required: ["column", "pattern"],
+            },
+          },
+          columnOffset: {
+            type: "integer",
+            description: "Number of leading columns to skip before data columns begin",
+          },
+          pivot: {
+            description:
+              "Present when the file uses a pivot layout (e.g. weekly columns). " +
+              "null if not a pivot.",
+            oneOf: [
+              {
+                type: "object",
+                properties: {
+                  startCol: { type: "integer" },
+                  endCol: { type: "integer" },
+                  groupSize: { type: "integer" },
+                  labelRow: { type: "integer" },
+                  fieldNames: { type: "array", items: { type: "string" } },
+                },
+                required: ["startCol", "endCol", "groupSize", "labelRow", "fieldNames"],
+              },
+              { type: "null" },
+            ],
+          },
+          sheets: {
+            type: "array",
+            items: { type: "string" },
+            description: "Which sheet names to import (empty = all)",
+          },
+          columnMapping: {
+            type: "object",
+            description: "Map of internal field name → column header or 0-indexed column number",
+            additionalProperties: {
+              oneOf: [{ type: "integer" }, { type: "string" }],
+            },
+          },
+          codeGen: {
+            description: "Reserved for AI-generated extraction code. Always null from this tool.",
+            type: "null",
+          },
+        },
+        required: [
+          "headerRow",
+          "dataStartRow",
+          "skipPatterns",
+          "columnOffset",
+          "pivot",
+          "sheets",
+          "columnMapping",
+          "codeGen",
+        ],
+      },
+      dashboardTargets: {
+        type: "array",
+        items: { type: "string" },
+        description:
+          "Which CruFolio dashboard sections this data will populate " +
+          "(e.g. [\"depletions\", \"distributorScorecard\"])",
+      },
+      mapping: {
+        type: "object",
+        description:
+          "Column name mapping in the same format as the existing semanticMapper. " +
+          "Map of internal field name → source column header string.",
+        additionalProperties: { type: "string" },
+      },
+    },
+    required: [
+      "reportType",
+      "dataStructure",
+      "headerRow",
+      "dataStartRow",
+      "confidence",
+      "humanSummary",
+      "columnSemantics",
+      "extractionSpec",
+      "dashboardTargets",
+      "mapping",
+    ],
+  },
+};
+
+const INTEGRATION_PLAN_TOOL = {
+  name: "integration_plan",
+  description:
+    "Given a set of analyzed report files, produce an integration plan " +
+    "describing import order, dashboard coverage, missing data, and conflicts.",
+  input_schema: {
+    type: "object",
+    properties: {
+      summary: {
+        type: "string",
+        description: "High-level plain-English summary of the full data set",
+      },
+      fileOrder: {
+        type: "array",
+        items: { type: "string" },
+        description: "Recommended file import order (file names)",
+      },
+      dashboardCoverage: {
+        type: "object",
+        description:
+          "Map of dashboard name → coverage status. " +
+          "Each value has: covered (boolean), source (filename or empty string).",
+        additionalProperties: {
+          type: "object",
+          properties: {
+            covered: { type: "boolean" },
+            source: { type: "string" },
+          },
+          required: ["covered", "source"],
+        },
+      },
+      missingData: {
+        type: "array",
+        description: "Data types that are absent from the provided files",
+        items: {
+          type: "object",
+          properties: {
+            type: { type: "string" },
+            description: { type: "string" },
+            suggestion: { type: "string" },
+          },
+          required: ["type", "description", "suggestion"],
+        },
+      },
+      conflicts: {
+        type: "array",
+        description: "Detected conflicts between two or more files",
+        items: {
+          type: "object",
+          properties: {
+            files: { type: "array", items: { type: "string" } },
+            issue: { type: "string" },
+            resolution: { type: "string" },
+          },
+          required: ["files", "issue", "resolution"],
+        },
+      },
+    },
+    required: ["summary", "fileOrder", "dashboardCoverage", "missingData", "conflicts"],
+  },
+};
+
+// ─── Prompt Helpers ──────────────────────────────────────────────────────────
+
+/**
+ * Build a markdown table from headers + sample rows for use in an AI prompt.
+ * Values are truncated at 60 chars to keep tokens reasonable.
+ */
+function buildMarkdownTable(headers, sampleRows) {
+  const safeHeaders = headers.map((h) => String(h ?? "").replace(/\|/g, "/").slice(0, 60));
+  const separator = safeHeaders.map(() => "---").join(" | ");
+  const rows = sampleRows.map((row) =>
+    safeHeaders
+      .map((h, i) => {
+        const raw = row[h] ?? row[i] ?? "";
+        return String(raw).replace(/\|/g, "/").replace(/\n/g, " ").slice(0, 60);
+      })
+      .join(" | ")
+  );
+  return [safeHeaders.join(" | "), separator, ...rows].join("\n");
+}
+
+/**
+ * Build the system prompt for comprehendReport.
+ */
+function buildComprehendSystemPrompt() {
+  const fieldList = INTERNAL_FIELDS.map((f) => `  ${f.field}: ${f.label}`).join("\n");
+
+  return `You are CruFolio's Report Comprehension Engine.
+
+CruFolio is a CRM and analytics platform for wine and spirits supplier teams. \
+Suppliers upload reports from distributors (e.g. Southern Glazer's, RNDC, Breakthru), \
+their own QuickBooks exports, inventory sheets, and placement trackers.
+
+Your job is to analyze a report file and return a fully structured JSON analysis \
+using the report_analysis tool. Be precise and specific — your output drives the \
+automated import pipeline.
+
+INTERNAL FIELDS (CruFolio's canonical data model):
+${fieldList}
+
+REPORT TYPES:
+- distributor_velocity: Cases sold by SKU and/or account, often weekly or monthly periods
+- quickbooks_revenue: P&L or invoice exports from QuickBooks or similar accounting tools
+- inventory_health: On-hand stock, days-on-hand, reorder points
+- lost_placements: Accounts that had a SKU last period but not this one
+- new_placements: Accounts that added a SKU this period
+- period_comparison: Side-by-side current vs. prior period (same or different columns)
+- product_catalog: SKU list with pricing, descriptions, attributes
+- ar_aging: Accounts Receivable aging buckets (30/60/90/120+ days)
+- ap_aging: Accounts Payable aging buckets
+- unknown: Cannot determine type with reasonable confidence
+
+DATA STRUCTURES:
+- standard: One header row, one record per row below it
+- grouped_by_customer: Rows grouped under customer name headers, with subtotals
+- pivot_weekly: Columns represent individual weeks or dates
+- pivot_monthly: Columns represent months
+- multi_section: Multiple distinct tables in one sheet (separated by blank rows)
+- hierarchical: Parent rows with indented child rows (e.g. category → product)
+
+DASHBOARD TARGETS (which CruFolio views this data feeds):
+- depletions, distributorScorecard, inventoryHealth, placementTracker,
+  revenueAnalysis, arAging, apAging, productCatalog, executiveDashboard
+
+Map every column you recognize to an internal field. \
+Use your best judgment for columns that are similar but not exact matches. \
+Set confidence below 0.7 for uncertain mappings. \
+Always validate your headerRow and dataStartRow against the sample rows shown.`;
+}
+
+/**
+ * Sanitize a string for safe embedding inside XML delimiters in a prompt.
+ * Strips XML tags and truncates.
+ */
+function sanitizeForPrompt(value, maxLength = 200) {
+  if (value == null) return "";
+  return String(value)
+    .replace(/<[^>]*>/g, "")
+    .replace(/[^\x20-\x7E\n\r\t]/g, "")
+    .slice(0, maxLength);
+}
+
+// ─── Validate Column Indices ─────────────────────────────────────────────────
+
+/**
+ * Walk the extractionSpec and clamp/remove any column indices that exceed
+ * the actual header count. Returns a sanitized copy of the spec.
+ */
+function validateExtractionSpec(spec, headerCount) {
+  if (!spec || typeof spec !== "object") return spec;
+
+  const result = { ...spec };
+
+  // columnOffset
+  if (typeof result.columnOffset === "number" && result.columnOffset >= headerCount) {
+    result.columnOffset = 0;
+  }
+
+  // pivot column bounds
+  if (result.pivot && typeof result.pivot === "object") {
+    result.pivot = { ...result.pivot };
+    if (result.pivot.startCol >= headerCount) result.pivot.startCol = 0;
+    if (result.pivot.endCol >= headerCount) result.pivot.endCol = headerCount - 1;
+    if (result.pivot.startCol > result.pivot.endCol) result.pivot = null;
+  }
+
+  // columnMapping: remove entries pointing to out-of-range numeric indices
+  if (result.columnMapping && typeof result.columnMapping === "object") {
+    const cleaned = {};
+    for (const [field, ref] of Object.entries(result.columnMapping)) {
+      if (typeof ref === "number") {
+        if (ref >= 0 && ref < headerCount) cleaned[field] = ref;
+        // else drop it silently
+      } else {
+        cleaned[field] = ref; // string header names are not index-validated here
+      }
+    }
+    result.columnMapping = cleaned;
+  }
+
+  return result;
+}
+
+// ─── comprehendReport ────────────────────────────────────────────────────────
+
+const comprehendReport = functions
+  .runWith({ secrets: [anthropicApiKey], timeoutSeconds: 60, memory: "512MB" })
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+    }
+
+    const {
+      tenantId,
+      headers,
+      sampleRows,
+      fileName,
+      sheetNames,
+    } = data;
+
+    if (!tenantId || !headers || !sampleRows || !fileName) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "tenantId, headers, sampleRows, and fileName are required"
+      );
+    }
+
+    await verifyTenantMembership(context.auth.uid, tenantId);
+    await checkRateLimit(tenantId);
+
+    const apiKey = anthropicApiKey.value();
+    if (!apiKey) {
+      throw new functions.https.HttpsError(
+        "failed-precondition",
+        "ANTHROPIC_API_KEY not configured"
+      );
+    }
+
+    // Build the markdown table from smart-sampled rows (caller sends first 20 + mid 20 + last 10)
+    const table = buildMarkdownTable(headers, sampleRows);
+
+    const safeFileName = sanitizeForPrompt(fileName, 200);
+    const safeSheetNames =
+      Array.isArray(sheetNames) && sheetNames.length
+        ? sheetNames.map((s) => sanitizeForPrompt(s, 80)).join(", ")
+        : "(single sheet)";
+
+    const userMessage =
+      `<file_data>\n` +
+      `<file_name>${safeFileName}</file_name>\n` +
+      `<sheet_names>${safeSheetNames}</sheet_names>\n` +
+      `<headers>${headers.length} columns</headers>\n` +
+      `<sample_rows count="${sampleRows.length}">\n` +
+      `${table}\n` +
+      `</sample_rows>\n` +
+      `</file_data>\n\n` +
+      `Analyze the file above and call the report_analysis tool with your findings.`;
+
+    const Anthropic = require("@anthropic-ai/sdk");
+    const client = new Anthropic({ apiKey });
+
+    let response;
+    try {
+      response = await client.messages.create({
+        model: "claude-sonnet-4-5-20241022",
+        max_tokens: 4096,
+        system: buildComprehendSystemPrompt(),
+        tools: [REPORT_ANALYSIS_TOOL],
+        tool_choice: { type: "tool", name: "report_analysis" },
+        messages: [{ role: "user", content: userMessage }],
+      });
+    } catch (err) {
+      console.error("[comprehendReport] Anthropic API error:", err.message);
+      return {
+        error: true,
+        errorType: "api_failure",
+        suggestion: "The AI service is unavailable. Please try again in a moment.",
+      };
+    }
+
+    // Extract the tool_use block
+    const toolUseBlock = response.content.find((b) => b.type === "tool_use");
+    if (!toolUseBlock) {
+      console.error("[comprehendReport] No tool_use block in response");
+      return {
+        error: true,
+        errorType: "no_tool_use",
+        suggestion: "AI did not return a structured analysis. The file may be empty or unreadable.",
+      };
+    }
+
+    let analysis;
+    try {
+      analysis = toolUseBlock.input;
+    } catch (err) {
+      console.error("[comprehendReport] Failed to parse tool input:", err.message);
+      return {
+        error: true,
+        errorType: "parse_failure",
+        suggestion: "AI returned malformed analysis data. Please retry.",
+      };
+    }
+
+    // Validate column indices against actual header count
+    if (analysis.extractionSpec) {
+      analysis.extractionSpec = validateExtractionSpec(
+        analysis.extractionSpec,
+        headers.length
+      );
+    }
+
+    // Ensure codeGen is null (reserved, never returned from this function)
+    if (analysis.extractionSpec) {
+      analysis.extractionSpec.codeGen = null;
+    }
+
+    return analysis;
+  });
+
+// ─── generateIntegrationPlan ─────────────────────────────────────────────────
+
+const generateIntegrationPlan = functions
+  .runWith({ secrets: [anthropicApiKey], timeoutSeconds: 60, memory: "512MB" })
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+    }
+
+    const { tenantId, analyses } = data;
+
+    if (!tenantId || !Array.isArray(analyses) || analyses.length === 0) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "tenantId and a non-empty analyses array are required"
+      );
+    }
+
+    await verifyTenantMembership(context.auth.uid, tenantId);
+    await checkRateLimit(tenantId);
+
+    const apiKey = anthropicApiKey.value();
+    if (!apiKey) {
+      throw new functions.https.HttpsError(
+        "failed-precondition",
+        "ANTHROPIC_API_KEY not configured"
+      );
+    }
+
+    // Build the file summaries block, sanitizing each value
+    const fileSummaries = analyses
+      .map((a, i) => {
+        const name = sanitizeForPrompt(a.fileName, 200);
+        const type = sanitizeForPrompt(a.reportType, 60);
+        const summary = sanitizeForPrompt(a.humanSummary, 400);
+        const targets = Array.isArray(a.dashboardTargets)
+          ? a.dashboardTargets.map((t) => sanitizeForPrompt(t, 60)).join(", ")
+          : "";
+        const rowCount = typeof a.rowCount === "number" ? a.rowCount : "unknown";
+        return (
+          `<file index="${i + 1}">\n` +
+          `  <name>${name}</name>\n` +
+          `  <report_type>${type}</report_type>\n` +
+          `  <row_count>${rowCount}</row_count>\n` +
+          `  <dashboard_targets>${targets}</dashboard_targets>\n` +
+          `  <summary>${summary}</summary>\n` +
+          `</file>`
+        );
+      })
+      .join("\n");
+
+    const systemPrompt =
+      `You are CruFolio's Integration Planner. ` +
+      `CruFolio is a wine and spirits supplier CRM and analytics platform. ` +
+      `Given a set of analyzed report files, produce a structured integration plan ` +
+      `using the integration_plan tool. ` +
+      `Consider: which files should be imported first (foundational SKU/account data before transactions), ` +
+      `which CruFolio dashboards are covered, what is missing, and any conflicts between files ` +
+      `(e.g. duplicate period data from two distributors, overlapping SKUs). ` +
+      `CruFolio dashboards: depletions, distributorScorecard, inventoryHealth, placementTracker, ` +
+      `revenueAnalysis, arAging, apAging, productCatalog, executiveDashboard.`;
+
+    const userMessage =
+      `<files>\n${fileSummaries}\n</files>\n\n` +
+      `Generate an integration plan for the ${analyses.length} file(s) above. ` +
+      `Call the integration_plan tool with your findings.`;
+
+    const Anthropic = require("@anthropic-ai/sdk");
+    const client = new Anthropic({ apiKey });
+
+    let response;
+    try {
+      response = await client.messages.create({
+        model: "claude-sonnet-4-5-20241022",
+        max_tokens: 2048,
+        system: systemPrompt,
+        tools: [INTEGRATION_PLAN_TOOL],
+        tool_choice: { type: "tool", name: "integration_plan" },
+        messages: [{ role: "user", content: userMessage }],
+      });
+    } catch (err) {
+      console.error("[generateIntegrationPlan] Anthropic API error:", err.message);
+      return {
+        error: true,
+        errorType: "api_failure",
+        suggestion: "The AI service is unavailable. Please try again in a moment.",
+      };
+    }
+
+    const toolUseBlock = response.content.find((b) => b.type === "tool_use");
+    if (!toolUseBlock) {
+      console.error("[generateIntegrationPlan] No tool_use block in response");
+      return {
+        error: true,
+        errorType: "no_tool_use",
+        suggestion: "AI did not return a structured integration plan. Please retry.",
+      };
+    }
+
+    return toolUseBlock.input;
+  });
+
+// ─── Exports ─────────────────────────────────────────────────────────────────
+
+module.exports = { comprehendReport, generateIntegrationPlan };

@@ -170,21 +170,47 @@ function processStandardRows(rawRows, headerIdx) {
  * Parse a file from a Buffer (for server-side / Cloud Functions).
  * @param {Buffer} buffer - File contents
  * @param {string} ext - File extension including dot (e.g. ".csv", ".xlsx")
- * @returns {{ headers: string[], rows: object[] }}
+ * @param {{ sheets?: string[] }} [options] - Optional options object
+ *   - sheets: array of sheet names to parse; when provided returns an array of
+ *     { sheetName, headers, rows } objects instead of a single { headers, rows }.
+ * @returns {{ headers: string[], rows: object[] } | Array<{ sheetName: string, headers: string[], rows: object[] }>}
  */
-function parseFileBuffer(buffer, ext) {
+function parseFileBuffer(buffer, ext, options) {
   if (ext === ".csv" || ext === ".tsv") {
     const text = buffer.toString("utf-8");
     const delimiter = ext === ".tsv" ? "\t" : ",";
     const rawRows = text.split("\n").map((line) => line.split(delimiter).map((c) => c.trim().replace(/^"|"$/g, "")));
     const headerIdx = findHeaderRow(rawRows);
-    return detectGroupedFormat(rawRows, headerIdx)
+    const result = detectGroupedFormat(rawRows, headerIdx)
       ? processGroupedRows(rawRows, headerIdx)
       : processStandardRows(rawRows, headerIdx);
+    // Multi-sheet option is a no-op for CSV/TSV — wrap in array if requested
+    if (options && options.sheets && options.sheets.length > 0) {
+      return [{ sheetName: "Sheet1", ...result }];
+    }
+    return result;
   }
 
   const XLSX = getXLSX();
   const wb = XLSX.read(buffer, { type: "buffer", cellDates: true });
+
+  // Multi-sheet mode: process each named sheet
+  if (options && options.sheets && options.sheets.length > 0) {
+    return options.sheets.map((sheetName) => {
+      const sheet = wb.Sheets[sheetName];
+      if (!sheet) {
+        return { sheetName, headers: [], rows: [] };
+      }
+      const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "", raw: false });
+      const headerIdx = findHeaderRow(rawRows);
+      const parsed = detectGroupedFormat(rawRows, headerIdx)
+        ? processGroupedRows(rawRows, headerIdx)
+        : processStandardRows(rawRows, headerIdx);
+      return { sheetName, ...parsed };
+    });
+  }
+
+  // Default: single-sheet mode (existing behavior)
   const sheetName = wb.SheetNames[0];
   const sheet = wb.Sheets[sheetName];
   const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "", raw: false });
@@ -193,6 +219,22 @@ function parseFileBuffer(buffer, ext) {
   return detectGroupedFormat(rawRows, headerIdx)
     ? processGroupedRows(rawRows, headerIdx)
     : processStandardRows(rawRows, headerIdx);
+}
+
+/**
+ * Return the list of sheet names from an XLSX/XLS workbook buffer.
+ * For CSV/TSV (which have no concept of sheets), returns ["Sheet1"].
+ * @param {Buffer} buffer - File contents
+ * @param {string} ext - File extension including dot (e.g. ".csv", ".xlsx")
+ * @returns {string[]}
+ */
+function getSheetNames(buffer, ext) {
+  if (!ext || ext === ".csv" || ext === ".tsv") {
+    return ["Sheet1"];
+  }
+  const XLSX = getXLSX();
+  const wb = XLSX.read(buffer, { type: "buffer", bookSheets: true });
+  return wb.SheetNames;
 }
 
 /**
@@ -216,4 +258,5 @@ module.exports = {
   processStandardRows,
   parseFileBuffer,
   parseRawRows,
+  getSheetNames,
 };
