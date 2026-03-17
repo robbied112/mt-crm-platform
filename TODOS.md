@@ -1198,6 +1198,17 @@ P3 delight:
     TODO-042 (keyboard nav)
     TODO-029 (account hover cards)
 
+Design system alignment (from /qa-design-review 2026-03-17):
+    FINDING-005 (H3 headings 15-16px vs DESIGN.md 20px) ← evaluate 18px compromise
+    FINDING-006 (Tailwind red #ef4444 → DESIGN.md #C53030) ← ~12 files, batch replace
+    FINDING-007 (Tailwind warning yellows → DESIGN.md #C07B01) ← low priority
+    FINDING-008 (cool gray tones → warm neutrals) ← subtle, low priority
+    Fixed by /qa-design-review on robbied112/qa-design-fixes, 2026-03-17:
+        FINDING-001 (Plus Jakarta Sans → Inter Tight) ✓
+        FINDING-002 (purple #7C3AED → Warm Copper #B87333) ✓
+        FINDING-003 (bright green #4ade80 → DESIGN.md #1F865A) ✓
+        FINDING-004 (undersized touch targets) ✓
+
 Compliance:
     TODO-035 (data deletion + privacy) ← P2, before paid customers
     TODO-037 (observability) ← P2
