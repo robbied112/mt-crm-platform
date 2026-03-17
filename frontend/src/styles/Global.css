@@ -263,8 +263,10 @@ body {
   border: none;
   color: var(--sidebar-text);
   cursor: pointer;
-  padding: 4px;
+  padding: 8px;
   border-radius: 4px;
+  min-width: 32px;
+  min-height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1809,9 +1811,9 @@ footer {
 
 /* === My Account Filters === */
 .myacct-filter {
-  padding: 4px 10px;
+  padding: 8px 14px;
   border-radius: 14px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid #d1d5db;
