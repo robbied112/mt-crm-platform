@@ -1,5 +1,5 @@
 /* ============================================================
-   Global.css — Sidekick BI design system
+   Global.css — CruFolio design system
    ============================================================ */
 
 /* === Reset === */
@@ -11,42 +11,56 @@
 
 /* === Design Tokens (CSS Custom Properties) === */
 :root {
-  --bg: #f8fafc;
+  /* Primary */
+  --bg: #FDF8F0;
   --card: #ffffff;
-  --border: #e2e8f0;
-  --text: #334155;
-  --text-dim: #64748b;
-  --accent: #0f766e;
-  --accent2: #14b8a6;
-  --accent-light: #99f6e4;
-  --cream: #f0fdfa;
-  --peach: #ccfbf1;
-  --orange: #f97316;
-  --burgundy: #0f766e;
-  --green: #059669;
-  --red: #dc2626;
-  --yellow: #d97706;
-  --blue: #0f766e;
-  --coral: #fb7185;
+  --border: #E5E0DA;
+  --text: #2E2E2E;
+  --text-dim: #6B6B6B;
+  --accent: #6B1E1E;
+  --accent2: #8A2035;
+  --accent-light: rgba(107, 30, 30, 0.08);
+  --cream: #FDF8F0;
+  --peach: #F5EDE3;
+  --orange: #B87333;
+  --burgundy: #6B1E1E;
+  --green: #1F865A;
+  --red: #C53030;
+  --yellow: #C07B01;
+  --blue: #1A1F3E;
+  --coral: #C53030;
 
+  /* Secondary / Accent */
+  --aged-oak: #8B6A4C;
+  --warm-copper: #B87333;
+  --champagne-gold: #D2C78A;
+  --champagne-gold-30: rgba(210, 199, 138, 0.3);
+  --input-border: #D1CBC4;
+  --deep-charcoal: #2E2E2E;
+  --parchment: #FDF8F0;
+  --wine-dark-navy: #1A1F3E;
+
+  /* Sidebar */
   --sidebar-width: 252px;
   --sidebar-collapsed-width: 60px;
-  --sidebar-bg: #0c1222;
-  --sidebar-text: #94a3b8;
-  --sidebar-text-hover: #e2e8f0;
-  --sidebar-active-bg: rgba(15, 118, 110, 0.15);
-  --sidebar-active-text: #5eead4;
-  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-bg: #1A1F3E;
+  --sidebar-text: rgba(253, 248, 240, 0.55);
+  --sidebar-text-hover: #FDF8F0;
+  --sidebar-active-bg: rgba(210, 199, 138, 0.1);
+  --sidebar-active-text: #D2C78A;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
   --transition-speed: 200ms;
 }
 
 /* === Base Typography === */
 body {
-  font-family: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont,
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   background-color: var(--bg);
   color: var(--text);
   line-height: 1.6;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ============================================================
@@ -150,13 +164,13 @@ body {
 .error-boundary__title {
   font-size: 20px;
   font-weight: 700;
-  color: #1f2937;
+  color: #2E2E2E;
   margin: 0;
 }
 
 .error-boundary__message {
   font-size: 14px;
-  color: #64748b;
+  color: #6B6B6B;
   max-width: 400px;
   margin: 0 0 8px;
 }
@@ -164,7 +178,7 @@ body {
 /* Empty state admin note */
 .empty-state__admin-note {
   font-size: 14px;
-  color: #64748b;
+  color: #6B6B6B;
   font-style: italic;
   margin: 0;
 }
@@ -218,10 +232,11 @@ body {
 }
 
 .sidebar__brand-name {
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  color: #fff;
+  font-family: "Libre Baskerville", Georgia, serif;
+  font-weight: 400;
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: var(--parchment);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -455,7 +470,7 @@ body {
 .sidebar__user-name {
   font-size: 13px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: #E5E0DA;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -552,7 +567,7 @@ body {
 }
 
 .cmdpal__input::placeholder {
-  color: #94a3b8;
+  color: rgba(253, 248, 240, 0.4);
 }
 
 .cmdpal__esc {
@@ -802,7 +817,7 @@ body {
 
 /* === Header (now in sidebar, kept for sub-components) === */
 header {
-  background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #14b8a6 100%);
+  background: linear-gradient(135deg, #6B1E1E 0%, #8A2035 50%, #8A2035 100%);
   color: white;
   padding: 20px 25px;
   border-radius: 12px;
@@ -829,7 +844,7 @@ header img {
 .header-text p {
   font-size: 13px;
   opacity: 0.9;
-  color: #ccfbf1;
+  color: #F5EDE3;
 }
 
 /* === Filter Bar === */
@@ -1082,7 +1097,7 @@ select:focus {
 
 .daily-actions__subtitle {
   font-size: 13px;
-  color: var(--text-dim, #64748b);
+  color: var(--text-dim, #6B6B6B);
   font-weight: 400;
 }
 
@@ -1099,7 +1114,7 @@ select:focus {
   padding: 12px;
   border-left: 3px solid #3B82F6;
   border-radius: 6px;
-  background: var(--bg, #f8fafc);
+  background: var(--bg, #FDF8F0);
   transition: background 0.15s;
 }
 
@@ -1129,7 +1144,7 @@ select:focus {
 
 .daily-actions__item-detail {
   font-size: 12px;
-  color: var(--text-dim, #64748b);
+  color: var(--text-dim, #6B6B6B);
 }
 
 .daily-actions__empty {
@@ -1311,7 +1326,7 @@ tbody tr:hover {
 
 /* === Snapshot Summary === */
 .snapshot-box {
-  background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+  background: linear-gradient(135deg, #FDF8F0 0%, #F5EDE3 100%);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 20px;
@@ -1487,7 +1502,7 @@ footer {
 .ap-header {
   position: sticky;
   top: 0;
-  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+  background: linear-gradient(135deg, #6B1E1E 0%, #8A2035 100%);
   color: #fff;
   padding: 20px 24px;
   z-index: 1;
@@ -1531,7 +1546,7 @@ footer {
   font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 14px;
   font-weight: 700;
-  color: #334155;
+  color: #2E2E2E;
   margin: 0 0 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -1544,7 +1559,7 @@ footer {
 }
 
 .ap-kpi {
-  background: #f8fafc;
+  background: #FDF8F0;
   border-radius: 8px;
   padding: 10px 12px;
   text-align: center;
@@ -1553,7 +1568,7 @@ footer {
 .ap-kpi .val {
   font-size: 20px;
   font-weight: 700;
-  color: #0f766e;
+  color: #6B1E1E;
 }
 
 .ap-kpi .label {
@@ -1590,7 +1605,7 @@ footer {
 
 .ap-sparkline .bar {
   width: 16px;
-  background: #0f766e;
+  background: #6B1E1E;
   border-radius: 2px 2px 0 0;
   min-height: 2px;
 }
@@ -1615,14 +1630,14 @@ footer {
 }
 
 .ap-tag:hover {
-  border-color: #0f766e;
-  color: #0f766e;
+  border-color: #6B1E1E;
+  color: #6B1E1E;
 }
 
 .ap-tag.selected {
-  background: #0f766e;
+  background: #6B1E1E;
   color: #fff;
-  border-color: #0f766e;
+  border-color: #6B1E1E;
 }
 
 /* === Notes === */
@@ -1632,7 +1647,7 @@ footer {
 }
 
 .ap-note {
-  background: #f8fafc;
+  background: #FDF8F0;
   border-radius: 8px;
   padding: 10px 12px;
   margin-bottom: 8px;
@@ -1663,7 +1678,7 @@ footer {
 }
 
 .ap-note-input button {
-  background: #0f766e;
+  background: #6B1E1E;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -1749,14 +1764,14 @@ footer {
 .mention-item:hover,
 .mention-item.active {
   background: #eef2ff;
-  color: #0f766e;
+  color: #6B1E1E;
 }
 
 .mention-item .avatar {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #0f766e;
+  background: #6B1E1E;
   color: #fff;
   display: flex;
   align-items: center;
@@ -1767,7 +1782,7 @@ footer {
 }
 
 .mention-tag {
-  color: #0f766e;
+  color: #6B1E1E;
   font-weight: 600;
   background: #eef2ff;
   padding: 1px 4px;
@@ -1806,14 +1821,14 @@ footer {
 }
 
 .myacct-filter:hover {
-  border-color: #0f766e;
-  color: #0f766e;
+  border-color: #6B1E1E;
+  color: #6B1E1E;
 }
 
 .myacct-filter.active {
-  background: #0f766e;
+  background: #6B1E1E;
   color: #fff;
-  border-color: #0f766e;
+  border-color: #6B1E1E;
 }
 
 .myacct-row {
@@ -1827,7 +1842,7 @@ footer {
 }
 
 .myacct-row:hover {
-  background: #f8fafc;
+  background: #FDF8F0;
   margin: 0 -8px;
   padding: 10px 8px;
 }
@@ -1894,7 +1909,7 @@ footer {
 }
 
 .key-modal-close:hover {
-  color: #0f766e;
+  color: #6B1E1E;
 }
 
 /* === Page Headers === */
@@ -2528,8 +2543,8 @@ input:focus-visible,
 
 .pipeline-card__wines {
   font-size: 11px;
-  color: #0f766e;
-  background: #f0fdfa;
+  color: #6B1E1E;
+  background: #FDF8F0;
   padding: 1px 6px;
   border-radius: 6px;
   font-weight: 600;
@@ -3025,7 +3040,7 @@ input:focus-visible,
 }
 
 .pricing-warning--info {
-  background: #f0fdfa;
+  background: #FDF8F0;
   color: var(--accent);
 }
 
@@ -4498,7 +4513,7 @@ input:focus-visible,
 }
 
 .portfolio-list__status-badge--archived {
-  background: #e2e8f0;
+  background: #E5E0DA;
   color: var(--text-dim);
 }
 
@@ -4592,7 +4607,7 @@ input:focus-visible,
 }
 
 .product-detail__status-badge--archived {
-  background: #e2e8f0;
+  background: #E5E0DA;
   color: var(--text-dim);
 }
 
@@ -5080,7 +5095,7 @@ input:focus-visible,
    ============================================================ */
 
 .import-unmatched {
-  border: 1px solid var(--border-color, #e2e8f0);
+  border: 1px solid var(--border-color, #E5E0DA);
   border-radius: 8px;
   padding: 16px;
   margin-top: 16px;
@@ -5109,7 +5124,7 @@ input:focus-visible,
 .import-unmatched__item {
   padding: 4px 0;
   font-size: 13px;
-  border-bottom: 1px dotted var(--border-color, #e2e8f0);
+  border-bottom: 1px dotted var(--border-color, #E5E0DA);
 }
 
 .import-unmatched__item:last-child {

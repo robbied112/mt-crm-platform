@@ -6,7 +6,7 @@
 export default function Footer({ companyName, dataThrough }) {
   return (
     <footer role="contentinfo">
-      <span>{companyName || "Sidekick BI"}</span>
+      <span>{companyName || "CruFolio"}</span>
       {dataThrough && <> - Data through: <span>{dataThrough}</span></>}
     </footer>
   );
