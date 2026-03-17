@@ -67,6 +67,22 @@ export const ROUTES = [
     description: "Predicted reorders, overdue alerts, and priorities",
   },
   {
+    key: "revenue",
+    path: "/revenue",
+    label: "Revenue & Sales",
+    icon: "revenue",
+    dataKey: "revenue",
+    description: "Revenue vs budget by channel and SKU, variance tracking",
+  },
+  {
+    key: "executive",
+    path: "/executive",
+    label: "Executive Dashboard",
+    icon: "executive",
+    dataKey: null,
+    description: "Cross-dataset rollup — depletions, inventory, revenue, AR/AP",
+  },
+  {
     key: "pipeline",
     path: "/pipeline",
     label: "Pipeline",

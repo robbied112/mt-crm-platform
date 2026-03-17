@@ -1,6 +1,7 @@
 # TODOS — Sidekick BI (MT CRM Platform)
 
-> Updated from CEO CRM Pipeline Review on 2026-03-16.
+> Updated from CEO Financial Command Center Review on 2026-03-17.
+> Previous: CEO CRM Pipeline Review on 2026-03-16.
 > Previous: CEO App Review (Onboarding & Activation) on 2026-03-16.
 > Previous: CEO Disruption Review + Eng Review on 2026-03-16.
 > Previous: Cathedral Vision Review + Eng Review on 2026-03-15.
@@ -40,6 +41,11 @@
 > Key decisions: Flat products/ collection with parentId for vintage→wine linking (not subcollections). wines/ migrated into products/ (one-time, idempotent). PricingContext reads from products/ (no separate pricing/portfolio/ collection). Non-vintage wines are parent records, vintage SKUs are children. Feature-gated behind tenantConfig.features.portfolio. normalizeProductName() shared in packages/pipeline/src/. AI product matching is best-effort — import always succeeds, linking is bonus.
 > TODO-058 (Product Catalog + Wine Picker) SUPERSEDED by TODO-070+071. TODO-041 updated to write to products/. TODO-034 stores pricing on product docs. TODO-066 partially superseded by TODO-072.
 > New TODOs: 070–076. New vision items: Quick Add Wine from Cmd+K, wine count sidebar badge, auto-detect producer, copy wine info, vintage timeline, unmatched products badge, producer grouping toggle.
+>
+> **Financial Command Center added 2026-03-17 (CEO Review).**
+> Vision: Revenue & Sales tab as the daily driver for sales managers. Executive Dashboard as the weekly board-prep view. Multi-source revenue (QuickBooks + Shopify/WooCommerce + manual), 4 hardcoded channels (Distributors, Website/DTC, Direct to Trade Off-Premise, Direct to Trade On-Premise), hybrid budget entry (annual spread → per-channel/month adjustment), AR/AP aging from QuickBooks aging report upload.
+> Key decisions: Hardcoded channel list (industry standard). QB AR/AP Aging report upload (not manual entry). Hybrid budget (annual total → fine-tune). Revenue data extends existing DataContext + views pipeline. Executive tab always visible (shows whatever data is available). New datasets: revenueByChannel, revenueByProduct, revenueSummary, arAgingSummary, apAgingSummary, budgetData. Firestore rules for config/budget.
+> New TODOs: 080–086. New vision items: budget pace indicator, AR aging color bands, channel trend sparklines, export executive summary PDF, revenue health score.
 >
 > **Eng Review Refinements (2026-03-17):**
 > - HYBRID PRODUCT MATCHING: client-side exact match (instant, during import) + server-side AI fuzzy match (async, after save). Two-phase UX: "Matched 8/12 — 4 being analyzed..."
@@ -887,7 +893,132 @@
 
 ---
 
-## Phase Dependency Graph (Updated 2026-03-16 — CEO Portfolio Review)
+## P1 — Financial Command Center (CEO Review 2026-03-17)
+
+> Added from CEO Financial Command Center Review on 2026-03-17. SCOPE EXPANSION mode.
+> Core insight: The app is a BI platform with NO financial views. No revenue breakdown, no budget tracking, no AR/AP, no executive rollup. This is like selling a car without a dashboard. The app currently tracks depletions, inventory, CRM, pipeline, and pricing — but the #1 thing every sales manager and founder needs is "are we hitting our numbers?"
+> Vision: Financial Command Center — Revenue & Sales as the daily driver for sales managers (channel × SKU × month with budget variance), Executive Dashboard as the weekly board-prep view (cross-dataset rollup with AR/AP aging). Multi-source revenue ingestion (QB for distributor, Shopify for DTC, manual for direct-to-trade). Hardcoded 4-channel model matching wine/spirits industry standard.
+> Architecture: New transforms in packages/pipeline/src/ (transformRevenue, transformArAp). New precomputed views in Firestore (revenueByChannel, revenueByProduct, revenueSummary, arAgingSummary, apAgingSummary). Budget config at tenants/{id}/config/budget. Extends existing DataContext, semanticMapper, rebuildViews. Two new routes (/executive, /revenue). Feature: revenue datasets conditionally loaded behind availability flags.
+
+### TODO-080: Revenue Transform Pipeline
+- **What:** New `transformRevenue()` in `packages/pipeline/src/transformRevenue.js`. Aggregates raw revenue import rows into 3 precomputed views: `revenueByChannel` (channel × month grid with actuals — 4 channels: Distributors, Website/DTC, Direct to Trade Off-Premise, Direct to Trade On-Premise), `revenueByProduct` (SKU × month with totals), `revenueSummary` (YTD total, annual run rate, top channel, top SKU, monthly totals). Extend `rebuildViews` to call `transformRevenue` when revenue imports exist. Add revenue column detection to `semanticMapper` (amount/revenue/sales, date, customer/account, product/SKU/item, channel/type). Support QuickBooks Sales by Customer Detail format + Shopify export format. Channel assignment logic: map customer/source to channel enum based on import source type (QB → Distributors, Shopify → Website/DTC) + optional channel column in the data.
+- **Why:** The data backbone. Without transforms, no dashboard. Follows the exact pattern of `transformDepletion` — proven architecture.
+- **Pros:** Pure function, testable, follows existing patterns. Enables Revenue & Sales tab.
+- **Cons:** Another transform to maintain. Needs to handle multiple source formats (QB, Shopify).
+- **Context:** Channel enum: `{ distributors: "Distributors", dtc: "Website / DTC", offPremise: "Direct to Trade - Off Premise", onPremise: "Direct to Trade - On Premise", other: "Other" }`. Hardcoded — covers 95% of wine/spirits sales models.
+- **Error handling:** NaN amounts → skip row + warn. Invalid dates → skip row + warn. Empty input → return empty views. Missing channel → default to "Other". Division by zero in avg calculations → guard with `|| 0`.
+- **Effort:** M (3-4 hours)
+- **Priority:** P1 — BLOCKS Revenue & Sales tab
+- **Testing:** Mandatory `transformRevenue.test.js` (~20 cases): happy path multi-channel/multi-SKU/multi-month, empty input, NaN amounts (skip+warn), missing dates (skip+warn), single channel, single month, negative amounts (refunds), channel assignment logic, YTD totals accuracy, annual run rate, all-zeros.
+- **Files:** New `packages/pipeline/src/transformRevenue.js`, `packages/pipeline/src/semanticMapper.js` (add revenue + Shopify column patterns), `functions/rebuild.js` (extend), `packages/pipeline/src/constants.js` (add new dataset names)
+- **Depends on:** Nothing (packages/pipeline infrastructure exists)
+- **Blocks:** TODO-081, TODO-083
+
+### TODO-081: Revenue & Sales Tab
+- **What:** New `/revenue` route with `RevenueSales.jsx`. KPI cards: YTD Revenue, YTD Budget, YTD vs Budget %, Variance, Annual Budget, % of Annual. Revenue by Channel table with monthly actual vs budget columns per channel (4 rows × 12+ columns). Revenue Mix by Channel pie chart (Recharts). Monthly Revenue by SKU line chart. Revenue by SKU horizontal bar chart. Monthly Distributor Orders vs Forecast section (from `qbDistOrders`). Channel filter bar. XLSX export button. Budget editor accessible from tab (gear icon or "Set Budget" CTA, see TODO-083). When no revenue data: DataGate empty state. When revenue but no budget: show actuals, hide variance columns. When budget but no revenue: show budget only, actuals $0.
+- **Why:** THE missing tab. Every sales manager needs to see revenue vs budget by channel and SKU. Without it, the app isn't a BI platform — it's a depletion tracker. The screenshots show exactly this layout.
+- **Pros:** Table-stakes for any sales BI tool. Uses existing Recharts + DataGate + XLSX export patterns.
+- **Cons:** Large component (~400 lines). Monthly table can be wide — needs horizontal scroll or responsive design.
+- **Effort:** L (6-8 hours)
+- **Priority:** P1
+- **Files:** New `frontend/src/components/RevenueSales.jsx`, `frontend/src/config/routes.js` (add route), `frontend/src/components/Sidebar.jsx` (add nav), `frontend/src/App.jsx` (add Route), `frontend/src/styles/Global.css` (BEM styles), `frontend/src/components/CommandPalette.jsx` (register)
+- **Depends on:** TODO-080 (revenue transform provides data), TODO-083 (budget config for variance)
+
+### TODO-082: Executive Dashboard Tab
+- **What:** New `/executive` route with `ExecutiveDashboard.jsx`. Cross-dataset rollup — always visible (shows whatever data is available, gracefully hides sections with no data). Sections: (1) KPI cards: 13W Depletions, Distributor Inventory, Net Placements (30d), YTD Revenue. (2) Classic Inventory Sellout Tracker — progress bar showing sold vs remaining with deadline and pace calculation (behind pace / on pace / ahead). (3) Weekly Depletion Trend chart (13W line). (4) Top Distributors by 13W CE horizontal bar. (5) AR Aging Summary — table with aging buckets (Current, 1-30, 31-60, 61-90, 90+) and total outstanding, with color-coded bands. (6) AP Aging Summary — same format. (7) Inventory snapshot — Total OH, Avg DOH, top reorder items. Reads from: `distScorecard`, `inventoryData`, `placementSummary`, `revenueSummary`, `arAgingSummary`, `apAgingSummary`. Each section shows independently based on data availability. XLSX export for full executive summary.
+- **Why:** The Monday morning view for founders and VPs. Pulls from every data source into one screen. Today users must click through 6+ tabs to get this picture. Executive tab collapses the "how is my business doing?" question into one page.
+- **Pros:** High-fan-in rollup that adds massive perceived value. Uses existing datasets — minimal new data infrastructure.
+- **Cons:** Reads 6+ datasets — more context to manage. Layout must handle partial data gracefully (some sections present, others not).
+- **Effort:** L (6-8 hours)
+- **Priority:** P1
+- **Files:** New `frontend/src/components/ExecutiveDashboard.jsx`, `frontend/src/config/routes.js`, `frontend/src/components/Sidebar.jsx`, `frontend/src/App.jsx`, `frontend/src/styles/Global.css`, `frontend/src/components/CommandPalette.jsx`
+- **Depends on:** TODO-080 (revenue data), TODO-084 (AR/AP data), existing depletions + inventory datasets
+
+### TODO-083: Budget Configuration & Editor
+- **What:** New budget config stored at `tenants/{id}/config/budget`. Schema: `{ annualTotal, year, channels: { distributors: [12 monthly values], dtc: [...], offPremise: [...], onPremise: [...] } }`. UI: Budget editor accessible from Revenue & Sales tab (gear icon or "Set Budget" CTA when no budget exists). Hybrid entry: type annual total → auto-spreads evenly across 4 channels and 12 months → user can adjust individual channel/month cells in an editable grid. Save to Firestore with debounce (500ms). Persists across sessions. Validate: amounts ≥ 0, NaN rejected. Add Firestore security rules for `config/budget` (same `isTenantMember()` pattern, ~2 lines). DataContext loads budget from `config/budget` doc.
+- **Why:** Without budgets, there's no variance tracking. Variance is what makes revenue data actionable ("are we on track?"). The hybrid approach gives instant value (type $2.85M, see monthly tracking) while allowing fine-tuning.
+- **Pros:** Instant value from one number. Fine-tuning for power users. Follows existing Firestore patterns.
+- **Cons:** Editable grid UI is moderately complex. Need to handle: partially filled grid, year rollover.
+- **Effort:** M (2-3 hours)
+- **Priority:** P1 — BLOCKS variance display on Revenue & Sales tab
+- **Files:** `firestore.rules` (add budget rules), `frontend/src/context/DataContext.jsx` (load budget), new budget editor component (inline in RevenueSales or separate), `frontend/src/services/firestoreService.js` (budget CRUD)
+- **Depends on:** Nothing
+- **Blocks:** TODO-081 (variance columns)
+
+### TODO-084: AR/AP Aging Import & Transform
+- **What:** New `transformArAp()` in `packages/pipeline/src/transformArAp.js`. Parses QuickBooks A/R Aging Summary and A/P Aging Summary exports. Produces `arAgingSummary` and `apAgingSummary` views with: total outstanding, aging buckets (Current, 1-30, 31-60, 61-90, 90+), top 10 accounts/vendors by amount, overdue total (31+ days), overdue percentage. Add AR/AP column detection to `semanticMapper` — detect aging report format by column signatures (customer/vendor, current, 1-30/31-60/61-90/over 90, total). Extend `rebuildViews` to call `transformArAp` when AR/AP imports exist. Handle: AR but no AP (show AR only), very old aging data (show freshness warning).
+- **Why:** AR/AP is what makes the Executive tab valuable for founders/CFOs. "Who owes us money and how old is it?" is the #1 financial health question. QuickBooks exports this as a standard report.
+- **Pros:** Small transform (aging is already pre-bucketed by QB). High value for executive visibility.
+- **Cons:** QB aging format varies slightly across QB versions (desktop vs online). Need to detect both.
+- **Effort:** M (2-3 hours)
+- **Priority:** P1 — BLOCKS Executive Dashboard AR/AP sections
+- **Testing:** Mandatory `transformArAp.test.js` (~12 cases): happy path, empty, missing buckets, negative values (overpayments), single account, all-current (no overdue), large values, QB Desktop vs QB Online format differences.
+- **Files:** New `packages/pipeline/src/transformArAp.js`, `packages/pipeline/src/semanticMapper.js` (add AR/AP detection), `functions/rebuild.js` (extend), `packages/pipeline/src/constants.js` (add dataset names)
+- **Depends on:** Nothing
+- **Blocks:** TODO-082 (Executive Dashboard)
+
+### TODO-085: Revenue & Financial Test Suite
+- **What:** New `transformRevenue.test.js` (~20 cases) and `transformArAp.test.js` (~12 cases) in `frontend/src/__tests__/`. Revenue tests: happy path with multi-channel/multi-SKU/multi-month data, empty input, NaN amounts (skip+warn), missing dates (skip+warn), single channel, single month, negative amounts (refunds), channel assignment logic, YTD totals accuracy, annual run rate calculation, all-zeros edge case. AR/AP tests: happy path, empty, missing buckets, negative values (overpayments), single account, all-current, boundary values. Extend existing `semanticMapper` tests for revenue column detection (QB Sales by Customer Detail, Shopify export) and AR/AP aging column detection. Budget round-trip test: save → load → verify.
+- **Why:** These transforms compute every number on two new tabs. If they're wrong, the product looks broken. The 2am-Friday confidence test.
+- **Effort:** S (2 hours)
+- **Priority:** P1 — ship with transforms
+- **Files:** New `frontend/src/__tests__/transformRevenue.test.js`, new `frontend/src/__tests__/transformArAp.test.js`, extend `frontend/src/__tests__/semanticMapper.test.js` (if exists) or add cases to `parseFile.test.js`
+- **Depends on:** TODO-080, TODO-084
+
+### TODO-086: Shared KpiCard Component
+- **What:** Extract the KPI card pattern (title, big number, subtitle/trend, optional color accent) that's duplicated inline across 7+ tabs into a shared `KpiCard.jsx` component. Props: `title`, `value`, `subtitle`, `trend` (up/down/flat), `color`, `prefix` ($), `suffix` (%). Replaces inline KPI markup in Depletions, Inventory, Opportunities, Reorder, MyTerritory, and the new Revenue & Executive tabs. BEM CSS class: `kpi-card`, `kpi-card__value`, `kpi-card__title`, `kpi-card__trend--up/down/flat`.
+- **Why:** Every tab has 3-5 KPI cards with the same markup pattern repeated. Adding 2 more tabs means 8-10 more inline copies. DRY violation that compounds with every new tab.
+- **Pros:** Consistent styling across all tabs. One place to update card design. Reduces per-tab boilerplate.
+- **Cons:** Touches 7+ existing components to swap inline markup. Low risk but wide blast radius.
+- **Effort:** S (1 hour)
+- **Priority:** P2
+- **Files:** New `frontend/src/components/KpiCard.jsx`, refactor all existing tab components
+- **Depends on:** Nothing
+
+### Financial Command Center Vision Items (Delight Opportunities — <30 min each)
+
+- **Budget pace indicator** — "At current run rate, you'll hit budget by [month]" or "On pace to finish at $X (Y% of budget)." Green/yellow/red. Math: YTD actual / months elapsed × 12 vs annual budget. (~15 min, depends on TODO-081 + TODO-083)
+- **AR aging color bands** — Color-code aging buckets on Executive tab: green (Current), yellow (31-60), orange (61-90), red (90+). CSS-only, 4 background-color rules. (~15 min, depends on TODO-082)
+- **Channel trend sparklines** — Tiny Recharts sparkline in each Revenue by Channel table row showing 3-month trend. Instant pattern recognition without reading numbers. (~20 min, depends on TODO-081)
+- **Export Executive Summary PDF** — One-click "Export Summary" button on Executive tab. Branded PDF with all visible KPIs, sellout tracker, AR aging. Uses @react-pdf/renderer (planned for sell sheets). For board meetings / investor updates. (~30 min, depends on TODO-082 + TODO-072 pattern)
+- **Revenue Health Score** — Single 0-100 number combining: budget pace (40%), channel diversification (20%), revenue trend (20%), AR health (20%). Circular SVG gauge with green/yellow/red zones. Like a credit score for your sales operation. (~30 min, depends on TODO-081 + TODO-082)
+
+### TODO-087: Pending Matches Review UI
+- **What:** Build a review panel/page showing AI-suggested product matches from `pendingMatches/` with accept/reject actions.
+- **Why:** `matchProductsFromImport` writes medium-confidence matches to `pendingMatches/` with `status: "pending"`, but there's no UI to review, accept, or reject them. The AI matching pipeline is fire-and-forget with no human-in-the-loop resolution.
+- **Pros:** Completes the matching loop. High perceived intelligence ("the system noticed these might be duplicates"). Improves catalog accuracy over time as sourceNames accumulate.
+- **Cons:** New UI component + Firestore queries. Medium effort.
+- **Context:** `pendingMatches/` collection already stores `newName`, `suggestedMatch`, `confidence`, `entityType`, `status`. Accept action = merge sourceNames from pending match into the matched product + delete pending doc. Reject action = delete pending doc. Could live as a panel on the Portfolio page or as a notification badge in the sidebar. The collection is shared with account matching (filter by `entityType: "product"`).
+- **Effort:** M (3-4 hours)
+- **Priority:** P2
+- **Files:** New `frontend/src/components/Portfolio/PendingMatchesPanel.jsx`, update `PortfolioList.jsx` or sidebar badge
+- **Depends on:** TODO-074 (product matching — already implemented)
+
+### TODO-088: Firestore Subscription Architecture Review
+- **What:** Audit all real-time Firestore subscriptions for efficiency — evaluate lazy loading per route vs subscribe-all-on-mount.
+- **Why:** CrmContext subscribes to 6+ collections simultaneously on login (accounts, contacts, activities, tasks, opportunities, products). Each is an unbounded real-time listener. As more features ship (Revenue, Executive Dashboard), this fan-out grows — unnecessary reads + memory for features the user may not visit.
+- **Pros:** Reduces Firestore costs, improves initial load time, scales with feature growth. Prevents cost surprises at scale.
+- **Cons:** Adds complexity to context providers. Lazy subscriptions need loading states per page. May require splitting CrmContext.
+- **Context:** All subscriptions are in `CrmContext.jsx` (6 listeners) and `DataContext.jsx` (bulk load). Current pattern: subscribe-all-on-mount in CrmContext's useEffect. Alternative approaches: subscribe-on-route-enter with unsubscribe-on-leave (via route-level hooks), or stale-while-revalidate with periodic refresh. Should be done after feature set stabilizes (post Revenue & Sales + Executive Dashboard).
+- **Effort:** M (4-6 hours for audit + refactor)
+- **Priority:** P3
+- **Files:** `frontend/src/context/CrmContext.jsx`, `frontend/src/context/DataContext.jsx`, potentially new per-feature context providers
+- **Depends on:** TODO-081 (Revenue tab), TODO-082 (Executive Dashboard) — wait until feature set is stable
+
+### TODO-089: Portfolio Feature Gate
+- **What:** Add `tenantConfig.features.portfolio` gate — hide sidebar link + route if disabled for a tenant.
+- **Why:** CEO Portfolio Review specified "Feature-gated: tenantConfig.features.portfolio" but the current implementation always shows Portfolio. For multi-tenant rollout, you may want to control which tenants see the feature.
+- **Pros:** Standard feature flag pattern. Enables controlled rollout per tenant. ~15 min implementation.
+- **Cons:** Extra config surface. May not be needed if all tenants benefit from Portfolio. DataGate + EmptyState already handle the no-data case gracefully.
+- **Context:** No other features are currently gated, so this would be the first feature flag. Implementation: check `tenantConfig.features?.portfolio` in `Sidebar.jsx` to hide/show link, and in route definition or `App.jsx` to redirect. The tenantConfig is already loaded in DataContext and available app-wide.
+- **Effort:** S (30 min)
+- **Priority:** P3
+- **Files:** `frontend/src/components/Sidebar.jsx`, `frontend/src/App.jsx` or route guard
+- **Depends on:** Nothing
+
+---
+
+## Phase Dependency Graph (Updated 2026-03-17 — CEO Financial Command Center Review)
 
 ```
 FOUNDATION (DONE):
@@ -968,6 +1099,20 @@ REMAINING P1 — IMPLEMENTATION ORDER:
         └── TODO-075 (portfolio integration tests)
 
     TODO-076 (supersede/update existing TODOs) ← housekeeping, do with TODO-070
+
+    ── Phase G: Financial Command Center ──
+    TODO-080 (revenue transform pipeline) ← DO FIRST in this phase
+        │
+        └── TODO-081 (Revenue & Sales tab)
+                │
+                └── TODO-083 (budget config + editor) ← also needed by TODO-081
+
+    TODO-084 (AR/AP aging import + transform) ← independent, parallel with TODO-080
+        │
+        └── TODO-082 (Executive Dashboard tab) ← also needs TODO-080
+
+    TODO-085 (revenue + financial test suite) ← ship with TODO-080 + TODO-084
+    TODO-086 (shared KpiCard component) ← P2, independent
 
 P2+:
     TODO-054 (post-import "What's Next" card) ← needs TODO-049, TODO-051

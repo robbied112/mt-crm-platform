@@ -2,8 +2,12 @@
  * Transform Layer
  *
  * Converts raw mapped rows into all internal dashboard data structures.
- * Handles depletion, purchase/sales, inventory, pipeline, and QuickBooks data.
+ * Handles depletion, purchase/sales, inventory, pipeline, QuickBooks,
+ * revenue, and AR/AP aging data.
  */
+
+const { transformRevenue } = require("./transformRevenue");
+const { transformArAp } = require("./transformArAp");
 
 // ─── Helpers ────────────────────────────────────────────────────
 
@@ -596,6 +600,13 @@ function transformAll(rows, mapping, uploadType, userRole) {
   }
   if (type === "pipeline") {
     return { type: "pipeline", ...transformPipeline(rows, mapping) };
+  }
+
+  if (type === "revenue") {
+    return { type: "revenue", ...transformRevenue(rows, mapping) };
+  }
+  if (type === "ar_aging" || type === "ap_aging") {
+    return { type, ...transformArAp(rows, mapping) };
   }
 
   // Fallback: try depletion if we have account + qty

@@ -20,6 +20,8 @@ import {
   saveSummary,
   loadTenantConfig,
   saveTenantConfig as saveTenantConfigFS,
+  loadBudget,
+  saveBudget as saveBudgetFS,
 } from "../services/firestoreService";
 import { normalizeRows } from "../utils/normalize.js";
 import TENANT_CONFIG from "../config/tenant";
@@ -46,6 +48,11 @@ const EMPTY = {
   spendByWine: [],
   spendByDistributor: [],
   billbackSummary: {},
+  revenueByChannel: [],
+  revenueByProduct: [],
+  revenueSummary: {},
+  arAgingSummary: {},
+  apAgingSummary: {},
 };
 
 export default function DataProvider({ children }) {
@@ -53,6 +60,7 @@ export default function DataProvider({ children }) {
   const [data, setData] = useState(EMPTY);
   const [summary, setSummary] = useState(null);
   const [tenantConfig, setTenantConfig] = useState(TENANT_CONFIG);
+  const [budget, setBudget] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -71,6 +79,8 @@ export default function DataProvider({ children }) {
     distributorHealth: data.distHealth.length > 0,
     opportunities: data.newWins.length > 0 || data.reEngagementData.length > 0,
     billbacks: data.spendByWine.length > 0,
+    revenue: data.revenueByChannel.length > 0,
+    executive: true, // always visible, gracefully hides sections
     hasAnyData: Object.values(data).some((v) =>
       Array.isArray(v) ? v.length > 0 : Object.keys(v).length > 0
     ),
@@ -91,15 +101,17 @@ export default function DataProvider({ children }) {
       setError(null);
       try {
         const collPath = useNormalized ? "views" : "data";
-        const [allData, summaryText, config] = await Promise.all([
+        const [allData, summaryText, config, budgetData] = await Promise.all([
           useNormalized ? loadAllViews(tenantId) : loadAllData(tenantId),
           loadSummary(tenantId, collPath),
           loadTenantConfig(tenantId),
+          loadBudget(tenantId),
         ]);
         if (cancelled) return;
         setData({ ...EMPTY, ...allData });
         setSummary(summaryText);
         if (config) setTenantConfig((prev) => ({ ...prev, ...config }));
+        if (budgetData) setBudget(budgetData);
       } catch (err) {
         if (!cancelled) setError(err.message);
       } finally {
@@ -156,14 +168,16 @@ export default function DataProvider({ children }) {
     setLoading(true);
     try {
       const collPath = useNormalized ? "views" : "data";
-      const [allData, summaryText, config] = await Promise.all([
+      const [allData, summaryText, config, budgetData] = await Promise.all([
         useNormalized ? loadAllViews(tenantId) : loadAllData(tenantId),
         loadSummary(tenantId, collPath),
         loadTenantConfig(tenantId),
+        loadBudget(tenantId),
       ]);
       setData({ ...EMPTY, ...allData });
       setSummary(summaryText);
       if (config) setTenantConfig((prev) => ({ ...prev, ...config }));
+      if (budgetData) setBudget(budgetData);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -182,6 +196,17 @@ export default function DataProvider({ children }) {
     }
   }, [tenantId]);
 
+  // Save budget
+  const updateBudget = useCallback(async (budgetData) => {
+    if (!tenantId) throw new Error("No tenant context");
+    try {
+      await saveBudgetFS(tenantId, budgetData);
+      setBudget(budgetData);
+    } catch (err) {
+      throw new Error(`Failed to save budget: ${err.message}`);
+    }
+  }, [tenantId]);
+
   // Sync static TENANT_CONFIG so t() reads current values in non-React code
   useEffect(() => {
     Object.assign(TENANT_CONFIG, tenantConfig);
@@ -190,6 +215,7 @@ export default function DataProvider({ children }) {
   const value = {
     ...data,
     summary,
+    budget,
     tenantId,
     tenantConfig,
     userRole,
@@ -200,6 +226,7 @@ export default function DataProvider({ children }) {
     importDatasets,
     refreshData,
     updateTenantConfig,
+    updateBudget,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

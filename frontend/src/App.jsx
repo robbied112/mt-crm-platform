@@ -30,6 +30,8 @@ import {
   PipelineKanban,
   PortfolioList,
   ProductDetail,
+  RevenueSales,
+  ExecutiveDashboard,
 } from "./components";
 import Sidebar from "./components/Sidebar";
 import CommandPalette from "./components/CommandPalette";
@@ -64,11 +66,18 @@ function App() {
     spendByWine,
     spendByDistributor,
     billbackSummary,
+    revenueByChannel,
+    revenueByProduct,
+    revenueSummary,
+    arAgingSummary,
+    apAgingSummary,
+    budget,
     tenantConfig,
     tenantId,
     availability,
     loading: dataLoading,
     updateTenantConfig,
+    updateBudget,
     refreshData,
   } = useData();
 
@@ -293,6 +302,35 @@ function App() {
                       onExport={() => console.log("Export reorder")}
                     />
                   </DataGate>
+                }
+              />
+
+              <Route
+                path="/revenue"
+                element={
+                  <DataGate dataKey="revenue" tabLabel="Revenue & Sales">
+                    <RevenueSales
+                      revenueByChannel={revenueByChannel}
+                      revenueByProduct={revenueByProduct}
+                      revenueSummary={revenueSummary}
+                      budget={budget}
+                      onUpdateBudget={updateBudget}
+                    />
+                  </DataGate>
+                }
+              />
+
+              <Route
+                path="/executive"
+                element={
+                  <ExecutiveDashboard
+                    distScorecard={distScorecard}
+                    inventoryData={inventoryData}
+                    placementSummary={placementSummary}
+                    revenueSummary={revenueSummary}
+                    arAgingSummary={arAgingSummary}
+                    apAgingSummary={apAgingSummary}
+                  />
                 }
               />
 

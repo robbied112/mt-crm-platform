@@ -16,6 +16,11 @@ const DATASETS = [
   "spendByWine",
   "spendByDistributor",
   "billbackSummary",
+  "revenueByChannel",
+  "revenueByProduct",
+  "revenueSummary",
+  "arAgingSummary",
+  "apAgingSummary",
 ];
 
 const OBJECT_DATASETS = new Set([
@@ -23,6 +28,9 @@ const OBJECT_DATASETS = new Set([
   "qbDistOrders",
   "acctConcentration",
   "billbackSummary",
+  "revenueSummary",
+  "arAgingSummary",
+  "apAgingSummary",
 ]);
 
 module.exports = {

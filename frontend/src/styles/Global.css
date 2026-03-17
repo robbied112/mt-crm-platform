@@ -5121,3 +5121,313 @@ input:focus-visible,
   font-size: 12px;
   padding-top: 4px;
 }
+
+/* ─── Revenue & Sales ──────────────────────────────────────── */
+
+.revenue-sales__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.revenue-sales__section {
+  margin-bottom: 24px;
+}
+
+.revenue-sales__section-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-primary, #1e293b);
+}
+
+.revenue-sales__table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+}
+
+.revenue-sales__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.revenue-sales__table th,
+.revenue-sales__table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  text-align: left;
+}
+
+.revenue-sales__table th {
+  background: var(--bg-subtle, #f8fafc);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted, #64748b);
+}
+
+.revenue-sales__channel-name {
+  font-weight: 500;
+  min-width: 180px;
+}
+
+.revenue-sales__cell-number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.revenue-sales__cell-total {
+  font-weight: 600;
+}
+
+.revenue-sales__totals-row {
+  background: var(--bg-subtle, #f8fafc);
+}
+
+/* Budget Editor */
+
+.revenue-sales__budget-modal {
+  max-width: 900px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.revenue-sales__budget-body {
+  padding: 16px 0;
+}
+
+.revenue-sales__budget-annual {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.revenue-sales__budget-annual label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.revenue-sales__budget-input {
+  width: 180px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.revenue-sales__budget-hint {
+  color: var(--text-muted, #64748b);
+  font-size: 12px;
+}
+
+.revenue-sales__budget-grid-wrap {
+  overflow-x: auto;
+}
+
+.revenue-sales__budget-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.revenue-sales__budget-grid th,
+.revenue-sales__budget-grid td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.revenue-sales__budget-grid th {
+  background: var(--bg-subtle, #f8fafc);
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.revenue-sales__budget-cell {
+  width: 70px;
+  padding: 4px 6px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: right;
+}
+
+/* ─── Executive Dashboard ──────────────────────────────────── */
+
+.exec-dash__empty {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-muted, #64748b);
+}
+
+.exec-dash__empty h2 {
+  font-size: 20px;
+  color: var(--text-primary, #1e293b);
+  margin-bottom: 8px;
+}
+
+.exec-dash__section {
+  margin-bottom: 24px;
+}
+
+.exec-dash__section-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-primary, #1e293b);
+}
+
+/* Sellout Tracker */
+
+.exec-dash__sellout {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.exec-dash__sellout-bar {
+  height: 24px;
+  background: var(--bg-subtle, #f1f5f9);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.exec-dash__sellout-fill {
+  height: 100%;
+  border-radius: 12px;
+  transition: width 0.5s ease;
+}
+
+.exec-dash__sellout-fill--ahead { background: #22c55e; }
+.exec-dash__sellout-fill--on-pace { background: #0F766E; }
+.exec-dash__sellout-fill--behind { background: #f97316; }
+
+.exec-dash__sellout-info {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-muted, #64748b);
+  flex-wrap: wrap;
+}
+
+.exec-dash__pace { font-weight: 600; }
+.exec-dash__pace--ahead { color: #22c55e; }
+.exec-dash__pace--on-pace { color: #0F766E; }
+.exec-dash__pace--behind { color: #f97316; }
+
+/* Aging */
+
+.exec-dash__aging-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+.exec-dash__aging {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.exec-dash__aging-buckets {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.exec-dash__aging-bucket {
+  border-left: 4px solid;
+  padding: 6px 12px;
+  background: var(--bg-subtle, #f8fafc);
+  border-radius: 0 6px 6px 0;
+  min-width: 80px;
+}
+
+.exec-dash__aging-label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted, #64748b);
+  font-weight: 600;
+}
+
+.exec-dash__aging-value {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.exec-dash__aging-summary {
+  display: flex;
+  gap: 20px;
+  font-size: 13px;
+  margin-bottom: 12px;
+  color: var(--text-muted, #64748b);
+}
+
+.exec-dash__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.exec-dash__table th,
+.exec-dash__table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  text-align: left;
+}
+
+.exec-dash__table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted, #64748b);
+  font-weight: 600;
+}
+
+.exec-dash__cell-number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Inventory Snapshot */
+
+.exec-dash__inv-kpis {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.exec-dash__inv-stat {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  padding: 16px 24px;
+  min-width: 120px;
+}
+
+.exec-dash__inv-label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted, #64748b);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.exec-dash__inv-value {
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary, #1e293b);
+}

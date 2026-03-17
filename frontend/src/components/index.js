@@ -63,3 +63,5 @@ export { default as PortfolioList } from "./Portfolio/PortfolioList";
 export { default as ProductDetail } from "./Portfolio/ProductDetail";
 export { default as ProductForm } from "./Portfolio/ProductForm";
 export { default as SellSheetExport } from "./Portfolio/SellSheetExport";
+export { default as RevenueSales } from "./RevenueSales";
+export { default as ExecutiveDashboard } from "./ExecutiveDashboard";
