@@ -10,18 +10,21 @@ import AccountForm from "./AccountForm";
 import ContactForm from "./ContactForm";
 import LogActivityModal from "./LogActivityModal";
 import TaskForm from "./TaskForm";
+import OpportunityForm from "./OpportunityForm";
+import { formatCurrency } from "../utils/formatting";
 
-const TABS = ["overview", "activity", "orders", "contacts", "tasks", "notes"];
+const TABS = ["overview", "opportunities", "activity", "orders", "contacts", "tasks", "notes"];
 const STATUS_COLORS = { active: "badge-green", prospect: "badge-blue", inactive: "badge-yellow", churned: "badge-orange" };
 
 export default function AccountDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const {
-    accounts, contacts, activities, tasks,
+    accounts, contacts, activities, tasks, opportunities,
     updateAccount, deleteAccount,
     createContact, updateContact, deleteContact,
     logActivity, createTask, updateTask,
+    createOpportunity, advanceStage, oppTypes,
     fetchNotes, addNote, deleteNote,
   } = useCrm();
   const { accountsTop, reorderData } = useData();
@@ -32,6 +35,7 @@ export default function AccountDetailPage() {
   const [editContact, setEditContact] = useState(null);
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
+  const [showOppForm, setShowOppForm] = useState(false);
   const [notes, setNotes] = useState([]);
   const [noteText, setNoteText] = useState("");
   const [notesLoading, setNotesLoading] = useState(false);
@@ -43,6 +47,7 @@ export default function AccountDetailPage() {
     [activities, id]
   );
   const acctTasks = useMemo(() => tasks.filter((t) => t.accountId === id), [tasks, id]);
+  const acctOpps = useMemo(() => opportunities.filter((o) => o.accountId === id), [opportunities, id]);
 
   // Match BI data by name
   const biData = useMemo(() => {
@@ -133,6 +138,9 @@ export default function AccountDetailPage() {
             onClick={() => setActiveTab(tab)}
           >
             {formatLabel(tab)}
+            {tab === "opportunities" && acctOpps.length > 0 && (
+              <span style={{ marginLeft: 4, fontSize: 11, opacity: 0.7 }}>({acctOpps.filter((o) => o.stage !== "Won" && o.stage !== "Lost" && o.stage !== "Completed").length})</span>
+            )}
             {tab === "contacts" && acctContacts.length > 0 && (
               <span style={{ marginLeft: 4, fontSize: 11, opacity: 0.7 }}>({acctContacts.length})</span>
             )}
@@ -147,6 +155,14 @@ export default function AccountDetailPage() {
       <div style={{ marginTop: 20 }}>
         {activeTab === "overview" && (
           <OverviewTab account={account} contacts={acctContacts} biData={biData} activities={acctActivities} />
+        )}
+        {activeTab === "opportunities" && (
+          <OpportunitiesTab
+            opportunities={acctOpps}
+            oppTypes={oppTypes}
+            onAdd={() => setShowOppForm(true)}
+            onAdvance={advanceStage}
+          />
         )}
         {activeTab === "activity" && (
           <ActivityTab
@@ -228,6 +244,14 @@ export default function AccountDetailPage() {
           contacts={acctContacts}
           onSave={createTask}
           onClose={() => setShowTaskForm(false)}
+        />
+      )}
+      {showOppForm && (
+        <OpportunityForm
+          prefilledAccountId={id}
+          prefilledAccountName={account.name}
+          onSave={createOpportunity}
+          onClose={() => setShowOppForm(false)}
         />
       )}
     </div>
@@ -539,6 +563,91 @@ function NotesTab({ notes, loading, noteText, onNoteChange, onAddNote, onDeleteN
             </div>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Opportunities Tab ────────────────────────────────────────
+
+const OPP_STAGE_COLORS = {
+  Won: "#10b981", Lost: "#ef4444", Completed: "#10b981",
+  Identified: "#94a3b8", Outreach: "#60a5fa", Meeting: "#818cf8",
+  Tasting: "#a78bfa", Proposal: "#f59e0b", Negotiation: "#f97316",
+};
+
+function OpportunitiesTab({ opportunities, oppTypes, onAdd, onAdvance }) {
+  const open = opportunities.filter((o) => o.stage !== "Won" && o.stage !== "Lost" && o.stage !== "Completed");
+  const closed = opportunities.filter((o) => o.stage === "Won" || o.stage === "Lost" || o.stage === "Completed");
+  const typeLabel = (key) => oppTypes.find((t) => t.key === key)?.label || key;
+
+  return (
+    <div className="table-container">
+      <div className="table-header">
+        <h3 className="table-title">
+          Opportunities
+          {open.length > 0 && <span style={{ marginLeft: 8, fontSize: 13, fontWeight: 400, color: "var(--text-dim)" }}>{open.length} open</span>}
+        </h3>
+        <button className="btn btn-primary btn-small" onClick={onAdd}>+ New Opportunity</button>
+      </div>
+      {opportunities.length === 0 ? (
+        <p style={{ color: "var(--text-dim)", textAlign: "center", padding: 32 }}>No opportunities yet. Create one to start tracking deals with this account.</p>
+      ) : (
+        <>
+          {open.map((opp) => (
+            <OppRow key={opp.id} opp={opp} typeLabel={typeLabel(opp.type)} onAdvance={onAdvance} oppTypes={oppTypes} />
+          ))}
+          {closed.length > 0 && (
+            <>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-dim)", textTransform: "uppercase", padding: "12px 0 4px" }}>
+                Closed ({closed.length})
+              </div>
+              {closed.map((opp) => (
+                <OppRow key={opp.id} opp={opp} typeLabel={typeLabel(opp.type)} onAdvance={onAdvance} oppTypes={oppTypes} isClosed />
+              ))}
+            </>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function OppRow({ opp, typeLabel, onAdvance, oppTypes, isClosed }) {
+  const type = oppTypes.find((t) => t.key === opp.type);
+  const stages = type?.stages || [];
+  const currentIdx = stages.indexOf(opp.stage);
+  const nextStage = !isClosed && currentIdx >= 0 && currentIdx < stages.length - 1 ? stages[currentIdx + 1] : null;
+
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 10, padding: "10px 0",
+      borderBottom: "1px solid var(--border)", opacity: isClosed ? 0.6 : 1,
+    }}>
+      <div style={{ flex: 1 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+          <span style={{ fontWeight: 600, fontSize: 14 }}>{opp.title}</span>
+          <span className="badge badge-blue" style={{ fontSize: 10 }}>{typeLabel}</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--text-dim)" }}>
+          <span className="pipeline-stage-badge" style={{ background: OPP_STAGE_COLORS[opp.stage] || "#94a3b8", fontSize: 10, padding: "1px 8px" }}>
+            {opp.stage}
+          </span>
+          <span style={{ fontWeight: 600, color: "var(--text)" }}>{formatCurrency(opp.estValue || 0)}</span>
+          {opp.wines?.length > 0 && <span>{opp.wines.length} wine{opp.wines.length > 1 ? "s" : ""}</span>}
+          {opp.owner && <span>{opp.owner}</span>}
+        </div>
+      </div>
+      {nextStage && (
+        <button
+          className="btn btn-small btn-secondary"
+          onClick={async () => {
+            try { await onAdvance(opp.id, nextStage); } catch (err) { console.error(err.message); }
+          }}
+          style={{ fontSize: 11, whiteSpace: "nowrap" }}
+        >
+          &rarr; {nextStage}
+        </button>
       )}
     </div>
   );

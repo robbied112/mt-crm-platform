@@ -173,6 +173,63 @@ export async function deleteNote(tenantId, accountId, noteId) {
   await deleteDoc(noteRef);
 }
 
+// ─── Opportunities ────────────────────────────────────────────
+
+export async function loadOpportunities(tenantId) {
+  const q = query(tenantCol(tenantId, "opportunities"), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function createOpportunity(tenantId, data) {
+  const ref = await addDoc(tenantCol(tenantId, "opportunities"), {
+    ...stripUndefined(data),
+    stageHistory: [{ stage: data.stage, date: new Date().toISOString(), by: data.createdBy || null }],
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateOpportunity(tenantId, id, patch) {
+  await updateDoc(tenantDoc(tenantId, "opportunities", id), {
+    ...stripUndefined(patch),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteOpportunity(tenantId, id) {
+  await deleteDoc(tenantDoc(tenantId, "opportunities", id));
+}
+
+// ─── Products (Wine Catalog) ──────────────────────────────────
+
+export async function loadProducts(tenantId) {
+  const q = query(tenantCol(tenantId, "products"), orderBy("name"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function createProduct(tenantId, data) {
+  const ref = await addDoc(tenantCol(tenantId, "products"), {
+    ...stripUndefined(data),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateProduct(tenantId, id, patch) {
+  await updateDoc(tenantDoc(tenantId, "products", id), {
+    ...stripUndefined(patch),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteProduct(tenantId, id) {
+  await deleteDoc(tenantDoc(tenantId, "products", id));
+}
+
 // ─── Real-time Listeners ──────────────────────────────────────
 
 export function subscribeAccounts(tenantId, callback, onError) {
@@ -211,6 +268,26 @@ export function subscribeTasks(tenantId, callback, onError) {
     callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
   }, (err) => {
     console.error("subscribeTasks error:", err);
+    if (onError) onError(err);
+  });
+}
+
+export function subscribeOpportunities(tenantId, callback, onError) {
+  const q = query(tenantCol(tenantId, "opportunities"), orderBy("createdAt", "desc"));
+  return onSnapshot(q, (snap) => {
+    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+  }, (err) => {
+    console.error("subscribeOpportunities error:", err);
+    if (onError) onError(err);
+  });
+}
+
+export function subscribeProducts(tenantId, callback, onError) {
+  const q = query(tenantCol(tenantId, "products"), orderBy("name"));
+  return onSnapshot(q, (snap) => {
+    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+  }, (err) => {
+    console.error("subscribeProducts error:", err);
     if (onError) onError(err);
   });
 }

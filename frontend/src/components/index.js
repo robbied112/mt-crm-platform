@@ -56,3 +56,5 @@ export { default as WineDetail } from "./WineDetail";
 export { default as PricingStudio } from "./PricingStudio/PricingStudio";
 export { default as SetupAssistant } from "./SetupAssistant";
 export { default as DataHealthCard } from "./DataHealthCard";
+export { default as PipelineKanban } from "./PipelineKanban";
+export { default as OpportunityForm } from "./OpportunityForm";

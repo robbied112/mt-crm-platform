@@ -72,8 +72,8 @@ export const ROUTES = [
     label: "Pipeline",
     icon: "pipeline",
     accent: true,
-    dataKey: "pipeline",
-    description: "Sales pipeline, funnel, and deal tracking",
+    dataKey: null,
+    description: "Opportunities pipeline — track deals by type and stage",
   },
   // Tools
   {

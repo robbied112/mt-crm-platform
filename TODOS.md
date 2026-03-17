@@ -1,6 +1,7 @@
 # TODOS — Sidekick BI (MT CRM Platform)
 
-> Updated from CEO App Review (Onboarding & Activation) on 2026-03-16.
+> Updated from CEO CRM Pipeline Review on 2026-03-16.
+> Previous: CEO App Review (Onboarding & Activation) on 2026-03-16.
 > Previous: CEO Disruption Review + Eng Review on 2026-03-16.
 > Previous: Cathedral Vision Review + Eng Review on 2026-03-15.
 > CEO review: SCOPE EXPANSION mode. Eng review: BIG CHANGE mode (full Phase 1).
@@ -24,6 +25,10 @@
 > **Billback / Trade Spend Intelligence added 2026-03-16.**
 > Vision: PDF billback ingestion → wine entity with AI dedup → spend dashboards → agreement reconciliation → producer allocation → predictive budgeting.
 > Key decisions: Claude Vision API (single-call extract+map), extend DataImport (not separate page), wine entity follows account extraction pattern.
+>
+> **CRM Pipeline Unification added 2026-03-16 (CEO Pipeline Review).**
+> Vision: Unified account lifecycle — pipeline IS the CRM. Typed opportunities (BTG, New Placement, Wine Dinner, etc.) with per-type stage workflows. Product catalog + wine picker. Mobile-first pipeline cards. Auto-promote prospect → active on Won. TODO-056 through TODO-062.
+> Key decisions: Separate opportunities collection (not single-entity) because reps visit accounts weekly with new wines. Hardcoded type defaults in config, admin UI later. Cascade delete for opportunities on account delete. Guided empty state (not demo data) for first pipeline use.
 
 ---
 
@@ -605,7 +610,93 @@
 
 ---
 
-## Phase Dependency Graph (Updated 2026-03-16)
+## P1 — CRM Pipeline Unification (CEO Pipeline Review 2026-03-16)
+
+### TODO-056: Opportunities Entity + CRM Service Layer
+- **What:** Add `opportunities` and `products` Firestore collections with full CRUD in `crmService.js` and `CrmContext.jsx`. Opportunity types config with per-type stage workflows (New Placement, BTG Program, Wine Dinner, List Expansion, Reorder/Restock, Staff Training, Seasonal Program, Custom). Cascade delete opportunities on account delete (extend existing pattern in CrmContext.jsx:64-81). Auto-promote account status from `prospect` to `active` when any opportunity reaches "Won" stage. Stage history tracking on every advance (`stageHistory: [{ stage, date, by }]`).
+- **Why:** Pipeline and CRM are currently disconnected. `CustomerPipeline.jsx` renders spreadsheet data (`pipelineAccounts` from DataContext) while CRM accounts live in a separate entity world. A rep can't track recurring deals per account or attach wines. "Closed Won" is a dead end — nothing happens. This is the data foundation for the entire unified pipeline.
+- **Firestore schema:**
+  - `tenants/{tenantId}/opportunities/{oppId}` — type, accountId, accountName, title, stage, wines[], estValue, owner, tier, channel, state, nextStep, dueDate, notes, stageHistory[], createdAt, closedAt, outcome
+  - `tenants/{tenantId}/products/{productId}` — name, producer, vintage, sku, type, createdAt
+  - `tenants/{tenantId}/config/opportunityTypes` — types[] with key, label, stages[], defaultValue, icon
+- **Pros:** Single source of truth for deals. Real entity model (not spreadsheet overlay). Recurring opportunities per account. Foundation for all downstream features.
+- **Cons:** Largest CRM change to date. Adds 2 new Firestore collections + subscriptions. Need Firestore security rules update.
+- **Effort:** L
+- **Priority:** P1
+- **Files:** `frontend/src/services/crmService.js`, `frontend/src/context/CrmContext.jsx`, `firestore.rules`, `frontend/src/config/tenant.js`
+- **Depends on:** Nothing (but blocks TODO-057 through TODO-062)
+
+### TODO-057: Unified Pipeline View (Kanban + Table)
+- **What:** Replace `CustomerPipeline.jsx` with a new pipeline component backed by CRM opportunities. Kanban board on desktop (drag-and-drop between stage columns), responsive card list on mobile. Filter by opportunity type, stage, owner, account. Type-aware stage columns (each opp type shows its own stage workflow). KPIs: total pipeline value, weighted, by type. BEM CSS classes replacing all 657 lines of inline styles.
+- **Why:** Current pipeline is a read-only spreadsheet table with no entity backing. `onAddNew` literally `console.log`s (App.jsx:306). Mobile is unusable — 11-column table with forced horizontal scroll. Reps can't interact with deals, can't drag stages, can't create opportunities.
+- **Pros:** Interactive pipeline that reps will actually use daily. Mobile-usable. Type-aware stages make it a wine CRM, not generic.
+- **Cons:** Full rewrite of CustomerPipeline.jsx. Drag-and-drop needs touch handling for mobile. Stage validation adds complexity.
+- **Effort:** L
+- **Priority:** P1
+- **Files:** New `frontend/src/components/PipelineKanban.jsx`, `frontend/src/components/PipelineCard.jsx`, `frontend/src/styles/Global.css`. Replaces `CustomerPipeline.jsx`.
+- **Depends on:** TODO-056 (opportunities entity)
+
+### TODO-058: Product Catalog + Wine Picker
+- **What:** New `products` collection UI. Wine picker component for attaching wines to opportunities (multi-select with search/filter). Manual product creation (name, producer, vintage, sku, type). Auto-seed from billback wine extraction when available. Products management tab in Settings for admins. Visual wine picker modal with search, grouped by producer.
+- **Why:** Reps can't record which wines they showed a customer. This is THE differentiator — "I showed them the new Cab and the Reserve Pinot" tracked per opportunity. Makes this a wine-industry CRM.
+- **Pros:** Wine attachment to opportunities. Catalog grows organically (billbacks + manual). Product visibility across pipeline.
+- **Cons:** New collection + subscription adds to initial load. Catalog could get messy without dedup.
+- **Effort:** M
+- **Priority:** P1
+- **Files:** New `frontend/src/components/WinePicker.jsx`, extend `crmService.js` with product CRUD, Settings section
+- **Depends on:** TODO-056 (products collection)
+
+### TODO-059: Account Detail — Opportunities Tab + Conversion Flow
+- **What:** Add "Opportunities" tab to `AccountDetailPage.jsx` showing all open + closed opportunities for that account with stage badges and type icons. Quick-create opportunity from account detail (pre-filled accountId). Stage advance buttons inline. When any opp hits Won on a prospect account, auto-promote to `active` with celebration toast + auto-logged activity entry: "Closed Won: [opp title]".
+- **Why:** Account detail page currently has no pipeline visibility. A rep looking at "Harbor Restaurant" can't see what deals are in flight. The Won→Active conversion is the bridge between pipeline and CRM that doesn't exist today.
+- **Pros:** Complete account view — relationship + active deals + history. Conversion flow makes pipeline meaningful.
+- **Cons:** AccountDetailPage.jsx already has 6 tabs. Opportunities tab adds UI complexity.
+- **Effort:** M
+- **Priority:** P1
+- **Files:** `frontend/src/components/AccountDetailPage.jsx`
+- **Depends on:** TODO-056 (opportunities entity)
+
+### TODO-060: Mobile-First Pipeline Cards + Responsive CRM
+- **What:** Mobile card layout for pipeline (swipeable stage indicators, tap to expand opportunity detail). Replace all inline styles in pipeline components with BEM CSS. Responsive account forms (single-column on mobile, already partially handled by `form-grid` in Global.css). Touch-friendly stage advance buttons with adequate tap targets. Pipeline cards show: account name, opp title, type badge, value, wines count, days in stage.
+- **Why:** CEO question: "does it work on mobile?" — today the answer is no. Pipeline table has 11 columns forcing `min-width: 600px` horizontal scroll on phones. A field rep standing in a restaurant needs to update a deal in 10 seconds on their phone.
+- **Pros:** Field reps can use the pipeline on their phones. Touch-friendly interactions. Professional mobile experience.
+- **Cons:** Needs careful responsive design. Swipe interactions need testing across devices. Card layout is a different paradigm from table.
+- **Effort:** M
+- **Priority:** P1
+- **Files:** `frontend/src/styles/Global.css`, pipeline components from TODO-057
+- **Depends on:** TODO-057 (unified pipeline view)
+
+### TODO-061: Quick-Add Account + Opportunity From Anywhere
+- **What:** Floating "+" action button (FAB) accessible from pipeline, territory, and daily actions pages. Quick-add modal with minimal required fields: account name, type, then optional "create first opportunity" with type picker. Command Palette (Cmd+K) gains "New Account" and "New Opportunity" shortcuts. Pre-fill context when adding from territory (state) or daily actions (account name).
+- **Why:** CEO question: "can they easily add new customers?" — today account creation is buried under CRM > Accounts > + New (3 clicks). A rep meeting someone at a trade show should add them in 5 seconds.
+- **Pros:** Removes friction from the most common action. Contextual pre-fill reduces data entry. Cmd+K integration for power users.
+- **Cons:** FAB is an additional floating UI element. Need to handle mobile placement (not overlap bottom nav if added later).
+- **Effort:** S
+- **Priority:** P2
+- **Files:** New `frontend/src/components/QuickAddFAB.jsx`, `frontend/src/components/CommandPalette.jsx`, `frontend/src/App.jsx`
+- **Depends on:** TODO-056 (opportunities entity)
+
+### TODO-062: Pipeline Migration Helper
+- **What:** Admin tool in Settings that imports existing `pipelineAccounts` (from spreadsheet data in DataContext) into the new opportunities model. Maps old stages (Identified/Outreach Sent/Meeting Set/RFP/Proposal/Negotiation/Closed Won/Lost) to closest match per opportunity type (defaults to "New Placement" type). Creates CRM accounts for any pipeline accounts that don't already exist (matched by name). Runs once per tenant, optional, with preview before commit.
+- **Why:** Existing tenants have pipeline data from spreadsheet imports. Without migration, switching to the new pipeline would lose all that historical context. Preserves continuity for early adopters.
+- **Pros:** Smooth upgrade path. No data loss. Preview before commit prevents surprises.
+- **Cons:** Stage name mapping is imperfect — needs manual review for edge cases. One-time tool that adds code complexity.
+- **Effort:** M
+- **Priority:** P2
+- **Files:** New admin section in Settings, `frontend/src/services/migrationService.js`
+- **Depends on:** TODO-056 (opportunities entity)
+
+### CRM Pipeline Delight Items (from CEO Pipeline Review 2026-03-16)
+
+- **Stage auto-advance suggestions** — When a rep logs a "Wine Tasting" activity on an account that has a BTG opportunity stuck at "Identified", prompt: "Move BTG opportunity to Tasting stage?" One tap to advance. Pipeline updates itself based on daily work. (S, 30 min)
+- **"Wines in Play" badge on pipeline cards** — Each pipeline card shows small count badge ("3 wines") for wines attached to that opportunity. Clicking expands the list. Rep glances at pipeline and instantly knows what they're pitching at each account. Visual richness that signals "wine CRM." (S, 20 min)
+- **Opportunity type quick stats** — Pipeline page header shows sparkline-style stats per type: "12 BTG programs ($48K) · 8 New Placements ($32K) · 3 Wine Dinners ($4.5K)." Manager-level insight at a glance. (S, 30 min)
+- **"Last Visited" freshness indicator** — Green/yellow/red dot on pipeline + territory cards based on most recent activity date (<7d / 7-21d / >21d). Drives daily visit behavior — the #1 habit you want reps building. (S, 20 min)
+- **Won deal celebration + weekly wins feed** — Brief celebration animation on "Won" stage + auto-post to "Wins This Week" feed on My Territory. "4 deals closed, $18K new revenue, 12 wines placed." Positive reinforcement that makes reps WANT to update stages. (M, 45 min)
+
+---
+
+## Phase Dependency Graph (Updated 2026-03-16 — CRM Pipeline Review)
 
 ```
 FOUNDATION (DONE):
@@ -657,6 +748,21 @@ REMAINING P1 — IMPLEMENTATION ORDER:
         └── TODO-053 (smart file detection messaging) ← supersedes TODO-031
                 Reads headerSignatures from reportGuides.js (unified config)
 
+    ── Phase E: CRM Pipeline Unification ──
+    TODO-056 (opportunities entity + service layer) ← DO FIRST in this phase
+        │
+        ├── TODO-057 (unified pipeline view — Kanban + table)
+        │       │
+        │       └── TODO-060 (mobile-first pipeline cards)
+        │
+        ├── TODO-058 (product catalog + wine picker)
+        │
+        ├── TODO-059 (account detail opportunities tab + conversion)
+        │
+        ├── TODO-061 (quick-add FAB + Cmd+K shortcuts) ← P2
+        │
+        └── TODO-062 (pipeline migration helper) ← P2
+
 P2+:
     TODO-054 (post-import "What's Next" card) ← needs TODO-049, TODO-051
     TODO-027 (Account Detail Page) ← needs TODO-007 (DONE)
@@ -668,6 +774,8 @@ P2+:
     ~~TODO-031 (smart file detection UX)~~ SUPERSEDED by TODO-053
     TODO-039 (morning greeting) ← P2 delight
     TODO-009 (OAuth HMAC signing) ← SECURITY, P1 before production
+    TODO-061 (quick-add FAB) ← needs TODO-056
+    TODO-062 (pipeline migration helper) ← needs TODO-056
 
 Billback / pricing tree:
     TODO-040 (PDF billback extraction Cloud Fn) ✓ DONE
