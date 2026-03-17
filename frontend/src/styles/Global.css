@@ -5326,7 +5326,7 @@ input:focus-visible,
 }
 
 .exec-dash__sellout-fill--ahead { background: #22c55e; }
-.exec-dash__sellout-fill--on-pace { background: #0F766E; }
+.exec-dash__sellout-fill--on-pace { background: #1F865A; }
 .exec-dash__sellout-fill--behind { background: #f97316; }
 
 .exec-dash__sellout-info {
@@ -5339,7 +5339,7 @@ input:focus-visible,
 
 .exec-dash__pace { font-weight: 600; }
 .exec-dash__pace--ahead { color: #22c55e; }
-.exec-dash__pace--on-pace { color: #0F766E; }
+.exec-dash__pace--on-pace { color: #1F865A; }
 .exec-dash__pace--behind { color: #f97316; }
 
 /* Aging */
