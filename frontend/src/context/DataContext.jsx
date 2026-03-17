@@ -24,6 +24,7 @@ import {
   saveBudget as saveBudgetFS,
 } from "../services/firestoreService";
 import { normalizeRows } from "../utils/normalize.js";
+import { sanitizeTenantBranding } from "../utils/branding";
 import TENANT_CONFIG from "../config/tenant";
 
 const DataContext = createContext(null);
@@ -110,7 +111,10 @@ export default function DataProvider({ children }) {
         if (cancelled) return;
         setData({ ...EMPTY, ...allData });
         setSummary(summaryText);
-        if (config) setTenantConfig((prev) => ({ ...prev, ...config }));
+        if (config) {
+          const sanitizedConfig = sanitizeTenantBranding(config);
+          setTenantConfig((prev) => ({ ...prev, ...sanitizedConfig }));
+        }
         if (budgetData) setBudget(budgetData);
       } catch (err) {
         if (!cancelled) setError(err.message);
@@ -176,7 +180,10 @@ export default function DataProvider({ children }) {
       ]);
       setData({ ...EMPTY, ...allData });
       setSummary(summaryText);
-      if (config) setTenantConfig((prev) => ({ ...prev, ...config }));
+      if (config) {
+        const sanitizedConfig = sanitizeTenantBranding(config);
+        setTenantConfig((prev) => ({ ...prev, ...sanitizedConfig }));
+      }
       if (budgetData) setBudget(budgetData);
     } catch (err) {
       setError(err.message);
@@ -189,8 +196,9 @@ export default function DataProvider({ children }) {
   const updateTenantConfig = useCallback(async (patch) => {
     if (!tenantId) throw new Error("No tenant context");
     try {
-      await saveTenantConfigFS(tenantId, patch);
-      setTenantConfig((prev) => ({ ...prev, ...patch }));
+      const sanitizedPatch = sanitizeTenantBranding(patch);
+      await saveTenantConfigFS(tenantId, sanitizedPatch);
+      setTenantConfig((prev) => ({ ...prev, ...sanitizedPatch }));
     } catch (err) {
       throw new Error(`Failed to save config: ${err.message}`);
     }

@@ -8,7 +8,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { ROUTES } from "../config/routes";
 import { useAuth } from "../context/AuthContext";
 import { useData } from "../context/DataContext";
-import CruFolioLogo from "./CruFolioLogo";
+import BrandLogo from "./BrandLogo";
 import { useCrm } from "../context/CrmContext";
 
 import { ONBOARDING_STEPS } from "../config/reportGuides";
@@ -219,15 +219,13 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
     <aside className={`sidebar ${collapsed ? "sidebar--collapsed" : ""} ${mobileOpen ? "sidebar--mobile-open" : ""}`}>
       {/* Brand */}
       <div className="sidebar__brand">
-        {tenantConfig?.logo ? (
-          <img
-            src={tenantConfig.logo}
-            alt={tenantConfig.companyName || "CruFolio"}
-            className="sidebar__logo"
-          />
-        ) : (
-          <CruFolioLogo size={32} variant="light" className="sidebar__logo" />
-        )}
+        <BrandLogo
+          logo={tenantConfig?.logo}
+          companyName={tenantConfig?.companyName}
+          size={32}
+          variant="light"
+          className="sidebar__logo"
+        />
         {!collapsed && (
           <div className="sidebar__brand-text">
             <span className="sidebar__brand-name">

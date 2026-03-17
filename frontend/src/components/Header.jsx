@@ -4,7 +4,7 @@
  * Displays the brand logo, title, and sync status indicator.
  */
 
-import CruFolioLogo from "./CruFolioLogo";
+import BrandLogo from "./BrandLogo";
 
 export default function Header({ companyName, logo, syncStatus }) {
   const statusColors = {
@@ -15,16 +15,12 @@ export default function Header({ companyName, logo, syncStatus }) {
 
   return (
     <header role="banner" aria-label="CruFolio Dashboard Header">
-      {logo ? (
-        <img
-          id="brandLogo"
-          src={logo}
-          alt={companyName || "CruFolio"}
-          style={{ height: 40 }}
-        />
-      ) : (
-        <CruFolioLogo size={40} />
-      )}
+      <BrandLogo
+        logo={logo}
+        companyName={companyName}
+        size={40}
+        style={{ height: 40 }}
+      />
       <div className="header-text">
         <h1 id="headerTitle">{companyName || "CruFolio"}</h1>
         <p>Real-time sales intelligence</p>

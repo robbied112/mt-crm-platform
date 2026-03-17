@@ -3,6 +3,7 @@
  */
 
 export { default as CruFolioLogo } from "./CruFolioLogo";
+export { default as BrandLogo } from "./BrandLogo";
 export { default as Header } from "./Header";
 export { default as FilterBar } from "./FilterBar";
 export { default as Sidebar } from "./Sidebar";
