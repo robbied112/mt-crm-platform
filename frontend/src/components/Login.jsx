@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import CruFolioLogo from "./CruFolioLogo";
 
 const ACCOUNT_TYPES = [
   { value: "winery", label: "Winery / Vineyard" },
@@ -66,7 +67,7 @@ export default function Login({ initialMode = "signin", onBackToLanding }) {
           </button>
         )}
         <div style={styles.logoRow}>
-          <img src="/logo.png" alt="Logo" style={styles.logo} />
+          <CruFolioLogo size={36} />
           <h1 style={styles.title}>CruFolio</h1>
         </div>
         <p style={styles.subtitle}>{isSignup ? "Create your account" : "Sign in to your account"}</p>
@@ -190,10 +191,6 @@ const styles = {
     alignItems: "center",
     gap: "12px",
     marginBottom: "4px",
-  },
-  logo: {
-    height: "36px",
-    width: "auto",
   },
   title: {
     fontFamily: "'Libre Baskerville', serif",
