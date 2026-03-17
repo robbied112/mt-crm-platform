@@ -241,7 +241,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
       </section>
 
       {/* ── Why Sidekick (stat cards) ────────── */}
-      <section style={{ ...s.sectionWhite, paddingTop: 80, paddingBottom: 80 }}>
+      <section style={{ ...s.sectionWhite, paddingTop: 48, paddingBottom: 48 }}>
         <div style={s.statsRow}>
           {[
             { num: "5 min", label: "Setup Time", desc: "Upload a spreadsheet and see insights immediately" },
@@ -258,9 +258,9 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
       </section>
 
       {/* ── Features ─────────────────────────── */}
-      <section id="features" style={s.sectionWhite}>
-        <h2 style={s.sectionH2}>Built for how you actually sell</h2>
-        <p style={s.sectionSub}>Every feature is designed for suppliers who sell through distributors, brokers, and reps.</p>
+      <section id="features" style={{ ...s.sectionWhite, paddingTop: 80, paddingBottom: 80 }}>
+        <h2 style={{ ...s.sectionH2, textAlign: "left", maxWidth: 1100 }}>Built for how you actually sell</h2>
+        <p style={{ ...s.sectionSub, textAlign: "left", margin: "0 0 56px" }}>Every feature is designed for suppliers who sell through distributors, brokers, and reps.</p>
 
         {/* Feature 1: Scorecard — text left, mockup right */}
         <div style={s.featureRow}>
@@ -305,44 +305,27 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
       {/* ── How It Works ─────────────────────── */}
       <section style={{ ...s.sectionGray, paddingTop: 80, paddingBottom: 80 }}>
         <h2 style={s.sectionH2}>Up and running in minutes</h2>
-        <div style={s.stepsRow}>
+        <div style={s.stepsFlow}>
           {[
-            {
-              step: "1", title: "Upload",
-              desc: "Drag & drop a distributor report — Excel, CSV, or depletion file.",
-              icon: (
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0f766e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
-              ),
-            },
-            {
-              step: "2", title: "Auto-Map",
-              desc: "We detect your columns and map them to the right fields automatically.",
-              icon: (
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0f766e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                </svg>
-              ),
-            },
-            {
-              step: "3", title: "Insights",
-              desc: "Scorecards, health scores, and rep dashboards — live in minutes.",
-              icon: (
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0f766e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" />
-                </svg>
-              ),
-            },
+            { step: "1", title: "Upload", desc: "Drag & drop a distributor report — Excel, CSV, or depletion file." },
+            { step: "2", title: "Auto-Map", desc: "We detect your columns and map them to the right fields automatically." },
+            { step: "3", title: "Insights", desc: "Scorecards, health scores, and rep dashboards — live in minutes." },
           ].map((item, i) => (
-            <div key={i} style={{ flex: 1, position: "relative" }}>
-              <div style={s.stepCard}>
-                <div style={s.stepIcon}>{item.icon}</div>
-                <div style={s.stepNumber}>{item.step}</div>
-                <h3 style={s.stepTitle}>{item.title}</h3>
-                <p style={s.stepDesc}>{item.desc}</p>
+            <div key={i} style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 200 }}>
+              <div style={s.stepFlowItem}>
+                <div style={s.stepFlowNumber}>{item.step}</div>
+                <div>
+                  <div style={s.stepFlowTitle}>{item.title}</div>
+                  <div style={s.stepFlowDesc}>{item.desc}</div>
+                </div>
               </div>
-              {i < 2 && <div style={s.stepConnector} />}
+              {i < 2 && (
+                <div style={s.stepFlowArrow}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -520,30 +503,23 @@ const s = {
   },
   featureP: { fontSize: 16, color: "#475569", lineHeight: 1.7 },
 
-  /* How It Works */
-  stepsRow: {
-    display: "flex", gap: 24, maxWidth: 900, margin: "40px auto 0",
-    flexWrap: "wrap", justifyContent: "center",
+  /* How It Works — horizontal flow */
+  stepsFlow: {
+    display: "flex", gap: 0, maxWidth: 900, margin: "40px auto 0",
+    flexWrap: "wrap", justifyContent: "center", alignItems: "flex-start",
   },
-  stepCard: {
-    background: "#fff", borderRadius: 16, padding: "32px 24px",
-    border: "1px solid #e2e8f0", textAlign: "center", position: "relative",
+  stepFlowItem: {
+    display: "flex", gap: 16, alignItems: "flex-start", flex: 1,
   },
-  stepIcon: {
-    width: 56, height: 56, borderRadius: "50%", background: "#f0fdfa",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    margin: "0 auto 16px",
+  stepFlowNumber: {
+    width: 40, height: 40, borderRadius: "50%", background: "#0f766e",
+    color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
+    fontSize: 18, fontWeight: 800, flexShrink: 0,
   },
-  stepNumber: {
-    position: "absolute", top: 12, right: 16,
-    fontSize: 48, fontWeight: 900, color: "#f1f5f9", lineHeight: 1,
-  },
-  stepTitle: { fontSize: 18, fontWeight: 700, color: "#0f172a", marginBottom: 8 },
-  stepDesc: { fontSize: 14, color: "#64748b", lineHeight: 1.6 },
-  stepConnector: {
-    position: "absolute", top: "50%", right: -16, width: 8, height: 8,
-    borderTop: "2px solid #cbd5e1", borderRight: "2px solid #cbd5e1",
-    transform: "rotate(45deg) translateY(-50%)",
+  stepFlowTitle: { fontSize: 16, fontWeight: 700, color: "#0f172a", marginBottom: 4 },
+  stepFlowDesc: { fontSize: 14, color: "#64748b", lineHeight: 1.6 },
+  stepFlowArrow: {
+    flexShrink: 0, padding: "8px 12px", display: "flex", alignItems: "center",
   },
 
   /* Pricing */
@@ -557,7 +533,9 @@ const s = {
   },
   priceCardPop: {
     borderColor: "#0f766e",
-    boxShadow: "0 0 40px rgba(15,118,110,0.12)",
+    boxShadow: "0 0 40px rgba(15,118,110,0.15), 0 8px 30px rgba(0,0,0,0.08)",
+    transform: "scale(1.04)",
+    zIndex: 1,
   },
   popBadge: {
     position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)",
@@ -575,7 +553,7 @@ const s = {
 
   /* Final CTA */
   ctaSection: {
-    padding: "80px 24px", textAlign: "center",
+    padding: "100px 24px", textAlign: "center",
     background: "linear-gradient(180deg, #0a0f1a 0%, #111827 100%)",
   },
   ctaH2: { fontSize: 38, fontWeight: 800, color: "#f1f5f9", marginBottom: 16 },

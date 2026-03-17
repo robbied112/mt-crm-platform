@@ -4,7 +4,7 @@
  * Global filter bar with date range, rep, product, distributor, region, state, channel.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { t } from "../utils/terminology";
 
 const DATE_RANGE_OPTIONS = [
@@ -39,6 +39,16 @@ export default function FilterBar({
   const [showCustomDates, setShowCustomDates] = useState(
     filters.dateRange === "custom"
   );
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    setIsMobile(mq.matches);
+    const handler = (e) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   function handleDateRangeChange(e) {
     const value = e.target.value;
@@ -57,11 +67,8 @@ export default function FilterBar({
     filters.channel && filters.channel !== "ALL" ? filters.channel : "",
   ].filter(Boolean).length;
 
-  return (
-    <div
-      className="filter-bar"
-      style={{ flexWrap: "wrap", gap: "8px 16px", padding: "12px 20px" }}
-    >
+  const filterContent = (
+    <>
       {/* Date Range */}
       <div className="filter-group" style={{ minWidth: 140 }}>
         <label>Date Range</label>
@@ -300,6 +307,56 @@ export default function FilterBar({
           </span>
         )}
       </div>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <div className="filter-bar filter-bar--mobile" style={{ padding: "0" }}>
+        <button
+          className="filter-bar__toggle"
+          onClick={() => setFiltersExpanded((v) => !v)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+            padding: "10px 14px",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#475569",
+          }}
+        >
+          <span>
+            Filters{activeCount > 0 && (
+              <span style={{
+                background: "#0F766E", color: "#fff", fontSize: 10,
+                fontWeight: 700, padding: "2px 7px", borderRadius: 10, marginLeft: 8,
+              }}>{activeCount}</span>
+            )}
+          </span>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ transform: filtersExpanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 150ms" }}>
+            <path d="M4 6l4 4 4-4" />
+          </svg>
+        </button>
+        {filtersExpanded && (
+          <div style={{ padding: "8px 14px 14px", display: "flex", flexWrap: "wrap", gap: "8px 12px" }}>
+            {filterContent}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="filter-bar"
+      style={{ flexWrap: "wrap", gap: "8px 16px", padding: "12px 20px" }}
+    >
+      {filterContent}
     </div>
   );
 }

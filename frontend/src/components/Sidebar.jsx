@@ -172,7 +172,7 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
   const user = currentUser;
 
   // Split routes into sections
-  const mainRoutes = ROUTES.filter((r) => !r.adminOnly && r.section !== "crm" && r.section !== "billbacks" && r.section !== "portfolio" && r.section !== "setup");
+  const mainRoutes = ROUTES.filter((r) => !r.adminOnly && r.section !== "crm" && r.section !== "billbacks" && r.section !== "portfolio" && r.section !== "setup" && r.section !== "tools");
   const toolsRoutes = ROUTES.filter((r) => r.section === "tools");
   const crmRoutes = ROUTES.filter((r) => r.section === "crm");
   const portfolioRoutes = ROUTES.filter((r) => r.section === "portfolio" && !r.hidden);
