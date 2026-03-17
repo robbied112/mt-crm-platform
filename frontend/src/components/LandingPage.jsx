@@ -34,7 +34,7 @@ function DashboardMockup() {
             flex: 1, background: "#0f172a", borderRadius: 10, padding: "16px 18px",
             border: "1px solid rgba(255,255,255,0.06)",
           }}>
-            <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{k.label}</div>
+            <div style={{ fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{k.label}</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: k.color, lineHeight: 1.2, marginTop: 4 }}>{k.value}</div>
             <div style={{ fontSize: 11, color: "#6B6B6B", marginTop: 2 }}>{k.sub}</div>
           </div>
@@ -45,7 +45,7 @@ function DashboardMockup() {
         {bars.map((b, i) => (
           <div key={i} style={{ flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>{b.label}</span>
+              <span style={{ fontSize: 12, color: "#6B6B6B", fontWeight: 500 }}>{b.label}</span>
               <span style={{ fontSize: 12, color: b.color, fontWeight: 700 }}>{b.pct}%</span>
             </div>
             <div style={{ background: "#0f172a", borderRadius: 6, height: 8, overflow: "hidden" }}>
@@ -67,7 +67,7 @@ function DashboardMockup() {
             borderBottom: i < rows.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
           }}>
             <span style={{ flex: 2, fontSize: 13, color: "#D2C78A", fontWeight: 500 }}>{r.name}</span>
-            <span style={{ flex: 0.5, fontSize: 12, color: "#94a3b8", textAlign: "center" }}>{r.state}</span>
+            <span style={{ flex: 0.5, fontSize: 12, color: "#6B6B6B", textAlign: "center" }}>{r.state}</span>
             <span style={{ flex: 0.5, textAlign: "center" }}>
               <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: r.dot }} />
             </span>
@@ -102,9 +102,9 @@ function ScorecardMockup() {
   return (
     <div style={{ background: "#FDF8F0", borderRadius: 12, padding: 20, border: "1px solid #E5E0DA" }}>
       <div style={{ display: "flex", padding: "8px 0", borderBottom: "1px solid #E5E0DA", marginBottom: 4 }}>
-        <span style={{ flex: 2, fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>Distributor</span>
-        <span style={{ flex: 0.6, fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Score</span>
-        <span style={{ flex: 0.4, fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Status</span>
+        <span style={{ flex: 2, fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase" }}>Distributor</span>
+        <span style={{ flex: 0.6, fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Score</span>
+        <span style={{ flex: 0.4, fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Status</span>
       </div>
       {rows.map((r, i) => (
         <div key={i} style={{ display: "flex", alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? "1px solid #f1f5f9" : "none" }}>
@@ -141,7 +141,7 @@ function TerritoryMockup() {
             }}>{s.abbr}</div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#2E2E2E" }}>{s.rep}</div>
-              <div style={{ fontSize: 11, color: "#94a3b8" }}>Territory Rep</div>
+              <div style={{ fontSize: 11, color: "#6B6B6B" }}>Territory Rep</div>
             </div>
           </div>
         ))}
@@ -152,7 +152,7 @@ function TerritoryMockup() {
 
 function PipelineMockup() {
   const stages = [
-    { label: "Prospect", count: 24, pct: 100, color: "#94a3b8" },
+    { label: "Prospect", count: 24, pct: 100, color: "#6B6B6B" },
     { label: "Outreach", count: 18, pct: 75, color: "#2563EB" },
     { label: "Sampling", count: 12, pct: 50, color: "#6B1E1E" },
     { label: "Closed", count: 8, pct: 33, color: "#059669" },
@@ -162,7 +162,7 @@ function PipelineMockup() {
       {stages.map((s, i) => (
         <div key={i} style={{ marginBottom: i < 3 ? 10 : 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-            <span style={{ fontSize: 13, color: "#475569", fontWeight: 500 }}>{s.label}</span>
+            <span style={{ fontSize: 13, color: "#6B6B6B", fontWeight: 500 }}>{s.label}</span>
             <span style={{ fontSize: 13, color: s.color, fontWeight: 700 }}>{s.count} accounts</span>
           </div>
           <div style={{ background: "#E5E0DA", borderRadius: 6, height: 10, overflow: "hidden" }}>
@@ -477,11 +477,11 @@ const s = {
     fontFamily: "'Libre Baskerville', Georgia, serif",
   },
   heroSub: {
-    fontSize: 20, color: "#94a3b8", maxWidth: 560, margin: "0 auto 36px", lineHeight: 1.6,
+    fontSize: 20, color: "#6B6B6B", maxWidth: 560, margin: "0 auto 36px", lineHeight: 1.6,
   },
   heroCtas: { display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" },
   socialProof: {
-    fontSize: 14, color: "#475569", marginTop: 48, letterSpacing: "0.02em",
+    fontSize: 14, color: "#6B6B6B", marginTop: 48, letterSpacing: "0.02em",
   },
 
   /* Buttons */
@@ -542,7 +542,7 @@ const s = {
     fontSize: 26, fontWeight: 800, color: "#0f172a", lineHeight: 1.2, marginBottom: 12,
     fontFamily: "'Libre Baskerville', Georgia, serif",
   },
-  featureP: { fontSize: 16, color: "#475569", lineHeight: 1.7 },
+  featureP: { fontSize: 16, color: "#6B6B6B", lineHeight: 1.7 },
 
   /* How It Works — horizontal flow */
   stepsFlow: {
@@ -584,11 +584,11 @@ const s = {
     fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
   },
   priceAmount: { fontSize: 48, fontWeight: 900, color: "#111827", margin: "16px 0 4px" },
-  priceUnit: { fontSize: 16, fontWeight: 500, color: "#6b7280" },
-  priceDesc: { fontSize: 14, color: "#6b7280", marginBottom: 24 },
+  priceUnit: { fontSize: 16, fontWeight: 500, color: "#6B6B6B" },
+  priceDesc: { fontSize: 14, color: "#6B6B6B", marginBottom: 24 },
   priceList: { listStyle: "none", textAlign: "left", marginBottom: 28, padding: 0 },
   priceLi: {
-    padding: "7px 0", fontSize: 14, color: "#374151",
+    padding: "7px 0", fontSize: 14, color: "#2E2E2E",
     display: "flex", alignItems: "center", gap: 10,
   },
 
@@ -599,13 +599,13 @@ const s = {
   },
   ctaH2: { fontSize: 38, fontWeight: 800, color: "#f1f5f9", marginBottom: 16, fontFamily: "'Libre Baskerville', Georgia, serif" },
   ctaSub: {
-    fontSize: 18, color: "#94a3b8", maxWidth: 500, margin: "0 auto 32px", lineHeight: 1.6,
+    fontSize: 18, color: "#6B6B6B", maxWidth: 500, margin: "0 auto 32px", lineHeight: 1.6,
   },
   btnCtaWhite: {
     background: "#fff", color: "#6B1E1E", padding: "14px 36px", borderRadius: 10,
     fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer",
   },
-  ctaNote: { fontSize: 13, color: "#475569", marginTop: 14 },
+  ctaNote: { fontSize: 13, color: "#6B6B6B", marginTop: 14 },
 
   /* Footer */
   footer: {
