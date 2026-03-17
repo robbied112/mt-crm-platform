@@ -681,7 +681,7 @@ body {
 }
 
 .empty-state__title {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Inter Tight", Inter, -apple-system, sans-serif;
   font-size: 22px;
   font-weight: 700;
   color: var(--text);
@@ -834,7 +834,7 @@ header img {
 }
 
 .header-text h1 {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Inter Tight", Inter, -apple-system, sans-serif;
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 2px;
@@ -954,7 +954,7 @@ select:focus {
   border: none;
   color: var(--text-dim);
   cursor: pointer;
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Inter Tight", Inter, -apple-system, sans-serif;
   font-weight: 600;
   font-size: 14px;
   border-bottom: 3px solid transparent;
@@ -1012,11 +1012,11 @@ select:focus {
 }
 
 .kpi-card:hover {
-  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.08);
+  box-shadow: 0 4px 12px rgba(107, 30, 30, 0.08);
 }
 
 .kpi-label {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: Inter, -apple-system, sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: var(--text-dim);
@@ -1026,7 +1026,7 @@ select:focus {
 }
 
 .kpi-value {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Inter Tight", Inter, -apple-system, sans-serif;
   font-size: 32px;
   font-weight: 700;
   color: var(--accent);
@@ -1055,7 +1055,7 @@ select:focus {
 }
 
 .chart-title {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Inter Tight", Inter, -apple-system, sans-serif;
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 15px;
@@ -1068,6 +1068,18 @@ select:focus {
 .chart-wrapper {
   position: relative;
   height: 300px;
+}
+
+.chart-wrapper--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-empty-msg {
+  color: var(--text-dim, #6B6B6B);
+  font-size: 14px;
+  font-style: italic;
 }
 
 /* === Daily Actions === */
@@ -1088,7 +1100,7 @@ select:focus {
 }
 
 .daily-actions__title {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Inter Tight", Inter, -apple-system, sans-serif;
   font-size: 15px;
   font-weight: 700;
   color: var(--text);
@@ -1191,7 +1203,7 @@ select:focus {
 }
 
 .table-title {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Inter Tight", Inter, -apple-system, sans-serif;
   font-size: 15px;
   font-weight: 600;
   color: var(--text);
@@ -1218,7 +1230,7 @@ thead {
 th {
   padding: 12px;
   text-align: left;
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Inter Tight", Inter, -apple-system, sans-serif;
   font-weight: 600;
   font-size: 12px;
   text-transform: uppercase;
@@ -1372,7 +1384,7 @@ tbody tr:hover {
 }
 
 .section-header h3 {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Inter Tight", Inter, -apple-system, sans-serif;
   font-size: 16px;
   font-weight: 600;
   color: var(--text);
@@ -1509,7 +1521,7 @@ footer {
 }
 
 .ap-header h2 {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Inter Tight", Inter, -apple-system, sans-serif;
   font-size: 18px;
   font-weight: 700;
   margin: 0 0 4px;
@@ -1543,7 +1555,7 @@ footer {
 }
 
 .ap-section h3 {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Inter Tight", Inter, -apple-system, sans-serif;
   font-size: 14px;
   font-weight: 700;
   color: #2E2E2E;
@@ -1923,7 +1935,7 @@ footer {
 }
 
 .page-title {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Inter Tight", Inter, -apple-system, sans-serif;
   font-size: 22px;
   font-weight: 700;
   color: var(--text);
@@ -1969,7 +1981,7 @@ footer {
 }
 
 .modal-header h2 {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Inter Tight", Inter, -apple-system, sans-serif;
   font-size: 18px;
   font-weight: 700;
   color: var(--text);
