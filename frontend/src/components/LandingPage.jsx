@@ -417,10 +417,10 @@ const s = {
   },
   navLogo: { fontSize: 22, fontWeight: 800, color: "#D2C78A", fontFamily: "'Libre Baskerville', Georgia, serif" },
   navLinks: { display: "flex", gap: 24, alignItems: "center" },
-  navLink: { textDecoration: "none", color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: 500 },
+  navLink: { textDecoration: "none", color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: 500, padding: "10px 12px" },
   navLinkBtn: {
     background: "none", border: "none", color: "rgba(255,255,255,0.7)",
-    fontSize: 14, fontWeight: 500, cursor: "pointer", padding: 0,
+    fontSize: 14, fontWeight: 500, cursor: "pointer", padding: "10px 12px",
   },
   navCta: {
     background: "#6B1E1E", color: "#fff", padding: "8px 20px",
