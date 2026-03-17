@@ -434,7 +434,7 @@ const s = {
     overflow: "hidden",
   },
   heroH1: {
-    fontSize: 60, fontWeight: 900, lineHeight: 1.08,
+    fontSize: 60, fontWeight: 700, lineHeight: 1.3,
     color: "#f1f5f9", marginBottom: 20, letterSpacing: "-0.02em",
     fontFamily: "'Libre Baskerville', Georgia, serif",
   },
