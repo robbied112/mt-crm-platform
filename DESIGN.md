@@ -40,7 +40,7 @@
 - **Approach:** Balanced — primary + secondary with semantic colors for hierarchy
 - **Primary:**
   - Deep Burgundy `#6B1E1E` — headlines, CTAs, logo, dominant brand color
-  - Wine-Dark Navy `#1A1F3E` — sidebar, navigation bars, dark UI surfaces
+  - Wine Charcoal `#1F1B1E` — sidebar, navigation bars, dark UI surfaces (warm-tinted, not cold navy)
 - **Secondary:**
   - Aged Oak `#8B6A4C` — hover states, active lines, highlights
   - Warm Copper `#B87333` — accent highlights, secondary emphasis
@@ -58,9 +58,9 @@
   - Warning: `#C07B01`
   - Error: `#C53030`
 - **Hover states:**
-  - Primary button hover: `#8A2035` (Burgundy Light)
-  - Focus ring: 3px box-shadow in Champagne Gold at 30% opacity (`rgba(210, 199, 138, 0.3)`)
-- **Dark mode:** Reduce saturation 10-20%, use navy-based surfaces. Swap Deep Burgundy headlines to Parchment. Use Champagne Gold for section titles.
+  - Primary button hover: `#7A2530` (Burgundy Hover)
+  - Focus ring: 3px box-shadow in Deep Burgundy at 25% opacity (`rgba(107, 30, 30, 0.25)`)
+- **Dark mode:** Reduce saturation 10-20%, use warm charcoal surfaces. Swap Deep Burgundy headlines to Parchment.
 
 ## Spacing
 - **Base unit:** 4px
@@ -69,7 +69,7 @@
 
 ## Layout
 - **Approach:** Grid-disciplined
-- **Structure:** Fixed left sidebar (dark, Wine-Dark Navy) + scrollable main content area (Parchment background)
+- **Structure:** Fixed left sidebar (dark, Wine Charcoal #1F1B1E) + scrollable main content area (Parchment background)
 - **Sidebar width:** 252px expanded, 60px collapsed
 - **Max content width:** 1200px
 - **Border radius:**
@@ -88,7 +88,9 @@
 - **Inputs:** 6px radius, 1px `#D1CBC4` border, white fill, Inter Regular 14px, 10px 14px padding
 - **Alerts:** 7px radius, 8% opacity background of status color, 1px border at 20% opacity
 - **Status badges:** 12px radius (pill), 10% opacity background of status color
-- **Sidebar nav items:** Active state uses Champagne Gold text + 3px left border + 10% Gold background
+- **Sidebar nav items:** Active state uses cream text (`#FDF8F0`) + 3px burgundy left border + `rgba(107, 30, 30, 0.15)` burgundy-tinted background
+- **Sidebar text:** Default items at 70% cream opacity, hover at full cream, section labels at 45% opacity
+- **Sidebar search:** Warm-tinted background `rgba(253, 248, 240, 0.06)` with warm border
 
 ## Motion
 - **Approach:** Minimal-functional — only transitions that aid comprehension
@@ -97,7 +99,7 @@
 - **Transition speed:** 200ms default for interactive elements
 
 ## Logo Assets
-- **Logomark:** CF monogram inside vine leaf — Deep Burgundy on light backgrounds, Champagne Gold on dark
+- **Logomark:** CF monogram inside vine leaf — Deep Burgundy fill with cream text on all backgrounds (40px in sidebar, 32px minimum)
 - **Wordmark:** "CruFolio" in Libre Baskerville Regular, letter-spacing +2px
 - **Clear space:** Height of the 'C' in CruFolio on all sides
 - **Minimum size:** Horizontal lockup 120px, standalone logomark 24px
@@ -110,3 +112,8 @@
 | 2026-03-17 | Libre Baskerville + Inter Tight + Inter type stack | Serif authority for display, clean sans-serif for UI — matches wine trade premium positioning |
 | 2026-03-17 | Parchment (#FDF8F0) as default background | Warm cream tone avoids clinical white, reinforces wine/paper aesthetic |
 | 2026-03-17 | Champagne Gold accents only, never as background | Gold loses its premium feel when overused — reserve for borders, dividers, focus states |
+| 2026-03-17 | Sidebar: Wine-Dark Navy (#1A1F3E) → Wine Charcoal (#1F1B1E) | Cold blue-navy clashed with warm parchment content area; warm charcoal creates temperature cohesion |
+| 2026-03-17 | Sidebar active: Gold text → Burgundy-tinted highlight + cream text | Gold active states looked dated; burgundy keeps brand color doing the work |
+| 2026-03-17 | Logo: 32px → 40px in sidebar, burgundy fill on dark backgrounds | Logo was too small and gold-on-navy lacked contrast; burgundy-on-dark is more refined |
+| 2026-03-17 | Focus ring: Gold → Burgundy (`rgba(107,30,30,0.25)`) | Consistent with burgundy-first accent strategy |
+| 2026-03-17 | Sidebar text opacity: 55% → 70% default | Previous opacity was too dim for comfortable reading |

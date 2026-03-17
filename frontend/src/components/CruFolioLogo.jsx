@@ -2,9 +2,9 @@
  * CruFolio logomark — CF monogram inside vine leaf shape.
  * Matches DESIGN.md brand spec.
  */
-export default function CruFolioLogo({ size = 32, variant = "dark", className, style }) {
-  const fill = variant === "light" ? "#D4AF37" : "#6B1E1E";
-  const textFill = variant === "light" ? "#1A1F3E" : "#FDF8F0";
+export default function CruFolioLogo({ size = 40, variant = "dark", className, style }) {
+  const fill = variant === "light" ? "#6B1E1E" : "#6B1E1E";
+  const textFill = variant === "light" ? "#FDF8F0" : "#FDF8F0";
 
   return (
     <svg

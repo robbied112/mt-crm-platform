@@ -226,7 +226,7 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
             className="sidebar__logo"
           />
         ) : (
-          <CruFolioLogo size={32} variant="light" className="sidebar__logo" />
+          <CruFolioLogo size={40} variant="light" className="sidebar__logo" />
         )}
         {!collapsed && (
           <div className="sidebar__brand-text">
