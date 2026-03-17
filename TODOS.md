@@ -34,6 +34,20 @@
 > Vision: Transform Pricing Studio from disposable calculator into Portfolio Pricing Book — persistent, portfolio-first, distributor-aware.
 > Key decisions: PricingContext with useReducer (TODO-061). Portfolio-first /pricing layout (TODO-062). Hybrid Firestore schema — flat `distributorPricing` map now, PricingContext API abstracts for future subcollection swap. Paginate 50/page + debounce 200ms for What-If (no virtual scroll). TODO-035 superseded by TODO-065.
 > New TODOs: 061–066. New vision items: Quick Price via Cmd+K, margin health badges, copy-as-table, suggested price tier, pricing history sparkline.
+>
+> **Product Intelligence Hub added 2026-03-16 (CEO Portfolio Review).**
+> Vision: Unified product catalog as the spine of the entire app. Merge three disconnected product concepts (wines/, products/, planned pricing portfolio) into ONE canonical products/ collection. Supplier → Brand/Producer → Wine → Vintage hierarchy. Rich Vinosmith-style wine detail fields. Sell sheet generation (PDF + XLSX). Product sheet import to seed catalog. AI product matching on ALL imports — fixes the QuickBooks-can't-find-wines problem.
+> Key decisions: Flat products/ collection with parentId for vintage→wine linking (not subcollections). wines/ migrated into products/ (one-time, idempotent). PricingContext reads from products/ (no separate pricing/portfolio/ collection). Non-vintage wines are parent records, vintage SKUs are children. Feature-gated behind tenantConfig.features.portfolio. normalizeProductName() shared in packages/pipeline/src/. AI product matching is best-effort — import always succeeds, linking is bonus.
+> TODO-058 (Product Catalog + Wine Picker) SUPERSEDED by TODO-070+071. TODO-041 updated to write to products/. TODO-034 stores pricing on product docs. TODO-066 partially superseded by TODO-072.
+> New TODOs: 070–076. New vision items: Quick Add Wine from Cmd+K, wine count sidebar badge, auto-detect producer, copy wine info, vintage timeline, unmatched products badge, producer grouping toggle.
+>
+> **Eng Review Refinements (2026-03-17):**
+> - HYBRID PRODUCT MATCHING: client-side exact match (instant, during import) + server-side AI fuzzy match (async, after save). Two-phase UX: "Matched 8/12 — 4 being analyzed..."
+> - CrmContext OWNS products/ (real-time). DataContext keeps spendByWine (analytics only). Remove loadWines() from DataContext.
+> - ProductSheetReviewStep as SEPARATE component file (not inline in DataImport.jsx). DataImport orchestrates, sub-flows are self-contained.
+> - Product docs store FOB PRICE ONLY (input). PricingContext calculates sell prices based on market/tier at export time. Sell sheets let user choose pricing view (SRP, FOB, Case tiers, BTG).
+> - PDF SELL SHEETS via @react-pdf/renderer in Cloud Function (not jsPDF client-side). Handles accent chars natively, ~1-2s cold start.
+> - extractWines integration tests written BEFORE refactoring (safety net for riskiest change). TODO-075 Phase 0 is the FIRST thing built.
 
 ---
 
@@ -708,15 +722,8 @@
 - **Files:** New `frontend/src/components/PipelineKanban.jsx`, `frontend/src/components/PipelineCard.jsx`, `frontend/src/styles/Global.css`. Replaces `CustomerPipeline.jsx`.
 - **Depends on:** TODO-056 (opportunities entity)
 
-### TODO-058: Product Catalog + Wine Picker
-- **What:** New `products` collection UI. Wine picker component for attaching wines to opportunities (multi-select with search/filter). Manual product creation (name, producer, vintage, sku, type). Auto-seed from billback wine extraction when available. Products management tab in Settings for admins. Visual wine picker modal with search, grouped by producer.
-- **Why:** Reps can't record which wines they showed a customer. This is THE differentiator — "I showed them the new Cab and the Reserve Pinot" tracked per opportunity. Makes this a wine-industry CRM.
-- **Pros:** Wine attachment to opportunities. Catalog grows organically (billbacks + manual). Product visibility across pipeline.
-- **Cons:** New collection + subscription adds to initial load. Catalog could get messy without dedup.
-- **Effort:** M
-- **Priority:** P1
-- **Files:** New `frontend/src/components/WinePicker.jsx`, extend `crmService.js` with product CRUD, Settings section
-- **Depends on:** TODO-056 (products collection)
+### ~~TODO-058: Product Catalog + Wine Picker~~ SUPERSEDED by TODO-070 + TODO-071
+- **Superseded by:** TODO-070 (Unified Product Catalog Schema + Migration) and TODO-071 (Portfolio Page + Product Detail). The unified product catalog replaces the basic product catalog planned here with a full hierarchy, rich fields, sell sheet generation, and AI matching. Wine picker for opportunities continues to work unchanged against the enriched products/ collection.
 
 ### ~~TODO-059: Account Detail — Opportunities Tab + Conversion Flow~~ DONE
 > Fixed by /qa on robbied112/taipei, 2026-03-17. Commit `f3b2f3d`. Auto-promote, auto-log activity (Won/Lost/Completed), inline stage advance all verified.
@@ -769,7 +776,118 @@
 
 ---
 
-## Phase Dependency Graph (Updated 2026-03-16 — CRM Pipeline Review)
+## P1 — Product Intelligence Hub (CEO Portfolio Review 2026-03-16)
+
+> Added from CEO Portfolio Review on 2026-03-16. SCOPE EXPANSION mode.
+> Core insight: The app has three disconnected "product" concepts — wines/ (billback extraction), products/ (manual CRM catalog), and planned pricing/portfolio/ — that don't talk to each other. Users can't see "everything about my 2022 Cabernet" in one place. When QuickBooks data is imported, the AI can't link descriptions to wines because there's no canonical catalog. This is the #1 blocker to being a real wine industry platform.
+> Vision: Unified Product Intelligence Hub — one canonical products/ collection with supplier → brand → wine → vintage hierarchy, rich Vinosmith-style detail fields, sell sheet generation, product sheet import, and AI product matching on all imports.
+> Architecture: Flat products/ collection with parentId for vintage→wine linking. wines/ migrated (one-time, idempotent). PricingContext reads pricing from product docs (no separate collection). normalizeProductName() shared in packages/pipeline/src/. Feature-gated behind tenantConfig.features.portfolio.
+
+### TODO-070: Unified Product Catalog Schema + Migration
+- **What:** Extend products/ collection with rich wine fields: varietal, appellation, region, country, alcoholPct, caseSize, bottleSize, supplier, tags, status, sourceNames[], parentId (vintage→wine link), normalizedName, displayName, labelImageUrl, tastingNotes, description, pricing (denormalized map), wineEntityId (legacy link during migration). Vintage hierarchy: non-vintage wines (type="nv", parentId=null) are parents; vintage SKUs (type="vintage", parentId=wineId) are children. Shared `normalizeProductName()` in `packages/pipeline/src/productNormalize.js` (strip accents, bottle sizes, abbreviations, keep vintage years). One-time `migrateWinesToProducts` callable Cloud Function: copy wines/ docs into products/ with schema mapping, idempotent (skip already-migrated via wineEntityId), dedup on normalizedName (merge sourceNames). Refactor `extractWines` in `functions/billback.js` to write to products/ instead of wines/. Update `entityDedup.js` for product-specific normalization.
+- **Why:** Three disconnected product concepts are the #1 architectural blocker. Can't build sell sheets, AI matching, portfolio analytics, or cross-source intelligence until there's one canonical wine catalog. The hierarchy (supplier → producer → wine → vintage) is how the industry thinks about its book.
+- **Pros:** Single source of truth. Every feature that touches wines gets simpler. Enables sell sheets, AI matching, portfolio analytics. PricingContext writes pricing on product docs directly — eliminates the third disconnected concept.
+- **Cons:** Migration of wines/ requires careful dedup. Refactoring extractWines carries regression risk (mitigated by existing billback integration tests). Schema is large (~20 fields) but most are optional.
+- **Context:** Firestore schema:
+  ```
+  tenants/{tenantId}/products/{productId}
+    name, normalizedName, displayName, type ("vintage"|"nv"), parentId
+    supplier, producer, vintage, varietal, appellation, region, country
+    alcoholPct, caseSize, bottleSize, upc, sku
+    tastingNotes, description, labelImageUrl, tags[], status
+    sourceNames[], importIds[], wineEntityId (migration link)
+    pricing: { us: { srp, wholesale }, ... }
+    distributors[], createdAt, updatedAt, createdBy
+  ```
+- **Error handling:** Migration: skip malformed docs + log warning, idempotent rerun, dedup merge on collision. extractWines refactor: existing retry + fallback patterns preserved.
+- **Effort:** L (6-8 hours)
+- **Priority:** P1 — BLOCKS all portfolio work
+- **Testing:** `normalizeProductName.test.js` (~15 cases: accents, bottle sizes, abbreviations, vintage extraction, empty, null, unicode). Integration: migration idempotency, dedup merge, tenant isolation. Regression: existing billback extraction tests pass against products/.
+- **Files:** `packages/pipeline/src/productNormalize.js`, `functions/billback.js` (refactor extractWines), `functions/entityDedup.js` (product normalization), new `functions/migration.js` (migrateWinesToProducts), `frontend/src/services/crmService.js` (extend product fields), `frontend/src/context/CrmContext.jsx`
+- **Depends on:** TODO-047 (shared deduplicateEntities helper — DONE)
+- **Blocks:** TODO-071, TODO-072, TODO-073, TODO-074, TODO-075
+
+### TODO-071: Portfolio Page + Product Detail (/portfolio route)
+- **What:** New `/portfolio` top-level route replacing `/wines`. Three views: (1) Portfolio list — browse wines with search/filter/sort, grouped by supplier → producer → wine. Paginated 50/page. Toggle between flat list and grouped-by-producer view. (2) Product detail page (`/portfolio/:productId`) — all wine fields, vintage timeline (horizontal cards for 2018/2019/2020...), pricing summary, spend data (from billback views), distributor badges, "Edit" button, "Add Vintage" button. (3) Product create/edit form — all Vinosmith-style fields (name, producer, supplier, vintage, varietal, appellation, region, country, alcohol%, case size, bottle size, SKU, UPC, tasting notes, tags). Empty state: "Add your first wine" CTA. BEM CSS in Global.css (no inline styles). Sidebar nav item: "Portfolio" with wine count badge. Replace old WineList.jsx and WineDetail.jsx.
+- **Why:** Current WineList.jsx is a bare table with inline styles and billback-only data. No way to manually manage wines, no hierarchy view, no rich details. The Portfolio page is the heart of the product — where users manage their wine book. SevenFifty and Vinosmith set the bar.
+- **Pros:** Central hub for all wine data. Rich detail views that importers expect. Hierarchy matches how the industry thinks. Replaces two weak components with one strong one.
+- **Cons:** Large UI build (~6-8 hours). Needs well-designed empty state for new users with 0 wines.
+- **Effort:** L (6-8 hours)
+- **Priority:** P1
+- **Files:** New `frontend/src/components/Portfolio/PortfolioList.jsx`, `Portfolio/ProductDetail.jsx`, `Portfolio/ProductForm.jsx`, `frontend/src/config/routes.js`, `frontend/src/styles/Global.css`, `frontend/src/components/Sidebar.jsx`
+- **Depends on:** TODO-070 (unified schema)
+
+### TODO-072: Sell Sheet Generator (PDF + XLSX)
+- **What:** Export branded sell sheets from portfolio. User selects wines (checkbox on portfolio list or "Export All") + market/tier context. Two formats: (1) PDF — professional wine sell sheet layout via **Cloud Function using `@react-pdf/renderer`** (eng review decision: server-side, not jsPDF client-side — handles accent characters natively, no font embedding issues, ~1-2s cold start). (2) XLSX — spreadsheet for distributor buying teams using existing `exportXlsx.js` pattern. Pricing is context-dependent: user selects which view to show (SRP, FOB, Case 1/3/5 wholesale, BTG) — follows industry standard (SevenFifty/Vinosmith filter model). Product docs store `fobPrice` (input only); PricingContext calculates sell prices based on selected market/tier at export time. "Export Sell Sheet" button on Portfolio page and Product Detail page.
+- **Why:** This is how importers communicate pricing to distributors today — via PDF sell sheets and Excel price lists. SevenFifty and Vinosmith both have this. Automating sell sheet generation replaces the most tedious part of the importer workflow. "I saved 2 hours" moment.
+- **Pros:** Direct workflow replacement. Tangible ROI. Competitive parity with SevenFifty/Vinosmith. @react-pdf/renderer is lightweight and handles Unicode natively.
+- **Cons:** Adds a new Cloud Function for PDF generation (~1-2s cold start). Need to handle: long wine names (truncate), missing prices ("--"), variable wine counts.
+- **Eng review decisions:** (1) Server-side PDF via @react-pdf/renderer in Cloud Function (not jsPDF client-side — accent chars + layout reliability). (2) Product docs store fobPrice only (input), not calculated prices. PricingContext calculates based on market/tier at export time. (3) Pricing view selector: SRP, FOB, Case tiers, BTG — matches industry UX patterns.
+- **Error handling:** PDF Cloud Function error → fall back to XLSX + toast. Missing prices → show "--". 200+ wine cap with warning. Empty selection → button disabled.
+- **Effort:** M (4-5 hours — increased from 3-4 due to Cloud Function + pricing filter UI)
+- **Priority:** P1
+- **Files:** New `frontend/src/components/Portfolio/SellSheetExport.jsx`, new `functions/sellSheet.js` (@react-pdf/renderer), extend `frontend/src/utils/exportXlsx.js`, `functions/index.js` (re-export)
+- **Depends on:** TODO-071 (portfolio page provides selection UI)
+
+### TODO-073: Product Sheet Import
+- **What:** New import type `product_sheet` detected by semanticMapper + AI mapper. When user uploads a CSV/XLSX that looks like a wine catalog (columns matching: name, producer, vintage, varietal, region, sku, price, case size — detected via header signatures), route to a Product Sheet Review Step: editable table of extracted products before saving to products/. Dedup against existing catalog using normalizeProductName(). Handles near-duplicates: "This looks like 'Château Margaux 2018' already in your catalog — merge or create new?" Bulk import: 500 wines in 60 seconds.
+- **Why:** Users have existing wine lists in Excel. Manual entry of 200 wines is a non-starter. Product sheet import seeds the catalog in one upload. Once the catalog exists, AI product matching on transaction imports (TODO-074) becomes useful — this is how you solve the QuickBooks problem. Upload product sheet first → upload QuickBooks → wines auto-link.
+- **Pros:** Fast catalog seeding. Dedup prevents duplicates. Review step prevents bad data. Leverages existing DataImport flow.
+- **Cons:** DataImport.jsx gets another conditional branch (product_sheet alongside csv/xlsx/pdf). Need clear UX to distinguish "this is a product list" from "this is transaction data."
+- **Context:** Detection heuristic: if headers contain 3+ of [name, producer, varietal, vintage, appellation, region, sku, upc, case size, bottle size] AND <2 of [qty, amount, revenue, date, invoice], classify as product_sheet. Requires adding new FIELD_DEFS to semanticMapper: varietal, appellation, region, caseSize, bottleSize.
+- **Eng review decisions:** (1) ProductSheetReviewStep is a SEPARATE component file (not inline in DataImport — DataImport is already 802 lines). DataImport detects product_sheet type and routes to the sub-component. Follows the BillbackReviewStep pattern.
+- **Effort:** M (3-4 hours)
+- **Priority:** P1
+- **Testing:** `productSheetDetection.test.js` — header combinations that should/shouldn't trigger product_sheet type. `productImport.test.js` — dedup, merge, create new, empty sheet, duplicate rows.
+- **Files:** `packages/pipeline/src/semanticMapper.js` (add product_sheet detection + new FIELD_DEFS), new `frontend/src/components/ProductSheetReviewStep.jsx`, `frontend/src/components/DataImport.jsx` (route to sub-component), `functions/ai.js` (AI mapper product_sheet type)
+- **Depends on:** TODO-070 (products collection schema)
+
+### TODO-074: AI Product Matching on All Imports
+- **What:** Hybrid matching on all imports (eng review decision: two-phase for instant feedback + AI intelligence). **Phase 1 — Client-side exact match (instant, runs during import):** After semanticMapper maps the sku/product column, `clientExactMatch(rows, products)` runs in the browser. Products already loaded in CrmContext. Normalizes names and compares against normalizedName, sku, and sourceNames[]. Attaches productId to matched rows immediately. UI shows "Matched 8/12 wines — 4 being analyzed..." **Phase 2 — Server-side AI fuzzy match (async, runs after save):** `matchProductsFromImport()` Cloud Function receives unmatched names and import metadata. Uses entityDedup pattern with product-specific prompt. Confidence routing: >0.85 auto-link, 0.5-0.85 pending review, <0.5 add to unmatchedProducts[]. Updates import doc with matched productIds. Surface in UI after import: "3 products not in your catalog — add them?" with one-click add. Client-side function is a pure utility in `packages/pipeline/src/productMatch.js` (shared, testable).
+- **Why:** This directly fixes the user's core complaint: "when I uploaded the QuickBooks data, it didn't find that the description had the wine." With a product catalog + AI matching, every import auto-links to wines. QuickBooks "Memo/Description" containing "Chateau Margaux 750ml" now matches to the catalog entry. Hybrid approach gives instant results for exact matches (common case) while still catching abbreviations and variations via AI.
+- **Pros:** Instant feedback for exact matches. Cross-source linking (depletion + QuickBooks + billback → same wine). Unmatched surface drives catalog growth. Client-side matching adds zero latency to import. Server-side runs async.
+- **Cons:** AI cost (~$0.01/import for fuzzy matching). Two-phase UX is slightly more complex. False matches possible (mitigated: confidence thresholds + pending review queue).
+- **Eng review decisions:** (1) Hybrid: client exact match (instant) + server AI fuzzy (async). (2) clientExactMatch is a pure function in packages/pipeline/src/ (testable, shared). (3) Phase 2 runs AFTER save — import always succeeds, matching is best-effort.
+- **Error handling:** Claude timeout → skip fuzzy matching, keep exact matches only, log warning. Malformed JSON → retry 1x, then skip. NaN confidence → parseFloat guard → 0 → "create new" (safe default). Empty catalog → skip matching entirely. No sku column mapped → skip matching (OK).
+- **Effort:** L (5-6 hours)
+- **Priority:** P1
+- **Testing:** Unit: `clientExactMatch.test.js` — 10 cases (exact name, normalized, sku, sourceNames, no match, empty catalog, accents, case insensitive). Integration: server fuzzy match (mock AI), timeout fallback, NaN guard, batch dedup.
+- **Files:** New `packages/pipeline/src/productMatch.js` (clientExactMatch), new `functions/productMatch.js` (server matchProductsFromImport callable), `frontend/src/components/DataImport.jsx` (two-phase matching UI + unmatched products prompt), `functions/ai.js` (product matching prompt)
+- **Depends on:** TODO-070 (products schema), TODO-073 (catalog needs wines to match against)
+
+### TODO-075: Portfolio Integration Tests
+- **What:** Vitest integration tests using Firebase Emulator. **Eng review: write extractWines baseline tests BEFORE refactoring (TODO-070) — safety net for the riskiest change.** Full test plan: (1) **Phase 0 (pre-refactor):** extractWines baseline — 4 tests: new wine creation, existing wine merge, pending match routing, error fallback. These establish behavior BEFORE changing the write target from wines/ to products/. (2) Product CRUD with rich fields — create, read, update, delete. (3) Tenant isolation — tenant A can't read tenant B's products. (4) wines/ → products/ migration — migrate 5 wines, verify schema mapping, idempotent rerun (no duplicates), normalizedName dedup merge. (5) Product matching — exact match by normalizedName, exact match by sourceNames[], fuzzy match (mock AI with confidence routing), timeout fallback (skip matching), NaN confidence guard. (6) Vintage hierarchy — query children by parentId, orphan vintage handling. (7) Sell sheet data formatting — currency, missing fields, long name truncation. ~25-30 test cases.
+- **Why:** Products are now the canonical entity — every feature depends on them. extractWines currently has ZERO test coverage — the refactor to write to products/ is the highest-risk change in this feature. Integration tests ensure the schema, security rules, migration, and matching all work correctly together.
+- **Eng review decisions:** (1) Write extractWines tests BEFORE refactoring — establish baseline, verify after refactor. (2) Phase 0 tests are the first thing built (before any TODO-070 code changes).
+- **Pros:** Real Firestore behavior. Safety net for riskiest refactor. Catches security rule gaps. Emulator already set up (TODO-026).
+- **Cons:** ~5-10s per test. Worth it for data integrity.
+- **Effort:** M (3-4 hours — increased from 2-3 to include Phase 0 baseline tests)
+- **Priority:** P1 — **START HERE** (before TODO-070 code changes)
+- **Files:** New `functions/__tests__/portfolio.integration.test.js`, new `packages/pipeline/src/__tests__/productNormalize.test.js`
+- **Depends on:** Nothing (Phase 0 tests current behavior)
+- **Depends on:** TODO-070 (schema + migration to test)
+
+### TODO-076: Supersede/Update Existing Product TODOs
+- **What:** Update TODOS.md for consistency with unified product catalog: (1) Mark TODO-058 (Product Catalog + Wine Picker) as SUPERSEDED by TODO-070+071. (2) Update TODO-041 (Wine/Product Entity with AI Dedup) to note that extractWines now writes to products/ not wines/. (3) Update TODO-034 (Portfolio persistence in Firestore) to store pricing inputs on product docs instead of separate pricing/portfolio/ collection — PricingContext reads from products/. (4) Update TODO-062 (Portfolio-first /pricing layout) to read from products/. (5) Update TODO-066 (Price Sheet Export) as partially superseded by TODO-072 (sell sheets). (6) Update dependency graph.
+- **Why:** Keeping TODOS.md accurate prevents confusion and ensures the dependency graph reflects reality.
+- **Effort:** S (30 min)
+- **Priority:** P1
+- **Files:** `TODOS.md`
+- **Depends on:** TODO-070 approved (it is)
+
+### Portfolio Vision Items (Delight Opportunities — <30 min each)
+
+- **"Quick Add Wine" from Cmd+K** — Type wine name in command palette → fast-add form. Seeds catalog while working. (~20 min, depends on TODO-071)
+- **Wine count badge on sidebar** — "Portfolio (42)" next to nav item. Real-time update. (~10 min, depends on TODO-071)
+- **Auto-detect producer from wine name** — Type "Chateau Margaux 2018" → auto-suggest "Chateau Margaux" as producer. Regex + existing producer list matching. (~20 min, depends on TODO-070)
+- **"Copy Wine Info" on detail page** — One-click copy formatted wine info for email/text. Reps share wine details with buyers constantly. (~15 min, depends on TODO-071)
+- **Vintage year timeline** — Horizontal timeline on wine detail showing 2018, 2019, 2020... vintage cards. Click to see that year's data. Like a discography view for wine. (~30 min, depends on TODO-071)
+- **"Unmatched Products" notification badge** — After import with unmatched names, badge on Portfolio nav: "Portfolio (3 new)". Click opens quick-add for unmatched. Turns imports into catalog-building moments. (~15 min, depends on TODO-074)
+- **Producer grouping toggle** — Toggle between flat list and grouped-by-producer cards. Grouped shows producer name with wine count + SKU count. Matches how importers think about their book. (~20 min, depends on TODO-071)
+
+---
+
+## Phase Dependency Graph (Updated 2026-03-16 — CEO Portfolio Review)
 
 ```
 FOUNDATION (DONE):
@@ -828,13 +946,28 @@ REMAINING P1 — IMPLEMENTATION ORDER:
         │       │
         │       └── TODO-060 (mobile-first pipeline cards)
         │
-        ├── TODO-058 (product catalog + wine picker)
+        ├── ~~TODO-058 (product catalog + wine picker)~~ SUPERSEDED by TODO-070+071
         │
         ├── TODO-059 (account detail opportunities tab + conversion)
         │
         ├── TODO-061 (quick-add FAB + Cmd+K shortcuts) ← P2
         │
         └── TODO-062 (pipeline migration helper) ← P2
+
+    ── Phase F: Product Intelligence Hub ──
+    TODO-070 (unified product catalog schema + migration) ← DO FIRST in this phase
+        │
+        ├── TODO-071 (Portfolio page + product detail /portfolio route)
+        │       │
+        │       └── TODO-072 (sell sheet generator — PDF + XLSX)
+        │
+        ├── TODO-073 (product sheet import)
+        │
+        ├── TODO-074 (AI product matching on all imports) ← also needs TODO-073
+        │
+        └── TODO-075 (portfolio integration tests)
+
+    TODO-076 (supersede/update existing TODOs) ← housekeeping, do with TODO-070
 
 P2+:
     TODO-054 (post-import "What's Next" card) ← needs TODO-049, TODO-051

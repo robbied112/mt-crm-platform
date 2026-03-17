@@ -420,6 +420,18 @@ function detectUploadType(headers, rows, mapping) {
   if (hasAcct && hasDate && hasQty) return { type: "purchases" };
   if (hasAcct && (hasQty || mapping.revenue)) return { type: "sales" };
 
+  // Product sheet detection: many product-descriptive columns, few transaction columns
+  const productCols = ["sku", "category", "size"].filter((f) => !!mapping[f]).length;
+  const headerLower = headers.map((h) => (h || "").toLowerCase().trim());
+  const productHeaders = ["varietal", "grape", "appellation", "vintage", "region", "country",
+    "producer", "winery", "estate", "domaine", "chateau", "case size", "bottle size",
+    "upc", "abv", "alcohol", "tasting notes", "fob"];
+  const productHeaderCount = productHeaders.filter((ph) => headerLower.some((h) => h.includes(ph))).length;
+  const transactionCols = ["qty", "date", "revenue", "oh", "stage"].filter((f) => !!mapping[f]).length;
+  if ((productCols + productHeaderCount) >= 3 && transactionCols < 2) {
+    return { type: "product_sheet" };
+  }
+
   return { type: "unknown" };
 }
 

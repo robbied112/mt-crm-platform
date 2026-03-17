@@ -8,6 +8,7 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { defineSecret } = require("firebase-functions/params");
 const { deduplicateEntities } = require("./entityDedup");
+const { buildNormalizedName } = require("./lib/pipeline/productNormalize");
 
 const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
 const db = admin.firestore();
@@ -203,15 +204,15 @@ exports.extractWines = functions
       return { status: "skipped", reason: "no_wines", created: 0, linked: 0, pending: 0 };
     }
 
-    // Load existing wines
-    const winesSnap = await db.collection("tenants").doc(tenantId).collection("wines").get();
-    const existingWines = winesSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    // Load existing products for dedup
+    const productsSnap = await db.collection("tenants").doc(tenantId).collection("products").get();
+    const existingProducts = productsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
     // Deduplicate using shared helper
     const { linked, unmatched, pendingMatches } = await deduplicateEntities({
       rawNames,
-      existingEntities: existingWines,
-      normalizeFn: normalizeWineName,
+      existingEntities: existingProducts,
+      normalizeFn: buildNormalizedName,
       sanitizeFn: sanitizeWineName,
       aiPromptPreamble: `You are a wine deduplication expert.
 Match each NEW wine name to the most similar EXISTING wine. Consider:
@@ -221,7 +222,7 @@ Match each NEW wine name to the most similar EXISTING wine. Consider:
 - Bottle size suffixes should be ignored
 - Producer names may be included in wine name`,
       anthropicApiKey: anthropicApiKey.value(),
-      entityType: "wine",
+      entityType: "product",
       tenantId,
       importId,
     });
@@ -239,7 +240,7 @@ Match each NEW wine name to the most similar EXISTING wine. Consider:
         });
     }
 
-    // Create new wine entities for unmatched
+    // Create new product entities for unmatched
     let created = 0;
     for (const name of unmatched) {
       const sanitized = sanitizeWineName(name);
@@ -253,14 +254,17 @@ Match each NEW wine name to the most similar EXISTING wine. Consider:
       const producer = Object.entries(producerCounts)
         .sort((a, b) => b[1] - a[1])[0]?.[0] || "";
 
-      const wineRef = db.collection("tenants").doc(tenantId).collection("wines").doc();
-      await wineRef.set({
+      const productRef = db.collection("tenants").doc(tenantId).collection("products").doc();
+      await productRef.set({
         name: sanitized,
-        normalizedName: normalizeWineName(name),
+        normalizedName: buildNormalizedName(name),
         displayName: sanitized,
         sourceNames: [name],
         producer,
         vintage: extractVintage(name),
+        type: "nv",
+        status: "active",
+        source: "billback",
         metadata: {
           distributors: [...new Set(meta.distributors || [])],
           types: [...new Set(meta.types || [])],
@@ -273,16 +277,16 @@ Match each NEW wine name to the most similar EXISTING wine. Consider:
       created++;
     }
 
-    // Update linked wines with import reference
+    // Update linked products with import reference
     for (const { entityId } of linked) {
       await db.collection("tenants").doc(tenantId)
-        .collection("wines").doc(entityId)
+        .collection("products").doc(entityId)
         .update({
           lastSeen: admin.firestore.FieldValue.serverTimestamp(),
           importIds: admin.firestore.FieldValue.arrayUnion(importId),
         }).catch(() => {});
     }
 
-    console.log(`[extractWines] ${tenantId}/${importId}: ${created} created, ${linked.length} linked, ${pendingMatches.length} pending`);
+    console.log(`[extractWines] ${tenantId}/${importId}: ${created} products created, ${linked.length} linked, ${pendingMatches.length} pending`);
     return { status: "success", created, linked: linked.length, pending: pendingMatches.length };
   });

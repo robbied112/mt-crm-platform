@@ -11,6 +11,8 @@ const {
   scheduledCloudSync,
 } = require("./sync");
 const { parseBillbackPDF, extractWines } = require("./billback");
+const { matchProductsFromImport } = require("./productMatch");
+const { migrateWinesToProducts } = require("./migration");
 
 exports.stripeWebhook = stripeWebhook;
 exports.aiMapper = aiMapper;
@@ -24,3 +26,5 @@ exports.cloudSyncSyncNow = cloudSyncSyncNow;
 exports.scheduledCloudSync = scheduledCloudSync;
 exports.parseBillbackPDF = parseBillbackPDF;
 exports.extractWines = extractWines;
+exports.matchProductsFromImport = matchProductsFromImport;
+exports.migrateWinesToProducts = migrateWinesToProducts;

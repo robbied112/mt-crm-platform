@@ -59,6 +59,7 @@ export default function CommandPalette({ isOpen, onClose }) {
 
     // Navigation
     ROUTES.forEach((route) => {
+      if (route.hidden) return;
       if (route.adminOnly && !isAdmin) return;
       if (route.section === "billbacks" && !tenantConfig?.features?.billbacks) return;
       results.push({

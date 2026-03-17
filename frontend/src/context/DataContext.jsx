@@ -19,7 +19,6 @@ import {
   loadSummary,
   saveSummary,
   loadTenantConfig,
-  loadWines,
   saveTenantConfig as saveTenantConfigFS,
 } from "../services/firestoreService";
 import { normalizeRows } from "../utils/normalize.js";
@@ -47,7 +46,6 @@ const EMPTY = {
   spendByWine: [],
   spendByDistributor: [],
   billbackSummary: {},
-  wines: [],
 };
 
 export default function DataProvider({ children }) {
@@ -93,14 +91,13 @@ export default function DataProvider({ children }) {
       setError(null);
       try {
         const collPath = useNormalized ? "views" : "data";
-        const [allData, summaryText, config, wines] = await Promise.all([
+        const [allData, summaryText, config] = await Promise.all([
           useNormalized ? loadAllViews(tenantId) : loadAllData(tenantId),
           loadSummary(tenantId, collPath),
           loadTenantConfig(tenantId),
-          loadWines(tenantId),
         ]);
         if (cancelled) return;
-        setData({ ...EMPTY, ...allData, wines });
+        setData({ ...EMPTY, ...allData });
         setSummary(summaryText);
         if (config) setTenantConfig((prev) => ({ ...prev, ...config }));
       } catch (err) {
@@ -159,13 +156,12 @@ export default function DataProvider({ children }) {
     setLoading(true);
     try {
       const collPath = useNormalized ? "views" : "data";
-      const [allData, summaryText, config, wines] = await Promise.all([
+      const [allData, summaryText, config] = await Promise.all([
         useNormalized ? loadAllViews(tenantId) : loadAllData(tenantId),
         loadSummary(tenantId, collPath),
         loadTenantConfig(tenantId),
-        loadWines(tenantId),
       ]);
-      setData({ ...EMPTY, ...allData, wines });
+      setData({ ...EMPTY, ...allData });
       setSummary(summaryText);
       if (config) setTenantConfig((prev) => ({ ...prev, ...config }));
     } catch (err) {
