@@ -29,6 +29,11 @@
 > **CRM Pipeline Unification added 2026-03-16 (CEO Pipeline Review).**
 > Vision: Unified account lifecycle — pipeline IS the CRM. Typed opportunities (BTG, New Placement, Wine Dinner, etc.) with per-type stage workflows. Product catalog + wine picker. Mobile-first pipeline cards. Auto-promote prospect → active on Won. TODO-056 through TODO-062.
 > Key decisions: Separate opportunities collection (not single-entity) because reps visit accounts weekly with new wines. Hardcoded type defaults in config, admin UI later. Cascade delete for opportunities on account delete. Guided empty state (not demo data) for first pipeline use.
+>
+> **Portfolio Pricing Book added 2026-03-16 (CEO Pricing Studio Review).**
+> Vision: Transform Pricing Studio from disposable calculator into Portfolio Pricing Book — persistent, portfolio-first, distributor-aware.
+> Key decisions: PricingContext with useReducer (TODO-061). Portfolio-first /pricing layout (TODO-062). Hybrid Firestore schema — flat `distributorPricing` map now, PricingContext API abstracts for future subcollection swap. Paginate 50/page + debounce 200ms for What-If (no virtual scroll). TODO-035 superseded by TODO-065.
+> New TODOs: 061–066. New vision items: Quick Price via Cmd+K, margin health badges, copy-as-table, suggested price tier, pricing history sparkline.
 
 ---
 
@@ -212,25 +217,18 @@
 - Full `/pricing` route with 8 components: MarketSelector, MarketInputForm, MarketWaterfall, RecapPanel, ComparisonPanel, AnalysisPanel, MultiMarketOverview, PricingStudio. BEM CSS. Sidebar "Tools" section. Margin guard (max 99.9%) implemented.
 - **Completed:** v0.2.1.0 (2026-03-16)
 
-### TODO-034: Portfolio management in Firestore
-- **What:** New Firestore collection `tenants/{id}/pricing/portfolio/{wineId}` storing PortfolioWine documents. New PricingContext for state management. CRUD operations (add from calculator, edit, delete). Optional `productId` field for soft-link to tenant's productCatalog. Portfolio table view with sorting/filtering. Replaces port-louis's Zustand+localStorage with Firestore persistence.
-- **Why:** Turns the calculator from a one-shot tool into a living portfolio. Multi-user, multi-device, persistent. Foundation for What-If and account pricing.
-- **Pros:** Real persistence. Team collaboration. Links to CRM product catalog.
-- **Cons:** Firestore reads/writes per portfolio operation. Need optimistic UI for save latency.
+### TODO-034: Portfolio persistence in Firestore
+- **What:** Firestore collection `tenants/{id}/pricing/portfolio/{wineId}` storing PortfolioWine documents: name, producer, region, vintage, tags[], markets (map of marketId → MarketPricingInputs), distributorPricing (flat map of accountId → margin/freight overrides — hybrid schema, swappable to subcollections later via PricingContext API), productId? (soft-link to product catalog), createdAt, updatedAt. CRUD operations with optimistic UI + error toast on failure. Concurrent write detection via updatedAt comparison.
+- **Why:** Turns the calculator from a one-shot tool into a living portfolio. Multi-user, multi-device, persistent. Foundation for What-If, account pricing, and price sheet export.
+- **Pros:** Real persistence. Team collaboration. Hybrid schema handles 2-20 distributors per wine without performance issues.
+- **Cons:** Firestore reads/writes per portfolio operation. Flat distributorPricing map has write contention risk at scale (mitigated by PricingContext API abstraction).
 - **Effort:** M (3-4 hours)
 - **Priority:** P1
-- **Files:** New `frontend/src/context/PricingContext.jsx`, `frontend/src/services/firestoreService.js`, new `frontend/src/components/PricingStudio/PortfolioTable.jsx`
-- **Depends on:** TODO-032, TODO-033, TODO-038
+- **Files:** `frontend/src/context/PricingContext.jsx` (created by TODO-061), `frontend/src/services/firestoreService.js`
+- **Depends on:** TODO-061, TODO-038
 
-### TODO-035: What-If stress testing on portfolio
-- **What:** Port the What-If panel from port-louis. User adjusts global overrides (FX shift %, tariff override, freight delta per case) and sees real-time impact across entire portfolio. Shows delta SRP, delta wholesale, low-margin warnings, negative-margin flags. Saved What-If snapshots in `tenants/{id}/pricing/snapshots/{id}` for historical comparison.
-- **Why:** The #1 power feature. "Tariffs just went to 25% — show me the damage across my entire book." Pure client-side recalculation using `calculateWhatIf()` (already built and tested).
-- **Pros:** Engine logic already exists and is tested. Snapshots enable historical comparison.
-- **Cons:** Snapshot storage adds Firestore docs. UI needs to handle large portfolios (500+ wines) gracefully.
-- **Effort:** M (2-3 hours)
-- **Priority:** P2
-- **Files:** New `frontend/src/components/PricingStudio/WhatIfPanel.jsx`, PricingContext updates
-- **Depends on:** TODO-034
+### ~~TODO-035: What-If stress testing on portfolio~~ SUPERSEDED
+- **Superseded by:** TODO-065 (Portfolio What-If stress testing with enhanced scope: paginated, debounced, margin health indicators, snapshot persistence).
 
 ### TODO-036: FX rate Cloud Function + Firestore cache
 - **What:** New callable Cloud Function `fetchExchangeRates()` that fetches from open.er-api.com, caches results in global `rates/latest` Firestore document with 1-hour TTL. Frontend reads cached rates on load via PricingContext. Falls back to MarketConfig defaults if cache stale + API down. Replaces port-louis's client-side fetch.
@@ -272,6 +270,73 @@
 - **Files:** New `functions/__tests__/pricing.integration.test.js`
 - **Depends on:** TODO-032, TODO-034, TODO-038
 
+### TODO-061: PricingContext with useReducer
+- **What:** New `frontend/src/context/PricingContext.jsx` with single useReducer. Action prefixes: PORTFOLIO_ (persisted), CALC_ (ephemeral), RATES_ (cached). Mounted globally in main.jsx (same pattern as CrmProvider). Portfolio uses on-demand load + optimistic updates (NOT real-time onSnapshot). State shape: portfolio[], portfolioLoading, activeWineId, activeMarketId, inputs, costInputMode, marketInputMemory, scenarioB*, activeRecapLayer, liveRates, ratesFetching. Portfolio CRUD abstracted behind API for future flat→subcollection migration. Replaces 8+ useState hooks in PricingStudio.jsx.
+- **Why:** Foundation for all portfolio features. Current state sprawl in PricingStudio.jsx is unmanageable. Every subsequent pricing TODO depends on this.
+- **Pros:** Clean state management, testable reducer, enables persistence layer, single source of truth.
+- **Cons:** Refactor of working calculator code — risk of regression.
+- **Eng review decisions:**
+  - Global provider in main.jsx (consistent with CrmProvider pattern)
+  - Single useReducer with prefixed actions (explicit > clever, minimal files)
+  - On-demand load + optimistic updates (not real-time — portfolio changes infrequently)
+  - Reducer unit tests required (~15 cases: all action types + edge cases)
+- **Effort:** M (2-3 hours)
+- **Priority:** P1
+- **Files:** New `frontend/src/context/PricingContext.jsx`, refactor `PricingStudio.jsx` to consume context, add reducer tests to `frontend/src/__tests__/pricingReducer.test.js`, update `main.jsx` provider tree
+- **Depends on:** Nothing
+- **Blocks:** TODO-034, TODO-062, TODO-063, TODO-065
+
+### TODO-062: Portfolio-first /pricing layout
+- **What:** Restructure /pricing to land on PortfolioTable — list of all wines with key metrics (name, producer, market, SRP, margin health). "Price a Wine" button opens calculator as detail view. Clicking a wine row opens it in calculator with saved inputs restored. Paginated (50/page), sortable by any column, filterable by producer/market/tag. Empty state for new users with 0 wines → CTA to price their first wine.
+- **Why:** Transforms Pricing Studio from disposable calculator into living portfolio book. Portfolio-first layout signals that Crufolio is a pricing system, not a calculator. This is the UX that makes importers say "I can't go back to Excel."
+- **Pros:** The signature differentiator. Portfolio IS the product.
+- **Cons:** Significant UI work. Needs well-designed empty state for new users.
+- **Effort:** L (4-6 hours)
+- **Priority:** P1
+- **Files:** New `frontend/src/components/PricingStudio/PortfolioTable.jsx`, refactor `PricingStudio.jsx` layout
+- **Depends on:** TODO-061, TODO-034
+
+### TODO-063: Distributor-specific pricing overrides
+- **What:** On calculator view, add "Distributor Pricing" section. User selects a CRM account (distributor) from dropdown populated via CrmContext. Can override margins, freight, and custom terms for that specific relationship. Stored as `distributorPricing` map in portfolio wine doc. Shows delta vs base pricing. Multiple distributors per wine supported.
+- **Why:** This is how real importers work — same wine, different deal for each distributor. SGWS gets 28% margin, RNDC gets 32%. Without this, the portfolio book is incomplete.
+- **Pros:** Core value prop for importers with multiple distributor relationships.
+- **Cons:** UI complexity — need clear visual separation between base pricing and distributor overrides.
+- **Effort:** M (3-4 hours)
+- **Priority:** P2
+- **Files:** `frontend/src/components/PricingStudio/MarketInputForm.jsx`, `PricingContext.jsx`
+- **Depends on:** TODO-061, TODO-034
+
+### TODO-064: Pricing Studio design polish
+- **What:** Single design polish pass: (1) CSS class name audit — ensure all JSX classes have matching CSS rules (fix drift like __values vs __right), (2) Replace inline hex colors in AnalysisPanel.jsx (lines 9-13, 176) with CSS custom properties (var(--danger), var(--success)), (3) Extract duplicated `fmt()` from 5 components and `NumInput` from 2 components to shared `PricingStudio/utils.js`, (4) Add empty states for all panels, (5) Responsive improvements for tablet, (6) Fix waterfall row spacing and column alignment.
+- **Why:** CSS bug (case/bottle values smashed together) signals there are likely more drift issues. Best-in-class pricing tool needs best-in-class design. Single pass catches everything.
+- **Pros:** Immediate visual improvement. Catches all CSS drift at once.
+- **Cons:** Purely cosmetic — no new functionality.
+- **Effort:** S (2-3 hours)
+- **Priority:** P1
+- **Files:** `frontend/src/styles/Global.css`, all PricingStudio/*.jsx components
+- **Depends on:** Nothing — can ship independently
+
+### TODO-065: Portfolio What-If stress testing
+- **What:** New WhatIfPanel component. Global override sliders: FX shift (%), tariff override (%), freight delta ($/case). Applies overrides to portfolio wines **in the active market only** (not all markets), recalculates in real-time (debounced 200ms). Shows delta SRP, delta wholesale, and margin health indicators (green >25%, yellow 15-25%, red <15%). Wines that go negative-margin flash red with callout. Save snapshots to `tenants/{id}/pricing/snapshots/{id}` for historical comparison. Paginated at 50 wines per page. User switches market to see impact on other markets.
+- **Why:** THE power feature. "Tariffs just went to 25% — show me the damage across my entire book." Pure client-side recalculation, no server needed. This is what makes importers show Crufolio to their peers.
+- **Pros:** Unmatched competitive differentiator. No wine pricing tool does this. Engine logic already exists and is tested. Active-market-only keeps recalc under 100ms for 500 wines.
+- **Cons:** Snapshot storage adds Firestore docs. Cross-market impact requires switching markets (acceptable tradeoff for performance).
+- **Effort:** L (4-5 hours)
+- **Priority:** P1
+- **Files:** New `frontend/src/components/PricingStudio/WhatIfPanel.jsx`, PricingContext updates
+- **Depends on:** TODO-061, TODO-034, TODO-062
+- **Supersedes:** TODO-035
+
+### TODO-066: Price Sheet Export (PDF/XLSX)
+- **What:** Export branded price sheet from portfolio. User selects wines + market + distributor, gets a formatted document: wine name, producer, region, vintage, case pack, bottle price, case price, distributor margin. Two formats: XLSX (for distributor buying teams, using existing exportXlsx.js pattern) and PDF (for presentations, using jsPDF client-side). Branded with tenant company name.
+- **Why:** This is how importers communicate pricing to distributors today — via Excel price sheets. Crufolio generating these automatically from the portfolio replaces the most tedious part of their workflow.
+- **Pros:** Direct workflow replacement. Tangible "I saved 2 hours" moment.
+- **Cons:** PDF formatting is finicky. Need to handle variable wine counts gracefully.
+- **Effort:** M (3-4 hours)
+- **Priority:** P2
+- **Files:** New `frontend/src/components/PricingStudio/PriceSheetExport.jsx`, `frontend/src/utils/exportXlsx.js`
+- **Depends on:** TODO-062
+
 ### Vision Items (Delight Opportunities — <30 min each)
 
 - **"Price This SKU" from Account Detail** — Button on account page opens Pricing Studio pre-filled with account's market context. Depends on TODO-033, TODO-037.
@@ -279,6 +344,11 @@
 - **"Share Price Sheet" export** — Branded XLSX price list per market from portfolio, formatted for distributor consumption. Depends on TODO-034, TODO-018.
 - **FX alert badge** — Sidebar notification when exchange rates move >2% since last session. Depends on TODO-036.
 - **Product catalog auto-link** — On portfolio save, offer "Add to Product Catalog" when no matching product exists. Depends on TODO-034.
+- **"Quick Price" via Command Palette** — Cmd+K → type wine name → jumps to calculator pre-filled with saved inputs. If not in portfolio, opens blank calculator with name pre-filled. ~20 min. Depends on TODO-061, TODO-034.
+- **Margin health badges on sidebar** — Small red/yellow/green dot next to "Pricing Studio" in sidebar. Green = all wines >25% margin. Yellow = some 15-25%. Red = any <15% or negative. ~15 min. Depends on TODO-061, TODO-034.
+- **"Copy as table" on waterfall/recap** — Clipboard icon on Pricing Snapshot and P&L cards. Copies data as formatted text table for email/Slack/Docs. ~15 min.
+- **Suggested price tier callout** — After calculating, show "Your SRP $22.03 falls between $19.99 and $24.99 tiers. Retailers will likely shelf at $24.99." Data already computed by calculatePriceTiers(). ~10 min.
+- **Wine pricing history sparkline** — Tiny sparkline on portfolio table showing SRP change over time. Driven by What-If snapshot history. ~30 min. Depends on TODO-065.
 
 ---
 
@@ -793,10 +863,24 @@ Billback / pricing tree:
     TODO-032 (pricing engine package) ✓ DONE
         │
         ├── TODO-033 (Pricing Studio page) ✓ DONE
-        │       └── TODO-034 (portfolio in Firestore)
-        │               ├── TODO-035 (What-If stress testing)
-        │               └── TODO-037 (Account Detail pricing tab) ← also needs TODO-027
-        └── TODO-039 (pricing integration tests) ← also needs TODO-034
+        │       │
+        │       ├── TODO-064 (design polish) ← independent, ship anytime
+        │       │
+        │       └── TODO-061 (PricingContext + useReducer)
+        │               │
+        │               ├── TODO-034 (portfolio persistence in Firestore) ← also needs TODO-038
+        │               │       │
+        │               │       ├── TODO-062 (portfolio-first /pricing layout)
+        │               │       │       │
+        │               │       │       ├── TODO-065 (What-If stress testing) ← supersedes TODO-035
+        │               │       │       └── TODO-066 (price sheet export PDF/XLSX)
+        │               │       │
+        │               │       ├── TODO-063 (distributor-specific pricing overrides)
+        │               │       └── TODO-037 (Account Detail pricing tab) ← also needs TODO-027
+        │               │
+        │               └── TODO-039 (pricing integration tests) ← also needs TODO-034, TODO-038
+        │
+        └── TODO-038 (Firestore security rules for pricing) ← BLOCKS persistence
 
 Independent:
     TODO-007 (React Router) ✓ DONE
