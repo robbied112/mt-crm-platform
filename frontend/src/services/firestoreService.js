@@ -242,6 +242,30 @@ export async function saveTenantConfig(tenantId, config) {
   }, { merge: true });
 }
 
+// ─── Budget Config ───────────────────────────────────────────
+
+/**
+ * Load budget config from tenants/{tenantId}/config/budget.
+ */
+export async function loadBudget(tenantId) {
+  try {
+    const snap = await getDoc(doc(db, "tenants", tenantId, "config", "budget"));
+    return snap.exists() ? snap.data() : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Save budget config (merges with existing).
+ */
+export async function saveBudget(tenantId, budget) {
+  await setDoc(doc(db, "tenants", tenantId, "config", "budget"), {
+    ...budget,
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+}
+
 // ─── Upload Audit ────────────────────────────────────────────
 
 /**

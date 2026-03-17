@@ -55,6 +55,18 @@ const ICONS = {
       <path d="M10 6v4l2.5 2.5" />
     </svg>
   ),
+  revenue: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 2v16M7 5h5a2 2 0 010 4H8M7 9h6a2 2 0 010 4H7" />
+    </svg>
+  ),
+  executive: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="3" width="16" height="14" rx="2" />
+      <path d="M2 7h16M7 7v10" />
+      <path d="M10 10h5M10 13h3" />
+    </svg>
+  ),
   pipeline: (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M2 4h16l-3 5 3 5H2l3-5-3-5z" />
