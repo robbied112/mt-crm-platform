@@ -7,6 +7,7 @@
 
 const parseFile = require("./parseFile");
 const transformData = require("./transformData");
+const extractData = require("./extractData");
 const transformBillback = require("./transformBillback");
 const transformRevenue = require("./transformRevenue");
 const transformArAp = require("./transformArAp");
@@ -24,6 +25,7 @@ module.exports = {
   processStandardRows: parseFile.processStandardRows,
   parseFileBuffer: parseFile.parseFileBuffer,
   parseRawRows: parseFile.parseRawRows,
+  getSheetNames: parseFile.getSheetNames,
 
   // transformData
   transformDepletion: transformData.transformDepletion,
@@ -60,6 +62,12 @@ module.exports = {
   CHUNK_SIZE: constants.CHUNK_SIZE,
   DATASETS: constants.DATASETS,
   OBJECT_DATASETS: constants.OBJECT_DATASETS,
+
+  // extractData
+  extractData: extractData.extractData,
+  flattenPivot: extractData.flattenPivot,
+  applySkipPatterns: extractData.applySkipPatterns,
+  applyColumnMapping: extractData.applyColumnMapping,
 
   // firestore
   writeChunked: firestore.writeChunked,

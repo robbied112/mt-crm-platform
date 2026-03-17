@@ -13,6 +13,7 @@ const {
 const { parseBillbackPDF, extractWines } = require("./billback");
 const { matchProductsFromImport } = require("./productMatch");
 const { migrateWinesToProducts } = require("./migration");
+const { comprehendReport, generateIntegrationPlan } = require("./comprehend");
 
 exports.stripeWebhook = stripeWebhook;
 exports.aiMapper = aiMapper;
@@ -28,3 +29,5 @@ exports.parseBillbackPDF = parseBillbackPDF;
 exports.extractWines = extractWines;
 exports.matchProductsFromImport = matchProductsFromImport;
 exports.migrateWinesToProducts = migrateWinesToProducts;
+exports.comprehendReport = comprehendReport;
+exports.generateIntegrationPlan = generateIntegrationPlan;
