@@ -12,15 +12,15 @@ export default function Header({ companyName, logo, syncStatus }) {
   };
 
   return (
-    <header role="banner" aria-label="Sidekick BI Dashboard Header">
+    <header role="banner" aria-label="CruFolio Dashboard Header">
       <img
         id="brandLogo"
         src={logo || "/logo.png"}
-        alt={companyName || "Sidekick BI"}
+        alt={companyName || "CruFolio"}
         style={{ height: 40 }}
       />
       <div className="header-text">
-        <h1 id="headerTitle">{companyName || "Sidekick BI"}</h1>
+        <h1 id="headerTitle">{companyName || "CruFolio"}</h1>
         <p>Real-time sales intelligence</p>
       </div>
       <div

@@ -4,7 +4,7 @@
 import { useState } from "react";
 
 const TYPE_COLORS = {
-  "depletion allowance": "#0f766e",
+  "depletion allowance": "#6B1E1E",
   "marketing": "#2563eb",
   "sampling": "#7c3aed",
   "placement fee": "#dc2626",
@@ -113,7 +113,7 @@ export default function BillbackDashboard({ spendByWine = [], spendByDistributor
         {view === "wine" ? (
           <table style={s.table}>
             <thead>
-              <tr style={{ background: "#f0fdfa" }}>
+              <tr style={{ background: "#FDF8F0" }}>
                 <th style={s.th}>Wine</th>
                 <th style={s.th}>Producer</th>
                 <th style={{ ...s.th, textAlign: "right" }}>Total Spend</th>
@@ -128,7 +128,7 @@ export default function BillbackDashboard({ spendByWine = [], spendByDistributor
                 <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
                   <td style={{ ...s.td, fontWeight: 600 }}>{row.wine}</td>
                   <td style={s.td}>{row.producer}</td>
-                  <td style={{ ...s.td, textAlign: "right", fontWeight: 600, color: "#0f766e" }}>
+                  <td style={{ ...s.td, textAlign: "right", fontWeight: 600, color: "#6B1E1E" }}>
                     ${row.totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                   <td style={{ ...s.td, textAlign: "right" }}>{row.totalQty}</td>
@@ -142,7 +142,7 @@ export default function BillbackDashboard({ spendByWine = [], spendByDistributor
         ) : (
           <table style={s.table}>
             <thead>
-              <tr style={{ background: "#f0fdfa" }}>
+              <tr style={{ background: "#FDF8F0" }}>
                 <th style={s.th}>Distributor</th>
                 <th style={{ ...s.th, textAlign: "right" }}>Total Spend</th>
                 <th style={{ ...s.th, textAlign: "right" }}>Qty</th>
@@ -155,7 +155,7 @@ export default function BillbackDashboard({ spendByWine = [], spendByDistributor
               {spendByDistributor.map((row, i) => (
                 <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
                   <td style={{ ...s.td, fontWeight: 600 }}>{row.dist}</td>
-                  <td style={{ ...s.td, textAlign: "right", fontWeight: 600, color: "#0f766e" }}>
+                  <td style={{ ...s.td, textAlign: "right", fontWeight: 600, color: "#6B1E1E" }}>
                     ${row.totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                   <td style={{ ...s.td, textAlign: "right" }}>{row.totalQty}</td>
@@ -183,9 +183,9 @@ const s = {
   emptyState: {
     textAlign: "center",
     padding: 48,
-    background: "#f8fafc",
+    background: "#FDF8F0",
     borderRadius: 12,
-    border: "1px solid #e2e8f0",
+    border: "1px solid #E5E0DA",
   },
   kpiGrid: {
     display: "grid",
@@ -194,16 +194,16 @@ const s = {
     marginBottom: 20,
   },
   kpiCard: {
-    background: "#f8fafc",
+    background: "#FDF8F0",
     borderRadius: 8,
     padding: "12px 14px",
     textAlign: "center",
-    border: "1px solid #e2e8f0",
+    border: "1px solid #E5E0DA",
   },
   kpiValue: {
     fontSize: 20,
     fontWeight: 700,
-    color: "#0f766e",
+    color: "#6B1E1E",
   },
   kpiLabel: {
     fontSize: 11,

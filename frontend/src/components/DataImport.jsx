@@ -370,8 +370,8 @@ export default function DataImport() {
           onClick={() => inputRef.current?.click()}
           style={{
             ...s.dropZone,
-            borderColor: dragOver ? "#0f766e" : "#D1D5DB",
-            background: dragOver ? "#f0fdfa" : "#fafafa",
+            borderColor: dragOver ? "#6B1E1E" : "#D1D5DB",
+            background: dragOver ? "#FDF8F0" : "#fafafa",
           }}
         >
           <div style={{ fontSize: 40, marginBottom: 8 }}>&#128202;</div>
@@ -388,19 +388,19 @@ export default function DataImport() {
             onClick={(e) => e.stopPropagation()}
             style={{ marginTop: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 12 }}
           >
-            <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer", color: useAI ? "#0f766e" : "#9CA3AF" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer", color: useAI ? "#6B1E1E" : "#9CA3AF" }}>
               <input
                 type="checkbox"
                 checked={useAI}
                 onChange={(e) => setUseAI(e.target.checked)}
-                style={{ accentColor: "#0f766e" }}
+                style={{ accentColor: "#6B1E1E" }}
               />
               AI-Powered Mapping
             </label>
-            {useAI && <span style={{ color: "#0f766e", fontSize: 10 }}>(Claude)</span>}
+            {useAI && <span style={{ color: "#6B1E1E", fontSize: 10 }}>(Claude)</span>}
           </div>
           {aiLoading && (
-            <div style={{ marginTop: 8, fontSize: 12, color: "#0f766e", fontWeight: 600 }}>
+            <div style={{ marginTop: 8, fontSize: 12, color: "#6B1E1E", fontWeight: 600 }}>
               AI is analyzing your data...
             </div>
           )}
@@ -540,7 +540,7 @@ function MappingStep({ fileName, headers, rows, mapping, confidence, uploadType,
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
-            <tr style={{ background: "#f0fdfa" }}>
+            <tr style={{ background: "#FDF8F0" }}>
               <th style={s.th}>Internal Field</th>
               <th style={s.th}>Mapped To</th>
               <th style={s.th}>Confidence</th>
@@ -564,7 +564,7 @@ function MappingStep({ fileName, headers, rows, mapping, confidence, uploadType,
                     <select
                       value={currentCol || ""}
                       onChange={(e) => onUpdateMapping(def.field, e.target.value)}
-                      style={{ ...s.select, borderColor: currentCol ? "#0f766e" : "#d1d5db" }}
+                      style={{ ...s.select, borderColor: currentCol ? "#6B1E1E" : "#d1d5db" }}
                     >
                       <option value="">-- Not mapped --</option>
                       {headers.map((h) => (
@@ -617,7 +617,7 @@ function PreviewStep({ summary, preview, uploadType, saving, onConfirm, onBack }
 
       {/* Executive Summary Preview */}
       <div style={s.summaryBox}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: "#0f766e", marginBottom: 6 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: "#6B1E1E", marginBottom: 6 }}>
           Executive Summary
         </div>
         <p style={{ fontSize: 13, color: "#374151", margin: 0, lineHeight: 1.6 }}>{summary}</p>
@@ -629,7 +629,7 @@ function PreviewStep({ summary, preview, uploadType, saving, onConfirm, onBack }
           const count = Array.isArray(items) ? items.length : Object.keys(items).length;
           return (
             <div key={name} style={s.previewCard}>
-              <div style={{ fontSize: 20, fontWeight: 700, color: "#0f766e" }}>{count}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#6B1E1E" }}>{count}</div>
               <div style={{ fontSize: 11, color: "#6B7280", textTransform: "capitalize" }}>
                 {name.replace(/([A-Z])/g, " $1").trim()}
               </div>
@@ -646,7 +646,7 @@ function PreviewStep({ summary, preview, uploadType, saving, onConfirm, onBack }
           </div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
-              <tr style={{ background: "#f0fdfa" }}>
+              <tr style={{ background: "#FDF8F0" }}>
                 {Object.keys(datasets[0][1][0]).filter((k) => k !== "skus" && k !== "weeks" && k !== "months").slice(0, 8).map((k) => (
                   <th key={k} style={s.th}>{k}</th>
                 ))}
@@ -707,7 +707,7 @@ function BillbackReviewStep({ fileName, items, metadata, saving, onUpdateItem, o
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
           <thead>
-            <tr style={{ background: "#f0fdfa" }}>
+            <tr style={{ background: "#FDF8F0" }}>
               <th style={s.th}>Wine</th>
               <th style={s.th}>Producer</th>
               <th style={s.th}>Amount</th>
@@ -856,8 +856,8 @@ const s = {
     display: "inline-block",
     marginLeft: 8,
     padding: "2px 8px",
-    background: "#f0fdfa",
-    color: "#0f766e",
+    background: "#FDF8F0",
+    color: "#6B1E1E",
     borderRadius: 10,
     fontSize: 11,
     fontWeight: 600,
@@ -872,18 +872,18 @@ const s = {
     marginBottom: 16,
   },
   summaryBox: {
-    background: "linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%)",
-    border: "1px solid #99f6e4",
+    background: "linear-gradient(135deg, #FDF8F0 0%, #F5EDE3 100%)",
+    border: "1px solid rgba(107, 30, 30, 0.08)",
     borderRadius: 10,
     padding: 16,
     marginBottom: 16,
   },
   previewCard: {
-    background: "#f8fafc",
+    background: "#FDF8F0",
     borderRadius: 8,
     padding: "12px 14px",
     textAlign: "center",
-    border: "1px solid #e2e8f0",
+    border: "1px solid #E5E0DA",
   },
   doneBox: {
     textAlign: "center",
@@ -895,7 +895,7 @@ const s = {
   editInput: {
     padding: "4px 8px",
     borderRadius: 4,
-    border: "1px solid #e2e8f0",
+    border: "1px solid #E5E0DA",
     fontSize: 12,
     width: "100%",
     background: "#fff",

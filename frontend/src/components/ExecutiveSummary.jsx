@@ -39,7 +39,7 @@ export default function ExecutiveSummary() {
           aria-label="Dismiss data intelligence banner"
           style={{
             background: "none", border: "none", cursor: "pointer",
-            color: "#64748b", padding: 4, lineHeight: 1, borderRadius: 4,
+            color: "#6B6B6B", padding: 4, lineHeight: 1, borderRadius: 4,
           }}
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -62,8 +62,8 @@ export default function ExecutiveSummary() {
 
 const styles = {
   container: {
-    background: "linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%)",
-    border: "1px solid #99f6e4",
+    background: "linear-gradient(135deg, #FDF8F0 0%, #F5EDE3 100%)",
+    border: "1px solid rgba(107, 30, 30, 0.08)",
     borderRadius: 12,
     padding: "16px 20px",
     marginBottom: 20,
@@ -80,13 +80,13 @@ const styles = {
   title: {
     fontSize: 13,
     fontWeight: 700,
-    color: "#0f766e",
+    color: "#6B1E1E",
     textTransform: "uppercase",
     letterSpacing: "0.5px",
   },
   text: {
     fontSize: 14,
-    color: "#334155",
+    color: "#2E2E2E",
     lineHeight: 1.6,
     margin: 0,
   },

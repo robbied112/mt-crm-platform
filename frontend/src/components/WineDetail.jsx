@@ -77,7 +77,7 @@ export default function WineDetail({ wines = [], spendByWine = [] }) {
           </div>
         </div>
       ) : (
-        <div style={{ background: "#f8fafc", borderRadius: 8, padding: 16, border: "1px solid #e2e8f0", marginBottom: 20, fontSize: 13, color: "#6B7280" }}>
+        <div style={{ background: "#FDF8F0", borderRadius: 8, padding: 16, border: "1px solid #E5E0DA", marginBottom: 20, fontSize: 13, color: "#6B6B6B" }}>
           No spend data available for this wine yet.
         </div>
       )}
@@ -125,13 +125,13 @@ const s = {
   emptyState: {
     textAlign: "center",
     padding: 48,
-    background: "#f8fafc",
+    background: "#FDF8F0",
     borderRadius: 12,
-    border: "1px solid #e2e8f0",
+    border: "1px solid #E5E0DA",
   },
   vintageBadge: {
-    background: "#f0fdfa",
-    color: "#0f766e",
+    background: "#FDF8F0",
+    color: "#6B1E1E",
     padding: "2px 10px",
     borderRadius: 8,
     fontSize: 12,
@@ -144,16 +144,16 @@ const s = {
     marginBottom: 20,
   },
   kpiCard: {
-    background: "#f8fafc",
+    background: "#FDF8F0",
     borderRadius: 8,
     padding: "12px 14px",
     textAlign: "center",
-    border: "1px solid #e2e8f0",
+    border: "1px solid #E5E0DA",
   },
   kpiValue: {
     fontSize: 20,
     fontWeight: 700,
-    color: "#0f766e",
+    color: "#6B1E1E",
   },
   kpiLabel: {
     fontSize: 11,

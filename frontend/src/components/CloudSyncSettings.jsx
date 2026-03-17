@@ -213,7 +213,7 @@ export default function CloudSyncSettings() {
       <div>
         <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
           Connect your Google Drive to automatically pull spreadsheet files from a shared folder.
-          Your team updates the files — Sidekick BI processes them on your schedule.
+          Your team updates the files — CruFolio processes them on your schedule.
         </p>
         {error && (
           <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 13, color: "#991B1B" }}>
