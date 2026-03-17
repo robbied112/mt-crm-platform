@@ -9,7 +9,7 @@ import { useState, useMemo, useCallback } from "react";
 import KpiCard from "./KpiCard";
 import ChartPanel from "./ChartPanel";
 
-const CHART_COLORS = ["#0F766E", "#14B8A6", "#F8992D", "#0D9F6E", "#2563EB", "#D97706"];
+const CHART_COLORS = ["#6B1E1E", "#8B6A4C", "#B87333", "#1A1F3E", "#1F865A", "#C07B01"];
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function fmt(v) {
@@ -88,7 +88,7 @@ export default function RevenueSales({
         datasets: [{
           label: "Revenue",
           data: top10.map((p) => p.total),
-          backgroundColor: "#0F766E",
+          backgroundColor: "#6B1E1E",
         }],
       },
       options: {
@@ -114,8 +114,8 @@ export default function RevenueSales({
         datasets: [{
           label: "Revenue",
           data: monthKeys.map((mk) => revenueSummary.monthlyTotals?.[mk] || 0),
-          borderColor: "#0F766E",
-          backgroundColor: "rgba(15, 118, 110, 0.1)",
+          borderColor: "#6B1E1E",
+          backgroundColor: "rgba(107, 30, 30, 0.1)",
           fill: true,
           tension: 0.3,
         }],

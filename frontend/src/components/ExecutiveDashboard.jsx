@@ -125,8 +125,8 @@ export default function ExecutiveDashboard({
         datasets: [{
           label: "Total CE",
           data: weeklyTotals,
-          borderColor: "#0F766E",
-          backgroundColor: "rgba(15, 118, 110, 0.1)",
+          borderColor: "#6B1E1E",
+          backgroundColor: "rgba(107, 30, 30, 0.1)",
           fill: true,
           tension: 0.3,
         }],
@@ -150,7 +150,7 @@ export default function ExecutiveDashboard({
         datasets: [{
           label: "13W CE",
           data: sorted.map((d) => d.ce || 0),
-          backgroundColor: "#0F766E",
+          backgroundColor: "#6B1E1E",
         }],
       },
       options: {
