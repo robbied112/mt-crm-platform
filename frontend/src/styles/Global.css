@@ -5150,10 +5150,12 @@ input:focus-visible,
 }
 
 .revenue-sales__section-title {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 600;
+  font-family: 'Inter Tight', Inter, -apple-system, sans-serif;
+  line-height: 1.4;
   margin-bottom: 12px;
-  color: var(--text-primary, #1e293b);
+  color: var(--text-primary, #2E2E2E);
 }
 
 .revenue-sales__table-wrap {
@@ -5292,10 +5294,12 @@ input:focus-visible,
 }
 
 .exec-dash__section-title {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 600;
+  font-family: 'Inter Tight', Inter, -apple-system, sans-serif;
+  line-height: 1.4;
   margin-bottom: 12px;
-  color: var(--text-primary, #1e293b);
+  color: var(--text-primary, #2E2E2E);
 }
 
 /* Sellout Tracker */
