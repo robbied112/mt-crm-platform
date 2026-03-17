@@ -515,9 +515,9 @@ const s = {
     display: "flex", gap: 16, alignItems: "flex-start", flex: 1,
   },
   stepFlowNumber: {
-    width: 40, height: 40, borderRadius: "50%", background: "#6B1E1E",
-    color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
-    fontSize: 18, fontWeight: 800, flexShrink: 0,
+    fontSize: 28, fontWeight: 700, color: "#6B1E1E", flexShrink: 0,
+    fontFamily: "'Libre Baskerville', Georgia, serif", lineHeight: 1,
+    minWidth: 28,
   },
   stepFlowTitle: { fontSize: 16, fontWeight: 700, color: "#0f172a", marginBottom: 4 },
   stepFlowDesc: { fontSize: 14, color: "#6B6B6B", lineHeight: 1.6 },
