@@ -875,6 +875,26 @@
 - **Files:** `TODOS.md`
 - **Depends on:** TODO-070 approved (it is)
 
+### TODO-077: Batch Product Import with Progress Indicator
+- **What:** Replace sequential `createProduct()` × N with Firestore batch writes (max 500 docs per batch). Add progress bar to ProductSheetReviewStep showing "Importing 42/200 products…". Tag each product doc with `importBatchId` for future undo/rollback capability. Atomic per-batch — all-or-nothing prevents partial imports on network failure.
+- **Why:** A 300-wine Excel fires 300 parallel writes with no feedback. Users think the app is frozen. Batch writes are atomic, prevent partial state on network drops, and enable future "undo last import" functionality.
+- **Pros:** Better UX, prevents partial imports, enables undo. Foundation for large-catalog onboarding.
+- **Cons:** Slightly more complex write logic. 500-doc batch limit means 600-wine file needs 2 batches (still atomic per batch, not across batches).
+- **Effort:** M
+- **Priority:** P2
+- **Files:** `frontend/src/components/DataImport.jsx` (confirmProductSheetImport), `frontend/src/components/ProductSheetReviewStep.jsx` (progress UI), `frontend/src/services/crmService.js` (batch write helper)
+- **Depends on:** Nothing
+
+### TODO-078: Pending Product Matches Resolution UI
+- **What:** New UI section on Portfolio page showing AI-suggested product matches with 50–85% confidence. Each pending match shows: new product name, suggested existing match, confidence score, and approve/reject/create-new actions. Badge on Portfolio sidebar nav: "Portfolio (3 to review)". Resolving a match updates the product's `sourceNames[]` (approve) or creates a new product (create-new). Mark pendingMatch doc as `status: "resolved"` on action.
+- **Why:** The `pendingMatches/` collection accumulates data users can never see. Medium-confidence AI matches are black holes — the system wrote them but provided no way to act. This is the bridge between "AI tried to match" and "user confirms."
+- **Pros:** Makes AI matching visible and actionable. Turns imports into catalog-building moments. Builds user trust in AI matching by giving them the final say.
+- **Cons:** New UI surface to maintain. Requires loading pendingMatches in CrmContext (new subscription).
+- **Effort:** M
+- **Priority:** P2
+- **Files:** New `frontend/src/components/Portfolio/PendingMatches.jsx`, update `frontend/src/components/Portfolio/PortfolioList.jsx`, update `frontend/src/context/CrmContext.jsx` (subscribe to pendingMatches)
+- **Depends on:** TODO-074 (AI product matching on all imports)
+
 ### Portfolio Vision Items (Delight Opportunities — <30 min each)
 
 - **"Quick Add Wine" from Cmd+K** — Type wine name in command palette → fast-add form. Seeds catalog while working. (~20 min, depends on TODO-071)
@@ -964,8 +984,12 @@ REMAINING P1 — IMPLEMENTATION ORDER:
         ├── TODO-073 (product sheet import)
         │
         ├── TODO-074 (AI product matching on all imports) ← also needs TODO-073
+        │       │
+        │       └── TODO-078 (pending matches resolution UI)
         │
-        └── TODO-075 (portfolio integration tests)
+        ├── TODO-075 (portfolio integration tests)
+        │
+        └── TODO-077 (batch product import + progress) ← no deps, can do anytime
 
     TODO-076 (supersede/update existing TODOs) ← housekeeping, do with TODO-070
 

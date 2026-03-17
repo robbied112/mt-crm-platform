@@ -6,19 +6,8 @@
  * duplicates by normalizedName. Idempotent — skips wines already migrated
  * (matched via wineEntityId on the product doc).
  */
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
+const { functions, admin, db, verifyTenantMembership } = require("./helpers");
 const { buildNormalizedName } = require("./lib/pipeline/productNormalize");
-
-const db = admin.firestore();
-
-async function verifyTenantMembership(uid, tenantId) {
-  const userSnap = await db.collection("users").doc(uid).get();
-  if (!userSnap.exists || userSnap.data().tenantId !== tenantId) {
-    throw new functions.https.HttpsError("permission-denied", "Not a member of this tenant");
-  }
-  return userSnap.data();
-}
 
 exports.migrateWinesToProducts = functions
   .runWith({ timeoutSeconds: 300, memory: "512MB" })
@@ -109,7 +98,7 @@ exports.migrateWinesToProducts = functions
           sourceNames: wine.sourceNames || [],
           producer: wine.producer || "",
           vintage: wine.vintage || null,
-          type: "nv",
+          type: wine.vintage ? "vintage" : "nv",
           status: "active",
           source: "migration",
           wineEntityId: wineId,
