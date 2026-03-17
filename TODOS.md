@@ -612,7 +612,8 @@
 
 ## P1 — CRM Pipeline Unification (CEO Pipeline Review 2026-03-16)
 
-### TODO-056: Opportunities Entity + CRM Service Layer
+### ~~TODO-056: Opportunities Entity + CRM Service Layer~~ DONE
+> Fixed by /qa on robbied112/taipei, 2026-03-17. Commit `f3b2f3d`.
 - **What:** Add `opportunities` and `products` Firestore collections with full CRUD in `crmService.js` and `CrmContext.jsx`. Opportunity types config with per-type stage workflows (New Placement, BTG Program, Wine Dinner, List Expansion, Reorder/Restock, Staff Training, Seasonal Program, Custom). Cascade delete opportunities on account delete (extend existing pattern in CrmContext.jsx:64-81). Auto-promote account status from `prospect` to `active` when any opportunity reaches "Won" stage. Stage history tracking on every advance (`stageHistory: [{ stage, date, by }]`).
 - **Why:** Pipeline and CRM are currently disconnected. `CustomerPipeline.jsx` renders spreadsheet data (`pipelineAccounts` from DataContext) while CRM accounts live in a separate entity world. A rep can't track recurring deals per account or attach wines. "Closed Won" is a dead end — nothing happens. This is the data foundation for the entire unified pipeline.
 - **Firestore schema:**
@@ -626,7 +627,8 @@
 - **Files:** `frontend/src/services/crmService.js`, `frontend/src/context/CrmContext.jsx`, `firestore.rules`, `frontend/src/config/tenant.js`
 - **Depends on:** Nothing (but blocks TODO-057 through TODO-062)
 
-### TODO-057: Unified Pipeline View (Kanban + Table)
+### ~~TODO-057: Unified Pipeline View (Kanban + Table)~~ DONE
+> Fixed by /qa on robbied112/taipei, 2026-03-17. Commit `f3b2f3d`. Note: Mobile shows all merged stages when unfiltered (ISSUE-002 deferred).
 - **What:** Replace `CustomerPipeline.jsx` with a new pipeline component backed by CRM opportunities. Kanban board on desktop (drag-and-drop between stage columns), responsive card list on mobile. Filter by opportunity type, stage, owner, account. Type-aware stage columns (each opp type shows its own stage workflow). KPIs: total pipeline value, weighted, by type. BEM CSS classes replacing all 657 lines of inline styles.
 - **Why:** Current pipeline is a read-only spreadsheet table with no entity backing. `onAddNew` literally `console.log`s (App.jsx:306). Mobile is unusable — 11-column table with forced horizontal scroll. Reps can't interact with deals, can't drag stages, can't create opportunities.
 - **Pros:** Interactive pipeline that reps will actually use daily. Mobile-usable. Type-aware stages make it a wine CRM, not generic.
@@ -646,7 +648,8 @@
 - **Files:** New `frontend/src/components/WinePicker.jsx`, extend `crmService.js` with product CRUD, Settings section
 - **Depends on:** TODO-056 (products collection)
 
-### TODO-059: Account Detail — Opportunities Tab + Conversion Flow
+### ~~TODO-059: Account Detail — Opportunities Tab + Conversion Flow~~ DONE
+> Fixed by /qa on robbied112/taipei, 2026-03-17. Commit `f3b2f3d`. Auto-promote, auto-log activity (Won/Lost/Completed), inline stage advance all verified.
 - **What:** Add "Opportunities" tab to `AccountDetailPage.jsx` showing all open + closed opportunities for that account with stage badges and type icons. Quick-create opportunity from account detail (pre-filled accountId). Stage advance buttons inline. When any opp hits Won on a prospect account, auto-promote to `active` with celebration toast + auto-logged activity entry: "Closed Won: [opp title]".
 - **Why:** Account detail page currently has no pipeline visibility. A rep looking at "Harbor Restaurant" can't see what deals are in flight. The Won→Active conversion is the bridge between pipeline and CRM that doesn't exist today.
 - **Pros:** Complete account view — relationship + active deals + history. Conversion flow makes pipeline meaningful.
