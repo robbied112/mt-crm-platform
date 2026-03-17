@@ -1,5 +1,5 @@
+const { onRequest } = require("firebase-functions/v2/https");
 const {
-  functions,
   admin,
   db,
   stripeWebhookSecret,
@@ -8,7 +8,7 @@ const {
 } = require("./helpers");
 
 // -------------------------------------------------------------------
-// Stripe Webhook Handler  (v1 Cloud Function with Secret Manager)
+// Stripe Webhook Handler  (v2 Cloud Function with Secret Manager)
 // -------------------------------------------------------------------
 // Listens for Stripe events and updates tenant subscription status
 // in Firestore so the client app can read it.
@@ -19,9 +19,8 @@ const {
 //      firebase functions:secrets:set STRIPE_SECRET_KEY
 //
 // 2. In the Stripe Dashboard > Developers > Webhooks, create an
-//    endpoint pointing to:
-//      https://us-central1-mt-crm-platform.cloudfunctions.net/stripeWebhook
-//    and subscribe to these events:
+//    endpoint pointing to the Cloud Run URL shown after deploy.
+//    Subscribe to these events:
 //      - checkout.session.completed
 //      - customer.subscription.updated
 //      - customer.subscription.deleted
@@ -32,9 +31,9 @@ const {
 //      firebase deploy --only functions
 // -------------------------------------------------------------------
 
-const stripeWebhook = functions
-  .runWith({ secrets: [stripeWebhookSecret, stripeSecretKey] })
-  .https.onRequest(async (req, res) => {
+const stripeWebhook = onRequest(
+  { secrets: [stripeWebhookSecret, stripeSecretKey], memory: "256MiB" },
+  async (req, res) => {
     if (req.method !== "POST") {
       res.status(405).send("Method Not Allowed");
       return;
@@ -206,6 +205,7 @@ const stripeWebhook = functions
       console.error("Error processing webhook:", err);
       res.status(500).json({ error: "Webhook processing failed" });
     }
-  });
+  }
+);
 
 module.exports = { stripeWebhook };

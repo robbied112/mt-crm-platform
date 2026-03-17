@@ -1,6 +1,6 @@
 {
-  "name": "sidekick-bi-functions",
-  "description": "Cloud Functions for Sidekick BI",
+  "name": "crufolio-functions",
+  "description": "Cloud Functions for CruFolio",
   "engines": {
     "node": "20"
   },

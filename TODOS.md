@@ -1,4 +1,4 @@
-# TODOS — Sidekick BI (MT CRM Platform)
+# TODOS — CruFolio (MT CRM Platform)
 
 > Updated from CEO Financial Command Center Review on 2026-03-17.
 > Previous: CEO CRM Pipeline Review on 2026-03-16.
