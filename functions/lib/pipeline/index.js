@@ -7,6 +7,9 @@
 
 const parseFile = require("./parseFile");
 const transformData = require("./transformData");
+const transformBillback = require("./transformBillback");
+const transformRevenue = require("./transformRevenue");
+const transformArAp = require("./transformArAp");
 const semanticMapper = require("./semanticMapper");
 const normalize = require("./normalize");
 const constants = require("./constants");
@@ -38,6 +41,17 @@ module.exports = {
   autoDetectMapping: semanticMapper.autoDetectMapping,
   detectQuickBooksFormat: semanticMapper.detectQuickBooksFormat,
   detectUploadType: semanticMapper.detectUploadType,
+
+  // transformBillback
+  transformBillback: transformBillback.transformBillback,
+
+  // transformRevenue
+  transformRevenue: transformRevenue.transformRevenue,
+  CHANNELS: transformRevenue.CHANNELS,
+  CHANNEL_VALUES: transformRevenue.CHANNEL_VALUES,
+
+  // transformArAp
+  transformArAp: transformArAp.transformArAp,
 
   // normalize
   normalizeRows: normalize.normalizeRows,

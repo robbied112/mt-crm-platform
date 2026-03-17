@@ -414,6 +414,15 @@ function detectUploadType(headers, rows, mapping) {
   const hasMonths = !!mapping._monthColumns;
   const hasWeeks = !!mapping._weekColumns;
 
+  // AR/AP Aging detection: aging bucket columns
+  const headerLowerAll = headers.map((h) => (h || "").toLowerCase().trim());
+  const hasAgingBuckets = headerLowerAll.some((h) => h === "current" || h.includes("1 - 30") || h.includes("1-30")) &&
+    headerLowerAll.some((h) => h.includes("31") && h.includes("60"));
+  if (hasAgingBuckets) {
+    const hasVendor = headerLowerAll.some((h) => h.includes("vendor") || h.includes("supplier"));
+    return { type: hasVendor ? "ap_aging" : "ar_aging" };
+  }
+
   if (hasOH || mapping.doh) return { type: "inventory" };
   if (hasStage || mapping.estValue) return { type: "pipeline" };
   if (hasAcct && hasDist && (hasQty || hasMonths || hasWeeks)) return { type: "depletion" };
