@@ -13,6 +13,7 @@ import {
   serverTimestamp, onSnapshot,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
+import { buildNormalizedName } from "../utils/productNormalize";
 
 // ─── Helpers ──────────────────────────────────────────────────
 
@@ -211,8 +212,14 @@ export async function loadProducts(tenantId) {
 }
 
 export async function createProduct(tenantId, data) {
+  const clean = stripUndefined(data);
   const ref = await addDoc(tenantCol(tenantId, "products"), {
-    ...stripUndefined(data),
+    ...clean,
+    normalizedName: buildNormalizedName(data.name),
+    displayName: data.displayName || data.name,
+    type: data.type || (data.vintage ? "vintage" : "nv"),
+    status: data.status || "active",
+    sourceNames: data.sourceNames || [data.name],
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -220,8 +227,12 @@ export async function createProduct(tenantId, data) {
 }
 
 export async function updateProduct(tenantId, id, patch) {
+  const clean = stripUndefined(patch);
+  if (patch.name) {
+    clean.normalizedName = buildNormalizedName(patch.name);
+  }
   await updateDoc(tenantDoc(tenantId, "products", id), {
-    ...stripUndefined(patch),
+    ...clean,
     updatedAt: serverTimestamp(),
   });
 }
