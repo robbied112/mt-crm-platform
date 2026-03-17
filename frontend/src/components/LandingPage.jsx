@@ -35,7 +35,7 @@ function DashboardMockup() {
             border: "1px solid rgba(255,255,255,0.06)",
           }}>
             <div style={{ fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{k.label}</div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: k.color, lineHeight: 1.2, marginTop: 4 }}>{k.value}</div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: k.color, lineHeight: 1.2, marginTop: 4, fontFeatureSettings: "'tnum'" }}>{k.value}</div>
             <div style={{ fontSize: 11, color: "#6B6B6B", marginTop: 2 }}>{k.sub}</div>
           </div>
         ))}
@@ -137,7 +137,7 @@ function TerritoryMockup() {
             <div style={{
               width: 36, height: 36, borderRadius: 8, background: `${s.color}15`,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 14, fontWeight: 800, color: s.color,
+              fontSize: 14, fontWeight: 700, color: s.color,
             }}>{s.abbr}</div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#2E2E2E" }}>{s.rep}</div>
@@ -380,7 +380,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
               ...(tier.popular ? s.priceCardPop : {}),
             }}>
               {tier.popular && <div style={s.popBadge}>Most Popular</div>}
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: "#2E2E2E", fontFamily: "'Libre Baskerville', Georgia, serif" }}>{tier.name}</h3>
+              <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8, color: "#2E2E2E", fontFamily: "'Inter Tight', Inter, sans-serif" }}>{tier.name}</h3>
               <div style={s.priceAmount}>
                 {tier.price}<span style={s.priceUnit}>{tier.unit}</span>
               </div>
@@ -453,7 +453,7 @@ const s = {
     maxWidth: 1200, margin: "0 auto", padding: "14px 24px",
     display: "flex", alignItems: "center", justifyContent: "space-between",
   },
-  navLogo: { fontSize: 22, fontWeight: 800, color: "#D2C78A", fontFamily: "'Libre Baskerville', Georgia, serif" },
+  navLogo: { fontSize: 22, fontWeight: 400, color: "#D2C78A", fontFamily: "'Libre Baskerville', Georgia, serif", letterSpacing: "2px" },
   navLinks: { display: "flex", gap: 24, alignItems: "center" },
   navLink: { textDecoration: "none", color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: 500, padding: "10px 12px" },
   navLinkBtn: {
@@ -500,7 +500,7 @@ const s = {
   sectionWhite: { padding: "60px 24px 80px", maxWidth: 1100, margin: "0 auto" },
   sectionGray: { padding: "60px 24px", background: "#f9fafb" },
   sectionH2: {
-    fontSize: 38, fontWeight: 800, textAlign: "center", marginBottom: 16,
+    fontSize: 38, fontWeight: 400, textAlign: "center", marginBottom: 16,
     color: "#0f172a", letterSpacing: "-0.01em",
     fontFamily: "'Libre Baskerville', Georgia, serif",
   },
@@ -519,7 +519,7 @@ const s = {
     background: "#fff", borderRadius: 16, border: "1px solid #E5E0DA",
   },
   statNum: {
-    fontSize: 48, fontWeight: 900, color: "#6B1E1E", lineHeight: 1,
+    fontSize: 48, fontWeight: 700, color: "#6B1E1E", lineHeight: 1,
     background: "linear-gradient(135deg, #6B1E1E, #8A2035)",
     WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
   },
@@ -539,7 +539,7 @@ const s = {
     textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 12,
   },
   featureH3: {
-    fontSize: 26, fontWeight: 800, color: "#0f172a", lineHeight: 1.2, marginBottom: 12,
+    fontSize: 24, fontWeight: 400, color: "#0f172a", lineHeight: 1.35, marginBottom: 12,
     fontFamily: "'Libre Baskerville', Georgia, serif",
   },
   featureP: { fontSize: 16, color: "#6B6B6B", lineHeight: 1.7 },
@@ -583,7 +583,7 @@ const s = {
     background: "#6B1E1E", color: "#fff", padding: "5px 18px", borderRadius: 20,
     fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
   },
-  priceAmount: { fontSize: 48, fontWeight: 900, color: "#111827", margin: "16px 0 4px" },
+  priceAmount: { fontSize: 48, fontWeight: 700, color: "#2E2E2E", margin: "16px 0 4px", fontFeatureSettings: "'tnum'" },
   priceUnit: { fontSize: 16, fontWeight: 500, color: "#6B6B6B" },
   priceDesc: { fontSize: 14, color: "#6B6B6B", marginBottom: 24 },
   priceList: { listStyle: "none", textAlign: "left", marginBottom: 28, padding: 0 },
@@ -597,7 +597,7 @@ const s = {
     padding: "100px 24px", textAlign: "center",
     background: "linear-gradient(180deg, #0a0f1a 0%, #1A1F3E 100%)",
   },
-  ctaH2: { fontSize: 38, fontWeight: 800, color: "#f1f5f9", marginBottom: 16, fontFamily: "'Libre Baskerville', Georgia, serif" },
+  ctaH2: { fontSize: 38, fontWeight: 400, color: "#f1f5f9", marginBottom: 16, fontFamily: "'Libre Baskerville', Georgia, serif" },
   ctaSub: {
     fontSize: 18, color: "#6B6B6B", maxWidth: 500, margin: "0 auto 32px", lineHeight: 1.6,
   },
