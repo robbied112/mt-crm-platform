@@ -75,6 +75,7 @@ export default function ProductSheetReviewStep({ rows, headers, mapping, onConfi
     return init;
   });
 
+  const [importing, setImporting] = useState(false);
   const selectedCount = Object.values(selected).filter(Boolean).length;
   const duplicateCount = products.filter((p) => duplicateSet.has(p.name)).length;
 
@@ -99,6 +100,8 @@ export default function ProductSheetReviewStep({ rows, headers, mapping, onConfi
   };
 
   const handleConfirm = () => {
+    if (importing) return;
+    setImporting(true);
     const selectedProducts = products.filter((_, i) => selected[i]);
     // Enrich with normalizedName before saving
     const enriched = selectedProducts.map((p) => ({
@@ -130,9 +133,9 @@ export default function ProductSheetReviewStep({ rows, headers, mapping, onConfi
           <button
             className="btn btn-primary"
             onClick={handleConfirm}
-            disabled={selectedCount === 0}
+            disabled={selectedCount === 0 || importing}
           >
-            Import {selectedCount} Product{selectedCount !== 1 ? "s" : ""}
+            {importing ? "Importing…" : `Import ${selectedCount} Product${selectedCount !== 1 ? "s" : ""}`}
           </button>
         </div>
       </div>
@@ -254,9 +257,9 @@ export default function ProductSheetReviewStep({ rows, headers, mapping, onConfi
           <button
             className="btn btn-primary"
             onClick={handleConfirm}
-            disabled={selectedCount === 0}
+            disabled={selectedCount === 0 || importing}
           >
-            Confirm &amp; Import
+            {importing ? "Importing…" : "Confirm & Import"}
           </button>
         </div>
       </div>

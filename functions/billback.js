@@ -4,22 +4,9 @@
  * parseBillbackPDF: Accepts base64 PDF, calls Claude Vision, returns structured line items
  * extractWines: Auto-extracts wine entities from billback imports with AI dedup
  */
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-const { defineSecret } = require("firebase-functions/params");
+const { functions, admin, db, anthropicApiKey, verifyTenantMembership } = require("./helpers");
 const { deduplicateEntities } = require("./entityDedup");
 const { buildNormalizedName } = require("./lib/pipeline/productNormalize");
-
-const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
-const db = admin.firestore();
-
-async function verifyTenantMembership(uid, tenantId) {
-  const userSnap = await db.collection("users").doc(uid).get();
-  if (!userSnap.exists || userSnap.data().tenantId !== tenantId) {
-    throw new functions.https.HttpsError("permission-denied", "Not a member of this tenant");
-  }
-  return userSnap.data();
-}
 
 // ─── Wine Name Helpers ──────────────────────────────────────────
 

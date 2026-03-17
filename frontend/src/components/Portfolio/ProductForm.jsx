@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, useMemo } from "react";
 import { useCrm } from "../../context/CrmContext";
-import { buildNormalizedName } from "../../../../packages/pipeline/src/productNormalize.js";
+import { buildNormalizedName } from "../../utils/productNormalize";
 
 const BOTTLE_SIZES = ["187ml", "375ml", "500ml", "750ml", "1L", "1.5L", "3L"];
 const STATUS_OPTIONS = ["active", "archived", "discontinued"];
