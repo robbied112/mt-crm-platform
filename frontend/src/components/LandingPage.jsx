@@ -262,7 +262,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
             }}>finally useful.</span>
           </h1>
           <p style={s.heroSub}>
-            The BI platform built for suppliers who sell through distributors.
+            Depletion reports, distributor scorecards, and pipeline — built for the three-tier world.
           </p>
           <div style={s.heroCtas}>
             <button onClick={onGetStarted} className="lp-btn-primary" style={s.btnTeal}>Start Free Trial</button>
@@ -282,9 +282,9 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
       <section style={{ ...s.sectionWhite, paddingTop: 48, paddingBottom: 48 }}>
         <div style={s.statsRow}>
           {[
-            { num: "5 min", label: "Setup Time", desc: "Upload a spreadsheet and see insights immediately" },
-            { num: "10x", label: "Faster Than Spreadsheets", desc: "Auto-scored distributors, not manual vlookups" },
-            { num: "$0", label: "To Start", desc: "Free tier with no credit card required" },
+            { num: "5 min", label: "Setup Time", desc: "Drop a depletion report and see distributor health scores immediately" },
+            { num: "Zero", label: "Vlookups Required", desc: "We map columns, normalize SKUs, and score distributors automatically" },
+            { num: "$0", label: "To Start", desc: "Free tier — no credit card, no sales call" },
           ].map((item, i) => (
             <div key={i} style={s.statCard}>
               <div style={s.statNum}>{item.num}</div>
@@ -304,9 +304,9 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
         <div style={s.featureRow}>
           <div style={s.featureText}>
             <div style={s.featureTag}>Distributor Scorecard</div>
-            <h3 style={s.featureH3}>Know which distributors need attention — before problems start</h3>
+            <h3 style={s.featureH3}>See which distributors are selling through — and which aren't</h3>
             <p style={s.featureP}>
-              Automatic health scores based on velocity, sell-through, and inventory turns.
+              Health scores computed from depletion velocity, sell-through rate, and inventory turns.
               Green, yellow, and red at a glance.
             </p>
           </div>
@@ -317,7 +317,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
         <div style={{ ...s.featureRow, flexDirection: "row-reverse" }}>
           <div style={s.featureText}>
             <div style={s.featureTag}>Territory Intelligence</div>
-            <h3 style={s.featureH3}>Every rep sees their world, with action items built in</h3>
+            <h3 style={s.featureH3}>Each rep sees their accounts, their numbers, their next move</h3>
             <p style={s.featureP}>
               Assign reps to states, regions, or custom territories. Each rep sees only their
               accounts with personalized insights.
@@ -330,10 +330,10 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
         <div style={s.featureRow}>
           <div style={s.featureText}>
             <div style={s.featureTag}>Pipeline &amp; Forecasting</div>
-            <h3 style={s.featureH3}>Track every deal from prospect to placement</h3>
+            <h3 style={s.featureH3}>From prospect to placement — see every deal in motion</h3>
             <p style={s.featureP}>
-              Visual pipeline with customizable stages. Reorder forecasting tells you who's
-              due before they go dark.
+              Visual pipeline with customizable stages. Reorder forecasting flags accounts
+              going quiet before they lapse.
             </p>
           </div>
           <div style={s.featureMockup}><PipelineMockup /></div>
@@ -342,12 +342,12 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
 
       {/* ── How It Works ─────────────────────── */}
       <section style={{ ...s.sectionGray, paddingTop: 80, paddingBottom: 80 }}>
-        <h2 style={s.sectionH2}>Up and running in minutes</h2>
+        <h2 style={s.sectionH2}>From raw depletion file to dashboard in three steps</h2>
         <div style={s.stepsFlow}>
           {[
-            { step: "1", title: "Upload", desc: "Drag & drop a distributor report — Excel, CSV, or depletion file." },
-            { step: "2", title: "Auto-Map", desc: "We detect your columns and map them to the right fields automatically." },
-            { step: "3", title: "Insights", desc: "Scorecards, health scores, and rep dashboards — live in minutes." },
+            { step: "1", title: "Drop your file", desc: "VIP export, distributor depletion report, or product sheet — Excel or CSV." },
+            { step: "2", title: "We handle the mapping", desc: "AI reads your columns, normalizes product names, and flags duplicates." },
+            { step: "3", title: "See what matters", desc: "Distributor scorecards, sell-through velocity, and territory gaps — ready." },
           ].map((item, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 200 }}>
               <div style={s.stepFlowItem}>
@@ -371,8 +371,8 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
 
       {/* ── Pricing ──────────────────────────── */}
       <section id="pricing" style={s.sectionWhite}>
-        <h2 style={s.sectionH2}>Simple, transparent pricing</h2>
-        <p style={s.sectionSub}>Start free. Upgrade when you're ready.</p>
+        <h2 style={s.sectionH2}>One price, no per-report fees</h2>
+        <p style={s.sectionSub}>Start free. Add your team when you're ready.</p>
         <div style={s.pricingGrid}>
           {pricingTiers.map((tier, i) => (
             <div key={i} className="lp-price-card" style={{
@@ -407,8 +407,8 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
 
       {/* ── Final CTA ────────────────────────── */}
       <section style={s.ctaSection}>
-        <h2 style={s.ctaH2}>Start making better decisions today</h2>
-        <p style={s.ctaSub}>Join hundreds of suppliers replacing spreadsheets with real intelligence.</p>
+        <h2 style={s.ctaH2}>Stop rebuilding pivot tables every Monday</h2>
+        <p style={s.ctaSub}>Suppliers across 12 states use CruFolio to turn distributor data into action.</p>
         <button onClick={onGetStarted} className="lp-btn-white" style={s.btnCtaWhite}>Get Started Free</button>
         <p style={s.ctaNote}>No credit card required</p>
       </section>
@@ -426,15 +426,15 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
    ────────────────────────────────────────────── */
 const pricingTiers = [
   {
-    name: "Starter", price: "$49", unit: "/mo", desc: "For small teams getting started",
+    name: "Starter", price: "$49", unit: "/mo", desc: "One supplier, full visibility",
     features: ["Up to 5 users", "Distributor health scores", "Territory management", "Pipeline tracking", "Excel data uploads", "Email support"],
   },
   {
-    name: "Growth", price: "$99", unit: "/mo", desc: "For growing sales organizations", popular: true,
+    name: "Growth", price: "$99", unit: "/mo", desc: "For multi-state sales teams", popular: true,
     features: ["Up to 15 users", "Everything in Starter", "Account CRM with files", "Email logging", "Reorder forecasting", "Priority support"],
   },
   {
-    name: "Enterprise", price: "Custom", unit: "", desc: "For large teams with custom needs", cta: "contact",
+    name: "Enterprise", price: "Custom", unit: "", desc: "Multi-brand portfolios and integrations", cta: "contact",
     features: ["Unlimited users", "Everything in Growth", "Custom integrations", "API access", "Dedicated support", "Custom onboarding"],
   },
 ];
