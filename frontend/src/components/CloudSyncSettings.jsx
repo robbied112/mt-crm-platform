@@ -199,7 +199,9 @@ export default function CloudSyncSettings() {
         <button
           className="btn btn-primary"
           style={{ padding: "10px 24px" }}
-          onClick={() => { /* navigate to billing */ }}
+          onClick={() => {
+            document.getElementById("settings-billing")?.scrollIntoView({ behavior: "smooth" });
+          }}
         >
           Upgrade Plan
         </button>
