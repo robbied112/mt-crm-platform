@@ -30,7 +30,7 @@ export default function DataFreshnessBadge({ lastUpdated, variant = "compact" })
   }
 
   if (variant === "dot") {
-    const colors = { fresh: "#4ade80", aging: "#facc15", stale: "#f87171" };
+    const colors = { fresh: "#1F865A", aging: "#facc15", stale: "#f87171" };
     return (
       <span
         className="freshness-dot"

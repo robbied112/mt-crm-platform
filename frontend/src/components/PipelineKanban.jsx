@@ -13,11 +13,11 @@ import OpportunityForm from "./OpportunityForm";
 const STAGE_COLORS = {
   Identified: "#94a3b8", Outreach: "#60a5fa", Meeting: "#818cf8",
   Tasting: "#a78bfa", Proposal: "#f59e0b", Negotiation: "#f97316",
-  "Menu Trial": "#c084fc", Confirmed: "#34d399", "Menu Planning": "#fb923c",
-  Pitched: "#60a5fa", "Samples Sent": "#93c5fd", Approved: "#4ade80",
+  "Menu Trial": "#c084fc", Confirmed: "#1F865A", "Menu Planning": "#fb923c",
+  Pitched: "#60a5fa", "Samples Sent": "#93c5fd", Approved: "#1F865A",
   Contacted: "#60a5fa", Proposed: "#818cf8", Scheduled: "#fbbf24",
-  Executed: "#34d399", Completed: "#10b981", "Menu Approved": "#4ade80",
-  Won: "#10b981", Lost: "#ef4444",
+  Executed: "#1F865A", Completed: "#1F865A", "Menu Approved": "#1F865A",
+  Won: "#1F865A", Lost: "#ef4444",
 };
 
 export default function PipelineKanban() {
