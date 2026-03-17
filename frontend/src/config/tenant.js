@@ -75,6 +75,50 @@ const TENANT_CONFIG = {
     "menu_placement", "wine_dinner", "staff_training",
     "reorder_followup", "note",
   ],
+  opportunityTypes: [
+    {
+      key: "new_placement",
+      label: "New Placement",
+      stages: ["Identified", "Outreach", "Meeting", "Tasting", "Proposal", "Won", "Lost"],
+      defaultValue: 2500,
+    },
+    {
+      key: "btg_program",
+      label: "BTG Program",
+      stages: ["Identified", "Tasting", "Menu Trial", "Confirmed", "Won", "Lost"],
+      defaultValue: 4000,
+    },
+    {
+      key: "wine_dinner",
+      label: "Wine Dinner",
+      stages: ["Pitched", "Menu Planning", "Confirmed", "Executed", "Won", "Lost"],
+      defaultValue: 1500,
+    },
+    {
+      key: "list_expansion",
+      label: "List Expansion",
+      stages: ["Identified", "Samples Sent", "Tasting", "Approved", "Won", "Lost"],
+      defaultValue: 3000,
+    },
+    {
+      key: "reorder",
+      label: "Reorder / Restock",
+      stages: ["Contacted", "Confirmed", "Won", "Lost"],
+      defaultValue: 1000,
+    },
+    {
+      key: "staff_training",
+      label: "Staff Training",
+      stages: ["Proposed", "Scheduled", "Completed"],
+      defaultValue: 0,
+    },
+    {
+      key: "seasonal",
+      label: "Seasonal Program",
+      stages: ["Pitched", "Tasting", "Menu Approved", "Won", "Lost"],
+      defaultValue: 2000,
+    },
+  ],
   useNormalizedModel: false, // Feature flag: imports/ + views/ schema (TODO-021)
   features: {
     fileAttachments: true,

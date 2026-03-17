@@ -18,6 +18,15 @@ function pipelineCjsPlugin() {
       // Convert require("./foo") → import statements
       let transformed = code;
       const requires = [];
+      // Handle destructured requires: const { A, B } = require("./foo")
+      transformed = transformed.replace(
+        /const\s+(\{[^}]+\})\s*=\s*require\("\.\/(\w+)"\);?/g,
+        (_, destructured, modName) => {
+          requires.push({ varName: destructured, modName });
+          return `import ${destructured} from "./${modName}.js";`;
+        }
+      );
+      // Handle plain requires: const foo = require("./bar")
       transformed = transformed.replace(
         /const (\w+) = require\("\.\/(\w+)"\);?/g,
         (_, varName, modName) => {

@@ -27,6 +27,7 @@ import {
   WineDetail,
   PricingStudio,
   SetupAssistant,
+  PipelineKanban,
 } from "./components";
 import Sidebar from "./components/Sidebar";
 import CommandPalette from "./components/CommandPalette";
@@ -296,19 +297,7 @@ function App() {
 
               <Route
                 path="/pipeline"
-                element={
-                  <DataGate dataKey="pipeline" tabLabel="Customer Pipeline">
-                    <CustomerPipeline
-                      pipelineAccounts={pipelineAccounts}
-                      pipelineMeta={pipelineMeta}
-                      user={currentUser}
-                      onAccountClick={(name) => console.log("Open pipeline detail:", name)}
-                      onAddNew={() => console.log("Add new pipeline account")}
-                      onExportCSV={() => console.log("Export CSV")}
-                      onExportXLSX={() => console.log("Export XLSX")}
-                    />
-                  </DataGate>
-                }
+                element={<PipelineKanban />}
               />
 
               {/* Billback routes (feature-gated) */}
