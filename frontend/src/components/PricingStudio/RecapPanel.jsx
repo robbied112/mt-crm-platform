@@ -1,4 +1,5 @@
 import React from 'react';
+import { fmt, fmtPct } from './utils';
 
 const CURRENCY_SYMBOLS = {
   GBP: '\u00a3',
@@ -6,16 +7,6 @@ const CURRENCY_SYMBOLS = {
   NZD: 'NZ$',
   EUR: '\u20ac',
 };
-
-function fmt(value, symbol) {
-  if (!Number.isFinite(value)) return '\u2014';
-  return `${symbol}${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
-function fmtPct(value) {
-  if (!Number.isFinite(value)) return '\u2014';
-  return `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
-}
 
 export default function RecapPanel({ result, activeRecapLayer, onSetActiveRecapLayer }) {
   if (!result || !result.layerRecaps || result.layerRecaps.length === 0) {
@@ -45,7 +36,7 @@ export default function RecapPanel({ result, activeRecapLayer, onSetActiveRecapL
         {result.layerRecaps.map((recap) => (
           <button
             key={recap.layerId}
-            className={`pricing-tabs__tab${recap.layerId === active.layerId ? ' pricing-tabs__tab--active' : ''}`}
+            className={`pricing-tab${recap.layerId === active.layerId ? ' pricing-tab--active' : ''}`}
             onClick={() => onSetActiveRecapLayer(recap.layerId)}
           >
             {recap.label}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { fmt } from './utils';
 
 const CATEGORY_LABELS = {
   cost: 'Cost Basis',
@@ -8,11 +9,6 @@ const CATEGORY_LABELS = {
   subtotal: 'Subtotal',
   final: 'Final',
 };
-
-function fmt(value, symbol) {
-  if (!Number.isFinite(value)) return '\u2014';
-  return `${symbol}${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
 
 export default function MarketWaterfall({ result, activeMarket }) {
   if (!result) {
@@ -36,6 +32,10 @@ export default function MarketWaterfall({ result, activeMarket }) {
       </div>
 
       <div className="pricing-waterfall">
+        <div className="pricing-waterfall__col-headers">
+          <span className="pricing-waterfall__col-label">Per Case</span>
+          <span className="pricing-waterfall__col-label">Per Bottle</span>
+        </div>
         {result.waterfall.map((step, i) => {
           const showDivider = step.category && step.category !== lastCategory;
           if (step.category) lastCategory = step.category;

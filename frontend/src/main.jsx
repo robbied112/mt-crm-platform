@@ -5,6 +5,7 @@ import App from "./App.jsx";
 import AuthProvider from "./context/AuthContext";
 import DataProvider from "./context/DataContext";
 import CrmProvider from "./context/CrmContext";
+import PricingProvider from "./context/PricingContext";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -12,7 +13,9 @@ createRoot(document.getElementById("root")).render(
       <AuthProvider>
         <DataProvider>
           <CrmProvider>
-            <App />
+            <PricingProvider>
+              <App />
+            </PricingProvider>
           </CrmProvider>
         </DataProvider>
       </AuthProvider>

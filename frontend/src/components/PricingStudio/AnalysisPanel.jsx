@@ -5,18 +5,19 @@ import {
   calculateFxSensitivity,
   computeValueChain,
 } from 'pricing-engine/markets/reverseCalculator';
+import { fmt } from './utils';
 
 const SEGMENT_COLORS = {
-  cost: '#0f766e',
-  tax: '#f59e0b',
-  logistics: '#6366f1',
+  cost: 'var(--color-teal, #0f766e)',
+  tax: 'var(--color-amber, #f59e0b)',
+  logistics: 'var(--color-indigo, #6366f1)',
 };
-const MARGIN_PALETTE = ['#22c55e', '#3b82f6', '#a855f7', '#ec4899'];
-
-function fmt(value, symbol) {
-  if (!Number.isFinite(value)) return '\u2014';
-  return symbol + value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+const MARGIN_PALETTE = [
+  'var(--color-green, #22c55e)',
+  'var(--color-blue, #3b82f6)',
+  'var(--color-purple, #a855f7)',
+  'var(--color-pink, #ec4899)',
+];
 
 export default function AnalysisPanel({ result, activeMarket, inputs }) {
   const [activeTab, setActiveTab] = useState('target');
@@ -173,7 +174,7 @@ export default function AnalysisPanel({ result, activeMarket, inputs }) {
                   {row.isCurrent ? (
                     '\u2014'
                   ) : (
-                    <span style={{ color: row.change > 0 ? '#ef4444' : '#22c55e' }}>
+                    <span className={row.change > 0 ? 'pricing-fx-impact--negative' : 'pricing-fx-impact--positive'}>
                       {row.change > 0 ? '+' : ''}
                       {fmt(row.change, sym)}
                     </span>
