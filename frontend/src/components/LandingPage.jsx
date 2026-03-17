@@ -377,7 +377,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
 
       {/* ── Footer ───────────────────────────── */}
       <footer style={s.footer}>
-        <p>&copy; 2026 CruFolio. All rights reserved. | <a href="mailto:hello@crufolio.com" style={{ color: "#D2C78A", textDecoration: "none" }}>hello@crufolio.com</a></p>
+        <p>&copy; 2026 CruFolio. All rights reserved. | <a href="mailto:hello@crufolio.com" style={{ color: "#D2C78A", textDecoration: "none", padding: "10px 4px" }}>hello@crufolio.com</a></p>
       </footer>
     </div>
   );
