@@ -1,6 +1,7 @@
 # TODOS — CruFolio (MT CRM Platform)
 
-> Updated from CEO Financial Command Center Review on 2026-03-17.
+> Updated from CEO Smart Import Intelligence Engine Review on 2026-03-17.
+> Previous: CEO Financial Command Center Review on 2026-03-17.
 > Previous: CEO CRM Pipeline Review on 2026-03-16.
 > Previous: CEO App Review (Onboarding & Activation) on 2026-03-16.
 > Previous: CEO Disruption Review + Eng Review on 2026-03-16.
@@ -47,7 +48,24 @@
 > Key decisions: Hardcoded channel list (industry standard). QB AR/AP Aging report upload (not manual entry). Hybrid budget (annual total → fine-tune). Revenue data extends existing DataContext + views pipeline. Executive tab always visible (shows whatever data is available). New datasets: revenueByChannel, revenueByProduct, revenueSummary, arAgingSummary, apAgingSummary, budgetData. Firestore rules for config/budget.
 > New TODOs: 080–086. New vision items: budget pace indicator, AR aging color bands, channel trend sparklines, export executive summary PDF, revenue health score.
 >
-> **Eng Review Refinements (2026-03-17):**
+> **Smart Import Intelligence Engine added 2026-03-17 (CEO Review).**
+> Vision: Replace rule-based column matching with an AI Report Comprehension Engine. Claude Sonnet reads file samples, returns structured Report Analysis (report type, data structure, header row, column semantics, extraction plan). Multi-file intelligence correlates reports across uploads. Structure-aware pre-processor handles pivot tables, subtotal rows, column offsets, multi-sheet extraction. Rich "What I Found" summary cards. Missing data nudges. Existing data auto-connection. Import config memory for repeat uploads.
+> Key decisions: New functions/comprehend.js (separate from ai.js). Claude Sonnet (not Haiku) for comprehension quality. Hybrid extraction: structured spec for known patterns + sandboxed code generation escape hatch. Client-side parallel comprehension via Promise.allSettled(). DataImport.jsx stays as orchestrator (not new ImportOrchestrator). Banner-with-confirm for auto-connection of existing data. Feature-flagged behind tenantConfig.features.smartImport.
+> TODO-053 (Smart File Detection Messaging) SUPERSEDED by TODO-090+092.
+> New TODOs: 090–100. New vision items: dashboard preview before import, learning from corrections, universal adapter for any data source.
+>
+> **Eng Review Refinements — Smart Import (2026-03-17):**
+> - TOOL_USE (structured output): comprehendReport uses Claude tool_use with JSON schema, NOT free-form JSON. Eliminates malformed JSON failures.
+> - SMART SAMPLING: Send first 20 + middle 20 + last 10 rows to Claude (not first 50). Better representation of hierarchical/pivot files.
+> - THREE CALLABLES in comprehend.js: comprehendReport (per-file analysis), extractWithCode (sandboxed code-gen), generateIntegrationPlan (multi-file AI correlation).
+> - HYBRID EXTRACTION: Client-side extractData.js for structured specs (95% case). Server-side extractWithCode Cloud Function only for code-gen escape hatch.
+> - useReducer: DataImport.jsx multi-file state managed via useReducer with files array, NOT 10+ useState calls.
+> - AI INTEGRATION PLAN: generateIntegrationPlan is an additional Claude call (not client-side lookup table). Smarter for unknown report types.
+> - DataImport/ DIRECTORY: Extract DataImport.jsx into DataImport/ directory (index.jsx, MappingStep.jsx, PreviewStep.jsx, BillbackReviewStep.jsx, ReportAnalysisCard.jsx, styles.js). Do BEFORE adding smart import code.
+> - parseFile MULTI-SHEET: Extend parseFile with optional { sheets } param for multi-sheet XLSX files. Backward compatible.
+> - PR SPLIT: Ship TODO-090+091+092+096+099+100 in PR 1. Defer TODO-093+094+095 to PR 2.
+>
+> **Eng Review Refinements (2026-03-17, prior):**
 > - HYBRID PRODUCT MATCHING: client-side exact match (instant, during import) + server-side AI fuzzy match (async, after save). Two-phase UX: "Matched 8/12 — 4 being analyzed..."
 > - CrmContext OWNS products/ (real-time). DataContext keeps spendByWine (analytics only). Remove loadWines() from DataContext.
 > - ProductSheetReviewStep as SEPARATE component file (not inline in DataImport.jsx). DataImport orchestrates, sub-flows are self-contained.
@@ -664,7 +682,7 @@
 - **Files:** New `frontend/src/services/setupAnalytics.js`, `firestore.rules` (add `analytics/` subcollection rules using existing `isTenantMember()` pattern)
 - **Depends on:** TODO-049
 
-### TODO-053: Smart File Detection Messaging (supersedes TODO-031)
+### ~~TODO-053: Smart File Detection Messaging~~ SUPERSEDED by TODO-090+092
 - **What:** After a file is dropped in DataImport, show a rich detection message referencing the distributor system: "Looks like a Weekly Depletion Report from Southern Glazer's — I see 2,400 rows across 3 states. Nice!" or "This looks like a QuickBooks Sales by Customer report with 150 accounts." Distributor system recognition via filename patterns and header column signatures (SGWS reports have "PREMISE TYPE", VIP has "CORP ITEM CD", Encompass has specific header patterns). When the user came from a Setup Assistant report guide, show: "✅ This matches the report type we recommended." Leverages existing AI mapper detection + adds system fingerprinting from reportGuides.js column signatures.
 - **Why:** This is the "wow" moment. When the system correctly identifies your specific distributor report, trust goes through the roof. Says "this tool was built for people like me." Directly addresses the activation problem — confirms users got the right report.
 - **Effort:** S (1-2 hours — AI mapper already detects type, this adds UX copy + distributor pattern matching)
@@ -1038,7 +1056,92 @@
 
 ---
 
-## Phase Dependency Graph (Updated 2026-03-17 — CEO Financial Command Center Review)
+## Phase H: Smart Import Intelligence Engine
+
+> Added from CEO Smart Import Intelligence Engine Review on 2026-03-17. SCOPE EXPANSION mode.
+> Core insight: The current import pipeline uses rule-based column matching that fails on real-world distributor reports (pivot tables, weekly column pairs, hierarchical subtotals, offset data). Users uploading MT/VIP/SGWS reports or complex QuickBooks exports get garbage mappings. Meanwhile, competitors like Claude CoWork take raw files and produce working BI dashboards. The import intelligence IS the product — if data doesn't flow intelligently into dashboards, nothing else matters.
+> Vision: AI Report Comprehension Engine — Claude Sonnet reads file samples, returns structured Report Analysis. Multi-file intelligence correlates reports. Structure-aware pre-processor handles pivot tables and messy real-world formatting. Rich summary cards build trust. Existing data auto-connection fills new dashboard features.
+> Architecture: New functions/comprehend.js (separate from ai.js). Hybrid extraction: structured spec + sandboxed code generation escape hatch. Client-side parallel comprehension via Promise.allSettled(). DataImport.jsx stays as orchestrator. Feature-flagged behind tenantConfig.features.smartImport.
+
+### ~~TODO-090: AI Report Comprehension Engine (supersedes TODO-053)~~ DONE
+- Implemented `functions/comprehend.js` with `comprehendReport` Cloud Function. Claude Sonnet tool_use returns structured Report Analysis. XML-delimited prompts, rate limiting (20/hr/tenant), column index validation. Falls back to rule-based mapper on failure.
+
+### ~~TODO-091: Structure-Aware Data Extractor~~ DONE
+- Implemented `packages/pipeline/src/extractData.js` with header row detection, subtotal skipping, pivot flattening, column mapping. Copied to `functions/lib/pipeline/`. Sandboxed code-gen escape hatch via `extractWithCode` Cloud Function.
+
+### ~~TODO-092: Multi-File Intelligence & Summary Cards~~ DONE
+- Parallel `comprehendReport` calls via `Promise.allSettled()`. `ReportAnalysisCard.jsx` shows "What I Found" per file with report type, confidence, dashboard targets, extraction spec details. `generateIntegrationPlan` Cloud Function correlates multi-file uploads.
+
+### TODO-093: Missing Data Nudges
+- **What:** After import, check which dashboard areas still have no data and suggest what to upload next. Connects to existing Data Health Card (TODO-051, shipped). Examples: "Your Depletion Dashboard and Inventory Health are now populated. Upload a QuickBooks AR Aging report to complete your Executive Dashboard." Shown as a card after import completion and optionally in the Data Health Card sidebar.
+- **Why:** Drives users to upload ALL their data, not just one file. Guided data completeness increases value per tenant.
+- **Pros:** Low effort. Builds on shipped Data Health Card. Increases data density.
+- **Cons:** Minimal — simple gap-checking logic.
+- **Effort:** S (2-3 hours)
+- **Priority:** P1
+- **Files:** `frontend/src/components/DataImport.jsx` (post-import), `frontend/src/components/DataHealthCard.jsx` (extend)
+- **Depends on:** TODO-092 (summary cards provide the context for nudges)
+
+### TODO-094: Existing Data Auto-Connection
+- **What:** When a dashboard has empty sections but existing imports could fill them, show a **banner with confirm**: "I found QuickBooks data from March 1 that can fill Revenue & Sales. Import it?" User clicks to confirm. System re-processes old import through new/updated transform pipeline via existing `rebuildViews` Cloud Function. Checks: iterate `imports/` collection, match import types to empty dashboard datasets, filter out legacy imports with no raw rows.
+- **Why:** Users who already uploaded data and see empty dashboards (e.g., new Revenue & Sales tab with existing QB data) feel betrayed. The system should be smart enough to use what it already has.
+- **Pros:** Immediate value from existing data. Smart and respectful (user confirms). Uses existing rebuild pipeline.
+- **Cons:** Re-processing may produce different results than original if transforms changed. Legacy imports (pre-normalized model) may lack raw rows.
+- **Effort:** M (3-4 hours)
+- **Priority:** P1
+- **Files:** `frontend/src/context/DataContext.jsx` (detect gaps + show banner), `frontend/src/components/RevenueSales.jsx` or `ExecutiveDashboard.jsx` (banner placement)
+- **Depends on:** TODO-090 (improved transforms to produce correct datasets)
+
+### TODO-095: Import Configuration Memory
+- **What:** Cache AI report analysis in Firestore at `tenants/{tenantId}/importConfigs/{hash}`. Cache key = hash of (column headers array + first 3 data rows structure). On repeat upload, skip Claude API call entirely — show "Using saved configuration for SGWS 13-week velocity report" with a "Re-analyze" button to override. Config includes full Report Analysis + extraction spec. Invalidated when hash doesn't match (file structure changed).
+- **Why:** Makes repeat imports instant. System feels like it learns and remembers. Reduces Claude API costs for monthly report uploads.
+- **Pros:** Faster imports. Lower API cost. Builds trust ("it remembers my reports").
+- **Cons:** Cache invalidation complexity (mitigated by content-hash keys). Extra Firestore collection.
+- **Effort:** M (3-4 hours)
+- **Priority:** P2
+- **Files:** `frontend/src/components/DataImport.jsx`, `frontend/src/services/firestoreService.js` (CRUD for importConfigs)
+- **Depends on:** TODO-090 (produces the analysis to cache)
+
+### ~~TODO-096: Smart Error Recovery Messages~~ DONE
+- `ReportAnalysisCard` shows contextual error titles (rate_limited, api_failure, no_tool_use) with AI-generated suggestions and fallback notice. Structured error objects with `errorType` and `suggestion` fields.
+
+### TODO-097: Cross-File Product Matching at Import Time
+- **What:** When a Product Details file is uploaded (or already exists in tenant's product catalog), automatically use SKU names and product descriptions to match products across all other reports. "Missing Thorn Alcohol Removed Red Wine 1" in the velocity report → links to product "Still Red" (SKU: MT-NARED-750) from the catalog. Runs during multi-file import when product sheet is present alongside other reports.
+- **Why:** Every dashboard automatically uses canonical product names instead of each distributor's garbled version. Better product-level analytics.
+- **Pros:** Data consistency across all views. Unified product identity.
+- **Cons:** Fuzzy matching can produce false positives — needs confidence thresholds.
+- **Effort:** M (3-4 hours)
+- **Priority:** P2
+- **Files:** `frontend/src/components/DataImport.jsx`, extends TODO-074 pattern
+- **Depends on:** TODO-090 (comprehension), TODO-075 (AI product matching infrastructure)
+
+### TODO-098: Dashboard Preview Before Import
+- **What:** Before clicking "Import All," show mini previews of what each dashboard will look like with the new data — sparkline revenue trends, top 3 distributors, inventory health indicators. Requires running transforms in memory without persisting, then rendering mini chart components.
+- **Why:** The "try before you buy" moment. Users see the value before committing. Premium product feel.
+- **Pros:** Beautiful trust-builder. Users understand what they're getting before import.
+- **Cons:** Requires running full transform pipeline in memory before persisting. Adds latency to import flow.
+- **Effort:** M (4-5 hours)
+- **Priority:** P3
+- **Files:** New `frontend/src/components/ImportPreview.jsx`, `frontend/src/components/DataImport.jsx`
+- **Depends on:** TODO-092 (summary cards), TODO-091 (extraction must produce clean data for preview)
+
+### ~~TODO-099: DataImport Directory Extraction~~ DONE
+- Extracted 903-line monolith into `DataImport/` directory: `index.jsx` (orchestrator with useReducer, 20 actions), `MappingStep.jsx`, `PreviewStep.jsx`, `BillbackReviewStep.jsx`, `ReportAnalysisCard.jsx`, `styles.js`. Barrel export updated.
+
+### ~~TODO-100: parseFile Multi-Sheet Support~~ DONE
+- Added `parseFileBuffer(buffer, ext, { sheets })` option and `getSheetNames(buffer, ext)` to `packages/pipeline/src/parseFile.js`. Returns `[{ sheetName, headers, rows }]` per sheet. Backward compatible. Copied to `functions/lib/pipeline/`.
+
+### Smart Import Vision Items (Delight Opportunities — <30 min each)
+
+- **Import history intelligence** — "You last imported SGWS velocity data on March 1. This file covers through March 15 — I'll update with the new 2 weeks of data." Compare import dates from `imports/` collection. (~20 min, depends on TODO-090)
+- **One-click re-import** — Button in import history: "Re-import with latest file." Opens file picker with pre-configured analysis. (~20 min, depends on TODO-095)
+- **Learning from corrections** — When users fix AI mappings via manual mapping UI, log the correction and feed it as few-shot examples into future comprehension prompts. Aggregate across tenants to improve base prompts. (~30 min for logging, M for prompt integration, Phase 3)
+- **Universal report format guide** — Auto-generate per-distributor "how to export" instructions based on which file formats comprehend best. Update reportGuides.js with optimal export settings. (~15 min, depends on TODO-090 + TODO-048)
+- **Batch progress animation** — When importing 8 files, show a satisfying progress animation with per-file status: analyzing → extracting → transforming → done, with checkmarks cascading. (~20 min, depends on TODO-092)
+
+---
+
+## Phase Dependency Graph (Updated 2026-03-17 — CEO Smart Import Intelligence Engine Review)
 
 ```
 FOUNDATION (DONE):
@@ -1138,6 +1241,35 @@ REMAINING P1 — IMPLEMENTATION ORDER:
     TODO-085 (revenue + financial test suite) ← ship with TODO-080 + TODO-084
     TODO-086 (shared KpiCard component) ← P2, independent
 
+    ── Phase H: Smart Import Intelligence Engine ──
+    TODO-099 (DataImport/ directory extraction) ← DO FIRST (prerequisite refactor)
+    TODO-100 (parseFile multi-sheet support) ← DO EARLY (blocks TODO-091)
+        │
+    TODO-090 (AI report comprehension engine) ← CORE
+        │   Supersedes TODO-053 (smart file detection messaging)
+        │   Eng review: tool_use structured output, smart sampling (20+20+10),
+        │   3 callables: comprehendReport, extractWithCode, generateIntegrationPlan
+        │
+        ├── TODO-091 (structure-aware data extractor) ← needs TODO-100
+        │       │   Eng review: client-side for structured specs, server for code-gen
+        │       │
+        │       └── TODO-092 (multi-file intelligence + summary cards) ← needs TODO-099
+        │               │   Eng review: useReducer with files array, AI integration plan
+        │               │
+        │               └── TODO-093 (missing data nudges) ← PR 2
+        │
+        ├── TODO-094 (existing data auto-connection) ← PR 2
+        │
+        ├── TODO-095 (import configuration memory) ← PR 2, P2
+        │
+        └── TODO-096 (smart error recovery messages)
+
+    PR 1: TODO-099 + 100 + 090 + 091 + 092 + 096
+    PR 2: TODO-093 + 094 + 095
+
+    TODO-097 (cross-file product matching at import time) ← P2, needs TODO-090 + TODO-075
+    TODO-098 (dashboard preview before import) ← P3, needs TODO-092
+
 P2+:
     TODO-054 (post-import "What's Next" card) ← needs TODO-049, TODO-051
     TODO-027 (Account Detail Page) ← needs TODO-007 (DONE)
@@ -1146,7 +1278,8 @@ P2+:
     TODO-030 (import timeline)
     TODO-013 (data freshness)
     ~~TODO-015 (onboarding wizard)~~ SUPERSEDED by TODO-049 (Setup Assistant)
-    ~~TODO-031 (smart file detection UX)~~ SUPERSEDED by TODO-053
+    ~~TODO-031 (smart file detection UX)~~ SUPERSEDED by TODO-053 → TODO-090+092
+    ~~TODO-053 (smart file detection messaging)~~ SUPERSEDED by TODO-090+092
     TODO-039 (morning greeting) ← P2 delight
     TODO-009 (OAuth HMAC signing) ← SECURITY, P1 before production
     TODO-061 (quick-add FAB) ← needs TODO-056
