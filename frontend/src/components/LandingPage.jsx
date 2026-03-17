@@ -22,7 +22,7 @@ function DashboardMockup() {
   return (
     <div style={{
       background: "#1A1F3E", borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)",
-      padding: 28, maxWidth: 720, margin: "0 auto",
+      padding: 24, maxWidth: 720, margin: "0 auto",
       boxShadow: "0 0 80px rgba(107,30,30,0.18), 0 20px 60px rgba(0,0,0,0.4)",
       animation: "float 6s ease-in-out infinite",
       transform: "perspective(1200px) rotateX(2deg)",
@@ -31,7 +31,7 @@ function DashboardMockup() {
       <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
         {kpis.map((k, i) => (
           <div key={i} style={{
-            flex: 1, background: "#0f172a", borderRadius: 10, padding: "16px 18px",
+            flex: 1, background: "#0f172a", borderRadius: 8, padding: "16px 16px",
             border: "1px solid rgba(255,255,255,0.06)",
           }}>
             <div style={{ fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{k.label}</div>
@@ -297,7 +297,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
 
       {/* ── Features ─────────────────────────── */}
       <section id="features" style={{ ...s.sectionWhite, paddingTop: 80, paddingBottom: 80 }}>
-        <h2 style={{ ...s.sectionH2, textAlign: "left", maxWidth: 1100 }}>Built for how you actually sell</h2>
+        <h2 style={{ ...s.sectionH2, textAlign: "left", maxWidth: 1200 }}>Built for how you actually sell</h2>
         <p style={{ ...s.sectionSub, textAlign: "left", margin: "0 0 56px" }}>Every feature is designed for suppliers who sell through distributors, brokers, and reps.</p>
 
         {/* Feature 1: Scorecard — text left, mockup right */}
@@ -450,7 +450,7 @@ const s = {
     borderBottom: "1px solid rgba(255,255,255,0.06)",
   },
   navInner: {
-    maxWidth: 1200, margin: "0 auto", padding: "14px 24px",
+    maxWidth: 1200, margin: "0 auto", padding: "16px 24px",
     display: "flex", alignItems: "center", justifyContent: "space-between",
   },
   navLogo: { fontSize: 22, fontWeight: 400, color: "#D2C78A", fontFamily: "'Libre Baskerville', Georgia, serif", letterSpacing: "2px" },
@@ -462,7 +462,8 @@ const s = {
   },
   navCta: {
     background: "#6B1E1E", color: "#fff", padding: "8px 20px",
-    borderRadius: 8, fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer",
+    borderRadius: 7, fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer",
+    fontFamily: "'Inter Tight', Inter, sans-serif",
   },
 
   /* Hero */
@@ -486,18 +487,20 @@ const s = {
 
   /* Buttons */
   btnTeal: {
-    background: "#6B1E1E", color: "#fff", padding: "14px 32px", borderRadius: 10,
-    fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer",
+    background: "#6B1E1E", color: "#fff", padding: "12px 24px", borderRadius: 7,
+    fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer",
+    fontFamily: "'Inter Tight', Inter, sans-serif",
     textDecoration: "none", display: "inline-block",
   },
   btnGhost: {
-    background: "transparent", color: "#fff", padding: "14px 32px", borderRadius: 10,
-    fontSize: 16, fontWeight: 600, border: "2px solid rgba(255,255,255,0.2)",
+    background: "transparent", color: "#fff", padding: "12px 24px", borderRadius: 7,
+    fontSize: 14, fontWeight: 600, border: "2px solid rgba(255,255,255,0.2)",
+    fontFamily: "'Inter Tight', Inter, sans-serif",
     cursor: "pointer", textDecoration: "none", display: "inline-block",
   },
 
   /* Sections */
-  sectionWhite: { padding: "60px 24px 80px", maxWidth: 1100, margin: "0 auto" },
+  sectionWhite: { padding: "60px 24px 80px", maxWidth: 1200, margin: "0 auto" },
   sectionGray: { padding: "60px 24px", background: "#f9fafb" },
   sectionH2: {
     fontSize: 38, fontWeight: 400, textAlign: "center", marginBottom: 16,
@@ -515,8 +518,8 @@ const s = {
     justifyContent: "center",
   },
   statCard: {
-    flex: "1 1 260px", textAlign: "center", padding: 32,
-    background: "#fff", borderRadius: 16, border: "1px solid #E5E0DA",
+    flex: "1 1 260px", textAlign: "center", padding: 24,
+    background: "#fff", borderRadius: 8, border: "1px solid #E5E0DA",
   },
   statNum: {
     fontSize: 48, fontWeight: 700, color: "#6B1E1E", lineHeight: 1,
@@ -569,7 +572,7 @@ const s = {
     gap: 24, maxWidth: 1000, margin: "0 auto",
   },
   priceCard: {
-    background: "#fff", borderRadius: 16, padding: 32, textAlign: "center",
+    background: "#fff", borderRadius: 8, padding: 24, textAlign: "center",
     position: "relative", border: "2px solid #E5E0DA",
   },
   priceCardPop: {
@@ -602,8 +605,9 @@ const s = {
     fontSize: 18, color: "#6B6B6B", maxWidth: 500, margin: "0 auto 32px", lineHeight: 1.6,
   },
   btnCtaWhite: {
-    background: "#fff", color: "#6B1E1E", padding: "14px 36px", borderRadius: 10,
-    fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer",
+    background: "#fff", color: "#6B1E1E", padding: "12px 24px", borderRadius: 7,
+    fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer",
+    fontFamily: "'Inter Tight', Inter, sans-serif",
   },
   ctaNote: { fontSize: 13, color: "#6B6B6B", marginTop: 14 },
 
