@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1.0] - 2026-03-17
+
+### Changed
+- Replaced all "Plus Jakarta Sans" font references with brand fonts (Inter Tight for headings/values, Inter for labels) across the entire app per DESIGN.md typography spec
+- Updated chart colors from teal palette to brand palette (Deep Burgundy, Aged Oak, Warm Copper, Wine-Dark Navy, Success Green) in Revenue & Sales and Executive Dashboard
+- Replaced Tailwind gray fallback colors with brand neutrals (Deep Charcoal, Warm Slate, Card Border, Parchment) in revenue and executive dashboard sections
+- KPI card hover shadow updated from teal to brand burgundy
+- Sellout tracker on-pace color updated from teal to brand Success green
+- Section titles (Revenue & Sales, Executive Dashboard) upgraded to 18px Inter Tight per H3 spec
+- Budget grid header font size increased from 10px to 11px for readability
+
+### Added
+- Empty state message ("No data available yet") for chart panels when no data exists
+
 ## [0.3.0.0] - 2026-03-16
 
 ### Added
