@@ -32,6 +32,17 @@ export default function ChartPanel({ title, chartConfig, className = "" }) {
     };
   }, [chartConfig]);
 
+  if (!chartConfig) {
+    return (
+      <div className={`chart-container ${className}`}>
+        {title && <div className="chart-title">{title}</div>}
+        <div className="chart-wrapper chart-wrapper--empty">
+          <p className="chart-empty-msg">No data available yet</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`chart-container ${className}`}>
       {title && <div className="chart-title">{title}</div>}
