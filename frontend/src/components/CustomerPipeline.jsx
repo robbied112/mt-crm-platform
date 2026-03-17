@@ -44,7 +44,7 @@ const STAGE_COLORS = {
 };
 
 const TIER_COLORS = {
-  Enterprise: "#7C3AED",
+  Enterprise: "#B87333",
   "On-Premise Natl": "#DC2626",
   Regional: "#2563EB",
   Emerging: "#6B7280",
@@ -323,7 +323,7 @@ export default function CustomerPipeline({
       <div className="kpi-row" style={{ marginBottom: 16, display: "flex", gap: 12, flexWrap: "wrap" }}>
         <PipelineKpi label="Total Accounts" value={allRows.length} />
         <PipelineKpi label="Open Pipeline" value={formatCurrency(totalOpen)} borderColor="#2563EB" subtext="unweighted" />
-        <PipelineKpi label="Weighted Pipeline" value={formatCurrency(totalWeighted)} borderColor="#7C3AED" subtext="probability-adjusted" />
+        <PipelineKpi label="Weighted Pipeline" value={formatCurrency(totalWeighted)} borderColor="#B87333" subtext="probability-adjusted" />
         <PipelineKpi label="Closed Won" value={formatCurrency(totalWon)} borderColor="#10b981" subtext={`${won.length} accounts`} />
         <PipelineKpi label="RFP+ Active" value={rfpPlus.length} borderColor="#f59e0b" />
         {lost.length > 0 && (
@@ -582,7 +582,7 @@ export default function CustomerPipeline({
                     style={{
                       padding: 8,
                       textAlign: "right",
-                      color: "#7C3AED",
+                      color: "#B87333",
                       fontWeight: 600,
                     }}
                   >

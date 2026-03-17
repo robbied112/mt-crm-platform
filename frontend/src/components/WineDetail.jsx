@@ -169,8 +169,8 @@ const s = {
     fontWeight: 500,
   },
   typeBadge: {
-    background: "#f5f3ff",
-    color: "#7c3aed",
+    background: "rgba(184, 115, 51, 0.08)",
+    color: "#B87333",
     padding: "3px 10px",
     borderRadius: 6,
     fontSize: 12,

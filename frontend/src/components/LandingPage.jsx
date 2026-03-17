@@ -123,7 +123,7 @@ function TerritoryMockup() {
   const states = [
     { abbr: "CA", rep: "Sarah M.", color: "#6B1E1E" },
     { abbr: "NY", rep: "James K.", color: "#2563EB" },
-    { abbr: "TX", rep: "Maria L.", color: "#7c3aed" },
+    { abbr: "TX", rep: "Maria L.", color: "#B87333" },
     { abbr: "IL", rep: "David P.", color: "#D97706" },
   ];
   return (

@@ -254,7 +254,7 @@ export default function MyTerritory({
         <KpiCard label={`Active ${t("account")}s`} value={activeAccts} />
         <div className="kpi-card">
           <div className="kpi-label">Pipeline Deals</div>
-          <div className="kpi-value" style={{ color: "#7C3AED" }}>
+          <div className="kpi-value" style={{ color: "#B87333" }}>
             {activePipelineDeals.length}
           </div>
         </div>

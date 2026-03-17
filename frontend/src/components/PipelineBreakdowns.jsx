@@ -7,7 +7,7 @@
 import { formatCurrency } from "../utils/formatting";
 
 const TIER_COLORS = {
-  Enterprise: "#7C3AED",
+  Enterprise: "#B87333",
   "On-Premise Natl": "#DC2626",
   Regional: "#2563EB",
   Emerging: "#6B7280",
@@ -74,7 +74,7 @@ function BreakdownTable({ title, data, showTierBadge = false }) {
                 style={{
                   textAlign: "right",
                   padding: "6px 8px",
-                  color: "#7C3AED",
+                  color: "#B87333",
                 }}
               >
                 {formatCurrency(d.weighted)}

@@ -140,7 +140,7 @@ export default function GoalProgress({
           current={uniqueStates}
           target={goals.totalStates}
           unit=""
-          color="#7C3AED"
+          color="#B87333"
         />
         <GoalBar
           label={`Active ${t("distributor")}s`}
