@@ -67,7 +67,7 @@ export default function Login({ initialMode = "signin", onBackToLanding }) {
         )}
         <div style={styles.logoRow}>
           <img src="/logo.png" alt="Logo" style={styles.logo} />
-          <h1 style={styles.title}>Sidekick BI</h1>
+          <h1 style={styles.title}>CruFolio</h1>
         </div>
         <p style={styles.subtitle}>{isSignup ? "Create your account" : "Sign in to your account"}</p>
 
@@ -161,7 +161,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #14b8a6 100%)",
+    background: "linear-gradient(135deg, #6B1E1E 0%, #8A2035 50%, #8A2035 100%)",
     padding: "20px",
   },
   card: {
@@ -179,7 +179,7 @@ const styles = {
     left: 16,
     background: "none",
     border: "none",
-    color: "#64748b",
+    color: "#6B6B6B",
     fontSize: 14,
     fontWeight: 500,
     cursor: "pointer",
@@ -196,29 +196,29 @@ const styles = {
     width: "auto",
   },
   title: {
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    fontFamily: "'Libre Baskerville', serif",
     fontSize: "22px",
     fontWeight: 700,
-    color: "#0f766e",
+    color: "#6B1E1E",
     margin: 0,
   },
   subtitle: {
     fontSize: "14px",
-    color: "#64748b",
+    color: "#6B6B6B",
     marginBottom: "24px",
   },
   label: {
     display: "block",
     fontSize: "13px",
     fontWeight: 600,
-    color: "#334155",
+    color: "#2E2E2E",
     marginBottom: "4px",
     marginTop: "12px",
   },
   input: {
     width: "100%",
     padding: "10px 14px",
-    border: "1px solid #e2e8f0",
+    border: "1px solid #E5E0DA",
     borderRadius: "8px",
     fontSize: "14px",
     fontFamily: "'Inter', sans-serif",
@@ -228,7 +228,7 @@ const styles = {
   select: {
     width: "100%",
     padding: "10px 14px",
-    border: "1px solid #e2e8f0",
+    border: "1px solid #E5E0DA",
     borderRadius: "8px",
     fontSize: "14px",
     fontFamily: "'Inter', sans-serif",
@@ -240,7 +240,7 @@ const styles = {
     marginTop: "24px",
     width: "100%",
     padding: "12px",
-    background: "#0f766e",
+    background: "#6B1E1E",
     color: "#fff",
     border: "none",
     borderRadius: "8px",
@@ -260,13 +260,13 @@ const styles = {
   toggle: {
     textAlign: "center",
     fontSize: "13px",
-    color: "#64748b",
+    color: "#6B6B6B",
     marginTop: "16px",
   },
   toggleBtn: {
     background: "none",
     border: "none",
-    color: "#0f766e",
+    color: "#6B1E1E",
     fontWeight: 600,
     cursor: "pointer",
     fontSize: "13px",

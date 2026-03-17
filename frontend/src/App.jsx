@@ -403,7 +403,7 @@ function App() {
           </div>
 
           <Footer
-            companyName={tenantConfig.companyName || "Sidekick BI"}
+            companyName={tenantConfig.companyName || "CruFolio"}
             dataThrough={dataLoading ? "syncing..." : availability.hasAnyData ? "live" : "--"}
           />
         </main>

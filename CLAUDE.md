@@ -248,3 +248,9 @@ tenants/{tenantId}/secrets/{doc}  (server-only)
 - Shared chunked Firestore behavior now lives in `packages/pipeline/src/firestore.js`.
 - `processTenantSync()` writes normalized imports and triggers rebuilds; it no longer writes legacy `data/`.
 - `CloudSyncSettings` manual sync calls `cloudSyncSyncNow`.
+
+## Design System
+Always read DESIGN.md before making any visual or UI decisions.
+All font choices, colors, spacing, and aesthetic direction are defined there.
+Do not deviate without explicit user approval.
+In QA mode, flag any code that doesn't match DESIGN.md.

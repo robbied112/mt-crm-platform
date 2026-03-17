@@ -61,7 +61,7 @@ export default function WineList({ wines = [] }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Wines</h3>
-          <span style={{ background: "#f0fdfa", color: "#0f766e", padding: "2px 10px", borderRadius: 10, fontSize: 12, fontWeight: 600 }}>
+          <span style={{ background: "#FDF8F0", color: "#6B1E1E", padding: "2px 10px", borderRadius: 10, fontSize: 12, fontWeight: 600 }}>
             {wines.length}
           </span>
         </div>
@@ -78,7 +78,7 @@ export default function WineList({ wines = [] }) {
       <div style={{ overflowX: "auto" }}>
         <table style={s.table}>
           <thead>
-            <tr style={{ background: "#f0fdfa" }}>
+            <tr style={{ background: "#FDF8F0" }}>
               <th style={{ ...s.th, cursor: "pointer" }} onClick={() => toggleSort("name")}>
                 Name{sortIcon("name")}
               </th>
@@ -100,11 +100,11 @@ export default function WineList({ wines = [] }) {
                 style={{ borderBottom: "1px solid #f1f5f9", cursor: "pointer" }}
                 onClick={() => navigate(`/wines/${wine.id}`)}
               >
-                <td style={{ ...s.td, fontWeight: 600, color: "#0f766e" }}>{wine.displayName || wine.name}</td>
+                <td style={{ ...s.td, fontWeight: 600, color: "#6B1E1E" }}>{wine.displayName || wine.name}</td>
                 <td style={s.td}>{wine.producer || "--"}</td>
                 <td style={s.td}>
                   {wine.vintage ? (
-                    <span style={{ background: "#f0fdfa", color: "#0f766e", padding: "1px 8px", borderRadius: 8, fontSize: 11, fontWeight: 600 }}>
+                    <span style={{ background: "#FDF8F0", color: "#6B1E1E", padding: "1px 8px", borderRadius: 8, fontSize: 11, fontWeight: 600 }}>
                       {wine.vintage}
                     </span>
                   ) : (
@@ -133,9 +133,9 @@ const s = {
   emptyState: {
     textAlign: "center",
     padding: 48,
-    background: "#f8fafc",
+    background: "#FDF8F0",
     borderRadius: 12,
-    border: "1px solid #e2e8f0",
+    border: "1px solid #E5E0DA",
   },
   searchInput: {
     padding: "6px 12px",

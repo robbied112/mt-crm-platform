@@ -220,13 +220,13 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
       <div className="sidebar__brand">
         <img
           src={tenantConfig?.logo || "/logo.png"}
-          alt={tenantConfig?.companyName || "Sidekick BI"}
+          alt={tenantConfig?.companyName || "CruFolio"}
           className="sidebar__logo"
         />
         {!collapsed && (
           <div className="sidebar__brand-text">
             <span className="sidebar__brand-name">
-              {tenantConfig?.companyName || "Sidekick BI"}
+              {tenantConfig?.companyName || "CruFolio"}
             </span>
             <span className="sidebar__brand-status">
               <span

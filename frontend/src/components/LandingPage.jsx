@@ -5,12 +5,12 @@ import { useEffect } from "react";
    ────────────────────────────────────────────── */
 function DashboardMockup() {
   const kpis = [
-    { label: "Revenue", value: "12.4k", sub: "cases this quarter", color: "#0f766e" },
+    { label: "Revenue", value: "12.4k", sub: "cases this quarter", color: "#6B1E1E" },
     { label: "Accounts", value: "847", sub: "active accounts", color: "#2563EB" },
     { label: "Sell-Thru", value: "94.2%", sub: "avg across distros", color: "#059669" },
   ];
   const bars = [
-    { label: "Annual Volume Goal", pct: 72, color: "#0f766e" },
+    { label: "Annual Volume Goal", pct: 72, color: "#6B1E1E" },
     { label: "Distribution Target", pct: 58, color: "#2563EB" },
   ];
   const rows = [
@@ -21,9 +21,9 @@ function DashboardMockup() {
 
   return (
     <div style={{
-      background: "#1e293b", borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)",
+      background: "#1A1F3E", borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)",
       padding: 28, maxWidth: 720, margin: "0 auto",
-      boxShadow: "0 0 80px rgba(15,118,110,0.18), 0 20px 60px rgba(0,0,0,0.4)",
+      boxShadow: "0 0 80px rgba(107,30,30,0.18), 0 20px 60px rgba(0,0,0,0.4)",
       animation: "float 6s ease-in-out infinite",
       transform: "perspective(1200px) rotateX(2deg)",
     }}>
@@ -36,7 +36,7 @@ function DashboardMockup() {
           }}>
             <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{k.label}</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: k.color, lineHeight: 1.2, marginTop: 4 }}>{k.value}</div>
-            <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{k.sub}</div>
+            <div style={{ fontSize: 11, color: "#6B6B6B", marginTop: 2 }}>{k.sub}</div>
           </div>
         ))}
       </div>
@@ -57,16 +57,16 @@ function DashboardMockup() {
       {/* Mini scorecard table */}
       <div style={{ background: "#0f172a", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)" }}>
         <div style={{ display: "flex", padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <span style={{ flex: 2, fontSize: 11, color: "#64748b", fontWeight: 600, textTransform: "uppercase" }}>Distributor</span>
-          <span style={{ flex: 0.5, fontSize: 11, color: "#64748b", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>State</span>
-          <span style={{ flex: 0.5, fontSize: 11, color: "#64748b", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Health</span>
+          <span style={{ flex: 2, fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase" }}>Distributor</span>
+          <span style={{ flex: 0.5, fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>State</span>
+          <span style={{ flex: 0.5, fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Health</span>
         </div>
         {rows.map((r, i) => (
           <div key={i} style={{
             display: "flex", alignItems: "center", padding: "10px 16px",
             borderBottom: i < rows.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
           }}>
-            <span style={{ flex: 2, fontSize: 13, color: "#e2e8f0", fontWeight: 500 }}>{r.name}</span>
+            <span style={{ flex: 2, fontSize: 13, color: "#D2C78A", fontWeight: 500 }}>{r.name}</span>
             <span style={{ flex: 0.5, fontSize: 12, color: "#94a3b8", textAlign: "center" }}>{r.state}</span>
             <span style={{ flex: 0.5, textAlign: "center" }}>
               <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: r.dot }} />
@@ -84,8 +84,8 @@ function DashboardMockup() {
 function Check() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ flexShrink: 0 }}>
-      <circle cx="9" cy="9" r="9" fill="#0f766e" opacity="0.15" />
-      <path d="M5.5 9.5L7.5 11.5L12.5 6.5" stroke="#0f766e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="9" cy="9" r="9" fill="#6B1E1E" opacity="0.15" />
+      <path d="M5.5 9.5L7.5 11.5L12.5 6.5" stroke="#6B1E1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -100,16 +100,16 @@ function ScorecardMockup() {
     { name: "Metro Beverage", score: 45, dot: "#ef4444" },
   ];
   return (
-    <div style={{ background: "#f8fafc", borderRadius: 12, padding: 20, border: "1px solid #e2e8f0" }}>
-      <div style={{ display: "flex", padding: "8px 0", borderBottom: "1px solid #e2e8f0", marginBottom: 4 }}>
+    <div style={{ background: "#FDF8F0", borderRadius: 12, padding: 20, border: "1px solid #E5E0DA" }}>
+      <div style={{ display: "flex", padding: "8px 0", borderBottom: "1px solid #E5E0DA", marginBottom: 4 }}>
         <span style={{ flex: 2, fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>Distributor</span>
         <span style={{ flex: 0.6, fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Score</span>
         <span style={{ flex: 0.4, fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Status</span>
       </div>
       {rows.map((r, i) => (
         <div key={i} style={{ display: "flex", alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? "1px solid #f1f5f9" : "none" }}>
-          <span style={{ flex: 2, fontSize: 14, color: "#1e293b", fontWeight: 500 }}>{r.name}</span>
-          <span style={{ flex: 0.6, fontSize: 14, color: "#334155", fontWeight: 700, textAlign: "center" }}>{r.score}</span>
+          <span style={{ flex: 2, fontSize: 14, color: "#2E2E2E", fontWeight: 500 }}>{r.name}</span>
+          <span style={{ flex: 0.6, fontSize: 14, color: "#2E2E2E", fontWeight: 700, textAlign: "center" }}>{r.score}</span>
           <span style={{ flex: 0.4, textAlign: "center" }}>
             <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: r.dot }} />
           </span>
@@ -121,13 +121,13 @@ function ScorecardMockup() {
 
 function TerritoryMockup() {
   const states = [
-    { abbr: "CA", rep: "Sarah M.", color: "#0f766e" },
+    { abbr: "CA", rep: "Sarah M.", color: "#6B1E1E" },
     { abbr: "NY", rep: "James K.", color: "#2563EB" },
     { abbr: "TX", rep: "Maria L.", color: "#7c3aed" },
     { abbr: "IL", rep: "David P.", color: "#D97706" },
   ];
   return (
-    <div style={{ background: "#f8fafc", borderRadius: 12, padding: 20, border: "1px solid #e2e8f0" }}>
+    <div style={{ background: "#FDF8F0", borderRadius: 12, padding: 20, border: "1px solid #E5E0DA" }}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         {states.map((s, i) => (
           <div key={i} style={{
@@ -140,7 +140,7 @@ function TerritoryMockup() {
               fontSize: 14, fontWeight: 800, color: s.color,
             }}>{s.abbr}</div>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#1e293b" }}>{s.rep}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#2E2E2E" }}>{s.rep}</div>
               <div style={{ fontSize: 11, color: "#94a3b8" }}>Territory Rep</div>
             </div>
           </div>
@@ -154,18 +154,18 @@ function PipelineMockup() {
   const stages = [
     { label: "Prospect", count: 24, pct: 100, color: "#94a3b8" },
     { label: "Outreach", count: 18, pct: 75, color: "#2563EB" },
-    { label: "Sampling", count: 12, pct: 50, color: "#0f766e" },
+    { label: "Sampling", count: 12, pct: 50, color: "#6B1E1E" },
     { label: "Closed", count: 8, pct: 33, color: "#059669" },
   ];
   return (
-    <div style={{ background: "#f8fafc", borderRadius: 12, padding: 20, border: "1px solid #e2e8f0" }}>
+    <div style={{ background: "#FDF8F0", borderRadius: 12, padding: 20, border: "1px solid #E5E0DA" }}>
       {stages.map((s, i) => (
         <div key={i} style={{ marginBottom: i < 3 ? 10 : 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
             <span style={{ fontSize: 13, color: "#475569", fontWeight: 500 }}>{s.label}</span>
             <span style={{ fontSize: 13, color: s.color, fontWeight: 700 }}>{s.count} accounts</span>
           </div>
-          <div style={{ background: "#e2e8f0", borderRadius: 6, height: 10, overflow: "hidden" }}>
+          <div style={{ background: "#E5E0DA", borderRadius: 6, height: 10, overflow: "hidden" }}>
             <div style={{ width: `${s.pct}%`, height: "100%", background: s.color, borderRadius: 6 }} />
           </div>
         </div>
@@ -202,7 +202,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
       {/* ── Nav ──────────────────────────────── */}
       <nav style={s.nav}>
         <div style={s.navInner}>
-          <span style={s.navLogo}>Sidekick BI</span>
+          <span style={s.navLogo}>CruFolio</span>
           <div style={s.navLinks}>
             <a href="#features" style={s.navLink}>Features</a>
             <a href="#pricing" style={s.navLink}>Pricing</a>
@@ -218,7 +218,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
           <h1 style={s.heroH1}>
             Your sales data,{" "}
             <span style={{
-              background: "linear-gradient(135deg, #0f766e, #2563EB)",
+              background: "linear-gradient(135deg, #6B1E1E, #8A2035)",
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
               backgroundClip: "text",
             }}>finally useful.</span>
@@ -240,7 +240,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
         <p style={s.socialProof}>Trusted by wine &amp; spirits suppliers across 12 states</p>
       </section>
 
-      {/* ── Why Sidekick (stat cards) ────────── */}
+      {/* ── Why CruFolio (stat cards) ────────── */}
       <section style={{ ...s.sectionWhite, paddingTop: 48, paddingBottom: 48 }}>
         <div style={s.statsRow}>
           {[
@@ -342,7 +342,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
               ...(tier.popular ? s.priceCardPop : {}),
             }}>
               {tier.popular && <div style={s.popBadge}>Most Popular</div>}
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: "#1e293b" }}>{tier.name}</h3>
+              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: "#2E2E2E", fontFamily: "'Libre Baskerville', Georgia, serif" }}>{tier.name}</h3>
               <div style={s.priceAmount}>
                 {tier.price}<span style={s.priceUnit}>{tier.unit}</span>
               </div>
@@ -356,7 +356,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
                 ))}
               </ul>
               {tier.cta === "contact" ? (
-                <a href="mailto:hello@sidekickbi.com" style={{ ...s.btnGhost, display: "block", textAlign: "center", color: "#374151", borderColor: "#d1d5db" }}>Contact Sales</a>
+                <a href="mailto:hello@crufolio.com" style={{ ...s.btnGhost, display: "block", textAlign: "center", color: "#374151", borderColor: "#d1d5db" }}>Contact Sales</a>
               ) : (
                 <button onClick={onGetStarted} style={{ ...s.btnTeal, width: "100%" }}>
                   {tier.popular ? "Start Free Trial" : "Get Started"}
@@ -377,7 +377,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
 
       {/* ── Footer ───────────────────────────── */}
       <footer style={s.footer}>
-        <p>&copy; 2026 Sidekick BI. All rights reserved. | <a href="mailto:hello@sidekickbi.com" style={{ color: "#5eead4", textDecoration: "none" }}>hello@sidekickbi.com</a></p>
+        <p>&copy; 2026 CruFolio. All rights reserved. | <a href="mailto:hello@crufolio.com" style={{ color: "#D2C78A", textDecoration: "none" }}>hello@crufolio.com</a></p>
       </footer>
     </div>
   );
@@ -415,7 +415,7 @@ const s = {
     maxWidth: 1200, margin: "0 auto", padding: "14px 24px",
     display: "flex", alignItems: "center", justifyContent: "space-between",
   },
-  navLogo: { fontSize: 22, fontWeight: 800, color: "#5eead4" },
+  navLogo: { fontSize: 22, fontWeight: 800, color: "#D2C78A", fontFamily: "'Libre Baskerville', Georgia, serif" },
   navLinks: { display: "flex", gap: 24, alignItems: "center" },
   navLink: { textDecoration: "none", color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: 500 },
   navLinkBtn: {
@@ -423,19 +423,20 @@ const s = {
     fontSize: 14, fontWeight: 500, cursor: "pointer", padding: 0,
   },
   navCta: {
-    background: "#0f766e", color: "#fff", padding: "8px 20px",
+    background: "#6B1E1E", color: "#fff", padding: "8px 20px",
     borderRadius: 8, fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer",
   },
 
   /* Hero */
   hero: {
     padding: "140px 24px 80px", textAlign: "center",
-    background: "linear-gradient(180deg, #0a0f1a 0%, #111827 60%, #1e293b 100%)",
+    background: "linear-gradient(180deg, #0a0f1a 0%, #111827 60%, #1A1F3E 100%)",
     overflow: "hidden",
   },
   heroH1: {
     fontSize: 60, fontWeight: 900, lineHeight: 1.08,
     color: "#f1f5f9", marginBottom: 20, letterSpacing: "-0.02em",
+    fontFamily: "'Libre Baskerville', Georgia, serif",
   },
   heroSub: {
     fontSize: 20, color: "#94a3b8", maxWidth: 560, margin: "0 auto 36px", lineHeight: 1.6,
@@ -447,7 +448,7 @@ const s = {
 
   /* Buttons */
   btnTeal: {
-    background: "#0f766e", color: "#fff", padding: "14px 32px", borderRadius: 10,
+    background: "#6B1E1E", color: "#fff", padding: "14px 32px", borderRadius: 10,
     fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer",
     textDecoration: "none", display: "inline-block",
   },
@@ -463,28 +464,29 @@ const s = {
   sectionH2: {
     fontSize: 38, fontWeight: 800, textAlign: "center", marginBottom: 16,
     color: "#0f172a", letterSpacing: "-0.01em",
+    fontFamily: "'Libre Baskerville', Georgia, serif",
   },
   sectionSub: {
-    fontSize: 18, color: "#64748b", textAlign: "center", maxWidth: 560,
+    fontSize: 18, color: "#6B6B6B", textAlign: "center", maxWidth: 560,
     margin: "0 auto 56px", lineHeight: 1.6,
   },
 
-  /* Why Sidekick stats */
+  /* Why CruFolio stats */
   statsRow: {
     display: "flex", gap: 32, maxWidth: 1000, margin: "0 auto", flexWrap: "wrap",
     justifyContent: "center",
   },
   statCard: {
     flex: "1 1 260px", textAlign: "center", padding: 32,
-    background: "#fff", borderRadius: 16, border: "1px solid #e2e8f0",
+    background: "#fff", borderRadius: 16, border: "1px solid #E5E0DA",
   },
   statNum: {
-    fontSize: 48, fontWeight: 900, color: "#0f766e", lineHeight: 1,
-    background: "linear-gradient(135deg, #0f766e, #2563EB)",
+    fontSize: 48, fontWeight: 900, color: "#6B1E1E", lineHeight: 1,
+    background: "linear-gradient(135deg, #6B1E1E, #8A2035)",
     WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
   },
-  statLabel: { fontSize: 16, fontWeight: 700, color: "#1e293b", marginTop: 8 },
-  statDesc: { fontSize: 14, color: "#64748b", marginTop: 4, lineHeight: 1.5 },
+  statLabel: { fontSize: 16, fontWeight: 700, color: "#2E2E2E", marginTop: 8 },
+  statDesc: { fontSize: 14, color: "#6B6B6B", marginTop: 4, lineHeight: 1.5 },
 
   /* Feature rows */
   featureRow: {
@@ -494,12 +496,13 @@ const s = {
   featureText: { flex: "1 1 320px", minWidth: 280 },
   featureMockup: { flex: "1 1 340px", minWidth: 300 },
   featureTag: {
-    display: "inline-block", fontSize: 12, fontWeight: 700, color: "#0f766e",
-    background: "#f0fdfa", padding: "4px 12px", borderRadius: 20,
+    display: "inline-block", fontSize: 12, fontWeight: 700, color: "#6B1E1E",
+    background: "rgba(107, 30, 30, 0.08)", padding: "4px 12px", borderRadius: 20,
     textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 12,
   },
   featureH3: {
     fontSize: 26, fontWeight: 800, color: "#0f172a", lineHeight: 1.2, marginBottom: 12,
+    fontFamily: "'Libre Baskerville', Georgia, serif",
   },
   featureP: { fontSize: 16, color: "#475569", lineHeight: 1.7 },
 
@@ -512,12 +515,12 @@ const s = {
     display: "flex", gap: 16, alignItems: "flex-start", flex: 1,
   },
   stepFlowNumber: {
-    width: 40, height: 40, borderRadius: "50%", background: "#0f766e",
+    width: 40, height: 40, borderRadius: "50%", background: "#6B1E1E",
     color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
     fontSize: 18, fontWeight: 800, flexShrink: 0,
   },
   stepFlowTitle: { fontSize: 16, fontWeight: 700, color: "#0f172a", marginBottom: 4 },
-  stepFlowDesc: { fontSize: 14, color: "#64748b", lineHeight: 1.6 },
+  stepFlowDesc: { fontSize: 14, color: "#6B6B6B", lineHeight: 1.6 },
   stepFlowArrow: {
     flexShrink: 0, padding: "8px 12px", display: "flex", alignItems: "center",
   },
@@ -529,17 +532,17 @@ const s = {
   },
   priceCard: {
     background: "#fff", borderRadius: 16, padding: 32, textAlign: "center",
-    position: "relative", border: "2px solid #e5e7eb",
+    position: "relative", border: "2px solid #E5E0DA",
   },
   priceCardPop: {
-    borderColor: "#0f766e",
-    boxShadow: "0 0 40px rgba(15,118,110,0.15), 0 8px 30px rgba(0,0,0,0.08)",
+    borderColor: "#6B1E1E",
+    boxShadow: "0 0 40px rgba(107,30,30,0.15), 0 8px 30px rgba(0,0,0,0.08)",
     transform: "scale(1.04)",
     zIndex: 1,
   },
   popBadge: {
     position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)",
-    background: "#0f766e", color: "#fff", padding: "5px 18px", borderRadius: 20,
+    background: "#6B1E1E", color: "#fff", padding: "5px 18px", borderRadius: 20,
     fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
   },
   priceAmount: { fontSize: 48, fontWeight: 900, color: "#111827", margin: "16px 0 4px" },
@@ -554,14 +557,14 @@ const s = {
   /* Final CTA */
   ctaSection: {
     padding: "100px 24px", textAlign: "center",
-    background: "linear-gradient(180deg, #0a0f1a 0%, #111827 100%)",
+    background: "linear-gradient(180deg, #0a0f1a 0%, #1A1F3E 100%)",
   },
-  ctaH2: { fontSize: 38, fontWeight: 800, color: "#f1f5f9", marginBottom: 16 },
+  ctaH2: { fontSize: 38, fontWeight: 800, color: "#f1f5f9", marginBottom: 16, fontFamily: "'Libre Baskerville', Georgia, serif" },
   ctaSub: {
     fontSize: 18, color: "#94a3b8", maxWidth: 500, margin: "0 auto 32px", lineHeight: 1.6,
   },
   btnCtaWhite: {
-    background: "#fff", color: "#0f766e", padding: "14px 36px", borderRadius: 10,
+    background: "#fff", color: "#6B1E1E", padding: "14px 36px", borderRadius: 10,
     fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer",
   },
   ctaNote: { fontSize: 13, color: "#475569", marginTop: 14 },
@@ -569,6 +572,6 @@ const s = {
   /* Footer */
   footer: {
     padding: "40px 24px", textAlign: "center", background: "#0a0f1a",
-    color: "#64748b", fontSize: 13, borderTop: "1px solid rgba(255,255,255,0.06)",
+    color: "#6B6B6B", fontSize: 13, borderTop: "1px solid rgba(255,255,255,0.06)",
   },
 };

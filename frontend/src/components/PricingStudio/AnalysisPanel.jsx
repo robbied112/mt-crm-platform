@@ -8,7 +8,7 @@ import {
 import { fmt } from './utils';
 
 const SEGMENT_COLORS = {
-  cost: 'var(--color-teal, #0f766e)',
+  cost: 'var(--color-burgundy, #6B1E1E)',
   tax: 'var(--color-amber, #f59e0b)',
   logistics: 'var(--color-indigo, #6366f1)',
 };
