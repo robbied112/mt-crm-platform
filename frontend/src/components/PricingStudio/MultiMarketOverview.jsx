@@ -1,11 +1,7 @@
 import { useMemo, useState } from 'react';
 import { MARKET_CONFIGS } from 'pricing-engine/markets/configs';
 import { calculateMarketPricing, makeDefaultMarketInputs } from 'pricing-engine/markets/genericCalculator';
-
-function fmt(value, symbol) {
-  if (!Number.isFinite(value)) return '\u2014';
-  return symbol + value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+import { fmt } from './utils';
 
 export default function MultiMarketOverview({ inputs, activeMarketId, onSelectMarket }) {
   const [collapsed, setCollapsed] = useState(true);
