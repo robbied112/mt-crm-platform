@@ -6,12 +6,12 @@ import { useEffect } from "react";
 function DashboardMockup() {
   const kpis = [
     { label: "Revenue", value: "12.4k", sub: "cases this quarter", color: "#6B1E1E" },
-    { label: "Accounts", value: "847", sub: "active accounts", color: "#2563EB" },
+    { label: "Accounts", value: "847", sub: "active accounts", color: "#B87333" },
     { label: "Sell-Thru", value: "94.2%", sub: "avg across distros", color: "#059669" },
   ];
   const bars = [
     { label: "Annual Volume Goal", pct: 72, color: "#6B1E1E" },
-    { label: "Distribution Target", pct: 58, color: "#2563EB" },
+    { label: "Distribution Target", pct: 58, color: "#B87333" },
   ];
   const rows = [
     { name: "Premium Wine Distributors", state: "CA", dot: "#059669" },
@@ -31,10 +31,10 @@ function DashboardMockup() {
       <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
         {kpis.map((k, i) => (
           <div key={i} style={{
-            flex: 1, background: "#0f172a", borderRadius: 10, padding: "16px 18px",
+            flex: 1, background: "#2E2E2E", borderRadius: 10, padding: "16px 18px",
             border: "1px solid rgba(255,255,255,0.06)",
           }}>
-            <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{k.label}</div>
+            <div style={{ fontSize: 11, color: "#8B6A4C", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{k.label}</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: k.color, lineHeight: 1.2, marginTop: 4 }}>{k.value}</div>
             <div style={{ fontSize: 11, color: "#6B6B6B", marginTop: 2 }}>{k.sub}</div>
           </div>
@@ -45,17 +45,17 @@ function DashboardMockup() {
         {bars.map((b, i) => (
           <div key={i} style={{ flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>{b.label}</span>
+              <span style={{ fontSize: 12, color: "#8B6A4C", fontWeight: 500 }}>{b.label}</span>
               <span style={{ fontSize: 12, color: b.color, fontWeight: 700 }}>{b.pct}%</span>
             </div>
-            <div style={{ background: "#0f172a", borderRadius: 6, height: 8, overflow: "hidden" }}>
+            <div style={{ background: "#2E2E2E", borderRadius: 6, height: 8, overflow: "hidden" }}>
               <div style={{ width: `${b.pct}%`, height: "100%", background: b.color, borderRadius: 6, transition: "width 1s ease" }} />
             </div>
           </div>
         ))}
       </div>
       {/* Mini scorecard table */}
-      <div style={{ background: "#0f172a", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)" }}>
+      <div style={{ background: "#2E2E2E", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)" }}>
         <div style={{ display: "flex", padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
           <span style={{ flex: 2, fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase" }}>Distributor</span>
           <span style={{ flex: 0.5, fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>State</span>
@@ -67,7 +67,7 @@ function DashboardMockup() {
             borderBottom: i < rows.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
           }}>
             <span style={{ flex: 2, fontSize: 13, color: "#D2C78A", fontWeight: 500 }}>{r.name}</span>
-            <span style={{ flex: 0.5, fontSize: 12, color: "#94a3b8", textAlign: "center" }}>{r.state}</span>
+            <span style={{ flex: 0.5, fontSize: 12, color: "#8B6A4C", textAlign: "center" }}>{r.state}</span>
             <span style={{ flex: 0.5, textAlign: "center" }}>
               <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: r.dot }} />
             </span>
@@ -102,12 +102,12 @@ function ScorecardMockup() {
   return (
     <div style={{ background: "#FDF8F0", borderRadius: 12, padding: 20, border: "1px solid #E5E0DA" }}>
       <div style={{ display: "flex", padding: "8px 0", borderBottom: "1px solid #E5E0DA", marginBottom: 4 }}>
-        <span style={{ flex: 2, fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase" }}>Distributor</span>
-        <span style={{ flex: 0.6, fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Score</span>
-        <span style={{ flex: 0.4, fontSize: 11, color: "#94a3b8", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Status</span>
+        <span style={{ flex: 2, fontSize: 11, color: "#8B6A4C", fontWeight: 600, textTransform: "uppercase" }}>Distributor</span>
+        <span style={{ flex: 0.6, fontSize: 11, color: "#8B6A4C", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Score</span>
+        <span style={{ flex: 0.4, fontSize: 11, color: "#8B6A4C", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Status</span>
       </div>
       {rows.map((r, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? "1px solid #f1f5f9" : "none" }}>
+        <div key={i} style={{ display: "flex", alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? "1px solid #FDF8F0" : "none" }}>
           <span style={{ flex: 2, fontSize: 14, color: "#2E2E2E", fontWeight: 500 }}>{r.name}</span>
           <span style={{ flex: 0.6, fontSize: 14, color: "#2E2E2E", fontWeight: 700, textAlign: "center" }}>{r.score}</span>
           <span style={{ flex: 0.4, textAlign: "center" }}>
@@ -122,8 +122,8 @@ function ScorecardMockup() {
 function TerritoryMockup() {
   const states = [
     { abbr: "CA", rep: "Sarah M.", color: "#6B1E1E" },
-    { abbr: "NY", rep: "James K.", color: "#2563EB" },
-    { abbr: "TX", rep: "Maria L.", color: "#7c3aed" },
+    { abbr: "NY", rep: "James K.", color: "#B87333" },
+    { abbr: "TX", rep: "Maria L.", color: "#8B6A4C" },
     { abbr: "IL", rep: "David P.", color: "#D97706" },
   ];
   return (
@@ -141,7 +141,7 @@ function TerritoryMockup() {
             }}>{s.abbr}</div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#2E2E2E" }}>{s.rep}</div>
-              <div style={{ fontSize: 11, color: "#94a3b8" }}>Territory Rep</div>
+              <div style={{ fontSize: 11, color: "#8B6A4C" }}>Territory Rep</div>
             </div>
           </div>
         ))}
@@ -152,8 +152,8 @@ function TerritoryMockup() {
 
 function PipelineMockup() {
   const stages = [
-    { label: "Prospect", count: 24, pct: 100, color: "#94a3b8" },
-    { label: "Outreach", count: 18, pct: 75, color: "#2563EB" },
+    { label: "Prospect", count: 24, pct: 100, color: "#8B6A4C" },
+    { label: "Outreach", count: 18, pct: 75, color: "#B87333" },
     { label: "Sampling", count: 12, pct: 50, color: "#6B1E1E" },
     { label: "Closed", count: 8, pct: 33, color: "#059669" },
   ];
@@ -162,7 +162,7 @@ function PipelineMockup() {
       {stages.map((s, i) => (
         <div key={i} style={{ marginBottom: i < 3 ? 10 : 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-            <span style={{ fontSize: 13, color: "#475569", fontWeight: 500 }}>{s.label}</span>
+            <span style={{ fontSize: 13, color: "#6B6B6B", fontWeight: 500 }}>{s.label}</span>
             <span style={{ fontSize: 13, color: s.color, fontWeight: 700 }}>{s.count} accounts</span>
           </div>
           <div style={{ background: "#E5E0DA", borderRadius: 6, height: 10, overflow: "hidden" }}>
@@ -197,7 +197,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
   }, []);
 
   return (
-    <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", color: "#1a1a2e", lineHeight: 1.6 }}>
+    <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", color: "#2E2E2E", lineHeight: 1.6 }}>
 
       {/* ── Nav ──────────────────────────────── */}
       <nav style={s.nav}>
@@ -218,9 +218,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
           <h1 style={s.heroH1}>
             Your sales data,{" "}
             <span style={{
-              background: "linear-gradient(135deg, #6B1E1E, #8A2035)",
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
+              color: "#D2C78A",
             }}>finally useful.</span>
           </h1>
           <p style={s.heroSub}>
@@ -321,7 +319,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
               </div>
               {i < 2 && (
                 <div style={s.stepFlowArrow}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D1CBC4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14M13 6l6 6-6 6" />
                   </svg>
                 </div>
@@ -356,7 +354,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
                 ))}
               </ul>
               {tier.cta === "contact" ? (
-                <a href="mailto:hello@crufolio.com" style={{ ...s.btnGhost, display: "block", textAlign: "center", color: "#374151", borderColor: "#d1d5db" }}>Contact Sales</a>
+                <a href="mailto:hello@crufolio.com" style={{ ...s.btnGhost, display: "block", textAlign: "center", color: "#2E2E2E", borderColor: "#E5E0DA" }}>Contact Sales</a>
               ) : (
                 <button onClick={onGetStarted} style={{ ...s.btnTeal, width: "100%" }}>
                   {tier.popular ? "Start Free Trial" : "Get Started"}
@@ -423,47 +421,50 @@ const s = {
     fontSize: 14, fontWeight: 500, cursor: "pointer", padding: 0,
   },
   navCta: {
-    background: "#6B1E1E", color: "#fff", padding: "8px 20px",
-    borderRadius: 8, fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer",
+    background: "#6B1E1E", color: "#FDF8F0", padding: "8px 20px",
+    borderRadius: 7, fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer",
+    fontFamily: "'Inter Tight', -apple-system, sans-serif",
   },
 
   /* Hero */
   hero: {
     padding: "140px 24px 80px", textAlign: "center",
-    background: "linear-gradient(180deg, #0a0f1a 0%, #111827 60%, #1A1F3E 100%)",
+    background: "linear-gradient(180deg, #131731 0%, #2E2E2E 60%, #1A1F3E 100%)",
     overflow: "hidden",
   },
   heroH1: {
-    fontSize: 60, fontWeight: 900, lineHeight: 1.08,
-    color: "#f1f5f9", marginBottom: 20, letterSpacing: "-0.02em",
+    fontSize: 60, fontWeight: 400, lineHeight: 1.08,
+    color: "#FDF8F0", marginBottom: 20, letterSpacing: "-0.02em",
     fontFamily: "'Libre Baskerville', Georgia, serif",
   },
   heroSub: {
-    fontSize: 20, color: "#94a3b8", maxWidth: 560, margin: "0 auto 36px", lineHeight: 1.6,
+    fontSize: 20, color: "#8B6A4C", maxWidth: 560, margin: "0 auto 36px", lineHeight: 1.6,
   },
   heroCtas: { display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" },
   socialProof: {
-    fontSize: 14, color: "#475569", marginTop: 48, letterSpacing: "0.02em",
+    fontSize: 14, color: "#6B6B6B", marginTop: 48, letterSpacing: "0.02em",
   },
 
   /* Buttons */
   btnTeal: {
-    background: "#6B1E1E", color: "#fff", padding: "14px 32px", borderRadius: 10,
-    fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer",
+    background: "#6B1E1E", color: "#FDF8F0", padding: "14px 32px", borderRadius: 7,
+    fontSize: 16, fontWeight: 600, border: "none", cursor: "pointer",
     textDecoration: "none", display: "inline-block",
+    fontFamily: "'Inter Tight', -apple-system, sans-serif",
   },
   btnGhost: {
-    background: "transparent", color: "#fff", padding: "14px 32px", borderRadius: 10,
-    fontSize: 16, fontWeight: 600, border: "2px solid rgba(255,255,255,0.2)",
+    background: "transparent", color: "#FDF8F0", padding: "14px 32px", borderRadius: 7,
+    fontSize: 16, fontWeight: 600, border: "2px solid rgba(253,248,240,0.2)",
     cursor: "pointer", textDecoration: "none", display: "inline-block",
+    fontFamily: "'Inter Tight', -apple-system, sans-serif",
   },
 
   /* Sections */
   sectionWhite: { padding: "60px 24px 80px", maxWidth: 1100, margin: "0 auto" },
-  sectionGray: { padding: "60px 24px", background: "#f9fafb" },
+  sectionGray: { padding: "60px 24px", background: "#FDF8F0" },
   sectionH2: {
-    fontSize: 38, fontWeight: 800, textAlign: "center", marginBottom: 16,
-    color: "#0f172a", letterSpacing: "-0.01em",
+    fontSize: 38, fontWeight: 400, textAlign: "center", marginBottom: 16,
+    color: "#2E2E2E", letterSpacing: "-0.01em",
     fontFamily: "'Libre Baskerville', Georgia, serif",
   },
   sectionSub: {
@@ -481,9 +482,8 @@ const s = {
     background: "#fff", borderRadius: 16, border: "1px solid #E5E0DA",
   },
   statNum: {
-    fontSize: 48, fontWeight: 900, color: "#6B1E1E", lineHeight: 1,
-    background: "linear-gradient(135deg, #6B1E1E, #8A2035)",
-    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+    fontSize: 48, fontWeight: 700, color: "#6B1E1E", lineHeight: 1,
+    fontFamily: "'Inter Tight', -apple-system, sans-serif",
   },
   statLabel: { fontSize: 16, fontWeight: 700, color: "#2E2E2E", marginTop: 8 },
   statDesc: { fontSize: 14, color: "#6B6B6B", marginTop: 4, lineHeight: 1.5 },
@@ -501,10 +501,10 @@ const s = {
     textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 12,
   },
   featureH3: {
-    fontSize: 26, fontWeight: 800, color: "#0f172a", lineHeight: 1.2, marginBottom: 12,
+    fontSize: 26, fontWeight: 400, color: "#2E2E2E", lineHeight: 1.2, marginBottom: 12,
     fontFamily: "'Libre Baskerville', Georgia, serif",
   },
-  featureP: { fontSize: 16, color: "#475569", lineHeight: 1.7 },
+  featureP: { fontSize: 16, color: "#6B6B6B", lineHeight: 1.7 },
 
   /* How It Works — horizontal flow */
   stepsFlow: {
@@ -519,7 +519,7 @@ const s = {
     color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
     fontSize: 18, fontWeight: 800, flexShrink: 0,
   },
-  stepFlowTitle: { fontSize: 16, fontWeight: 700, color: "#0f172a", marginBottom: 4 },
+  stepFlowTitle: { fontSize: 16, fontWeight: 700, color: "#2E2E2E", marginBottom: 4 },
   stepFlowDesc: { fontSize: 14, color: "#6B6B6B", lineHeight: 1.6 },
   stepFlowArrow: {
     flexShrink: 0, padding: "8px 12px", display: "flex", alignItems: "center",
@@ -545,33 +545,34 @@ const s = {
     background: "#6B1E1E", color: "#fff", padding: "5px 18px", borderRadius: 20,
     fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
   },
-  priceAmount: { fontSize: 48, fontWeight: 900, color: "#111827", margin: "16px 0 4px" },
-  priceUnit: { fontSize: 16, fontWeight: 500, color: "#6b7280" },
-  priceDesc: { fontSize: 14, color: "#6b7280", marginBottom: 24 },
+  priceAmount: { fontSize: 48, fontWeight: 900, color: "#2E2E2E", margin: "16px 0 4px" },
+  priceUnit: { fontSize: 16, fontWeight: 500, color: "#6B6B6B" },
+  priceDesc: { fontSize: 14, color: "#6B6B6B", marginBottom: 24 },
   priceList: { listStyle: "none", textAlign: "left", marginBottom: 28, padding: 0 },
   priceLi: {
-    padding: "7px 0", fontSize: 14, color: "#374151",
+    padding: "7px 0", fontSize: 14, color: "#2E2E2E",
     display: "flex", alignItems: "center", gap: 10,
   },
 
   /* Final CTA */
   ctaSection: {
     padding: "100px 24px", textAlign: "center",
-    background: "linear-gradient(180deg, #0a0f1a 0%, #1A1F3E 100%)",
+    background: "linear-gradient(180deg, #131731 0%, #1A1F3E 100%)",
   },
-  ctaH2: { fontSize: 38, fontWeight: 800, color: "#f1f5f9", marginBottom: 16, fontFamily: "'Libre Baskerville', Georgia, serif" },
+  ctaH2: { fontSize: 38, fontWeight: 400, color: "#FDF8F0", marginBottom: 16, fontFamily: "'Libre Baskerville', Georgia, serif" },
   ctaSub: {
-    fontSize: 18, color: "#94a3b8", maxWidth: 500, margin: "0 auto 32px", lineHeight: 1.6,
+    fontSize: 18, color: "#8B6A4C", maxWidth: 500, margin: "0 auto 32px", lineHeight: 1.6,
   },
   btnCtaWhite: {
-    background: "#fff", color: "#6B1E1E", padding: "14px 36px", borderRadius: 10,
-    fontSize: 16, fontWeight: 700, border: "none", cursor: "pointer",
+    background: "#FDF8F0", color: "#6B1E1E", padding: "14px 36px", borderRadius: 7,
+    fontSize: 16, fontWeight: 600, border: "none", cursor: "pointer",
+    fontFamily: "'Inter Tight', -apple-system, sans-serif",
   },
-  ctaNote: { fontSize: 13, color: "#475569", marginTop: 14 },
+  ctaNote: { fontSize: 13, color: "#6B6B6B", marginTop: 14 },
 
   /* Footer */
   footer: {
-    padding: "40px 24px", textAlign: "center", background: "#0a0f1a",
+    padding: "40px 24px", textAlign: "center", background: "#131731",
     color: "#6B6B6B", fontSize: 13, borderTop: "1px solid rgba(255,255,255,0.06)",
   },
 };
