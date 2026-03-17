@@ -17,6 +17,14 @@ All notable changes to this project will be documented in this file.
 - Back/cancel buttons in mapping, billback, and product sheet review steps are queue-aware — return to queue instead of resetting in batch mode
 - Confirm functions (spreadsheet, billback, product sheet) detect queue items and mark them done
 
+## [0.3.0.1] - 2026-03-17
+
+### Fixed
+- Wired up 4 broken admin Settings buttons: Change Password (sends Firebase reset email), Reset All Settings (resets tenant config to defaults with confirmation), Manage Subscription (placeholder alert), and Upgrade Plan (scrolls to billing section)
+- Added user feedback when Change Password fails due to missing email
+- Included `userRole` in Reset All Settings so it resets completely
+- Removed redundant route navigation from Upgrade Plan button (already on Settings page)
+
 ## [0.3.0.0] - 2026-03-16
 
 ### Added
