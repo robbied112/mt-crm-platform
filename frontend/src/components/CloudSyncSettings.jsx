@@ -17,7 +17,7 @@ function StatusBadge({ status }) {
     success: { bg: "#F0FDF4", color: "#166534", border: "#BBF7D0" },
     error: { bg: "#FEF2F2", color: "#991B1B", border: "#FECACA" },
     running: { bg: "#FEF3C7", color: "#92400E", border: "#FDE68A" },
-    skipped: { bg: "#F9FAFB", color: "#6B7280", border: "#E5E7EB" },
+    skipped: { bg: "#FDF8F0", color: "#6B6B6B", border: "#E5E7EB" },
   };
   const c = colors[status] || colors.skipped;
   return (
@@ -192,7 +192,7 @@ export default function CloudSyncSettings() {
         <h4 style={{ fontSize: 16, fontWeight: 700, color: "#0C4A6E", margin: "0 0 8px" }}>
           Cloud Sync — Premium Feature
         </h4>
-        <p style={{ fontSize: 13, color: "#475569", marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 16 }}>
           Connect Google Drive to automatically sync your data files on a schedule.
           Upgrade to a paid plan to unlock this feature.
         </p>
@@ -211,7 +211,7 @@ export default function CloudSyncSettings() {
   if (!isConnected) {
     return (
       <div>
-        <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 16 }}>
           Connect your Google Drive to automatically pull spreadsheet files from a shared folder.
           Your team updates the files — CruFolio processes them on your schedule.
         </p>
@@ -280,7 +280,7 @@ export default function CloudSyncSettings() {
       {/* Folder picker */}
       {!isConfigured && (
         <div style={{ marginBottom: 16 }}>
-          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 8 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E2E2E", marginBottom: 8 }}>
             Select a folder to sync from:
           </label>
           {folders.length === 0 && !loadingFolders && (
@@ -292,16 +292,16 @@ export default function CloudSyncSettings() {
               Browse Folders
             </button>
           )}
-          {loadingFolders && <p style={{ fontSize: 13, color: "#6B7280" }}>Loading folders...</p>}
+          {loadingFolders && <p style={{ fontSize: 13, color: "#6B6B6B" }}>Loading folders...</p>}
           {folders.length > 0 && (
             <div style={{ border: "1px solid #E5E7EB", borderRadius: 8, overflow: "hidden" }}>
               {/* Breadcrumb */}
-              <div style={{ background: "#F9FAFB", padding: "8px 12px", fontSize: 12, color: "#6B7280", borderBottom: "1px solid #E5E7EB" }}>
+              <div style={{ background: "#FDF8F0", padding: "8px 12px", fontSize: 12, color: "#6B6B6B", borderBottom: "1px solid #E5E7EB" }}>
                 {folderPath.map((p, i) => (
                   <span key={i}>
                     {i > 0 && " / "}
                     <span
-                      style={{ cursor: i < folderPath.length - 1 ? "pointer" : "default", color: i < folderPath.length - 1 ? "#2563EB" : "#374151", fontWeight: i === folderPath.length - 1 ? 600 : 400 }}
+                      style={{ cursor: i < folderPath.length - 1 ? "pointer" : "default", color: i < folderPath.length - 1 ? "#2563EB" : "#2E2E2E", fontWeight: i === folderPath.length - 1 ? 600 : 400 }}
                       onClick={() => i < folderPath.length - 1 && navigateToPath(i)}
                     >
                       {p.name}
@@ -352,14 +352,14 @@ export default function CloudSyncSettings() {
       {isConfigured && (
         <div style={{ display: "flex", gap: 16, alignItems: "flex-end", marginBottom: 16 }}>
           <div style={{ flex: 1 }}>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#6B7280", marginBottom: 4 }}>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#6B6B6B", marginBottom: 4 }}>
               Sync Frequency
             </label>
             <select
               value={cadence}
               onChange={(e) => setCadence(e.target.value)}
               style={{
-                width: "100%", padding: "8px 12px", border: "1px solid #D1D5DB",
+                width: "100%", padding: "8px 12px", border: "1px solid #E5E0DA",
                 borderRadius: 8, fontSize: 14, background: "#fff",
               }}
             >
@@ -370,7 +370,7 @@ export default function CloudSyncSettings() {
           </div>
           <label style={{
             display: "flex", alignItems: "center", gap: 8, padding: "8px 16px",
-            background: enabled ? "#F0FDF4" : "#F9FAFB",
+            background: enabled ? "#F0FDF4" : "#FDF8F0",
             border: `1px solid ${enabled ? "#BBF7D0" : "#E5E7EB"}`,
             borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600,
           }}>
@@ -394,7 +394,7 @@ export default function CloudSyncSettings() {
             disabled={syncing}
             style={{
               padding: "8px 16px", whiteSpace: "nowrap",
-              background: syncing ? "#D1D5DB" : "#2563EB",
+              background: syncing ? "#E5E0DA" : "#2563EB",
               color: "#fff", border: "none", borderRadius: 8,
               fontSize: 13, fontWeight: 600, cursor: syncing ? "default" : "pointer",
             }}
@@ -417,8 +417,8 @@ export default function CloudSyncSettings() {
               });
             }}
             style={{
-              padding: "4px 12px", fontSize: 11, color: "#6B7280",
-              background: "transparent", border: "1px solid #D1D5DB",
+              padding: "4px 12px", fontSize: 11, color: "#6B6B6B",
+              background: "transparent", border: "1px solid #E5E0DA",
               borderRadius: 6, cursor: "pointer",
             }}
           >
@@ -430,30 +430,30 @@ export default function CloudSyncSettings() {
       {/* Sync history */}
       {syncHistory.length > 0 && (
         <div>
-          <h4 style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 8 }}>
+          <h4 style={{ fontSize: 13, fontWeight: 700, color: "#2E2E2E", marginBottom: 8 }}>
             Recent Syncs
           </h4>
           <div style={{ border: "1px solid #E5E7EB", borderRadius: 8, overflow: "hidden" }}>
             <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
               <thead>
-                <tr style={{ background: "#F9FAFB" }}>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Date</th>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Status</th>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Files</th>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Rows</th>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Trigger</th>
+                <tr style={{ background: "#FDF8F0" }}>
+                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B6B6B" }}>Date</th>
+                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B6B6B" }}>Status</th>
+                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B6B6B" }}>Files</th>
+                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B6B6B" }}>Rows</th>
+                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B6B6B" }}>Trigger</th>
                 </tr>
               </thead>
               <tbody>
                 {syncHistory.map((h, i) => (
                   <tr key={i} style={{ borderTop: "1px solid #F3F4F6" }}>
-                    <td style={{ padding: "8px 12px", color: "#374151" }}>
+                    <td style={{ padding: "8px 12px", color: "#2E2E2E" }}>
                       {h.startedAt ? new Date(h.startedAt).toLocaleString() : "—"}
                     </td>
                     <td style={{ padding: "8px 12px" }}>
                       <StatusBadge status={h.status} />
                     </td>
-                    <td style={{ padding: "8px 12px", color: "#374151" }}>
+                    <td style={{ padding: "8px 12px", color: "#2E2E2E" }}>
                       {h.filesProcessed || 0}
                       {h.fileNames?.length > 0 && (
                         <span style={{ color: "#9CA3AF", marginLeft: 4 }} title={h.fileNames.join(", ")}>
@@ -461,8 +461,8 @@ export default function CloudSyncSettings() {
                         </span>
                       )}
                     </td>
-                    <td style={{ padding: "8px 12px", color: "#374151" }}>{h.rowsIngested || 0}</td>
-                    <td style={{ padding: "8px 12px", color: "#6B7280" }}>{h.triggeredBy || "—"}</td>
+                    <td style={{ padding: "8px 12px", color: "#2E2E2E" }}>{h.rowsIngested || 0}</td>
+                    <td style={{ padding: "8px 12px", color: "#6B6B6B" }}>{h.triggeredBy || "—"}</td>
                   </tr>
                 ))}
               </tbody>

@@ -42,10 +42,10 @@ export default function WineList({ wines = [] }) {
     return (
       <div style={s.emptyState}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>&#127863;</div>
-        <h3 style={{ fontSize: 16, fontWeight: 700, color: "#374151", margin: "0 0 8px" }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: "#2E2E2E", margin: "0 0 8px" }}>
           No wines found
         </h3>
-        <p style={{ fontSize: 13, color: "#6B7280", margin: 0 }}>
+        <p style={{ fontSize: 13, color: "#6B6B6B", margin: 0 }}>
           Wines are automatically extracted when you import billback PDFs.
         </p>
       </div>
@@ -97,7 +97,7 @@ export default function WineList({ wines = [] }) {
             {filtered.map((wine) => (
               <tr
                 key={wine.id}
-                style={{ borderBottom: "1px solid #f1f5f9", cursor: "pointer" }}
+                style={{ borderBottom: "1px solid #FDF8F0", cursor: "pointer" }}
                 onClick={() => navigate(`/wines/${wine.id}`)}
               >
                 <td style={{ ...s.td, fontWeight: 600, color: "#6B1E1E" }}>{wine.displayName || wine.name}</td>
@@ -108,10 +108,10 @@ export default function WineList({ wines = [] }) {
                       {wine.vintage}
                     </span>
                   ) : (
-                    <span style={{ color: "#d1d5db" }}>--</span>
+                    <span style={{ color: "#E5E0DA" }}>--</span>
                   )}
                 </td>
-                <td style={{ ...s.td, fontSize: 11, color: "#6B7280" }}>
+                <td style={{ ...s.td, fontSize: 11, color: "#6B6B6B" }}>
                   {wine.metadata?.distributors?.join(", ") || "--"}
                 </td>
                 <td style={{ ...s.td, fontSize: 11, color: "#9CA3AF" }}>
@@ -140,7 +140,7 @@ const s = {
   searchInput: {
     padding: "6px 12px",
     borderRadius: 6,
-    border: "1px solid #d1d5db",
+    border: "1px solid #E5E0DA",
     fontSize: 13,
     minWidth: 220,
     background: "#fff",
@@ -156,7 +156,7 @@ const s = {
     fontWeight: 600,
     fontSize: 11,
     textTransform: "uppercase",
-    color: "#6B7280",
+    color: "#6B6B6B",
     letterSpacing: "0.3px",
   },
   td: {

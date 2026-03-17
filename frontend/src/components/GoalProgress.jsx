@@ -24,10 +24,10 @@ function GoalBar({ label, current, target, unit, color }) {
           marginBottom: 4,
         }}
       >
-        <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: "#2E2E2E" }}>
           {label}
         </span>
-        <span style={{ fontSize: 12, color: "#6B7280" }}>
+        <span style={{ fontSize: 12, color: "#6B6B6B" }}>
           {fmt(current)} / {fmt(target)} {unit}
         </span>
       </div>
@@ -102,7 +102,7 @@ export default function GoalProgress({
           marginBottom: 16,
         }}
       >
-        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#374151" }}>
+        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#2E2E2E" }}>
           Goal Progress
         </h3>
         <span style={{ fontSize: 11, color: "#9CA3AF" }}>Set in Settings</span>

@@ -32,7 +32,7 @@ function SettingsSection({ title, children, headerRight }) {
           marginBottom: 16,
         }}
       >
-        <h3 style={{ fontSize: 16, fontWeight: 700, color: "#374151", margin: 0 }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: "#2E2E2E", margin: 0 }}>
           {title}
         </h3>
         {headerRight}
@@ -50,7 +50,7 @@ function FormField({ label, children }) {
           display: "block",
           fontSize: 13,
           fontWeight: 600,
-          color: "#6B7280",
+          color: "#6B6B6B",
           marginBottom: 4,
         }}
       >
@@ -102,7 +102,7 @@ function PillList({ items = [], onRemove, onAdd, addLabel }) {
             placeholder={`New ${addLabel || "item"}...`}
             style={{
               padding: "6px 10px",
-              border: "1px solid #d1d5db",
+              border: "1px solid #E5E0DA",
               borderRadius: 6,
               fontSize: 13,
               flex: 1,
@@ -143,7 +143,7 @@ function PillList({ items = [], onRemove, onAdd, addLabel }) {
 const inputStyle = {
   width: "100%",
   padding: "8px 12px",
-  border: "1px solid #D1D5DB",
+  border: "1px solid #E5E0DA",
   borderRadius: 8,
   fontSize: 14,
   boxSizing: "border-box",
@@ -152,7 +152,7 @@ const inputStyle = {
 const goalInputStyle = {
   width: "100%",
   padding: "8px 10px",
-  border: "1px solid #D1D5DB",
+  border: "1px solid #E5E0DA",
   borderRadius: 6,
   fontSize: 13,
 };
@@ -225,7 +225,7 @@ export default function Settings({
 
       {/* Account Security */}
       <SettingsSection title="Account Security">
-        <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 12 }}>
+        <p style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 12 }}>
           Manage your account password and security settings.
         </p>
         <button
@@ -250,7 +250,7 @@ export default function Settings({
           </button>
         }
       >
-        <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 12 }}>
+        <p style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 12 }}>
           Set your business type. This controls how data is interpreted, what labels appear throughout the dashboard, and how the AI mapper processes your uploads.
         </p>
         <div style={{ display: "flex", gap: 16 }}>
@@ -266,7 +266,7 @@ export default function Settings({
                 alignItems: "flex-start",
                 gap: 10,
                 padding: 16,
-                background: userRole === value ? "#F0FDF4" : "#F9FAFB",
+                background: userRole === value ? "#F0FDF4" : "#FDF8F0",
                 borderRadius: 10,
                 border: `2px solid ${userRole === value ? "#059669" : "#E5E7EB"}`,
                 cursor: "pointer",
@@ -282,7 +282,7 @@ export default function Settings({
               />
               <div>
                 <div style={{ fontWeight: 700, fontSize: 14, color: "#1F2937" }}>{label}</div>
-                <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>{desc}</div>
+                <div style={{ fontSize: 12, color: "#6B6B6B", marginTop: 2 }}>{desc}</div>
               </div>
             </label>
           ))}
@@ -326,13 +326,13 @@ export default function Settings({
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <input
                 type="color"
-                style={{ width: 40, height: 36, border: "1px solid #D1D5DB", borderRadius: 6, cursor: "pointer" }}
+                style={{ width: 40, height: 36, border: "1px solid #E5E0DA", borderRadius: 6, cursor: "pointer" }}
                 value={branding.primaryColor}
                 onChange={(e) =>
                   setBranding((b) => ({ ...b, primaryColor: e.target.value }))
                 }
               />
-              <span style={{ fontSize: 13, color: "#6B7280", fontFamily: "monospace" }}>
+              <span style={{ fontSize: 13, color: "#6B6B6B", fontFamily: "monospace" }}>
                 {branding.primaryColor}
               </span>
             </div>
@@ -341,13 +341,13 @@ export default function Settings({
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <input
                 type="color"
-                style={{ width: 40, height: 36, border: "1px solid #D1D5DB", borderRadius: 6, cursor: "pointer" }}
+                style={{ width: 40, height: 36, border: "1px solid #E5E0DA", borderRadius: 6, cursor: "pointer" }}
                 value={branding.accentColor}
                 onChange={(e) =>
                   setBranding((b) => ({ ...b, accentColor: e.target.value }))
                 }
               />
-              <span style={{ fontSize: 13, color: "#6B7280", fontFamily: "monospace" }}>
+              <span style={{ fontSize: 13, color: "#6B6B6B", fontFamily: "monospace" }}>
                 {branding.accentColor}
               </span>
             </div>
@@ -364,7 +364,7 @@ export default function Settings({
           </button>
         }
       >
-        <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 16 }}>
           Set volume, account, and distribution goals. Progress is tracked on the Overview dashboard.
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
@@ -377,7 +377,7 @@ export default function Settings({
             { key: "annualRevenue", label: "Annual Revenue Target ($)", placeholder: "e.g. 500000" },
           ].map(({ key, label, placeholder }) => (
             <div key={key}>
-              <label style={{ fontSize: 12, color: "#6B7280", display: "block", marginBottom: 3 }}>
+              <label style={{ fontSize: 12, color: "#6B6B6B", display: "block", marginBottom: 3 }}>
                 {label}
               </label>
               <input
@@ -403,7 +403,7 @@ export default function Settings({
           </button>
         }
       >
-        <p style={{ fontSize: 12, color: "#6B7280", marginBottom: 12 }}>
+        <p style={{ fontSize: 12, color: "#6B6B6B", marginBottom: 12 }}>
           Customize what things are called throughout your dashboard.
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
@@ -416,7 +416,7 @@ export default function Settings({
             { key: "depletion", label: "Product Movement", placeholder: "e.g. Depletion, Sales" },
           ].map(({ key, label, placeholder }) => (
             <div key={key}>
-              <label style={{ fontSize: 11, fontWeight: 600, color: "#6B7280", display: "block", marginBottom: 2 }}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: "#6B6B6B", display: "block", marginBottom: 2 }}>
                 {label}
               </label>
               <input
@@ -476,7 +476,7 @@ export default function Settings({
                 fontSize: 13,
                 cursor: "pointer",
                 padding: "8px 12px",
-                background: features[key] ? "#F0FDF4" : "#F9FAFB",
+                background: features[key] ? "#F0FDF4" : "#FDF8F0",
                 borderRadius: 8,
                 border: `1px solid ${features[key] ? "#BBF7D0" : "#E5E7EB"}`,
               }}
@@ -496,7 +496,7 @@ export default function Settings({
 
       {/* Data Upload */}
       <SettingsSection title="Data Upload">
-        <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 16 }}>
           {t("uploadHint")}
         </p>
         <DataImport />
@@ -509,7 +509,7 @@ export default function Settings({
 
       {/* Billing (placeholder) */}
       <SettingsSection title="Billing & Subscription">
-        <p style={{ fontSize: 12, color: "#6B7280", marginBottom: 16 }}>
+        <p style={{ fontSize: 12, color: "#6B6B6B", marginBottom: 16 }}>
           Manage your subscription plan and payment details.
         </p>
         <div

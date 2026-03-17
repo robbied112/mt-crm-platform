@@ -46,7 +46,7 @@ export default function UserBar({
       >
         {user.initials || "?"}
       </div>
-      <span style={{ fontWeight: 600, color: "#374151" }}>
+      <span style={{ fontWeight: 600, color: "#2E2E2E" }}>
         {user.name || "--"}
       </span>
       {onManageUsers && (
@@ -55,7 +55,7 @@ export default function UserBar({
           style={{
             background: "none",
             border: "none",
-            color: "#6B7280",
+            color: "#6B6B6B",
             fontSize: 13,
             cursor: "pointer",
             padding: "2px 4px",

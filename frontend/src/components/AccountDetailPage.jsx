@@ -572,7 +572,7 @@ function NotesTab({ notes, loading, noteText, onNoteChange, onAddNote, onDeleteN
 
 const OPP_STAGE_COLORS = {
   Won: "#10b981", Lost: "#ef4444", Completed: "#10b981",
-  Identified: "#94a3b8", Outreach: "#60a5fa", Meeting: "#818cf8",
+  Identified: "#8B6A4C", Outreach: "#60a5fa", Meeting: "#818cf8",
   Tasting: "#a78bfa", Proposal: "#f59e0b", Negotiation: "#f97316",
 };
 
@@ -630,7 +630,7 @@ function OppRow({ opp, typeLabel, onAdvance, oppTypes, isClosed }) {
           <span className="badge badge-blue" style={{ fontSize: 10 }}>{typeLabel}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--text-dim)" }}>
-          <span className="pipeline-stage-badge" style={{ background: OPP_STAGE_COLORS[opp.stage] || "#94a3b8", fontSize: 10, padding: "1px 8px" }}>
+          <span className="pipeline-stage-badge" style={{ background: OPP_STAGE_COLORS[opp.stage] || "#8B6A4C", fontSize: 10, padding: "1px 8px" }}>
             {opp.stage}
           </span>
           <span style={{ fontWeight: 600, color: "var(--text)" }}>{formatCurrency(opp.estValue || 0)}</span>
@@ -657,7 +657,7 @@ function OppRow({ opp, typeLabel, onAdvance, oppTypes, isClosed }) {
 
 function InfoRow({ label, value }) {
   return (
-    <div style={{ display: "flex", padding: "6px 0", borderBottom: "1px solid #f1f5f9", fontSize: 13 }}>
+    <div style={{ display: "flex", padding: "6px 0", borderBottom: "1px solid #FDF8F0", fontSize: 13 }}>
       <span style={{ fontWeight: 600, color: "var(--text-dim)", minWidth: 120 }}>{label}</span>
       <span>{value || "--"}</span>
     </div>

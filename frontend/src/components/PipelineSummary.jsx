@@ -5,7 +5,7 @@
  */
 
 const STAGE_COLORS = {
-  Identified: "#94a3b8",
+  Identified: "#8B6A4C",
   "Outreach Sent": "#60a5fa",
   "Meeting Set": "#a78bfa",
   "RFP/Proposal": "#f59e0b",
@@ -33,7 +33,7 @@ export default function PipelineSummary({ deals = [] }) {
         style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}
       >
         <thead>
-          <tr style={{ borderBottom: "1px solid #d1d5db" }}>
+          <tr style={{ borderBottom: "1px solid #E5E0DA" }}>
             <th style={{ textAlign: "left", padding: "6px 0", fontWeight: 600 }}>
               Account
             </th>
@@ -58,7 +58,7 @@ export default function PipelineSummary({ deals = [] }) {
               <td style={{ textAlign: "center", padding: "8px 0" }}>
                 <span
                   style={{
-                    background: STAGE_COLORS[deal.stage] || "#94a3b8",
+                    background: STAGE_COLORS[deal.stage] || "#8B6A4C",
                     color: "#fff",
                     padding: "2px 8px",
                     borderRadius: 4,

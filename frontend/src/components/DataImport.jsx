@@ -370,12 +370,12 @@ export default function DataImport() {
           onClick={() => inputRef.current?.click()}
           style={{
             ...s.dropZone,
-            borderColor: dragOver ? "#6B1E1E" : "#D1D5DB",
+            borderColor: dragOver ? "#6B1E1E" : "#E5E0DA",
             background: dragOver ? "#FDF8F0" : "#fafafa",
           }}
         >
           <div style={{ fontSize: 40, marginBottom: 8 }}>&#128202;</div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: "#374151" }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: "#2E2E2E" }}>
             Drop your data file here, or click to browse
           </div>
           <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 6 }}>
@@ -516,7 +516,7 @@ function MappingStep({ fileName, headers, rows, mapping, confidence, uploadType,
       <div style={s.stepHeader}>
         <div>
           <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Column Mapping</h4>
-          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B7280" }}>
+          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B6B6B" }}>
             {fileName} &mdash; {rows.length} rows
             {isQB && <span style={s.qbBadge}>QuickBooks Detected</span>}
             {!isQB && uploadType?.type && (
@@ -555,7 +555,7 @@ function MappingStep({ fileName, headers, rows, mapping, confidence, uploadType,
                 ? sampleRows.map((r) => r[currentCol]).filter(Boolean).join(", ")
                 : "";
               return (
-                <tr key={def.field} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                <tr key={def.field} style={{ borderBottom: "1px solid #FDF8F0" }}>
                   <td style={s.td}>
                     <span style={{ fontWeight: 600 }}>{def.label}</span>
                     <span style={{ fontSize: 10, color: "#9CA3AF", marginLeft: 6 }}>{def.field}</span>
@@ -564,7 +564,7 @@ function MappingStep({ fileName, headers, rows, mapping, confidence, uploadType,
                     <select
                       value={currentCol || ""}
                       onChange={(e) => onUpdateMapping(def.field, e.target.value)}
-                      style={{ ...s.select, borderColor: currentCol ? "#6B1E1E" : "#d1d5db" }}
+                      style={{ ...s.select, borderColor: currentCol ? "#6B1E1E" : "#E5E0DA" }}
                     >
                       <option value="">-- Not mapped --</option>
                       {headers.map((h) => (
@@ -583,8 +583,8 @@ function MappingStep({ fileName, headers, rows, mapping, confidence, uploadType,
                       </span>
                     )}
                   </td>
-                  <td style={{ ...s.td, fontSize: 12, color: "#6B7280", maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {samples || <span style={{ color: "#d1d5db" }}>--</span>}
+                  <td style={{ ...s.td, fontSize: 12, color: "#6B6B6B", maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {samples || <span style={{ color: "#E5E0DA" }}>--</span>}
                   </td>
                 </tr>
               );
@@ -620,7 +620,7 @@ function PreviewStep({ summary, preview, uploadType, saving, onConfirm, onBack }
         <div style={{ fontSize: 14, fontWeight: 600, color: "#6B1E1E", marginBottom: 6 }}>
           Executive Summary
         </div>
-        <p style={{ fontSize: 13, color: "#374151", margin: 0, lineHeight: 1.6 }}>{summary}</p>
+        <p style={{ fontSize: 13, color: "#2E2E2E", margin: 0, lineHeight: 1.6 }}>{summary}</p>
       </div>
 
       {/* Dataset counts */}
@@ -630,7 +630,7 @@ function PreviewStep({ summary, preview, uploadType, saving, onConfirm, onBack }
           return (
             <div key={name} style={s.previewCard}>
               <div style={{ fontSize: 20, fontWeight: 700, color: "#6B1E1E" }}>{count}</div>
-              <div style={{ fontSize: 11, color: "#6B7280", textTransform: "capitalize" }}>
+              <div style={{ fontSize: 11, color: "#6B6B6B", textTransform: "capitalize" }}>
                 {name.replace(/([A-Z])/g, " $1").trim()}
               </div>
             </div>
@@ -641,7 +641,7 @@ function PreviewStep({ summary, preview, uploadType, saving, onConfirm, onBack }
       {/* Sample rows from first dataset */}
       {datasets.length > 0 && Array.isArray(datasets[0][1]) && datasets[0][1].length > 0 && (
         <div style={{ overflowX: "auto" }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "#6B7280", marginBottom: 6 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#6B6B6B", marginBottom: 6 }}>
             Sample: {datasets[0][0]} (first 5 rows)
           </div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
@@ -654,7 +654,7 @@ function PreviewStep({ summary, preview, uploadType, saving, onConfirm, onBack }
             </thead>
             <tbody>
               {datasets[0][1].slice(0, 5).map((row, i) => (
-                <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                <tr key={i} style={{ borderBottom: "1px solid #FDF8F0" }}>
                   {Object.entries(row).filter(([k]) => k !== "skus" && k !== "weeks" && k !== "months").slice(0, 8).map(([k, v], j) => (
                     <td key={j} style={s.td}>
                       {typeof v === "number" ? v.toLocaleString() : String(v).slice(0, 30)}
@@ -680,7 +680,7 @@ function BillbackReviewStep({ fileName, items, metadata, saving, onUpdateItem, o
       <div style={s.stepHeader}>
         <div>
           <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Review Billback Extraction</h4>
-          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B7280" }}>
+          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B6B6B" }}>
             {fileName} &mdash; {items.length} line items &mdash; ${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} total
             <span style={s.typeBadge}>Billback PDF</span>
           </p>
@@ -719,7 +719,7 @@ function BillbackReviewStep({ fileName, items, metadata, saving, onUpdateItem, o
           </thead>
           <tbody>
             {items.map((item, idx) => (
-              <tr key={idx} style={{ borderBottom: "1px solid #f1f5f9" }}>
+              <tr key={idx} style={{ borderBottom: "1px solid #FDF8F0" }}>
                 <td style={s.td}>
                   <input
                     type="text"
@@ -790,7 +790,7 @@ function BillbackReviewStep({ fileName, items, metadata, saving, onUpdateItem, o
 
 const s = {
   dropZone: {
-    border: "2px dashed #D1D5DB",
+    border: "2px dashed #E5E0DA",
     borderRadius: 12,
     padding: 48,
     textAlign: "center",
@@ -822,7 +822,7 @@ const s = {
     fontWeight: 600,
     fontSize: 11,
     textTransform: "uppercase",
-    color: "#6B7280",
+    color: "#6B6B6B",
     letterSpacing: "0.3px",
   },
   td: {
@@ -831,7 +831,7 @@ const s = {
   select: {
     padding: "6px 10px",
     borderRadius: 6,
-    border: "1px solid #d1d5db",
+    border: "1px solid #E5E0DA",
     fontSize: 13,
     minWidth: 180,
     background: "#fff",

@@ -45,7 +45,7 @@ export default function HealthInventoryTable({ skus = [], totalSellIn, totalSell
         <tbody>
           {skus.map((s, i) => {
             const supply = getSupplyInfo(s.wkSupply);
-            const actionStyle = ACTION_STYLES[s.invAction] || { bg: "#f1f5f9", color: "#64748b" };
+            const actionStyle = ACTION_STYLES[s.invAction] || { bg: "#FDF8F0", color: "#64748b" };
 
             return (
               <tr key={i}>

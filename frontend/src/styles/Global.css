@@ -575,7 +575,7 @@ body {
   font-size: 10px;
   font-weight: 600;
   padding: 3px 6px;
-  background: #f1f5f9;
+  background: #FDF8F0;
   border-radius: 4px;
   color: var(--text-dim);
   flex-shrink: 0;
@@ -1119,7 +1119,7 @@ select:focus {
 }
 
 .daily-actions__item:hover {
-  background: var(--hover, #f1f5f9);
+  background: var(--hover, #FDF8F0);
 }
 
 .daily-actions__item-icon {
@@ -1573,7 +1573,7 @@ footer {
 
 .ap-kpi .label {
   font-size: 11px;
-  color: #6b7280;
+  color: #6B6B6B;
   margin-top: 2px;
 }
 
@@ -1584,16 +1584,16 @@ footer {
 }
 
 .ap-sku-table th {
-  background: #f1f5f9;
+  background: #FDF8F0;
   padding: 6px 8px;
   text-align: left;
   font-weight: 600;
-  color: #475569;
+  color: #6B6B6B;
 }
 
 .ap-sku-table td {
   padding: 6px 8px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #FDF8F0;
 }
 
 .ap-sparkline {
@@ -1668,7 +1668,7 @@ footer {
 
 .ap-note-input textarea {
   flex: 1;
-  border: 1px solid #d1d5db;
+  border: 1px solid #D1CBC4;
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 13px;
@@ -1701,14 +1701,14 @@ footer {
 }
 
 .ap-action-row input[type="date"] {
-  border: 1px solid #d1d5db;
+  border: 1px solid #D1CBC4;
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 13px;
 }
 
 .ap-action-row select {
-  border: 1px solid #d1d5db;
+  border: 1px solid #D1CBC4;
   border-radius: 6px;
   padding: 6px 10px;
   font-size: 13px;
@@ -1739,7 +1739,7 @@ footer {
   left: 0;
   right: 0;
   background: #fff;
-  border: 1px solid #d1d5db;
+  border: 1px solid #D1CBC4;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   max-height: 160px;
@@ -1814,9 +1814,9 @@ footer {
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  border: 1px solid #d1d5db;
+  border: 1px solid #D1CBC4;
   background: #fff;
-  color: #6b7280;
+  color: #6B6B6B;
   transition: all 0.15s;
 }
 
@@ -1836,7 +1836,7 @@ footer {
   align-items: center;
   gap: 10px;
   padding: 10px 0;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #FDF8F0;
   cursor: pointer;
   font-size: 13px;
 }
@@ -1904,7 +1904,7 @@ footer {
   border: none;
   font-size: 28px;
   cursor: pointer;
-  color: #6b7280;
+  color: #6B6B6B;
   padding: 4px 8px;
 }
 

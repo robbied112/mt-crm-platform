@@ -15,10 +15,10 @@ function StatusBadge({ status }) {
     Healthy: { bg: "#d1fae5", color: "#065f46" },
     "Reorder Opportunity": { bg: "#fed7aa", color: "#9a3412" },
     Overstocked: { bg: "#dbeafe", color: "#1e40af" },
-    "Dead Stock": { bg: "#e5e7eb", color: "#374151" },
+    "Dead Stock": { bg: "#e5e7eb", color: "#2E2E2E" },
     "Review Needed": { bg: "#dbeafe", color: "#1e40af" },
   };
-  const s = styles[status] || { bg: "#f1f5f9", color: "#64748b" };
+  const s = styles[status] || { bg: "#FDF8F0", color: "#64748b" };
   return (
     <span
       style={{
@@ -138,7 +138,7 @@ function InventoryRow({ row, skuFilter }) {
               {expanded ? "\u25BC" : "\u25B6"}
             </span>
             {row.name}{" "}
-            <span style={{ fontSize: 10, color: "#6B7280", fontWeight: 400 }}>
+            <span style={{ fontSize: 10, color: "#6B6B6B", fontWeight: 400 }}>
               ({row.children.length} locations)
             </span>
           </td>

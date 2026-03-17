@@ -17,7 +17,7 @@ const STAGE_ORDER = [
 ];
 
 const STAGE_COLORS = {
-  Identified: "#94a3b8",
+  Identified: "#8B6A4C",
   "Outreach Sent": "#60a5fa",
   "Meeting Set": "#a78bfa",
   "RFP/Proposal": "#f59e0b",
@@ -67,7 +67,7 @@ export default function PipelineFunnel({ rows = [] }) {
                 fontSize: 12,
                 fontWeight: 600,
                 textAlign: "right",
-                color: "#374151",
+                color: "#2E2E2E",
               }}
             >
               {stage}
@@ -96,7 +96,7 @@ export default function PipelineFunnel({ rows = [] }) {
               style={{
                 width: 180,
                 fontSize: 12,
-                color: "#6B7280",
+                color: "#6B6B6B",
                 textAlign: "right",
               }}
             >

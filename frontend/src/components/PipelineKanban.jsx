@@ -11,7 +11,7 @@ import { formatCurrency } from "../utils/formatting";
 import OpportunityForm from "./OpportunityForm";
 
 const STAGE_COLORS = {
-  Identified: "#94a3b8", Outreach: "#60a5fa", Meeting: "#818cf8",
+  Identified: "#8B6A4C", Outreach: "#60a5fa", Meeting: "#818cf8",
   Tasting: "#a78bfa", Proposal: "#f59e0b", Negotiation: "#f97316",
   "Menu Trial": "#c084fc", Confirmed: "#34d399", "Menu Planning": "#fb923c",
   Pitched: "#60a5fa", "Samples Sent": "#93c5fd", Approved: "#4ade80",
@@ -234,7 +234,7 @@ export default function PipelineKanban() {
                   onDrop={(e) => handleDrop(e, stage)}
                 >
                   <div className="pipeline-col__header">
-                    <span className="pipeline-col__dot" style={{ background: STAGE_COLORS[stage] || "#94a3b8" }} />
+                    <span className="pipeline-col__dot" style={{ background: STAGE_COLORS[stage] || "#8B6A4C" }} />
                     <span className="pipeline-col__name">{stage}</span>
                     <span className="pipeline-col__count">{cards.length}</span>
                   </div>
@@ -286,7 +286,7 @@ export default function PipelineKanban() {
                   <td>{opp.title}</td>
                   <td><span className="badge badge-blue" style={{ fontSize: 11 }}>{typeLabel(opp.type)}</span></td>
                   <td>
-                    <span className="pipeline-stage-badge" style={{ background: STAGE_COLORS[opp.stage] || "#94a3b8" }}>
+                    <span className="pipeline-stage-badge" style={{ background: STAGE_COLORS[opp.stage] || "#8B6A4C" }}>
                       {opp.stage}
                     </span>
                   </td>

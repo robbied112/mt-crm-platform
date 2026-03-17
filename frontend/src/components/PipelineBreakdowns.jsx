@@ -10,7 +10,7 @@ const TIER_COLORS = {
   Enterprise: "#7C3AED",
   "On-Premise Natl": "#DC2626",
   Regional: "#2563EB",
-  Emerging: "#6B7280",
+  Emerging: "#6B6B6B",
 };
 
 const TIER_ORDER = ["Enterprise", "On-Premise Natl", "Regional", "Emerging"];
@@ -47,7 +47,7 @@ function BreakdownTable({ title, data, showTierBadge = false }) {
         </thead>
         <tbody>
           {data.map(([key, d]) => (
-            <tr key={key} style={{ borderBottom: "1px solid #f1f5f9" }}>
+            <tr key={key} style={{ borderBottom: "1px solid #FDF8F0" }}>
               <td style={{ padding: "6px 8px", fontWeight: 600 }}>
                 {showTierBadge ? (
                   <span
@@ -57,7 +57,7 @@ function BreakdownTable({ title, data, showTierBadge = false }) {
                       fontSize: 11,
                       fontWeight: 600,
                       color: "#fff",
-                      background: TIER_COLORS[key] || "#6B7280",
+                      background: TIER_COLORS[key] || "#6B6B6B",
                     }}
                   >
                     {key}

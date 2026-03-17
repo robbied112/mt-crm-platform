@@ -13,10 +13,10 @@ export default function WineDetail({ wines = [], spendByWine = [] }) {
   if (!wine) {
     return (
       <div style={s.emptyState}>
-        <h3 style={{ fontSize: 16, fontWeight: 700, color: "#374151", margin: "0 0 8px" }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: "#2E2E2E", margin: "0 0 8px" }}>
           Wine not found
         </h3>
-        <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 16 }}>
           This wine may have been removed or the link is invalid.
         </p>
         <button className="btn btn-secondary" onClick={() => navigate("/wines")}>
@@ -48,7 +48,7 @@ export default function WineDetail({ wines = [], spendByWine = [] }) {
           )}
         </div>
         {wine.producer && (
-          <p style={{ margin: 0, fontSize: 13, color: "#6B7280" }}>
+          <p style={{ margin: 0, fontSize: 13, color: "#6B6B6B" }}>
             Producer: {wine.producer}
           </p>
         )}
@@ -85,7 +85,7 @@ export default function WineDetail({ wines = [], spendByWine = [] }) {
       {/* Distributors */}
       {spendData?.distributors?.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "#6B7280", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.3px" }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#6B6B6B", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.3px" }}>
             Distributors
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -99,7 +99,7 @@ export default function WineDetail({ wines = [], spendByWine = [] }) {
       {/* Billback Types */}
       {spendData?.types?.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "#6B7280", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.3px" }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#6B6B6B", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.3px" }}>
             Billback Types
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -157,7 +157,7 @@ const s = {
   },
   kpiLabel: {
     fontSize: 11,
-    color: "#6B7280",
+    color: "#6B6B6B",
     marginTop: 2,
   },
   distBadge: {

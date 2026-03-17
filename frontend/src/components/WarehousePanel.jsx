@@ -54,7 +54,7 @@ export default function WarehousePanel({ warehouseInventory }) {
           style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}
         >
           <thead>
-            <tr style={{ background: "#f9fafb" }}>
+            <tr style={{ background: "#FDF8F0" }}>
               <th style={{ textAlign: "left", padding: "4px 6px" }}>
                 Location
               </th>
@@ -141,7 +141,7 @@ export default function WarehousePanel({ warehouseInventory }) {
         style={{
           marginTop: 12,
           padding: "8px 12px",
-          background: "#f9fafb",
+          background: "#FDF8F0",
           borderRadius: 6,
           display: "flex",
           gap: 24,
@@ -158,7 +158,7 @@ export default function WarehousePanel({ warehouseInventory }) {
           {line2Name}: {(nt.total || 0).toLocaleString()}
         </span>
         {wh.batch4Est && wh.batch4Est.total > 0 && (
-          <span style={{ color: "#6B7280" }}>
+          <span style={{ color: "#6B6B6B" }}>
             Batch 4 Est: +{wh.batch4Est.total.toLocaleString()}
           </span>
         )}

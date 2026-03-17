@@ -268,7 +268,7 @@ export default function FilterBar({
           style={{
             padding: "6px 12px",
             background: "#F3F4F6",
-            color: "#6B7280",
+            color: "#6B6B6B",
             border: "1px solid #E5E7EB",
             borderRadius: 6,
             fontSize: 11,
@@ -327,7 +327,7 @@ export default function FilterBar({
             cursor: "pointer",
             fontSize: 13,
             fontWeight: 600,
-            color: "#475569",
+            color: "#6B6B6B",
           }}
         >
           <span>

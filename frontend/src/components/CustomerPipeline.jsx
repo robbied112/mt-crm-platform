@@ -34,7 +34,7 @@ const STAGE_WEIGHTS = {
 };
 
 const STAGE_COLORS = {
-  Identified: "#94a3b8",
+  Identified: "#8B6A4C",
   "Outreach Sent": "#60a5fa",
   "Meeting Set": "#a78bfa",
   "RFP/Proposal": "#f59e0b",
@@ -47,7 +47,7 @@ const TIER_COLORS = {
   Enterprise: "#7C3AED",
   "On-Premise Natl": "#DC2626",
   Regional: "#2563EB",
-  Emerging: "#6B7280",
+  Emerging: "#6B6B6B",
 };
 
 function PipelineKpi({ label, value, borderColor, subtext }) {
@@ -65,7 +65,7 @@ function PipelineKpi({ label, value, borderColor, subtext }) {
         borderBottom: "1px solid #e5e7eb",
       }}
     >
-      <div style={{ fontSize: 11, color: "#6B7280" }}>{label}</div>
+      <div style={{ fontSize: 11, color: "#6B6B6B" }}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 700, color: borderColor || "#0F766E" }}>
         {value}
       </div>
@@ -287,7 +287,7 @@ export default function CustomerPipeline({
 
   const filterSelect = (label, key, options) => (
     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-      <label style={{ fontSize: 12, fontWeight: 600, color: "#6B7280" }}>
+      <label style={{ fontSize: 12, fontWeight: 600, color: "#6B6B6B" }}>
         {label}:
       </label>
       <select
@@ -295,7 +295,7 @@ export default function CustomerPipeline({
         onChange={(e) => updateFilter(key, e.target.value)}
         style={{
           padding: "6px 10px",
-          border: "1px solid #d1d5db",
+          border: "1px solid #E5E0DA",
           borderRadius: 6,
           fontSize: 13,
         }}
@@ -314,7 +314,7 @@ export default function CustomerPipeline({
       {/* Title */}
       <div style={{ fontSize: 18, fontWeight: 700, color: "#0F766E", marginBottom: 4 }}>
         Customer Pipeline{" "}
-        <span style={{ fontSize: 13, fontWeight: 400, color: "#6B7280", marginLeft: 8 }}>
+        <span style={{ fontSize: 13, fontWeight: 400, color: "#6B6B6B", marginLeft: 8 }}>
           National &amp; Regional Account Tracker
         </span>
       </div>
@@ -404,7 +404,7 @@ export default function CustomerPipeline({
             style={{
               width: "100%",
               padding: "8px 12px",
-              border: "1px solid #d1d5db",
+              border: "1px solid #E5E0DA",
               borderRadius: 8,
               fontSize: 13,
               boxSizing: "border-box",
@@ -412,7 +412,7 @@ export default function CustomerPipeline({
           />
         </div>
         {onExportCSV && (
-          <button onClick={onExportCSV} style={{ padding: "6px 14px", background: "#374151", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+          <button onClick={onExportCSV} style={{ padding: "6px 14px", background: "#2E2E2E", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
             Export CSV
           </button>
         )}
@@ -498,7 +498,7 @@ export default function CustomerPipeline({
                 <tr
                   key={i}
                   style={{
-                    borderBottom: "1px solid #f1f5f9",
+                    borderBottom: "1px solid #FDF8F0",
                     cursor: "pointer",
                   }}
                   onClick={() => onAccountClick?.(r.acct)}
@@ -521,7 +521,7 @@ export default function CustomerPipeline({
                         fontSize: 10,
                         fontWeight: 600,
                         color: "#fff",
-                        background: TIER_COLORS[r.tier] || "#6B7280",
+                        background: TIER_COLORS[r.tier] || "#6B6B6B",
                       }}
                     >
                       {esc(r.tier)}
@@ -535,7 +535,7 @@ export default function CustomerPipeline({
                         fontSize: 10,
                         fontWeight: 600,
                         color: "#fff",
-                        background: STAGE_COLORS[r.stage] || "#94a3b8",
+                        background: STAGE_COLORS[r.stage] || "#8B6A4C",
                       }}
                     >
                       {esc(r.stage)}
@@ -555,7 +555,7 @@ export default function CustomerPipeline({
                   <td style={{ padding: 8, fontSize: 12 }}>
                     {esc(r.owner)}
                   </td>
-                  <td style={{ padding: 8, fontSize: 12, color: "#6B7280" }}>
+                  <td style={{ padding: 8, fontSize: 12, color: "#6B6B6B" }}>
                     {esc(r.source || "--")}
                   </td>
                   <td
@@ -592,7 +592,7 @@ export default function CustomerPipeline({
                     {r.nextStep ? (
                       esc(r.nextStep)
                     ) : (
-                      <span style={{ color: "#d1d5db" }}>--</span>
+                      <span style={{ color: "#E5E0DA" }}>--</span>
                     )}
                   </td>
                   <td
@@ -645,7 +645,7 @@ export default function CustomerPipeline({
           </tbody>
         </table>
       </div>
-      <div style={{ marginTop: 8, fontSize: 12, color: "#6B7280" }}>
+      <div style={{ marginTop: 8, fontSize: 12, color: "#6B6B6B" }}>
         Showing {sortedRows.length} accounts |{" "}
         {formatCurrency(
           sortedRows.reduce((s, r) => s + r.estValue, 0)

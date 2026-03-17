@@ -9,7 +9,7 @@ const TYPE_COLORS = {
   "sampling": "#7c3aed",
   "placement fee": "#dc2626",
   "price reduction": "#d97706",
-  "other": "#6b7280",
+  "other": "#6B6B6B",
 };
 
 function getTypeColor(type) {
@@ -23,10 +23,10 @@ export default function BillbackDashboard({ spendByWine = [], spendByDistributor
     return (
       <div style={s.emptyState}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>&#128203;</div>
-        <h3 style={{ fontSize: 16, fontWeight: 700, color: "#374151", margin: "0 0 8px" }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: "#2E2E2E", margin: "0 0 8px" }}>
           No billback data yet
         </h3>
-        <p style={{ fontSize: 13, color: "#6B7280", margin: 0 }}>
+        <p style={{ fontSize: 13, color: "#6B6B6B", margin: 0 }}>
           Upload a PDF billback from Settings &gt; Data Import to see your trade spend analytics.
         </p>
       </div>
@@ -62,7 +62,7 @@ export default function BillbackDashboard({ spendByWine = [], spendByDistributor
       {/* Spend by Type Bar */}
       {Object.keys(byType).length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "#6B7280", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.3px" }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#6B6B6B", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.3px" }}>
             Spend by Type
           </div>
           <div style={{ display: "flex", height: 24, borderRadius: 6, overflow: "hidden", marginBottom: 8 }}>
@@ -82,7 +82,7 @@ export default function BillbackDashboard({ spendByWine = [], spendByDistributor
             {Object.entries(byType).sort((a, b) => b[1] - a[1]).map(([type, amount]) => (
               <div key={type} style={{ display: "flex", alignItems: "center", gap: 4 }}>
                 <div style={{ width: 8, height: 8, borderRadius: 2, background: getTypeColor(type) }} />
-                <span style={{ color: "#6B7280" }}>{type}: </span>
+                <span style={{ color: "#6B6B6B" }}>{type}: </span>
                 <span style={{ fontWeight: 600 }}>${amount.toLocaleString()}</span>
               </div>
             ))}
@@ -125,7 +125,7 @@ export default function BillbackDashboard({ spendByWine = [], spendByDistributor
             </thead>
             <tbody>
               {spendByWine.map((row, i) => (
-                <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                <tr key={i} style={{ borderBottom: "1px solid #FDF8F0" }}>
                   <td style={{ ...s.td, fontWeight: 600 }}>{row.wine}</td>
                   <td style={s.td}>{row.producer}</td>
                   <td style={{ ...s.td, textAlign: "right", fontWeight: 600, color: "#6B1E1E" }}>
@@ -133,7 +133,7 @@ export default function BillbackDashboard({ spendByWine = [], spendByDistributor
                   </td>
                   <td style={{ ...s.td, textAlign: "right" }}>{row.totalQty}</td>
                   <td style={{ ...s.td, textAlign: "right" }}>${row.spendPerCase.toFixed(2)}</td>
-                  <td style={{ ...s.td, fontSize: 11, color: "#6B7280" }}>{row.distributors.join(", ")}</td>
+                  <td style={{ ...s.td, fontSize: 11, color: "#6B6B6B" }}>{row.distributors.join(", ")}</td>
                   <td style={{ ...s.td, fontSize: 11, color: "#9CA3AF" }}>{row.lastDate}</td>
                 </tr>
               ))}
@@ -153,14 +153,14 @@ export default function BillbackDashboard({ spendByWine = [], spendByDistributor
             </thead>
             <tbody>
               {spendByDistributor.map((row, i) => (
-                <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                <tr key={i} style={{ borderBottom: "1px solid #FDF8F0" }}>
                   <td style={{ ...s.td, fontWeight: 600 }}>{row.dist}</td>
                   <td style={{ ...s.td, textAlign: "right", fontWeight: 600, color: "#6B1E1E" }}>
                     ${row.totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                   <td style={{ ...s.td, textAlign: "right" }}>{row.totalQty}</td>
                   <td style={{ ...s.td, textAlign: "right" }}>${row.spendPerCase.toFixed(2)}</td>
-                  <td style={{ ...s.td, fontSize: 11, color: "#6B7280" }}>{row.wines.join(", ")}</td>
+                  <td style={{ ...s.td, fontSize: 11, color: "#6B6B6B" }}>{row.wines.join(", ")}</td>
                   <td style={{ ...s.td, fontSize: 11, color: "#9CA3AF" }}>{row.lastDate}</td>
                 </tr>
               ))}
@@ -207,7 +207,7 @@ const s = {
   },
   kpiLabel: {
     fontSize: 11,
-    color: "#6B7280",
+    color: "#6B6B6B",
     marginTop: 2,
   },
   table: {
@@ -221,7 +221,7 @@ const s = {
     fontWeight: 600,
     fontSize: 11,
     textTransform: "uppercase",
-    color: "#6B7280",
+    color: "#6B6B6B",
     letterSpacing: "0.3px",
   },
   td: {

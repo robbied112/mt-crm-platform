@@ -116,7 +116,7 @@ export default function ProductSheetReviewStep({ rows, headers, mapping, onConfi
       <div className="product-sheet-review__header">
         <div>
           <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Review Product Sheet</h4>
-          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B7280" }}>
+          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B6B6B" }}>
             {products.length} products extracted
             {duplicateCount > 0 && (
               <span className="product-sheet-review__badge--duplicate">
@@ -245,7 +245,7 @@ export default function ProductSheetReviewStep({ rows, headers, mapping, onConfi
       </div>
 
       <div className="product-sheet-review__summary">
-        <span style={{ fontSize: 13, color: "#374151" }}>
+        <span style={{ fontSize: 13, color: "#2E2E2E" }}>
           {selectedCount} product{selectedCount !== 1 ? "s" : ""} selected
           {duplicateCount > 0 && `, ${duplicateCount} duplicate${duplicateCount !== 1 ? "s" : ""} found`}
         </span>

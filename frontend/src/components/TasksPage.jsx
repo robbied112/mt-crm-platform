@@ -10,7 +10,7 @@ const PRIORITY_COLORS = {
   urgent: { bg: "#fee2e2", color: "#dc2626" },
   high: { bg: "#fed7aa", color: "#f97316" },
   medium: { bg: "#fef3c7", color: "#d97706" },
-  low: { bg: "#f1f5f9", color: "#64748b" },
+  low: { bg: "#FDF8F0", color: "#64748b" },
 };
 
 const FILTER_TABS = [

@@ -218,7 +218,7 @@ export default function CommandPalette({ isOpen, onClose }) {
     <div className="cmdpal__overlay" onClick={onClose}>
       <div className="cmdpal" onClick={(e) => e.stopPropagation()}>
         <div className="cmdpal__input-row">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#8B6A4C" strokeWidth="2" strokeLinecap="round">
             <circle cx="8" cy="8" r="5" />
             <path d="M12 12l4 4" />
           </svg>
