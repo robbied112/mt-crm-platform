@@ -3,15 +3,17 @@
  *
  * Multi-section page:
  *   1. Role confirmation (pre-filled from signup)
- *   2. Distributor selector — which distributors do you work with?
- *   3. Report guide viewer — step-by-step instructions per distributor
+ *   2. Data source selector — categorized guide library (distributors,
+ *      accounting, DTC, industry) with Coming Soon badges and
+ *      Request-a-Guide form. Categories ordered by user's business role.
+ *   3. Report guide viewer — step-by-step instructions per source
  *   4. Upload launcher — links to DataImport in settings
  *   5. Data Health Card — what's loaded, what's missing
  *
  * Onboarding state lives on tenants/{id}/config/main.onboarding.
  * Always writes the full onboarding{} object (never partial patches).
  *
- * DistributorSelector and ReportGuide are inline — only used here.
+ * ReportGuidePanel is inline — only used here.
  */
 
 import { useState, useEffect, useMemo, useCallback } from "react";
@@ -20,17 +22,21 @@ import { useData } from "../context/DataContext";
 import { useAuth } from "../context/AuthContext";
 import {
   DISTRIBUTOR_SYSTEMS,
+  DATA_SOURCE_CATEGORIES,
+  PLANNED_SOURCES,
   ONBOARDING_STEPS,
   ROLE_RECOMMENDATIONS,
   getReportGuide,
-  getDistributorSystemIds,
+  getSystemsByCategory,
+  getCategoryOrder,
+  getAllSourceIds,
 } from "../config/reportGuides";
 import DataHealthCard from "./DataHealthCard";
 import { logSetupEvent } from "../services/setupAnalytics";
 
 const STEP_LABELS = {
   role: "Your Role",
-  distributors: "Your Distributors",
+  distributors: "Data Sources",
   guides: "Report Guides",
   upload: "Upload Data",
   health: "Data Health",
@@ -54,13 +60,16 @@ export default function SetupAssistant() {
   const [selectedRole, setSelectedRole] = useState(
     currentUser?.businessType || tenantConfig?.userRole || "Winery"
   );
-  const [selectedDistributors, setSelectedDistributors] = useState(
+  const [selectedSources, setSelectedSources] = useState(
     onboarding.distributors || []
   );
-  const [otherDistributor, setOtherDistributor] = useState("");
   const [activeGuide, setActiveGuide] = useState(null);
   const [activeReportType, setActiveReportType] = useState("depletion");
   const [saving, setSaving] = useState(false);
+
+  // Request-a-Guide form state
+  const [requestName, setRequestName] = useState("");
+  const [requestSent, setRequestSent] = useState(false);
 
   // Determine current step based on what's been completed
   const currentStep = useMemo(() => {
@@ -76,11 +85,22 @@ export default function SetupAssistant() {
     logSetupEvent(tenantId, "setup_started", { role: selectedRole, source: "direct" });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Categorized sources, ordered by role
+  const categoryOrder = useMemo(() => getCategoryOrder(selectedRole), [selectedRole]);
+  const systemsByCategory = useMemo(() => getSystemsByCategory(), []);
+  const categoryLabels = useMemo(() => {
+    const map = {};
+    for (const cat of DATA_SOURCE_CATEGORIES) {
+      map[cat.key] = cat.label;
+    }
+    return map;
+  }, []);
+
   // Save full onboarding state to Firestore
   const saveOnboarding = useCallback(
     async (patch) => {
       const updated = {
-        distributors: selectedDistributors,
+        distributors: selectedSources,
         completedSteps: onboarding.completedSteps || [],
         dataHealth: {
           depletions: !!availability?.depletions,
@@ -102,7 +122,7 @@ export default function SetupAssistant() {
         setSaving(false);
       }
     },
-    [selectedDistributors, onboarding, availability, updateTenantConfig]
+    [selectedSources, onboarding, availability, updateTenantConfig]
   );
 
   const completeStep = useCallback(
@@ -120,34 +140,40 @@ export default function SetupAssistant() {
     logSetupEvent(tenantId, "role_confirmed", { role: selectedRole });
   }
 
-  // ── Distributor Selection ──
-  function toggleDistributor(id) {
-    setSelectedDistributors((prev) =>
+  // ── Source Selection ──
+  function toggleSource(id) {
+    setSelectedSources((prev) =>
       prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]
     );
   }
 
-  function handleDistributorsConfirm() {
-    const distributors = [...selectedDistributors];
-    if (otherDistributor.trim()) {
-      distributors.push(`other:${otherDistributor.trim()}`);
-      logSetupEvent(tenantId, "guide_not_found", {
-        distributorName: otherDistributor.trim(),
-      });
-    }
+  function handleSourcesConfirm() {
+    const sources = [...selectedSources];
     saveOnboarding({
-      distributors,
+      distributors: sources,
       completedSteps: [...(onboarding.completedSteps || []), "distributors"],
     });
     logSetupEvent(tenantId, "distributor_selected", {
-      distributors,
-      count: distributors.length,
+      distributors: sources,
+      count: sources.length,
     });
-    // Auto-select first distributor for guide view
-    if (distributors.length > 0) {
-      const firstReal = distributors.find((d) => !d.startsWith("other:"));
-      setActiveGuide(firstReal || "generic");
+    // Auto-select first source for guide view
+    if (sources.length > 0) {
+      setActiveGuide(sources[0]);
     }
+  }
+
+  // ── Request a Guide ──
+  function handleRequestGuide() {
+    if (!requestName.trim()) return;
+    logSetupEvent(tenantId, "guide_requested", {
+      sourceName: requestName.trim(),
+    });
+    setRequestSent(true);
+    setTimeout(() => {
+      setRequestSent(false);
+      setRequestName("");
+    }, 3000);
   }
 
   // ── Guide Viewer ──
@@ -177,7 +203,7 @@ export default function SetupAssistant() {
   }, [allComplete, availability?.hasAnyData, tenantId]);
 
   const roleRec = ROLE_RECOMMENDATIONS[selectedRole] || ROLE_RECOMMENDATIONS.Winery;
-  const systemIds = getDistributorSystemIds();
+  const canContinueSources = selectedSources.length > 0 || requestSent;
 
   return (
     <div className="setup-assistant">
@@ -237,52 +263,116 @@ export default function SetupAssistant() {
         )}
       </section>
 
-      {/* ── Step 2: Distributors ── */}
+      {/* ── Step 2: Data Sources ── */}
       <section className="setup-assistant__section">
-        <h2 className="setup-assistant__section-title">2. Your Distributors</h2>
+        <h2 className="setup-assistant__section-title">2. Your Data Sources</h2>
         <p className="setup-assistant__section-desc">
-          Which distributors do you work with? We'll show you exactly how to pull reports from their portals.
+          Select the systems you use — we'll show you exactly how to pull the right reports.
         </p>
-        <div className="setup-assistant__distributor-grid">
-          {systemIds.map((id) => {
-            const sys = DISTRIBUTOR_SYSTEMS[id];
-            const checked = selectedDistributors.includes(id);
+
+        <div className="setup-assistant__source-categories">
+          {categoryOrder.map((catKey, catIndex) => {
+            const sourceIds = systemsByCategory[catKey] || [];
+            const plannedForCat = PLANNED_SOURCES.filter((p) => p.category === catKey);
+            // Skip categories with nothing to show
+            if (sourceIds.length === 0 && plannedForCat.length === 0) return null;
+
             return (
-              <label
-                key={id}
-                className={`setup-assistant__distributor-option ${checked ? "setup-assistant__distributor-option--checked" : ""}`}
+              <div
+                key={catKey}
+                className={`setup-assistant__category ${catIndex > 0 ? "setup-assistant__category--bordered" : ""}`}
+                role="group"
+                aria-label={categoryLabels[catKey] || catKey}
               >
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => toggleDistributor(id)}
-                  className="setup-assistant__distributor-checkbox"
-                />
-                <div>
-                  <span className="setup-assistant__distributor-name">{sys.name}</span>
-                  <span className="setup-assistant__distributor-portal">{sys.portalName}</span>
+                <div className="setup-assistant__category-label">
+                  {categoryLabels[catKey] || catKey}
                 </div>
-              </label>
+                <div className="setup-assistant__source-grid">
+                  {/* Real selectable sources */}
+                  {sourceIds.map((id) => {
+                    const sys = DISTRIBUTOR_SYSTEMS[id];
+                    const checked = selectedSources.includes(id);
+                    return (
+                      <label
+                        key={id}
+                        className={`setup-assistant__source-option ${checked ? "setup-assistant__source-option--checked" : ""}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleSource(id)}
+                          className="setup-assistant__source-checkbox"
+                        />
+                        <div className="setup-assistant__source-info">
+                          <span className="setup-assistant__source-name">{sys.name}</span>
+                          <span className="setup-assistant__source-detail">{sys.sourceName}</span>
+                          {sys.cadence && (
+                            <span className="setup-assistant__cadence-badge">
+                              Upload {sys.cadence}
+                            </span>
+                          )}
+                        </div>
+                      </label>
+                    );
+                  })}
+
+                  {/* Coming Soon items */}
+                  {plannedForCat.map((planned) => (
+                    <div
+                      key={planned.id}
+                      className="setup-assistant__source-option setup-assistant__source-option--coming-soon"
+                      aria-disabled="true"
+                      aria-label={`${planned.name} — coming soon`}
+                    >
+                      <div className="setup-assistant__source-info">
+                        <span className="setup-assistant__source-name">{planned.name}</span>
+                        <span className="setup-assistant__coming-soon-badge">Coming Soon</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             );
           })}
-          <div className="setup-assistant__distributor-other">
-            <label className="setup-assistant__distributor-other-label">
-              Other distributor:
-            </label>
-            <input
-              type="text"
-              className="setup-assistant__distributor-other-input"
-              value={otherDistributor}
-              onChange={(e) => setOtherDistributor(e.target.value)}
-              placeholder="e.g., Martignetti, Opici, LibDib..."
-            />
-          </div>
         </div>
+
+        {/* Request a Guide */}
+        <div className="setup-assistant__request-guide">
+          <span className="setup-assistant__request-label">
+            Don't see your system?
+          </span>
+          {requestSent ? (
+            <span className="setup-assistant__request-confirmation">
+              Thanks! We'll look into adding a guide for {requestName || "that"}.
+            </span>
+          ) : (
+            <div className="setup-assistant__request-form">
+              <input
+                type="text"
+                className="setup-assistant__request-input"
+                value={requestName}
+                onChange={(e) => setRequestName(e.target.value)}
+                placeholder="e.g., Martignetti, LibDib, FreshBooks..."
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleRequestGuide();
+                }}
+              />
+              <button
+                className="setup-assistant__request-btn"
+                onClick={handleRequestGuide}
+                disabled={!requestName.trim()}
+              >
+                Request a Guide
+              </button>
+            </div>
+          )}
+        </div>
+
         {!(onboarding.completedSteps || []).includes("distributors") && (
           <button
-            className="setup-assistant__action-btn"
-            onClick={handleDistributorsConfirm}
-            disabled={saving || (selectedDistributors.length === 0 && !otherDistributor.trim())}
+            className="setup-assistant__action-btn setup-assistant__action-btn--sticky"
+            onClick={handleSourcesConfirm}
+            disabled={saving || !canContinueSources}
           >
             Continue to Report Guides
           </button>
@@ -293,19 +383,18 @@ export default function SetupAssistant() {
       <section className="setup-assistant__section">
         <h2 className="setup-assistant__section-title">3. How to Pull Your Reports</h2>
         <p className="setup-assistant__section-desc">
-          Select a distributor below to see step-by-step instructions for downloading the right report.
+          Select a source below to see step-by-step instructions for downloading the right report.
         </p>
 
-        {/* Distributor tabs */}
+        {/* Source tabs */}
         <div className="setup-assistant__guide-tabs">
-          {(selectedDistributors.length > 0 ? selectedDistributors : systemIds).map((id) => {
-            const displayId = id.startsWith("other:") ? "generic" : id;
-            const sys = DISTRIBUTOR_SYSTEMS[displayId] || DISTRIBUTOR_SYSTEMS.generic;
+          {(selectedSources.length > 0 ? selectedSources : getAllSourceIds()).map((id) => {
+            const sys = DISTRIBUTOR_SYSTEMS[id] || DISTRIBUTOR_SYSTEMS.generic;
             return (
               <button
                 key={id}
-                className={`setup-assistant__guide-tab ${activeGuide === displayId ? "setup-assistant__guide-tab--active" : ""}`}
-                onClick={() => handleGuideView(displayId)}
+                className={`setup-assistant__guide-tab ${activeGuide === id ? "setup-assistant__guide-tab--active" : ""}`}
+                onClick={() => handleGuideView(id)}
               >
                 {sys.shortName}
               </button>
@@ -388,7 +477,7 @@ function ReportGuidePanel({ systemId, reportType, onReportTypeChange }) {
     <div className="report-guide">
       <div className="report-guide__header">
         <h3 className="report-guide__system-name">{system.name}</h3>
-        <span className="report-guide__portal">{system.portalName}</span>
+        <span className="report-guide__source">{system.sourceName}</span>
       </div>
 
       {/* Report type selector */}

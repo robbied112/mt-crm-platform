@@ -1325,6 +1325,29 @@
 - **Files:** `frontend/src/services/firestoreService.js`, `frontend/src/__tests__/firestoreService.test.js`
 - **Depends on:** None
 
+### TODO-130: Data Source Guide Library (Report Helper Reframe)
+- **What:** Reframe SetupAssistant Step 2 from "Your Distributors" to "Your Data Sources." Category grouping (Distributor Portals, Accounting Software, DTC/E-Commerce, Industry Reports). Add QuickBooks (revenue + AR/AP aging) and iDig guides. Coming Soon badges for planned connectors (Shopify, WooCommerce, Xero). Request-a-Guide form replacing "Other" text input. Freshness hints ("Upload weekly"/"Upload monthly"). Role-based category ordering. Rename `portalName` → `sourceName`. New `getAllSourceIds()`, `getSystemsByCategory()`, `getCategoryOrder()` functions.
+- **Why:** Current distributor-only framing makes the system feel limited. Users with QuickBooks/iDig data don't know they can upload it. Users working with non-Big-4 distributors see a list that excludes them and think "this tool isn't for me." Blocks activation for a significant segment of users.
+- **Pros:** Extensible foundation for future data sources. Product intelligence via guide requests. Better first impression. Existing architecture (reportGuides.js + ReportGuidePanel) reused — no rebuilds.
+- **Cons:** ~4 files, ~300 LOC delta. Content research needed for QB guide accuracy.
+- **Context:** Extends TODO-048 (reportGuides.js, DONE) and TODO-049 (SetupAssistant, DONE). CEO review: SELECTIVE EXPANSION with 5 cherry-picks accepted. Eng review: keep DISTRIBUTOR_SYSTEMS name, keep "distributors" step key, rename portalName → sourceName, add getAllSourceIds() alongside existing getDistributorSystemIds(). Design review: 9/10 score, full token mapping to DESIGN.md, fix pre-DESIGN.md teal holdover, sticky mobile CTA.
+- **Effort:** M (human: 6-8h) → CC: S (~30 min)
+- **Priority:** P1 — directly impacts activation and first-time user experience
+- **Testing:** Extend `reportGuides.test.js` — new entries pass field validation, `getSystemsByCategory()` groups correctly, `getCategoryOrder()` returns role-appropriate order, QB/iDig header+filename matching, `PLANNED_SOURCES` structure validation, cadence field optional.
+- **Files:** `frontend/src/config/reportGuides.js`, `frontend/src/components/SetupAssistant.jsx`, `frontend/src/styles/Global.css`, `frontend/src/__tests__/reportGuides.test.js`
+- **Depends on:** TODO-048 (done), TODO-049 (done)
+
+### TODO-131: QuickBooks Online API Connector
+- **What:** OAuth-based QuickBooks Online connector for automatic revenue, AR/AP, and customer data sync. Extends Cloud Sync framework (sync.js) with a QB adapter.
+- **Why:** QuickBooks is the #1 accounting tool for small wine businesses. Manual upload works but auto-sync is the 10x version. TODO-130's guide library creates the content foundation; this connector replaces "upload your QB report" with "connect your QuickBooks."
+- **Pros:** Massive activation improvement. Recurring data without manual uploads. Competitive differentiator.
+- **Cons:** L effort. OAuth complexity. QB API rate limits. Requires Intuit developer account.
+- **Context:** Transforms already exist (transformRevenue.js, transformArAp.js). Cloud Sync framework (sync.js) already handles Google Drive — QB adapter follows same pattern. TODO-130 provides the UX foundation (guide → coming soon badge → live connector).
+- **Effort:** L (human: 2 weeks) → CC: M (~4-6 hours)
+- **Priority:** P2
+- **Files:** New `functions/quickbooks.js`, `functions/index.js`, `frontend/src/components/CloudSyncSettings.jsx`
+- **Depends on:** TODO-130
+
 ### Ease-of-Use Vision Items (Delight Opportunities)
 
 - **File-to-insight timer** — Animated timer showing seconds from drop to preview. "Your insights in 4.2 seconds." Reinforces speed. (~10 min, depends on TODO-112)

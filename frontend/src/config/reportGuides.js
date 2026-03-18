@@ -3,12 +3,12 @@
  *
  * Unified schema serving two consumers:
  *   1. Setup Assistant UI — human-readable steps, tips, report descriptions
- *   2. File detection (TODO-053) — headerSignatures[] and filenamePatterns[] for matching
+ *   2. File detection — headerSignatures[] and filenamePatterns[] for matching
  *
  * DISTRIBUTOR_SYSTEMS structure:
  *   {
  *     [systemId]: {
- *       name, shortName, portalName,
+ *       name, shortName, sourceName, category, cadence,
  *       headerSignatures: [[col1, col2], ...],   // arrays of column names that fingerprint this system
  *       filenamePatterns: [/regex/i, ...],         // filename patterns
  *       reports: {
@@ -17,16 +17,56 @@
  *     }
  *   }
  *
+ * Categories group sources in the Setup Assistant:
+ *   "distributor" — Distributor portal report guides
+ *   "accounting"  — Accounting software export guides
+ *   "dtc"         — DTC / e-commerce platforms (future)
+ *   "industry"    — Industry-specific report systems
+ *
  * ROLE_RECOMMENDATIONS maps business role → ordered list of which data types to upload first.
+ * ROLE_CATEGORY_ORDER maps business role → category display priority in Setup Assistant.
  */
 
 export const ONBOARDING_STEPS = ["role", "distributors", "guides", "upload", "health"];
+
+/**
+ * Category definitions — display order and labels for the Setup Assistant.
+ */
+export const DATA_SOURCE_CATEGORIES = [
+  { key: "distributor", label: "Distributor Portals" },
+  { key: "accounting", label: "Accounting Software" },
+  { key: "dtc", label: "DTC / E-Commerce" },
+  { key: "industry", label: "Industry Reports" },
+];
+
+/**
+ * Planned sources — shown as "Coming Soon" in the Setup Assistant.
+ * These are not selectable and have no report guides yet.
+ */
+export const PLANNED_SOURCES = [
+  { id: "shopify", name: "Shopify", category: "dtc" },
+  { id: "woocommerce", name: "WooCommerce", category: "dtc" },
+  { id: "xero", name: "Xero", category: "accounting" },
+];
+
+/**
+ * Role-based category ordering — which categories appear first
+ * based on the user's business type.
+ */
+export const ROLE_CATEGORY_ORDER = {
+  Winery: ["distributor", "accounting", "industry", "dtc"],
+  Importer: ["distributor", "accounting", "industry", "dtc"],
+  Distributor: ["accounting", "distributor", "industry", "dtc"],
+  Retailer: ["accounting", "dtc", "industry", "distributor"],
+};
 
 export const DISTRIBUTOR_SYSTEMS = {
   sgws: {
     name: "Southern Glazer's Wine & Spirits",
     shortName: "SGWS",
-    portalName: "SGWS Portal / Proof",
+    sourceName: "SGWS Portal / Proof",
+    category: "distributor",
+    cadence: "weekly",
     headerSignatures: [
       ["PREMISE TYPE", "CORP ITEM CD", "CASES"],
       ["PREMISE TYPE", "ITEM DESCRIPTION", "9L CASES"],
@@ -75,7 +115,9 @@ export const DISTRIBUTOR_SYSTEMS = {
   breakthru: {
     name: "Breakthru Beverage Group",
     shortName: "Breakthru",
-    portalName: "Breakthru Encompass Portal",
+    sourceName: "Breakthru Encompass Portal",
+    category: "distributor",
+    cadence: "weekly",
     headerSignatures: [
       ["ITEM NUMBER", "BRAND FAMILY", "DEPLETION QTY"],
       ["ITEM NBR", "BRAND", "DEPL CASES"],
@@ -122,13 +164,15 @@ export const DISTRIBUTOR_SYSTEMS = {
   rndc: {
     name: "Republic National Distributing Company",
     shortName: "RNDC",
-    portalName: "iDIG Portal",
+    sourceName: "RNDC iDIG Portal",
+    category: "distributor",
+    cadence: "weekly",
     headerSignatures: [
       ["PRODUCT CODE", "PRODUCT DESCRIPTION", "CASES DEPLETED"],
       ["PROD CD", "ACCT NAME", "DEPL CS"],
       ["ITEM CODE", "NET UNITS", "ACCOUNT"],
     ],
-    filenamePatterns: [/rndc/i, /republic.*national/i, /idig/i],
+    filenamePatterns: [/rndc/i, /republic.*national/i],
     reports: {
       depletion: {
         title: "Depletion Report",
@@ -154,7 +198,9 @@ export const DISTRIBUTOR_SYSTEMS = {
   youngs: {
     name: "Young's Market Company",
     shortName: "Young's",
-    portalName: "Young's Supplier Portal",
+    sourceName: "Young's Supplier Portal",
+    category: "distributor",
+    cadence: "weekly",
     headerSignatures: [
       ["ITEM #", "DESCRIPTION", "CASES SOLD"],
       ["PRODUCT", "ACCOUNT", "QTY SHIPPED"],
@@ -181,10 +227,97 @@ export const DISTRIBUTOR_SYSTEMS = {
     },
   },
 
+  quickbooks: {
+    name: "QuickBooks",
+    shortName: "QuickBooks",
+    sourceName: "QuickBooks Online / Desktop",
+    category: "accounting",
+    cadence: "monthly",
+    headerSignatures: [
+      ["DATE", "TRANSACTION TYPE", "AMOUNT", "BALANCE"],
+      ["INVOICE DATE", "CUSTOMER", "AMOUNT", "PRODUCT/SERVICE"],
+      ["DATE", "NAME", "AMOUNT", "ACCOUNT"],
+      ["AGING", "CURRENT", "1 - 30", "31 - 60"],
+    ],
+    filenamePatterns: [/quickbooks/i, /qb_/i, /qbo_/i, /intuit/i],
+    reports: {
+      revenue: {
+        title: "Sales by Customer Summary",
+        description: "Revenue broken down by customer — shows who's buying what and total sales volume.",
+        steps: [
+          "In QuickBooks, go to Reports",
+          "Search for 'Sales by Customer Summary' or 'Sales by Product/Service'",
+          "Set the date range (last 12 months recommended)",
+          "Click 'Export' or 'Export to Excel'",
+          "Upload the downloaded file here",
+        ],
+        tips: [
+          "The 'Sales by Customer Summary' gives the best overview of your revenue by account",
+          "For product-level detail, also export 'Sales by Product/Service Summary'",
+          "Make sure the date range covers at least one full quarter for meaningful trends",
+        ],
+        expectedColumns: ["CUSTOMER", "TOTAL", "AMOUNT", "DATE"],
+      },
+      arAging: {
+        title: "Accounts Receivable Aging Report",
+        description: "Shows outstanding invoices and how long they've been unpaid — essential for cash flow management.",
+        steps: [
+          "In QuickBooks, go to Reports",
+          "Search for 'A/R Aging Summary' or 'Accounts Receivable Aging'",
+          "Set the 'As of' date (typically today)",
+          "Click 'Export to Excel'",
+          "Upload the downloaded file here",
+        ],
+        tips: [
+          "AR Aging data unlocks the Executive Dashboard's cash flow view",
+          "The standard aging buckets (Current, 1-30, 31-60, 61-90, 90+) are auto-detected",
+          "Run this monthly to track collection trends over time",
+        ],
+        expectedColumns: ["CUSTOMER", "CURRENT", "1 - 30", "31 - 60", "61 - 90", "91 AND OVER", "TOTAL"],
+      },
+    },
+  },
+
+  idig: {
+    name: "iDig",
+    shortName: "iDig",
+    sourceName: "RNDC iDIG Portal",
+    category: "industry",
+    cadence: "weekly",
+    headerSignatures: [
+      ["PRODUCT CODE", "PRODUCT DESCRIPTION", "CASES DEPLETED"],
+      ["PROD CD", "ACCT NAME", "DEPL CS"],
+    ],
+    filenamePatterns: [/idig/i, /i-dig/i],
+    reports: {
+      depletion: {
+        title: "iDig Depletion Report",
+        description: "Depletion data from the iDig portal — RNDC's industry reporting system showing cases sold to retail accounts.",
+        steps: [
+          "Log in to iDig (idig.rndc.com)",
+          "Navigate to Reports > Depletion",
+          "Choose 'Depletion Detail' for account-level data",
+          "Set your date range (13 weeks for trend data)",
+          "Select your supplier code / brand family",
+          "Export to Excel format",
+          "Upload the downloaded file here",
+        ],
+        tips: [
+          "iDig is RNDC's reporting portal — if you're an RNDC supplier, this is where your data lives",
+          "Uses 'PRODUCT CODE' for SKU identification — the system maps this automatically",
+          "RNDC reports may split by division — combine into one file or upload separately",
+        ],
+        expectedColumns: ["PRODUCT CODE", "PRODUCT DESCRIPTION", "CASES DEPLETED", "ACCT NAME", "STATE"],
+      },
+    },
+  },
+
   generic: {
     name: "Other Distributor",
     shortName: "Other",
-    portalName: "Your Distributor Portal",
+    sourceName: "Your Distributor Portal",
+    category: "distributor",
+    cadence: null,
     headerSignatures: [],
     filenamePatterns: [],
     reports: {
@@ -231,6 +364,35 @@ export const DISTRIBUTOR_SYSTEMS = {
         tips: [
           "Pipeline data powers the Pipeline dashboard and deal tracking",
           "If you don't have a formal pipeline, you can create accounts manually in the CRM section instead",
+        ],
+        expectedColumns: [],
+      },
+    },
+  },
+
+  genericAccounting: {
+    name: "Other Accounting Software",
+    shortName: "Other",
+    sourceName: "Your Accounting Software",
+    category: "accounting",
+    cadence: null,
+    headerSignatures: [],
+    filenamePatterns: [],
+    reports: {
+      revenue: {
+        title: "Revenue / Sales Export",
+        description: "Revenue data exported from your accounting system — sales by customer, product, or date.",
+        steps: [
+          "Open your accounting software (QuickBooks, Xero, FreshBooks, Wave, etc.)",
+          "Look for a 'Sales Summary', 'Revenue Report', or 'Profit & Loss' report",
+          "Set the date range (at least one quarter recommended)",
+          "Export as Excel (.xlsx) or CSV",
+          "Upload the downloaded file here",
+        ],
+        tips: [
+          "The AI mapper recognizes most accounting export formats automatically",
+          "Key columns: customer/account name, amount/total, date, and product/service",
+          "Don't worry about extra columns — the system only uses what it needs",
         ],
         expectedColumns: [],
       },
@@ -284,8 +446,8 @@ export const ROLE_RECOMMENDATIONS = {
 };
 
 /**
- * Match uploaded file headers against distributor system signatures.
- * Returns { systemId, systemName } or null if no match.
+ * Match uploaded file headers against system signatures.
+ * Returns { systemId, systemName, shortName } or null if no match.
  */
 export function matchDistributorByHeaders(headers) {
   if (!Array.isArray(headers) || headers.length === 0) return null;
@@ -293,7 +455,7 @@ export function matchDistributorByHeaders(headers) {
   const upperHeaders = headers.map((h) => String(h).toUpperCase().trim());
 
   for (const [systemId, system] of Object.entries(DISTRIBUTOR_SYSTEMS)) {
-    if (systemId === "generic") continue;
+    if (systemId === "generic" || systemId === "genericAccounting") continue;
     for (const signature of system.headerSignatures) {
       const matches = signature.every((sigCol) =>
         upperHeaders.some((h) => h.includes(sigCol.toUpperCase()))
@@ -307,14 +469,14 @@ export function matchDistributorByHeaders(headers) {
 }
 
 /**
- * Match uploaded filename against distributor system patterns.
- * Returns { systemId, systemName } or null if no match.
+ * Match uploaded filename against system patterns.
+ * Returns { systemId, systemName, shortName } or null if no match.
  */
 export function matchDistributorByFilename(filename) {
   if (!filename) return null;
 
   for (const [systemId, system] of Object.entries(DISTRIBUTOR_SYSTEMS)) {
-    if (systemId === "generic") continue;
+    if (systemId === "generic" || systemId === "genericAccounting") continue;
     for (const pattern of system.filenamePatterns) {
       if (pattern.test(filename)) {
         return { systemId, systemName: system.name, shortName: system.shortName };
@@ -335,8 +497,43 @@ export function getReportGuide(systemId, reportType = "depletion") {
 }
 
 /**
- * Get all available system IDs (excluding generic).
+ * Get distributor-category system IDs (excluding generics).
+ * Used by DataImport for file detection.
  */
 export function getDistributorSystemIds() {
-  return Object.keys(DISTRIBUTOR_SYSTEMS).filter((id) => id !== "generic");
+  return Object.keys(DISTRIBUTOR_SYSTEMS).filter((id) => id !== "generic" && id !== "genericAccounting");
+}
+
+/**
+ * Get all selectable source IDs (excluding generics).
+ * Used by SetupAssistant for the source picker.
+ */
+export function getAllSourceIds() {
+  return Object.keys(DISTRIBUTOR_SYSTEMS).filter(
+    (id) => id !== "generic" && id !== "genericAccounting"
+  );
+}
+
+/**
+ * Group systems by category.
+ * Returns { distributor: [systemId, ...], accounting: [...], ... }
+ * Only includes categories that have at least one real (non-generic) entry.
+ */
+export function getSystemsByCategory() {
+  const result = {};
+  for (const [id, system] of Object.entries(DISTRIBUTOR_SYSTEMS)) {
+    if (id === "generic" || id === "genericAccounting") continue;
+    const cat = system.category || "distributor";
+    if (!result[cat]) result[cat] = [];
+    result[cat].push(id);
+  }
+  return result;
+}
+
+/**
+ * Get category display order for a given role.
+ * Falls back to default Winery order for unknown roles.
+ */
+export function getCategoryOrder(role) {
+  return ROLE_CATEGORY_ORDER[role] || ROLE_CATEGORY_ORDER.Winery;
 }
