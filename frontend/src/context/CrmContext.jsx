@@ -77,7 +77,11 @@ export default function CrmProvider({ children }) {
   // ─── Account CRUD ─────────────────────────────────────────
 
   const createAccount = useCallback(async (data) => {
-    return _createAccount(tenantId, { ...data, createdBy: currentUser?.uid });
+    return _createAccount(tenantId, {
+      ...data,
+      createdBy: currentUser?.uid,
+      ownerId: data.ownerId || currentUser?.uid || null,
+    });
   }, [tenantId, currentUser]);
 
   const updateAccount = useCallback(async (id, patch) => {

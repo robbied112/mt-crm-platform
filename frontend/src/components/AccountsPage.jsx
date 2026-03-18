@@ -5,6 +5,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCrm } from "../context/CrmContext";
 import { useData } from "../context/DataContext";
+import { useTeam } from "../context/TeamContext";
 import AccountForm from "./AccountForm";
 
 const PAGE_SIZE = 50;
@@ -18,16 +19,19 @@ const STATUS_COLORS = {
 export default function AccountsPage() {
   const { accounts, createAccount, updateAccount, deleteAccount } = useCrm();
   const { tenantConfig } = useData();
+  const { members, memberMap } = useTeam();
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [ownerFilter, setOwnerFilter] = useState("all");
   const [sortKey, setSortKey] = useState("name");
   const [sortDir, setSortDir] = useState("asc");
   const [page, setPage] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [editAccount, setEditAccount] = useState(null);
+  const [contextMenu, setContextMenu] = useState(null); // { x, y, accountId }
 
   const filtered = useMemo(() => {
     let list = accounts;
@@ -46,13 +50,16 @@ export default function AccountsPage() {
     if (typeFilter !== "all") {
       list = list.filter((a) => a.type === typeFilter);
     }
+    if (ownerFilter !== "all") {
+      list = list.filter((a) => a.ownerId === ownerFilter);
+    }
     list = [...list].sort((a, b) => {
       const va = (a[sortKey] || "").toString().toLowerCase();
       const vb = (b[sortKey] || "").toString().toLowerCase();
       return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
     });
     return list;
-  }, [accounts, search, statusFilter, typeFilter, sortKey, sortDir]);
+  }, [accounts, search, statusFilter, typeFilter, ownerFilter, sortKey, sortDir]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const pageData = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -84,6 +91,20 @@ export default function AccountsPage() {
   const sortArrow = (key) => {
     if (sortKey !== key) return "";
     return sortDir === "asc" ? " \u2191" : " \u2193";
+  };
+
+  const handleContextMenu = (e, accountId) => {
+    if (members.length <= 1) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY, accountId });
+  };
+
+  const handleAssignRep = async (uid) => {
+    if (contextMenu) {
+      await updateAccount(contextMenu.accountId, { ownerId: uid || null });
+    }
+    setContextMenu(null);
   };
 
   return (
@@ -120,6 +141,14 @@ export default function AccountsPage() {
                 <option key={t} value={t}>{formatLabel(t)}</option>
               ))}
             </select>
+            {members.length > 1 && (
+              <select className="form-input" value={ownerFilter} onChange={(e) => { setOwnerFilter(e.target.value); setPage(0); }}>
+                <option value="all">All Owners</option>
+                {members.map((m) => (
+                  <option key={m.uid} value={m.uid}>{m.displayName || m.email?.split("@")[0]}</option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 
@@ -140,6 +169,7 @@ export default function AccountsPage() {
                   <th className="sortable" onClick={() => toggleSort("distributorName")}>Distributor{sortArrow("distributorName")}</th>
                   <th className="sortable" onClick={() => toggleSort("state")}>State{sortArrow("state")}</th>
                   <th className="sortable" onClick={() => toggleSort("wineProgram")}>Wine Program{sortArrow("wineProgram")}</th>
+                  {members.length > 1 && <th>Owner</th>}
                   <th>Tags</th>
                   <th></th>
                 </tr>
@@ -151,7 +181,10 @@ export default function AccountsPage() {
                     style={{ cursor: "pointer" }}
                     onClick={() => navigate(`/accounts/${acct.id}`)}
                   >
-                    <td style={{ fontWeight: 600, color: "var(--accent)" }}>{acct.name}</td>
+                    <td
+                      style={{ fontWeight: 600, color: "var(--accent)" }}
+                      onContextMenu={(e) => handleContextMenu(e, acct.id)}
+                    >{acct.name}</td>
                     <td>{formatLabel(acct.type || "")}</td>
                     <td>
                       <span className={`badge ${STATUS_COLORS[acct.status] || "badge-blue"}`}>
@@ -161,6 +194,15 @@ export default function AccountsPage() {
                     <td>{acct.distributorName || "--"}</td>
                     <td>{acct.state || "--"}</td>
                     <td>{formatLabel(acct.wineProgram || "none")}</td>
+                    {members.length > 1 && (
+                      <td>
+                        {acct.ownerId ? (
+                          <span style={{ fontSize: 12, color: "#2E2E2E" }}>{memberMap[acct.ownerId] || "—"}</span>
+                        ) : (
+                          <span style={{ fontSize: 11, padding: "2px 8px", background: "rgba(192, 123, 1, 0.1)", color: "#C07B01", borderRadius: 10, fontWeight: 600 }}>Unassigned</span>
+                        )}
+                      </td>
+                    )}
                     <td>
                       <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                         {(acct.tags || []).slice(0, 3).map((t) => (
@@ -193,6 +235,44 @@ export default function AccountsPage() {
           </>
         )}
       </div>
+
+      {contextMenu && (
+        <>
+          <div
+            style={{ position: "fixed", inset: 0, zIndex: 999 }}
+            onClick={() => setContextMenu(null)}
+          />
+          <div style={{
+            position: "fixed", left: contextMenu.x, top: contextMenu.y, zIndex: 1000,
+            background: "#fff", borderRadius: 8, boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+            padding: "4px 0", minWidth: 180,
+          }}>
+            <div style={{ padding: "6px 12px", fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              Assign to Rep
+            </div>
+            <div
+              style={{ padding: "6px 12px", fontSize: 13, cursor: "pointer", color: "#C07B01" }}
+              onClick={() => handleAssignRep(null)}
+              onMouseEnter={(e) => e.currentTarget.style.background = "#F5EDE3"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+            >
+              Unassign
+            </div>
+            {members.map((m) => (
+              <div
+                key={m.uid}
+                style={{ padding: "6px 12px", fontSize: 13, cursor: "pointer", color: "#2E2E2E" }}
+                onClick={() => handleAssignRep(m.uid)}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#F5EDE3"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+              >
+                {m.displayName || m.email?.split("@")[0]}
+                {m.role ? ` (${m.role})` : ""}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {showForm && (
         <AccountForm

@@ -4,6 +4,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCrm } from "../context/CrmContext";
+import { useTeam } from "../context/TeamContext";
 import LogActivityModal from "./LogActivityModal";
 
 const TYPE_LABELS = {
@@ -24,15 +25,23 @@ const OUTCOME_BADGE = {
 
 export default function ActivitiesPage() {
   const { activities, logActivity } = useCrm();
+  const { members } = useTeam();
   const navigate = useNavigate();
 
   const [typeFilter, setTypeFilter] = useState("all");
+  const [repFilter, setRepFilter] = useState("all");
   const [showModal, setShowModal] = useState(false);
 
   const filtered = useMemo(() => {
-    if (typeFilter === "all") return activities;
-    return activities.filter((a) => a.type === typeFilter);
-  }, [activities, typeFilter]);
+    let list = activities;
+    if (typeFilter !== "all") {
+      list = list.filter((a) => a.type === typeFilter);
+    }
+    if (repFilter !== "all") {
+      list = list.filter((a) => a.loggedBy === repFilter);
+    }
+    return list;
+  }, [activities, typeFilter, repFilter]);
 
   // Group by date
   const grouped = useMemo(() => {
@@ -64,6 +73,14 @@ export default function ActivitiesPage() {
                 <option key={k} value={k}>{v}</option>
               ))}
             </select>
+            {members.length > 1 && (
+              <select className="form-input" value={repFilter} onChange={(e) => setRepFilter(e.target.value)}>
+                <option value="all">All Reps</option>
+                {members.map((m) => (
+                  <option key={m.uid} value={m.uid}>{m.displayName || m.email?.split("@")[0]}</option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 
