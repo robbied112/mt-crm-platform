@@ -8,11 +8,8 @@
  * via sendInviteEmail callable for manual re-sends.
  */
 
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-const { defineSecret } = require("firebase-functions/params");
+const { onCall, HttpsError, admin, db, defineSecret } = require("./helpers");
 
-const db = admin.firestore();
 const resendApiKey = defineSecret("RESEND_API_KEY");
 
 /**
@@ -120,23 +117,23 @@ async function sendInviteEmailInternal({ to, inviterName, companyName, role, ter
  * Callable function: send invite email to a specific address.
  * Used from the frontend when admin enters an email for a specific invite.
  */
-const sendInviteEmail = functions.https.onCall(
+const sendInviteEmail = onCall(
   { secrets: [resendApiKey], memory: "256MiB" },
-  async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { email, inviteCode, tenantId } = data;
+    const { email, inviteCode, tenantId } = req.data;
     if (!email || !inviteCode || !tenantId) {
-      throw new functions.https.HttpsError("invalid-argument", "Missing email, inviteCode, or tenantId");
+      throw new HttpsError("invalid-argument", "Missing email, inviteCode, or tenantId");
     }
 
     // Verify caller is admin/manager of this tenant
-    const callerDoc = await db.doc(`users/${context.auth.uid}`).get();
+    const callerDoc = await db.doc(`users/${req.auth.uid}`).get();
     const callerData = callerDoc.data();
     if (!callerData || callerData.tenantId !== tenantId || (callerData.role !== "admin" && callerData.role !== "manager")) {
-      throw new functions.https.HttpsError("permission-denied", "Only admins and managers can send invite emails");
+      throw new HttpsError("permission-denied", "Only admins and managers can send invite emails");
     }
 
     // Find the invite
@@ -146,7 +143,7 @@ const sendInviteEmail = functions.https.onCall(
       .get();
 
     if (inviteSnap.empty) {
-      throw new functions.https.HttpsError("not-found", "Invite not found");
+      throw new HttpsError("not-found", "Invite not found");
     }
 
     const invite = inviteSnap.docs[0].data();

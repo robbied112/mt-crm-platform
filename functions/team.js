@@ -10,7 +10,7 @@
  * joinTeam is the security-critical path — all validation happens server-side.
  */
 
-const { functions, admin, db } = require("./helpers");
+const { onCall, HttpsError, admin, db } = require("./helpers");
 
 // ─── Plan user limits (must match frontend/src/config/plans.js) ──
 const PLAN_USER_LIMITS = {
@@ -29,28 +29,28 @@ const PLAN_USER_LIMITS = {
 // Input:  { code: "uuid-string" }
 // Output: { tenantId, companyName, inviterName, role, territory }
 // -------------------------------------------------------------------
-const validateInvite = functions
-  .runWith({ memory: "256MB" })
-  .https.onCall(async (data) => {
-    const { code } = data;
+const validateInvite = onCall(
+  { memory: "256MiB" },
+  async (req) => {
+    const { code } = req.data;
     if (!code) {
-      throw new functions.https.HttpsError("invalid-argument", "Invite code is required");
+      throw new HttpsError("invalid-argument", "Invite code is required");
     }
 
     // Search all tenants' invites for this code
     const invite = await findInviteByCode(code);
     if (!invite) {
-      throw new functions.https.HttpsError("not-found", "Invalid invite link");
+      throw new HttpsError("not-found", "Invalid invite link");
     }
 
     // Check expiry
     if (new Date(invite.expiresAt) < new Date()) {
-      throw new functions.https.HttpsError("failed-precondition", "This invite has expired");
+      throw new HttpsError("failed-precondition", "This invite has expired");
     }
 
     // Check usage
     if (invite.usedCount >= invite.maxUses) {
-      throw new functions.https.HttpsError("failed-precondition", "This invite has been fully used");
+      throw new HttpsError("failed-precondition", "This invite has been fully used");
     }
 
     // Fetch tenant and inviter info for display
@@ -87,24 +87,24 @@ const validateInvite = functions
 // Security: requires authentication. The Cloud Function uses the
 // caller's auth.uid to set their user profile.
 // -------------------------------------------------------------------
-const joinTeam = functions
-  .runWith({ memory: "256MB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in to join a team");
+const joinTeam = onCall(
+  { memory: "256MiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in to join a team");
     }
 
-    const { code } = data;
-    const uid = context.auth.uid;
+    const { code } = req.data;
+    const uid = req.auth.uid;
 
     if (!code) {
-      throw new functions.https.HttpsError("invalid-argument", "Invite code is required");
+      throw new HttpsError("invalid-argument", "Invite code is required");
     }
 
     // Find the invite
     const inviteResult = await findInviteByCode(code);
     if (!inviteResult) {
-      throw new functions.https.HttpsError("not-found", "Invalid invite link");
+      throw new HttpsError("not-found", "Invalid invite link");
     }
 
     const { tenantId, docRef: inviteRef } = inviteResult;
@@ -114,24 +114,24 @@ const joinTeam = functions
       // Re-read invite inside transaction
       const inviteSnap = await txn.get(inviteRef);
       if (!inviteSnap.exists) {
-        throw new functions.https.HttpsError("not-found", "Invite no longer exists");
+        throw new HttpsError("not-found", "Invite no longer exists");
       }
       const invite = inviteSnap.data();
 
       // Validate expiry
       if (new Date(invite.expiresAt) < new Date()) {
-        throw new functions.https.HttpsError("failed-precondition", "This invite has expired");
+        throw new HttpsError("failed-precondition", "This invite has expired");
       }
 
       // Validate usage
       if (invite.usedCount >= invite.maxUses) {
-        throw new functions.https.HttpsError("failed-precondition", "This invite has been fully used");
+        throw new HttpsError("failed-precondition", "This invite has been fully used");
       }
 
       // Check plan user limit
       const tenantSnap = await txn.get(db.collection("tenants").doc(tenantId));
       if (!tenantSnap.exists) {
-        throw new functions.https.HttpsError("not-found", "Team no longer exists");
+        throw new HttpsError("not-found", "Team no longer exists");
       }
       const tenant = tenantSnap.data();
       const plan = tenant.subscription?.plan?.toLowerCase();
@@ -143,7 +143,7 @@ const joinTeam = functions
         const currentCount = tenant.memberCount || 1;
 
         if (currentCount >= userLimit) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             "resource-exhausted",
             `Team is full (${currentCount}/${userLimit} members). Ask your admin to upgrade the plan.`
           );
@@ -168,8 +168,8 @@ const joinTeam = functions
       } else {
         // New user — create profile
         txn.set(userRef, {
-          email: context.auth.token.email || "",
-          displayName: context.auth.token.name || "",
+          email: req.auth.token.email || "",
+          displayName: req.auth.token.name || "",
           ...profileData,
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });

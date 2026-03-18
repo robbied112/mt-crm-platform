@@ -1,5 +1,6 @@
 const {
-  functions,
+  onCall,
+  HttpsError,
   admin,
   db,
   verifyTenantMembership,
@@ -134,7 +135,7 @@ async function rebuildViewsForTenant({ tenantId, triggeredBy = "system" }) {
       : configData.rebuildLock.startedAt;
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
     if (lockStartedAt > fiveMinutesAgo) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "resource-exhausted",
         "Rebuild already in progress"
       );
@@ -157,7 +158,7 @@ async function rebuildViewsForTenant({ tenantId, triggeredBy = "system" }) {
       .get();
 
     if (recentRebuilds.size >= 10) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "resource-exhausted",
         "Rate limit: max 10 rebuilds per hour. Try again later."
       );
@@ -291,10 +292,10 @@ async function rebuildViewsForTenant({ tenantId, triggeredBy = "system" }) {
         error: err.message,
       });
     }
-    if (err instanceof functions.https.HttpsError) {
+    if (err instanceof HttpsError) {
       throw err;
     }
-    throw new functions.https.HttpsError("internal", `Rebuild failed: ${err.message}`);
+    throw new HttpsError("internal", `Rebuild failed: ${err.message}`);
   } finally {
     await configRef.set({
       rebuildLock: admin.firestore.FieldValue.delete(),
@@ -302,22 +303,22 @@ async function rebuildViewsForTenant({ tenantId, triggeredBy = "system" }) {
   }
 }
 
-const rebuildViews = functions
-  .runWith({ timeoutSeconds: 540, memory: "2GB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+const rebuildViews = onCall(
+  { timeoutSeconds: 540, memory: "2GiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { tenantId } = data;
+    const { tenantId } = req.data;
     if (!tenantId) {
-      throw new functions.https.HttpsError("invalid-argument", "tenantId required");
+      throw new HttpsError("invalid-argument", "tenantId required");
     }
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
     return rebuildViewsForTenant({
       tenantId,
-      triggeredBy: context.auth.uid,
+      triggeredBy: req.auth.uid,
     });
   });
 

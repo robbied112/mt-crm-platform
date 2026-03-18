@@ -1,5 +1,8 @@
 const {
-  functions,
+  onCall,
+  onRequest,
+  onSchedule,
+  HttpsError,
   admin,
   db,
   anthropicApiKey,
@@ -41,9 +44,9 @@ const firestoreAdapter = createAdminFirestoreAdapter({ admin, db });
 // -------------------------------------------------------------------
 
 // OAuth callback — exchanges auth code for tokens, stores in Firestore
-const cloudSyncOAuthCallback = functions
-  .runWith({ secrets: [googleClientId, googleClientSecret] })
-  .https.onRequest(async (req, res) => {
+const cloudSyncOAuthCallback = onRequest(
+  { secrets: [googleClientId, googleClientSecret] },
+  async (req, res) => {
     const { code, state, error: oauthError } = req.query;
 
     if (oauthError) {
@@ -109,16 +112,16 @@ const cloudSyncOAuthCallback = functions
   });
 
 // Disconnect Google Drive — revokes token and cleans up
-const cloudSyncDisconnect = functions
-  .runWith({ secrets: [googleClientId, googleClientSecret] })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+const cloudSyncDisconnect = onCall(
+  { secrets: [googleClientId, googleClientSecret] },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { tenantId = "default" } = data;
+    const { tenantId = "default" } = req.data;
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
 
     // Delete stored tokens
     await db.collection("tenants").doc(tenantId).collection("secrets").doc("googleDrive").delete();
@@ -133,16 +136,16 @@ const cloudSyncDisconnect = functions
   });
 
 // List folders in Google Drive — for the folder picker UI
-const cloudSyncListFolders = functions
-  .runWith({ secrets: [googleClientId, googleClientSecret], timeoutSeconds: 30 })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+const cloudSyncListFolders = onCall(
+  { secrets: [googleClientId, googleClientSecret], timeoutSeconds: 30 },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { tenantId = "default", parentId } = data;
+    const { tenantId = "default", parentId } = req.data;
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
 
     try {
       const drive = await getAuthedDriveClient(
@@ -152,33 +155,33 @@ const cloudSyncListFolders = functions
       return { folders };
     } catch (err) {
       if (err.message?.startsWith("REAUTH_REQUIRED")) {
-        throw new functions.https.HttpsError("failed-precondition", err.message);
+        throw new HttpsError("failed-precondition", err.message);
       }
-      throw new functions.https.HttpsError("internal", `Failed to list folders: ${err.message}`);
+      throw new HttpsError("internal", `Failed to list folders: ${err.message}`);
     }
   });
 
 // Manual sync trigger — runs sync immediately for one tenant
-const cloudSyncSyncNow = functions
-  .runWith({
+const cloudSyncSyncNow = onCall(
+  {
     secrets: [anthropicApiKey, googleClientId, googleClientSecret],
     timeoutSeconds: 300,
-    memory: "1GB",
-  })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+    memory: "1GiB",
+  },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { tenantId = "default" } = data;
+    const { tenantId = "default" } = req.data;
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
 
     const configSnap = await db.collection("tenants").doc(tenantId).collection("config").doc("main").get();
     const config = configSnap.data() || {};
 
     if (!config.cloudSync?.folderId) {
-      throw new functions.https.HttpsError("failed-precondition", "No folder configured for sync");
+      throw new HttpsError("failed-precondition", "No folder configured for sync");
     }
 
     try {
@@ -189,19 +192,19 @@ const cloudSyncSyncNow = functions
       );
       return result;
     } catch (err) {
-      throw new functions.https.HttpsError("internal", `Sync failed: ${err.message}`);
+      throw new HttpsError("internal", `Sync failed: ${err.message}`);
     }
   });
 
 // Scheduled sync — runs every 6 hours, processes all eligible tenants
-const scheduledCloudSync = functions
-  .runWith({
+const scheduledCloudSync = onSchedule(
+  {
+    schedule: "every 6 hours",
     secrets: [anthropicApiKey, googleClientId, googleClientSecret],
     timeoutSeconds: 540,
-    memory: "1GB",
-  })
-  .pubsub.schedule("every 6 hours")
-  .onRun(async () => {
+    memory: "1GiB",
+  },
+  async () => {
     console.log("[CloudSync] Scheduled sync starting...");
 
     // Find tenants with active subscriptions

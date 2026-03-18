@@ -4,7 +4,7 @@
  * parseBillbackPDF: Accepts base64 PDF, calls Claude Vision, returns structured line items
  * extractWines: Auto-extracts wine entities from billback imports with AI dedup
  */
-const { functions, admin, db, anthropicApiKey, verifyTenantMembership } = require("./helpers");
+const { onCall, HttpsError, admin, db, anthropicApiKey, verifyTenantMembership } = require("./helpers");
 const { deduplicateEntities } = require("./entityDedup");
 const { buildNormalizedName } = require("./lib/pipeline/productNormalize");
 
@@ -36,29 +36,29 @@ function extractVintage(name) {
 
 // ─── parseBillbackPDF ───────────────────────────────────────────
 
-exports.parseBillbackPDF = functions
-  .runWith({ secrets: [anthropicApiKey], timeoutSeconds: 120, memory: "1GB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+exports.parseBillbackPDF = onCall(
+  { secrets: [anthropicApiKey], timeoutSeconds: 120, memory: "1GiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { tenantId, pdfBase64 } = data;
+    const { tenantId, pdfBase64 } = req.data;
     if (!tenantId || !pdfBase64) {
-      throw new functions.https.HttpsError("invalid-argument", "tenantId and pdfBase64 required");
+      throw new HttpsError("invalid-argument", "tenantId and pdfBase64 required");
     }
 
     // Validate PDF size (base64 is ~33% larger than binary)
     const estimatedBytes = pdfBase64.length * 0.75;
     if (estimatedBytes > 10 * 1024 * 1024) {
-      throw new functions.https.HttpsError("invalid-argument", "PDF is too large. Maximum size is 10MB.");
+      throw new HttpsError("invalid-argument", "PDF is too large. Maximum size is 10MB.");
     }
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
 
     const apiKey = anthropicApiKey.value();
     if (!apiKey) {
-      throw new functions.https.HttpsError("failed-precondition", "ANTHROPIC_API_KEY not configured");
+      throw new HttpsError("failed-precondition", "ANTHROPIC_API_KEY not configured");
     }
 
     const Anthropic = require("@anthropic-ai/sdk");
@@ -114,7 +114,7 @@ Return ONLY valid JSON: { "lineItems": [...], "metadata": { "distributor": "..."
         retries++;
         if (retries >= 2) {
           console.error(`[parseBillbackPDF] Claude failed for ${tenantId}:`, err.message);
-          throw new functions.https.HttpsError("internal", `PDF extraction failed: ${err.message}`);
+          throw new HttpsError("internal", `PDF extraction failed: ${err.message}`);
         }
         await new Promise((r) => setTimeout(r, 2000));
       }
@@ -144,25 +144,25 @@ Return ONLY valid JSON: { "lineItems": [...], "metadata": { "distributor": "..."
 
 // ─── extractWines ───────────────────────────────────────────────
 
-exports.extractWines = functions
-  .runWith({ secrets: [anthropicApiKey], timeoutSeconds: 120, memory: "1GB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+exports.extractWines = onCall(
+  { secrets: [anthropicApiKey], timeoutSeconds: 120, memory: "1GiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { tenantId, importId } = data;
+    const { tenantId, importId } = req.data;
     if (!tenantId || !importId) {
-      throw new functions.https.HttpsError("invalid-argument", "tenantId and importId required");
+      throw new HttpsError("invalid-argument", "tenantId and importId required");
     }
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
 
     // Load import rows
     const importRef = db.collection("tenants").doc(tenantId).collection("imports").doc(importId);
     const importSnap = await importRef.get();
     if (!importSnap.exists) {
-      throw new functions.https.HttpsError("not-found", "Import not found");
+      throw new HttpsError("not-found", "Import not found");
     }
 
     const rowsSnap = await importRef.collection("rows").get();

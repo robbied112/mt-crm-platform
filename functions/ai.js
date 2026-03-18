@@ -1,5 +1,6 @@
 const {
-  functions,
+  onCall,
+  HttpsError,
   admin,
   db,
   anthropicApiKey,
@@ -20,21 +21,21 @@ const {
 //   const result = await aiMap({ headers, sampleRows, tenantId });
 // -------------------------------------------------------------------
 
-const aiMapper = functions
-  .runWith({ secrets: [anthropicApiKey], timeoutSeconds: 60, memory: "512MB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+const aiMapper = onCall(
+  { secrets: [anthropicApiKey], timeoutSeconds: 60, memory: "512MiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { headers, sampleRows, userRole = "supplier" } = data;
+    const { headers, sampleRows, userRole = "supplier" } = req.data;
     if (!headers || !sampleRows) {
-      throw new functions.https.HttpsError("invalid-argument", "headers and sampleRows required");
+      throw new HttpsError("invalid-argument", "headers and sampleRows required");
     }
 
     const apiKey = anthropicApiKey.value();
     if (!apiKey) {
-      throw new functions.https.HttpsError("failed-precondition", "ANTHROPIC_API_KEY not configured");
+      throw new HttpsError("failed-precondition", "ANTHROPIC_API_KEY not configured");
     }
 
     const Anthropic = require("@anthropic-ai/sdk");
@@ -57,19 +58,19 @@ const aiMapper = functions
 // For use from admin tools or CLI.
 // -------------------------------------------------------------------
 
-const aiIngest = functions
-  .runWith({ secrets: [anthropicApiKey], timeoutSeconds: 120, memory: "1GB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+const aiIngest = onCall(
+  { secrets: [anthropicApiKey], timeoutSeconds: 120, memory: "1GiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { headers, rows, tenantId = "default", userRole = "supplier" } = data;
+    const { headers, rows, tenantId = "default", userRole = "supplier", datasets } = req.data;
     if (!headers || !rows) {
-      throw new functions.https.HttpsError("invalid-argument", "headers and rows required");
+      throw new HttpsError("invalid-argument", "headers and rows required");
     }
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
 
     // Step 1: AI mapping
     const apiKey = anthropicApiKey.value();
@@ -88,7 +89,7 @@ const aiIngest = functions
 
     // Step 2: Save datasets to Firestore
     const batch = db.batch();
-    for (const [name, items] of Object.entries(data.datasets || {})) {
+    for (const [name, items] of Object.entries(datasets || {})) {
       if (!DATASETS.includes(name)) continue;
       const ref = db.collection("tenants").doc(tenantId).collection("data").doc(name);
       batch.set(ref, {

@@ -1,5 +1,6 @@
 const {
-  functions,
+  onCall,
+  HttpsError,
   admin,
   db,
   anthropicApiKey,
@@ -55,25 +56,25 @@ async function createAccount(tenantId, name, importId, rows) {
   });
 }
 
-const extractAccounts = functions
-  .runWith({ secrets: [anthropicApiKey], timeoutSeconds: 120, memory: "1GB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+const extractAccounts = onCall(
+  { secrets: [anthropicApiKey], timeoutSeconds: 120, memory: "1GiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { tenantId, importId } = data;
+    const { tenantId, importId } = req.data;
     if (!tenantId || !importId) {
-      throw new functions.https.HttpsError("invalid-argument", "tenantId and importId required");
+      throw new HttpsError("invalid-argument", "tenantId and importId required");
     }
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
 
     // ── Load import rows ──
     const importRef = db.collection("tenants").doc(tenantId).collection("imports").doc(importId);
     const importSnap = await importRef.get();
     if (!importSnap.exists) {
-      throw new functions.https.HttpsError("not-found", "Import not found");
+      throw new HttpsError("not-found", "Import not found");
     }
 
     const rowsSnap = await importRef.collection("rows").get();

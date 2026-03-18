@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+
+## [0.4.2.0] - 2026-03-18
+
+### Changed
+- Upgrade Firebase Cloud Functions from 1st Gen (v4) to 2nd Gen (v7.2.2)
+- Upgrade Node.js runtime from 20 to 22
+- Migrate all 20 callable functions to v2 onCall pattern: `(data, context) => req => req.data, req.auth`
+- Replace `functions.config()` with `process.env` for environment variables (Stripe price IDs)
+- Update memory units: "MB"/"GB" → "MiB"/"GiB" for v2 compatibility
+
+### Removed
+- Heuristic sheet merge logic (`detectMergeableSheets`) in favor of AI-driven merge via Cloud Functions
+- Manual sync retry/timeout logic in JoinPage (v2 functions handle timeouts automatically)
+
 ## [0.4.1.0] - 2026-03-18
 
 ### Added
