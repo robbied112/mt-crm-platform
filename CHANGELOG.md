@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.1.0] - 2026-03-18
+
+### Added
+- **Multi-user team account model** — complete invite-based team joining with 4 roles (admin, manager, rep, viewer), territory assignment, and plan-based user limits enforced transactionally
+- **Invite flow** — admins generate shareable invite links with role/territory/usage-limit config; recipients join via `/join/:code` with signup or existing-account flow
+- **TeamContext provider** — real-time Firestore listener for team members, invite CRUD, role/territory updates, manager hierarchy
+- **Team management UI** — TeamSettings panel with member table, role/territory dropdowns, invite generation, activity leaderboard with 30-day sparklines
+- **Team setup wizard** — 4-step guided onboarding: company name, territories, first invite, share link
+- **Role-based permissions** — `usePermissions` hook with capability matrix (canImport, canManageTeam, canDeleteData, etc.) gating UI features
+- **Territory configuration** — named territory groups mapped to US states, auto-detected from imported data, visualized via SVG territory map
+- **Role-aware filtering** — filter-by-rep dropdowns on Accounts, Activities, and Tasks pages; territory-scoped dashboard filtering
+- **Account ownership** — owner column with member name resolution, yellow "Unassigned" badge, right-click context menu to assign rep
+- **Manager hierarchy** — `managerId` field on user docs with "Reports To" dropdown in team settings
+- **Contextual invite emails** — rich HTML emails via Resend API with company name, role, territory, and account count
+- **Firestore security rules** — tenant-scoped access control, role-based write permissions, subscription field protection, viewer read-only enforcement
+- **Team delight items** — role badge in sidebar, post-import team invite prompt, sparkline activity trends
+
+### Fixed
+- **Cross-tenant user list leak** — Firestore rules now scope user list queries to the caller's own tenant
+- **Race condition in joinTeam** — member count check now uses transactional counter on tenant doc instead of non-transactional query
+- **JoinPage input focus indicator** — removed `outline: none` to restore keyboard accessibility
+
 ## [0.4.0.0] - 2026-03-18
 
 ### Added
