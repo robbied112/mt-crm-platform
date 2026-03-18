@@ -117,7 +117,7 @@ export default function DataImport() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const inputRef = useRef();
-  const processingRef = useRef(false);
+  const importingRef = useRef(false);
 
   const smartImportEnabled = !!tenantConfig?.features?.smartImport;
 
@@ -159,16 +159,16 @@ export default function DataImport() {
   const isBatchMode = fq.queue.length > 0;
 
   // ── Auto-process queue: when a file is queued, process it ──
+  // Guard with queue status instead of a ref — ref clears after the queue
+  // state change, so the effect may miss the re-trigger window.
 
   useEffect(() => {
-    if (processingRef.current) return;
+    const isParsing = fq.queue.some((i) => i.status === "parsing");
+    if (isParsing) return;
     const nextQueued = fq.queue.find((i) => i.status === "queued");
     if (!nextQueued) return;
 
-    processingRef.current = true;
-    fq.processNext().finally(() => {
-      processingRef.current = false;
-    });
+    fq.processNext();
   }, [fq.queue, fq.processNext]);
 
   // ── Import a queue item (auto-confirmed or user-confirmed) ──
@@ -180,12 +180,13 @@ export default function DataImport() {
 
       // Product sheet — cannot auto-import, should be in needs-review
       if (itemType?.type === "product_sheet") {
-        // This shouldn't happen for auto-confirmed, but guard anyway
+        fq.markError(item.id, "Product sheets require manual review");
         return;
       }
 
       // Billback PDF — cannot auto-import
       if (itemFile && /\.pdf$/i.test(itemFile.name)) {
+        fq.markError(item.id, "PDF files require manual review");
         return;
       }
 
@@ -227,12 +228,19 @@ export default function DataImport() {
   }, [fq, userRole, useNormalized, importDatasets, tenantConfig, updateTenantConfig, tenantId, currentUser]);
 
   // ── Auto-import: when a file is auto-confirmed, import it ──
+  // Process one import at a time to avoid Firestore write contention.
 
   useEffect(() => {
+    if (importingRef.current) return;
+    const isImporting = fq.queue.some((i) => i.status === "importing");
+    if (isImporting) return;
     const autoItem = fq.queue.find((i) => i.status === "auto-confirmed");
     if (!autoItem) return;
 
-    importQueueFile(autoItem);
+    importingRef.current = true;
+    importQueueFile(autoItem).finally(() => {
+      importingRef.current = false;
+    });
   }, [fq.queue, importQueueFile]);
 
   // ── Handle files dropped or selected ──
