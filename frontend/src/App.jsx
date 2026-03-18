@@ -42,6 +42,8 @@ import useFilters from "./hooks/useFilters";
 import { useAuth } from "./context/AuthContext";
 import { useData } from "./context/DataContext";
 import { clearDemoData } from "./services/demoData";
+import { deleteAllData } from "./services/firestoreService";
+import { deleteAllCrmData } from "./services/crmService";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "./config/firebase";
 import TENANT_CONFIG from "./config/tenant";
@@ -424,6 +426,25 @@ function App() {
                           window.location.reload();
                         } catch (err) {
                           alert("Failed to reset settings: " + err.message);
+                        }
+                      }}
+                      onDeleteAllData={async () => {
+                        if (!window.confirm("Are you sure you want to delete ALL data? This includes all dashboard datasets, imports, CRM accounts, contacts, activities, tasks, opportunities, products, and upload history. This cannot be undone.")) return;
+                        if (!window.confirm("This is your last chance. Type OK in the next prompt to confirm.")) return;
+                        const confirmation = window.prompt("Type DELETE to permanently remove all data:");
+                        if (confirmation !== "DELETE") {
+                          alert("Deletion cancelled.");
+                          return;
+                        }
+                        try {
+                          await Promise.all([
+                            deleteAllData(tenantId),
+                            deleteAllCrmData(tenantId),
+                          ]);
+                          alert("All data has been deleted.");
+                          window.location.reload();
+                        } catch (err) {
+                          alert("Failed to delete data: " + err.message);
                         }
                       }}
                       onManageBilling={() => {

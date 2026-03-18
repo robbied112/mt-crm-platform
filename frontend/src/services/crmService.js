@@ -241,6 +241,47 @@ export async function deleteProduct(tenantId, id) {
   await deleteDoc(tenantDoc(tenantId, "products", id));
 }
 
+// ─── Delete All CRM Data ─────────────────────────────────────
+
+/**
+ * Delete ALL CRM entities for a tenant: accounts (+ notes subcollections),
+ * contacts, activityLog, tasks, opportunities, and products.
+ *
+ * Queries Firestore directly (no limits) and loops until each collection
+ * is fully empty, so this works regardless of collection size.
+ */
+export async function deleteAllCrmData(tenantId) {
+  async function drainCollection(colName) {
+    const colRef = tenantCol(tenantId, colName);
+    let snap = await getDocs(colRef);
+    while (!snap.empty) {
+      await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
+      snap = await getDocs(colRef);
+    }
+  }
+
+  // Delete notes subcollections for every account first
+  const accountsSnap = await getDocs(tenantCol(tenantId, "accounts"));
+  for (const acctDoc of accountsSnap.docs) {
+    const notesCol = collection(db, "tenants", tenantId, "accounts", acctDoc.id, "notes");
+    let notesSnap = await getDocs(notesCol);
+    while (!notesSnap.empty) {
+      await Promise.all(notesSnap.docs.map((d) => deleteDoc(d.ref)));
+      notesSnap = await getDocs(notesCol);
+    }
+  }
+
+  // Drain all top-level CRM collections in parallel
+  await Promise.all([
+    drainCollection("accounts"),
+    drainCollection("contacts"),
+    drainCollection("activityLog"),
+    drainCollection("tasks"),
+    drainCollection("opportunities"),
+    drainCollection("products"),
+  ]);
+}
+
 // ─── Real-time Listeners ──────────────────────────────────────
 
 export function subscribeAccounts(tenantId, callback, onError) {

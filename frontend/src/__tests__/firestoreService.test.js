@@ -110,6 +110,7 @@ const {
   loadImports,
   loadImportRows,
   deleteImport,
+  deleteAllData,
   loadSummary,
   saveSummary,
 } = await import("../services/firestoreService.js");
@@ -244,6 +245,46 @@ describe("deleteImport", () => {
     expect(mockDocs.has("tenants/t1/imports/imp1")).toBe(false);
     expect(mockDocs.has("tenants/t1/imports/imp1/rows/0")).toBe(false);
     expect(mockDocs.has("tenants/t1/imports/imp1/rows/1")).toBe(false);
+  });
+});
+
+describe("deleteAllData", () => {
+  it("deletes all docs in data/, views/, imports/, uploads/ and their row subcollections", async () => {
+    // Seed data across all four collections, some with rows subcollections
+    mockDocs.set("tenants/t1/data/distScorecard", { chunked: true });
+    mockDocs.set("tenants/t1/data/distScorecard/rows/0", { idx: 0, items: [{ a: 1 }] });
+    mockDocs.set("tenants/t1/views/accountsTop", { chunked: true });
+    mockDocs.set("tenants/t1/views/accountsTop/rows/0", { idx: 0, items: [{ b: 2 }] });
+    mockDocs.set("tenants/t1/views/_summary", { text: "summary" });
+    mockDocs.set("tenants/t1/imports/imp1", { fileName: "test.csv" });
+    mockDocs.set("tenants/t1/imports/imp1/rows/0", { idx: 0, items: [{ c: 3 }] });
+    mockDocs.set("tenants/t1/uploads/up1", { fileName: "file.xlsx" });
+
+    await deleteAllData("t1");
+
+    // All docs should be gone
+    expect(mockDocs.has("tenants/t1/data/distScorecard")).toBe(false);
+    expect(mockDocs.has("tenants/t1/data/distScorecard/rows/0")).toBe(false);
+    expect(mockDocs.has("tenants/t1/views/accountsTop")).toBe(false);
+    expect(mockDocs.has("tenants/t1/views/accountsTop/rows/0")).toBe(false);
+    expect(mockDocs.has("tenants/t1/views/_summary")).toBe(false);
+    expect(mockDocs.has("tenants/t1/imports/imp1")).toBe(false);
+    expect(mockDocs.has("tenants/t1/imports/imp1/rows/0")).toBe(false);
+    expect(mockDocs.has("tenants/t1/uploads/up1")).toBe(false);
+  });
+
+  it("succeeds when collections are already empty", async () => {
+    await expect(deleteAllData("t1")).resolves.toBeUndefined();
+  });
+
+  it("does not delete config or other tenant collections", async () => {
+    mockDocs.set("tenants/t1/config/main", { userRole: "rep" });
+    mockDocs.set("tenants/t1/data/distScorecard", { chunked: false });
+
+    await deleteAllData("t1");
+
+    expect(mockDocs.has("tenants/t1/config/main")).toBe(true);
+    expect(mockDocs.has("tenants/t1/data/distScorecard")).toBe(false);
   });
 });
 
