@@ -8,7 +8,9 @@
  *   false → Legacy: read/write to data/ (pre-computed dashboards only)
  *   true  → Normalized: save raw rows to imports/, compute views, read from views/
  */
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "../config/firebase";
 import { useAuth } from "./AuthContext";
 import {
   loadAllData,
@@ -121,6 +123,49 @@ export default function DataProvider({ children }) {
     load();
     return () => { cancelled = true; };
   }, [currentUser, tenantId, useNormalized]);
+
+  // Real-time listener for subscription changes (Stripe webhook updates, checkout verification).
+  // Also handles grandfathering: existing tenants without subscription get a fresh 14-day trial.
+  useEffect(() => {
+    if (!tenantId) return;
+
+    const tenantRef = doc(db, "tenants", tenantId);
+    const unsubscribe = onSnapshot(tenantRef, (snap) => {
+      if (!snap.exists()) return;
+      const tenantData = snap.data();
+
+      if (tenantData.subscription) {
+        setTenantConfig((prev) => ({
+          ...prev,
+          subscription: tenantData.subscription,
+        }));
+      } else {
+        // Grandfathering: tenant exists but has no subscription → treat as trial
+        // The subscription field will be set on next tenant creation or manual migration.
+        // For now, derive a trial that started "now" so existing users get 14 days.
+        setTenantConfig((prev) => {
+          if (prev.subscription) return prev; // already set from initial load
+          const trialStart = new Date();
+          const trialEnd = new Date(trialStart);
+          trialEnd.setDate(trialEnd.getDate() + 14);
+          return {
+            ...prev,
+            subscription: {
+              status: "trial",
+              plan: null,
+              trialStart: trialStart.toISOString(),
+              trialEnd: trialEnd.toISOString(),
+              _grandfathered: true,
+            },
+          };
+        });
+      }
+    }, (err) => {
+      console.warn("Subscription listener error:", err.message);
+    });
+
+    return unsubscribe;
+  }, [tenantId]);
 
   // Save imported datasets + refresh
   // When useNormalizedModel is true, also saves raw rows to imports/.

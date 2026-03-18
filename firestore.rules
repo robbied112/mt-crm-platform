@@ -42,10 +42,14 @@ service cloud.firestore {
       allow list: if isAuth() && getUserProfile().role == 'admin';
     }
 
-    // Tenant config: only members of that tenant can read, only tenant admins can write
+    // Tenant config: only members of that tenant can read, only tenant admins can write.
+    // SECURITY: subscription field is server-only (written by Stripe webhook + billing CFs via Admin SDK).
+    // Client writes that modify the subscription field are blocked to prevent billing bypass.
     match /tenants/{tenantId} {
       allow read: if isTenantMember(tenantId);
-      allow write: if isTenantAdmin(tenantId);
+      allow create: if isTenantAdmin(tenantId);
+      allow update: if isTenantAdmin(tenantId)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['subscription']);
 
       // Tenant config subcollection
       match /config/{doc} {

@@ -10,6 +10,7 @@
  */
 
 import { useMemo } from "react";
+import { isRouteAllowed } from "../config/plans";
 
 /**
  * Map of dataKey → human-readable upload hint.
@@ -76,6 +77,28 @@ export default function useVisibleRoutes(routes, { isAdmin, availability, tenant
       if (route.adminOnly) {
         if (isAdmin) admin.push(route);
         continue;
+      }
+
+      // Subscription tier gating: hide routes not included in the user's plan.
+      // Trial users get all routes. Expired/no subscription still see routes
+      // (read-only gating is handled by useSubscription.canWrite, not route hiding).
+      const subStatus = tenantConfig?.subscription?.status;
+      const subPlan = tenantConfig?.subscription?.plan?.toLowerCase();
+      if (subStatus === "active" && subPlan) {
+        // Active paid plan — check if route is allowed on this tier
+        if (!isRouteAllowed(subPlan, route.key)) {
+          // Route not in plan — add as upgrade hint if progressive sidebar is on
+          if (progressive) {
+            hiddenHints.push({
+              label: route.label,
+              hint: `Upgrade to unlock ${route.label}`,
+              dataKey: route.dataKey,
+              section: route.section,
+              tierLocked: true,
+            });
+          }
+          continue;
+        }
       }
 
       // Billback routes: feature-gated

@@ -45,10 +45,21 @@ async function fetchOrCreateProfile(user, accountType) {
   const tenantRef = doc(db, "tenants", tenantId);
   const tenantSnap = await getDoc(tenantRef);
   if (!tenantSnap.exists()) {
+    // 14-day free trial — full access, read-only after expiry
+    const trialStart = new Date();
+    const trialEnd = new Date(trialStart);
+    trialEnd.setDate(trialEnd.getDate() + 14);
+
     await setDoc(tenantRef, {
       companyName: "",
       createdBy: user.uid,
       createdAt: serverTimestamp(),
+      subscription: {
+        status: "trial",
+        plan: null,
+        trialStart: trialStart.toISOString(),
+        trialEnd: trialEnd.toISOString(),
+      },
     });
 
     if (accountType) {
