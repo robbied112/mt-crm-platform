@@ -46,11 +46,14 @@ function buildProducts(rows, mapping) {
   }).filter((p) => p.name); // drop rows with no name
 }
 
-export default function ProductSheetReviewStep({ rows, headers, mapping, onConfirm, onCancel }) {
+export default function ProductSheetReviewStep({ rows, headers, mapping, preBuiltProducts, onConfirm, onCancel }) {
   const { products: existingProducts } = useCrm();
 
-  // Build initial product list from rows
-  const initialProducts = useMemo(() => buildProducts(rows, mapping), [rows, mapping]);
+  // Build initial product list from rows (or use pre-built products from multi-sheet merge)
+  const initialProducts = useMemo(
+    () => preBuiltProducts || buildProducts(rows, mapping),
+    [rows, mapping, preBuiltProducts]
+  );
 
   const [products, setProducts] = useState(initialProducts);
 

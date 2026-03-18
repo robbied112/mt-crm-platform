@@ -15,6 +15,7 @@ const semanticMapper = require("./semanticMapper");
 const normalize = require("./normalize");
 const constants = require("./constants");
 const firestore = require("./firestore");
+const mergeSheetsModule = require("./mergeSheets");
 
 module.exports = {
   // parseFile
@@ -68,6 +69,9 @@ module.exports = {
   flattenPivot: extractData.flattenPivot,
   applySkipPatterns: extractData.applySkipPatterns,
   applyColumnMapping: extractData.applyColumnMapping,
+
+  // mergeSheets
+  mergeSheets: mergeSheetsModule.mergeSheets,
 
   // firestore
   writeChunked: firestore.writeChunked,

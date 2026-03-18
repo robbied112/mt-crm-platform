@@ -81,5 +81,7 @@ export default defineConfig({
       'src/**/*.test.{js,jsx}',
       '../packages/pricing-engine/src/**/*.test.ts',
     ],
+    // Load jest-dom matchers for jsdom tests (per-file @vitest-environment jsdom)
+    setupFiles: ['src/__tests__/setup-dom.js'],
   },
 })

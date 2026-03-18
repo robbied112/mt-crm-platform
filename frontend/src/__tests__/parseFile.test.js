@@ -5,14 +5,17 @@
  * Now imports core functions directly from the shared pipeline package
  * (previously replicated inline — see TODO-006, now TODO-020).
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import * as XLSX from "xlsx";
 import { QB_GROUPED_CSV_ROWS, CSV_WITH_METADATA_ROWS } from "./fixtures/sampleData";
-import {
+import parseFile, {
   findHeaderRow,
   cleanHeaders,
   detectGroupedFormat,
   processGroupedRows,
   processStandardRows,
+  peekAllSheets,
+  clearWorkbookCache,
 } from "../utils/parseFile.js";
 
 // ─── Tests ───────────────────────────────────────────────────
@@ -141,5 +144,159 @@ describe("processStandardRows", () => {
     const { rows } = processStandardRows(data, 0);
     expect(rows.length).toBe(1);
     expect(rows[0].Account).toBe("Co A");
+  });
+});
+
+// ─── peekAllSheets ──────────────────────────────────────────────
+
+/**
+ * Helper: build a multi-sheet XLSX workbook in memory and return a File object.
+ * Also installs a minimal FileReader shim for the Node test environment.
+ */
+function buildXlsxFile(sheets, fileName = "test.xlsx") {
+  const wb = XLSX.utils.book_new();
+  for (const { name, headers, dataRows } of sheets) {
+    const aoa = [headers, ...dataRows];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    XLSX.utils.book_append_sheet(wb, ws, name);
+  }
+  const buf = XLSX.write(wb, { type: "array", bookType: "xlsx" });
+  return new File([buf], fileName, {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    lastModified: Date.now(),
+  });
+}
+
+/** Minimal FileReader shim — reads File as ArrayBuffer synchronously via onload. */
+function installFileReaderShim() {
+  if (typeof globalThis.FileReader !== "undefined") return;
+  globalThis.FileReader = class {
+    readAsArrayBuffer(file) {
+      file.arrayBuffer().then((buf) => {
+        this.result = buf;
+        if (this.onload) this.onload({ target: { result: buf } });
+      });
+    }
+  };
+}
+
+describe("peekAllSheets", () => {
+  beforeEach(() => {
+    clearWorkbookCache();
+    installFileReaderShim();
+  });
+
+  afterEach(() => {
+    clearWorkbookCache();
+  });
+
+  it("returns headers + sample rows for all sheets", async () => {
+    const file = buildXlsxFile([
+      {
+        name: "Products",
+        headers: ["Name", "SKU", "Price"],
+        dataRows: [
+          ["White Wine", "MT-WHT-750", "10"],
+          ["Red Wine", "MT-RED-750", "12"],
+        ],
+      },
+      {
+        name: "Images",
+        headers: ["SKU", "Image URL"],
+        dataRows: [
+          ["MT-WHT-750", "https://img/white.png"],
+          ["MT-RED-750", "https://img/red.png"],
+        ],
+      },
+    ]);
+
+    // Must call parseFile first to populate the cache
+    await parseFile(file);
+
+    const result = peekAllSheets(file);
+    expect(result).toHaveLength(2);
+
+    const products = result.find((s) => s.name === "Products");
+    expect(products).toBeDefined();
+    expect(products.headers).toEqual(["Name", "SKU", "Price"]);
+    expect(products.sampleRows).toHaveLength(2);
+    expect(products.sampleRows[0].Name).toBe("White Wine");
+
+    const images = result.find((s) => s.name === "Images");
+    expect(images).toBeDefined();
+    expect(images.headers).toEqual(["SKU", "Image URL"]);
+    expect(images.sampleRows).toHaveLength(2);
+  });
+
+  it("skips sheets that have no usable data", async () => {
+    const file = buildXlsxFile([
+      {
+        name: "Data",
+        headers: ["Name", "SKU", "Price"],
+        dataRows: [["Wine A", "SKU-1", "10"]],
+      },
+      {
+        name: "Empty",
+        headers: ["X"],  // only 1 header — below the minimum of 2
+        dataRows: [],
+      },
+      {
+        name: "More Data",
+        headers: ["Account", "State", "Amount"],
+        dataRows: [["Acme", "NY", "100"]],
+      },
+    ]);
+
+    await parseFile(file);
+
+    const result = peekAllSheets(file);
+    // "Empty" sheet has only 1 header so it should be skipped
+    expect(result).toHaveLength(2);
+    expect(result.map((s) => s.name)).toEqual(["Data", "More Data"]);
+  });
+
+  it("applies dynamic sample budget — 50/N rows per sheet", async () => {
+    // 5 sheets → 50/5 = 10 rows per sheet (above min of 3)
+    const sheets = [];
+    for (let i = 0; i < 5; i++) {
+      const dataRows = Array.from({ length: 20 }, (_, j) => [`Row ${j}`, `Val ${j}`]);
+      sheets.push({
+        name: `Sheet${i + 1}`,
+        headers: ["Col A", "Col B"],
+        dataRows,
+      });
+    }
+
+    const file = buildXlsxFile(sheets);
+    await parseFile(file);
+
+    const result = peekAllSheets(file);
+    expect(result).toHaveLength(5);
+
+    // Each sheet should have at most 10 sample rows (50/5)
+    for (const sheet of result) {
+      expect(sheet.sampleRows.length).toBeLessThanOrEqual(10);
+      expect(sheet.sampleRows.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("returns empty array for single-sheet files", async () => {
+    const file = buildXlsxFile([
+      {
+        name: "Only Sheet",
+        headers: ["Name", "Value"],
+        dataRows: [["A", "1"]],
+      },
+    ]);
+
+    await parseFile(file);
+
+    const result = peekAllSheets(file);
+    expect(result).toEqual([]);
+  });
+
+  it("throws when workbook is not cached", () => {
+    const file = new File([""], "uncached.xlsx", { lastModified: Date.now() });
+    expect(() => peekAllSheets(file)).toThrow("workbook not cached");
   });
 });

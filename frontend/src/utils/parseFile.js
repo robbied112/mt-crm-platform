@@ -319,3 +319,95 @@ function resolveExcel(wb, requestedSheet) {
 export function parseFileSheet(file, sheetName) {
   return parseFile(file, { sheet: sheetName });
 }
+
+// ─── Multi-Sheet Peek ────────────────────────────────────────────
+
+/**
+ * Peek at ALL sheets in a workbook — returns headers + sample rows for each.
+ * Uses the cached workbook from a prior parseFile() call (no re-read).
+ *
+ * Sample rows are dynamically budgeted: 50 total rows divided across N sheets,
+ * with a minimum of 3 rows per sheet.
+ *
+ * @param {File} file - The File object (must have been parsed with parseFile() first)
+ * @returns {Array<{ name: string, headers: string[], sampleRows: object[] }>}
+ */
+export function peekAllSheets(file) {
+  const wb = getCachedWorkbook(file);
+  if (!wb) {
+    throw new Error("peekAllSheets: workbook not cached — call parseFile() first");
+  }
+
+  const sheetNames = wb.SheetNames;
+  if (sheetNames.length <= 1) return [];
+
+  const TOTAL_BUDGET = 50;
+  const perSheet = Math.max(3, Math.floor(TOTAL_BUDGET / sheetNames.length));
+
+  const results = [];
+  for (const name of sheetNames) {
+    try {
+      const sheet = wb.Sheets[name];
+      if (!sheet || !sheet["!ref"]) continue;
+
+      // Peek enough rows for header detection + sample data
+      const rawRows = peekSheetRows(sheet, perSheet + 15);
+      if (!rawRows || rawRows.length === 0) continue;
+
+      const headerIdx = findHeaderRow(rawRows);
+      const headerRow = rawRows[headerIdx] || [];
+      const headers = headerRow
+        .map((c) => (c == null ? "" : String(c).trim()))
+        .filter((h) => h !== "");
+
+      if (headers.length < 2) continue;
+
+      // Build sample data rows as objects (same format as parseSheet output)
+      const cleanedHeaders = headerRow.map((c) => (c == null ? "" : String(c).trim()));
+      const sampleRows = [];
+      for (let i = headerIdx + 1; i < rawRows.length && sampleRows.length < perSheet; i++) {
+        const row = rawRows[i];
+        if (!row || row.every((c) => c === null || c === undefined || String(c).trim() === "")) continue;
+        const obj = {};
+        cleanedHeaders.forEach((h, j) => { if (h) obj[h] = row[j] ?? ""; });
+        sampleRows.push(obj);
+      }
+
+      results.push({ name, headers, sampleRows });
+    } catch {
+      // Skip sheets that fail to parse — don't fail the whole operation
+      continue;
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Full-parse specific sheets from the cached workbook.
+ * Used after comprehend returns sheetsToMerge — only parses the sheets we need.
+ *
+ * @param {File} file - The File object (must have been parsed with parseFile() first)
+ * @param {string[]} sheetNames - Sheet names to fully parse
+ * @returns {Array<{ name: string, headers: string[], rows: object[] }>}
+ */
+export function parseSheets(file, sheetNames) {
+  const wb = getCachedWorkbook(file);
+  if (!wb) {
+    throw new Error("parseSheets: workbook not cached — call parseFile() first");
+  }
+
+  const results = [];
+  for (const name of sheetNames) {
+    if (!wb.SheetNames.includes(name)) continue;
+    try {
+      const parsed = parseSheet(wb, name);
+      if (parsed.rows.length > 0) {
+        results.push({ name, ...parsed });
+      }
+    } catch {
+      continue;
+    }
+  }
+  return results;
+}
