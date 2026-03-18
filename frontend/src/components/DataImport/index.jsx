@@ -139,6 +139,7 @@ export default function DataImport() {
   // ── Multi-file queue (from shared UploadContext) ──
 
   const fq = useUpload();
+  const { comprehendCallable } = fq;
   const isBatchMode = fq.queue.length > 0;
 
   // ── Auto-process queue: when a file is queued, process it ──
