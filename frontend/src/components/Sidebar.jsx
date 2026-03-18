@@ -10,6 +10,7 @@ import { useAuth } from "../context/AuthContext";
 import { useData } from "../context/DataContext";
 import CruFolioLogo from "./CruFolioLogo";
 import { useCrm } from "../context/CrmContext";
+import useVisibleRoutes, { SECTION_CONFIG } from "../hooks/useVisibleRoutes";
 
 import { ONBOARDING_STEPS } from "../config/reportGuides";
 
@@ -177,20 +178,10 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
     return route.label;
   };
 
-  const hasData = (route) => {
-    if (!route.dataKey) return true;
-    return availability?.[route.dataKey];
-  };
-
   const user = currentUser;
 
-  // Split routes into sections
-  const mainRoutes = ROUTES.filter((r) => !r.adminOnly && r.section !== "crm" && r.section !== "billbacks" && r.section !== "portfolio" && r.section !== "setup" && r.section !== "tools");
-  const toolsRoutes = ROUTES.filter((r) => r.section === "tools");
-  const crmRoutes = ROUTES.filter((r) => r.section === "crm");
-  const portfolioRoutes = ROUTES.filter((r) => r.section === "portfolio" && !r.hidden);
-  const billbackRoutes = ROUTES.filter((r) => r.section === "billbacks");
-  const adminRoutes = ROUTES.filter((r) => r.adminOnly);
+  // Centralized route visibility (progressive disclosure + feature gating)
+  const { sections, hiddenHints } = useVisibleRoutes(ROUTES, { isAdmin, availability, tenantConfig });
 
   // Onboarding setup card state
   const onboarding = tenantConfig?.onboarding;
@@ -277,146 +268,53 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
 
       {/* Nav links */}
       <nav className="sidebar__nav">
-        <div className="sidebar__nav-section">
-          {!collapsed && <span className="sidebar__section-label">Analytics</span>}
-          {mainRoutes.map((route) => (
-            <NavLink
-              key={route.key}
-              to={route.path}
-              end={route.path === "/"}
-              className={({ isActive }) =>
-                `sidebar__link ${isActive ? "sidebar__link--active" : ""} ${route.accent ? "sidebar__link--accent" : ""}`
-              }
-              title={collapsed ? getLabel(route) : undefined}
-              onClick={onMobileClose}
-            >
-              <span className="sidebar__link-icon">{ICONS[route.icon]}</span>
-              {!collapsed && (
-                <>
-                  <span className="sidebar__link-label">{getLabel(route)}</span>
-                  {!hasData(route) && (
-                    <span className="sidebar__link-dot" title="Needs data" />
+        {Object.entries(SECTION_CONFIG).map(([sectionKey, config]) => {
+          const routes = sections[sectionKey];
+          if (!routes || routes.length === 0) return null;
+
+          return (
+            <div className="sidebar__nav-section" key={sectionKey}>
+              {!collapsed && <span className="sidebar__section-label">{config.label}</span>}
+              {routes.map((route) => (
+                <NavLink
+                  key={route.key}
+                  to={route.path}
+                  end={route.path === "/"}
+                  className={({ isActive }) =>
+                    `sidebar__link ${isActive ? "sidebar__link--active" : ""} ${route.accent ? "sidebar__link--accent" : ""}`
+                  }
+                  title={collapsed ? getLabel(route) : undefined}
+                  onClick={onMobileClose}
+                >
+                  <span className="sidebar__link-icon">{ICONS[route.icon]}</span>
+                  {!collapsed && (
+                    <>
+                      <span className="sidebar__link-label">{getLabel(route)}</span>
+                      {sectionKey === "portfolio" && products.length > 0 && (
+                        <span className="sidebar__link-badge">{products.length}</span>
+                      )}
+                      {route.dataKey && !availability?.[route.dataKey] && (
+                        <span className="sidebar__link-dot" title="Needs data" />
+                      )}
+                    </>
                   )}
-                </>
-              )}
-              {collapsed && !hasData(route) && (
-                <span className="sidebar__link-dot sidebar__link-dot--collapsed" title="Needs data" />
-              )}
-            </NavLink>
-          ))}
-        </div>
+                  {collapsed && route.dataKey && !availability?.[route.dataKey] && (
+                    <span className="sidebar__link-dot sidebar__link-dot--collapsed" title="Needs data" />
+                  )}
+                </NavLink>
+              ))}
+            </div>
+          );
+        })}
 
-        {toolsRoutes.length > 0 && (
+        {/* Progressive disclosure: grayed hints for routes hidden due to missing data */}
+        {!collapsed && hiddenHints.length > 0 && (
           <div className="sidebar__nav-section">
-            {!collapsed && <span className="sidebar__section-label">Tools</span>}
-            {toolsRoutes.map((route) => (
-              <NavLink
-                key={route.key}
-                to={route.path}
-                className={({ isActive }) =>
-                  `sidebar__link ${isActive ? "sidebar__link--active" : ""}`
-                }
-                title={collapsed ? getLabel(route) : undefined}
-                onClick={onMobileClose}
-              >
-                <span className="sidebar__link-icon">{ICONS[route.icon]}</span>
-                {!collapsed && <span className="sidebar__link-label">{getLabel(route)}</span>}
-              </NavLink>
-            ))}
-          </div>
-        )}
-
-        <div className="sidebar__nav-section">
-          {!collapsed && <span className="sidebar__section-label">CRM</span>}
-          {crmRoutes.map((route) => (
-            <NavLink
-              key={route.key}
-              to={route.path}
-              className={({ isActive }) =>
-                `sidebar__link ${isActive ? "sidebar__link--active" : ""}`
-              }
-              title={collapsed ? getLabel(route) : undefined}
-              onClick={onMobileClose}
-            >
-              <span className="sidebar__link-icon">{ICONS[route.icon]}</span>
-              {!collapsed && <span className="sidebar__link-label">{getLabel(route)}</span>}
-            </NavLink>
-          ))}
-        </div>
-
-        {portfolioRoutes.length > 0 && (
-          <div className="sidebar__nav-section">
-            {!collapsed && <span className="sidebar__section-label">Portfolio</span>}
-            {portfolioRoutes.map((route) => (
-              <NavLink
-                key={route.key}
-                to={route.path}
-                className={({ isActive }) =>
-                  `sidebar__link ${isActive ? "sidebar__link--active" : ""}`
-                }
-                title={collapsed ? getLabel(route) : undefined}
-                onClick={onMobileClose}
-              >
-                <span className="sidebar__link-icon">{ICONS[route.icon]}</span>
-                {!collapsed && (
-                  <>
-                    <span className="sidebar__link-label">{getLabel(route)}</span>
-                    {products.length > 0 && (
-                      <span className="sidebar__link-badge">{products.length}</span>
-                    )}
-                  </>
-                )}
-              </NavLink>
-            ))}
-          </div>
-        )}
-
-        {tenantConfig?.features?.billbacks && billbackRoutes.length > 0 && (
-          <div className="sidebar__nav-section">
-            {!collapsed && <span className="sidebar__section-label">Trade Spend</span>}
-            {billbackRoutes.map((route) => (
-              <NavLink
-                key={route.key}
-                to={route.path}
-                className={({ isActive }) =>
-                  `sidebar__link ${isActive ? "sidebar__link--active" : ""}`
-                }
-                title={collapsed ? getLabel(route) : undefined}
-                onClick={onMobileClose}
-              >
-                <span className="sidebar__link-icon">{ICONS[route.icon]}</span>
-                {!collapsed && (
-                  <>
-                    <span className="sidebar__link-label">{getLabel(route)}</span>
-                    {!hasData(route) && (
-                      <span className="sidebar__link-dot" title="Needs data" />
-                    )}
-                  </>
-                )}
-                {collapsed && !hasData(route) && (
-                  <span className="sidebar__link-dot sidebar__link-dot--collapsed" title="Needs data" />
-                )}
-              </NavLink>
-            ))}
-          </div>
-        )}
-
-        {isAdmin && (
-          <div className="sidebar__nav-section">
-            {!collapsed && <span className="sidebar__section-label">Admin</span>}
-            {adminRoutes.map((route) => (
-              <NavLink
-                key={route.key}
-                to={route.path}
-                className={({ isActive }) =>
-                  `sidebar__link ${isActive ? "sidebar__link--active" : ""}`
-                }
-                title={collapsed ? getLabel(route) : undefined}
-                onClick={onMobileClose}
-              >
-                <span className="sidebar__link-icon">{ICONS[route.icon]}</span>
-                {!collapsed && <span className="sidebar__link-label">{getLabel(route)}</span>}
-              </NavLink>
+            {hiddenHints.map((hint) => (
+              <div key={hint.dataKey} className="sidebar__hint" title={hint.hint}>
+                <span className="sidebar__hint-label">{hint.label}</span>
+                <span className="sidebar__hint-text">{hint.hint}</span>
+              </div>
             ))}
           </div>
         )}

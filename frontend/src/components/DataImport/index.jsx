@@ -18,15 +18,15 @@ import { transformAll, generateSummary } from "../../utils/transformData";
 import { transformBillback } from "../../utils/transformBillback";
 import { normalizeRows } from "../../utils/normalize.js";
 import { clientExactMatch } from "../../utils/productNormalize";
-import { logUpload, loadRecentUploads } from "../../services/firestoreService";
+import { logUpload } from "../../services/firestoreService";
 import { useAuth } from "../../context/AuthContext";
 import { getFunctions, httpsCallable } from "firebase/functions";
+import { useUpload } from "../../context/UploadContext";
 import ProductSheetReviewStep from "../ProductSheetReviewStep";
 import MappingStep from "./MappingStep";
 import PreviewStep from "./PreviewStep";
 import BillbackReviewStep from "./BillbackReviewStep";
 import ReportAnalysisCard from "./ReportAnalysisCard";
-import useFileQueue from "../../hooks/useFileQueue";
 import s from "./styles";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -136,27 +136,10 @@ export default function DataImport() {
 
   const isBillbackEnabled = tenantConfig?.features?.billbacks;
 
-  // ── Multi-file queue ──
+  // ── Multi-file queue (from shared UploadContext) ──
 
-  const comprehendCallable = useCallback(async (args) => {
-    const fns = getFunctions();
-    const comprehendReport = httpsCallable(fns, "comprehendReport");
-    return comprehendReport(args);
-  }, []);
-
-  const fq = useFileQueue({
-    parseFile,
-    autoDetectMapping,
-    aiAutoDetectMapping,
-    detectUploadType,
-    comprehendReport: smartImportEnabled ? comprehendCallable : null,
-    loadRecentUploads,
-    useAI,
-    smartImportEnabled,
-    userRole,
-    tenantId,
-  });
-
+  const fq = useUpload();
+  const { comprehendCallable } = fq;
   const isBatchMode = fq.queue.length > 0;
 
   // ── Auto-process queue: when a file is queued, process it ──
@@ -171,6 +154,7 @@ export default function DataImport() {
 
     fq.processNext();
   }, [fq.queue, fq.processNext]);
+
 
   // ── Import a queue item (auto-confirmed or user-confirmed) ──
 
@@ -807,6 +791,7 @@ export default function DataImport() {
               analysis={analysis}
               fileName={file?.name}
               onRetry={analysis.error ? retryAnalysis : undefined}
+              analysisTiming={fq.analysisTiming}
             />
           )}
           <MappingStep

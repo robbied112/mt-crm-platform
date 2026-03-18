@@ -1,6 +1,7 @@
 # TODOS — CruFolio (MT CRM Platform)
 
-> Updated from CEO Smart Import Intelligence Engine Review on 2026-03-17.
+> Updated from CEO Ease-of-Use & AI-First UX Review on 2026-03-17.
+> Previous: CEO Smart Import Intelligence Engine Review on 2026-03-17.
 > Previous: CEO Financial Command Center Review on 2026-03-17.
 > Previous: CEO CRM Pipeline Review on 2026-03-16.
 > Previous: CEO App Review (Onboarding & Activation) on 2026-03-16.
@@ -47,6 +48,12 @@
 > Vision: Revenue & Sales tab as the daily driver for sales managers. Executive Dashboard as the weekly board-prep view. Multi-source revenue (QuickBooks + Shopify/WooCommerce + manual), 4 hardcoded channels (Distributors, Website/DTC, Direct to Trade Off-Premise, Direct to Trade On-Premise), hybrid budget entry (annual spread → per-channel/month adjustment), AR/AP aging from QuickBooks aging report upload.
 > Key decisions: Hardcoded channel list (industry standard). QB AR/AP Aging report upload (not manual entry). Hybrid budget (annual total → fine-tune). Revenue data extends existing DataContext + views pipeline. Executive tab always visible (shows whatever data is available). New datasets: revenueByChannel, revenueByProduct, revenueSummary, arAgingSummary, apAgingSummary, budgetData. Firestore rules for config/budget.
 > New TODOs: 080–086. New vision items: budget pace indicator, AR aging color bands, channel trend sparklines, export executive summary PDF, revenue health score.
+>
+> **Ease-of-Use & AI-First UX Rethink added 2026-03-17 (CEO Review).**
+> Vision: Make CruFolio SO easy that everyone chooses it over learning to do it themselves with AI. Upload-first homepage (upload IS the product, not buried in Settings). Instant dashboard preview before save. AI insight narration after every import. Progressive sidebar that grows with data. Auto-infer role/distributors from files (no setup forms). Learned column mappings for 95%+ auto-confirm. Curated demo scenario. Speed badge. Conversational error recovery (AI asks for help instead of silently failing).
+> Key decisions: New UploadContext provider. Shared UploadFlow component used by both homepage and settings (DRY). Client-side transforms for preview capped at 500 rows. Learned mappings in tenants/{id}/config/learnedMappings. Narration via Claude Sonnet in comprehend.js. Feature-flagged per-feature. 4-PR rollout: Foundation → Upload-First → AI Intelligence → Delight.
+> TODO-098 (Dashboard Preview Before Import) SUPERSEDED by TODO-112 (Instant Dashboard Preview — more ambitious, integrated into upload-first flow).
+> New TODOs: 110–121. Phase I in dependency graph.
 >
 > **Smart Import Intelligence Engine added 2026-03-17 (CEO Review).**
 > Vision: Replace rule-based column matching with an AI Report Comprehension Engine. Claude Sonnet reads file samples, returns structured Report Analysis (report type, data structure, header row, column semantics, extraction plan). Multi-file intelligence correlates reports across uploads. Structure-aware pre-processor handles pivot tables, subtotal rows, column offsets, multi-sheet extraction. Rich "What I Found" summary cards. Missing data nudges. Existing data auto-connection. Import config memory for repeat uploads.
@@ -1141,7 +1148,173 @@
 
 ---
 
-## Phase Dependency Graph (Updated 2026-03-17 — CEO Smart Import Intelligence Engine Review)
+## P-EaseOfUse — Ease-of-Use & AI-First UX (from CEO Ease-of-Use Review 2026-03-17)
+
+> SCOPE EXPANSION mode. Vision: Make CruFolio so easy that everyone chooses it over doing it themselves with AI.
+> Core insight: The app was built data-out (structured distributor reports as input) not user-in. 20 routes empty on day 1, upload buried in Settings, AI invisible. The product needs to go from "complex BI tool with good AI under the hood" to "the easiest way to understand your wine business."
+> PR split: PR 1 (Foundation), PR 2 (Upload-First + Demo), PR 3 (AI Intelligence), PR 4 (Delight).
+
+### TODO-110: Extract Shared UploadFlow Component + UploadContext
+- **What:** Extract core upload logic from DataImport/index.jsx into a shared `UploadFlow` component. Create `UploadContext` provider for queue state, learned mappings cache, and analysis timing. UploadFlow is used by both the new upload homepage and existing Settings > Data Upload page.
+- **Why:** DRY foundation for upload-first homepage. Currently upload logic is 1014 lines locked inside DataImport. Can't reuse without extraction.
+- **Pros:** Enables all subsequent ease-of-use proposals. Reduces DataImport complexity. Single source of truth for upload behavior.
+- **Cons:** Structural refactor of the most complex component. Must not break existing import flow.
+- **Effort:** M (human: ~1 week / CC: ~30 min)
+- **Priority:** P1 — blocks TODO-111, TODO-112, TODO-117, TODO-120
+- **Files:** `frontend/src/components/DataImport/index.jsx` (extract from), new `frontend/src/components/UploadFlow.jsx`, new `frontend/src/context/UploadContext.jsx`
+- **Depends on:** Nothing
+
+### TODO-111: Upload-First Homepage
+- **What:** When hasAnyData=false, the homepage IS the upload experience. Large drop zone with CruFolio branding: "Drop your distributor report — we'll figure out the rest." Uses shared UploadFlow component. Transitions to dashboard once data exists. Feature-flagged: `tenantConfig.features.uploadFirstHomepage`.
+- **Why:** Current welcome screen sends users to Settings to upload. Upload should feel like the product, not a settings page. This is the #1 first-impression change.
+- **Pros:** Immediate value proposition. Zero navigation to first action. Matches competitive standard (Notion, Linear).
+- **Cons:** Homepage has two states (upload vs dashboard). Need clean transition logic.
+- **Effort:** M (human: ~1 week / CC: ~30 min)
+- **Priority:** P1
+- **Files:** `frontend/src/App.jsx`, new `frontend/src/components/UploadHomepage.jsx`, `frontend/src/components/EmptyState.jsx` (WelcomeState replaced)
+- **Depends on:** TODO-110
+
+### TODO-112: Instant Dashboard Preview (Before Save)
+- **What:** After AI maps columns, run `transformData` CLIENT-SIDE on a 500-row sample and render a mini-dashboard (2-3 charts: top accounts bar, volume trend, scorecard preview) right in the upload flow. User sees value BEFORE saving. "Save & See Full Dashboard" button. Skeleton loading state during generation. Table fallback for non-chartable data (AR aging, product catalogs). try/catch with graceful fallback to ReportAnalysisCard on transform failure.
+- **Why:** Currently 4-5 steps between file drop and seeing a chart. This is the wow moment — structured visual insight in seconds, not minutes.
+- **Pros:** Dramatically reduces time-to-value. Creates shareable "wow" moment. Uses existing transform pipeline.
+- **Cons:** Client-side transforms may fail on edge cases. Mitigated by 500-row cap + try/catch.
+- **Effort:** L (human: ~2 weeks / CC: ~1 hour)
+- **Priority:** P1
+- **Files:** New `frontend/src/components/InstantPreview.jsx`, `frontend/src/components/UploadFlow.jsx`
+- **Depends on:** TODO-110
+- **Supersedes:** TODO-098 (Dashboard Preview Before Import — narrower scope)
+
+### TODO-113: AI Insight Narration
+- **What:** New Cloud Function `generateInsightNarration` in comprehend.js. After import + rebuild, Claude Sonnet generates 2-3 sentence natural language summary: "Your CA depletions are up 12% MoM. Bevmo and Total Wine are fastest-growing. Three accounts haven't reordered in 30+ days." Stored in `tenants/{tenantId}/views/_narration`. Displayed as prominent card on dashboard. Quality gate: discard <50 char or generic responses. Sanitize input using existing `sanitizeForPrompt` helper.
+- **Why:** Turns data into advice. Makes CruFolio feel like an analyst, not a spreadsheet viewer. The "it knows my business" feature.
+- **Pros:** High perceived value. Low implementation cost. Uses existing summary infrastructure.
+- **Cons:** Claude API cost (~2K tokens per call). Cached in _narration doc, not regenerated until new import.
+- **Effort:** M (human: ~1 week / CC: ~30 min)
+- **Priority:** P1
+- **Files:** `functions/comprehend.js`, new `frontend/src/components/AIInsightCard.jsx`
+- **Depends on:** Nothing (can ship independently)
+
+### TODO-114: Progressive Disclosure Sidebar
+- **What:** Sidebar progressively reveals routes as data arrives. Day 1 with zero data: only Dashboard and Upload visible. After depletion upload: Territory, Depletions, Distributors, Accounts appear. After inventory: Inventory, Reorder Forecast appear. CRM routes after first account. Hidden sections show grayed collapsed labels: "Upload inventory data to unlock." Feature-flagged: `tenantConfig.features.progressiveSidebar`.
+- **Why:** 20 empty routes on day one is overwhelming. Small businesses want 2-3 pages that work, not 20 that don't.
+- **Pros:** Dramatic reduction in perceived complexity. Cheapest high-impact change. Uses existing DataContext.availability.
+- **Cons:** Users can't explore empty pages to see what's possible (mitigated by collapsed labels).
+- **Effort:** S (human: ~3 days / CC: ~20 min)
+- **Priority:** P1
+- **Files:** `frontend/src/components/Sidebar.jsx`, `frontend/src/config/routes.js`
+- **Depends on:** Nothing
+
+### TODO-115: Auto-Infer Role & Distributors from Data
+- **What:** Skip Setup Assistant role + distributor selection. When user uploads first file, extend `comprehendReport` to also return `inferred_role` and `detected_distributors`. Auto-update tenant config. Show confirmation toast: "I think you're a Winery working with Southern Glazer's and Breakthru — is that right?" with change button.
+- **Why:** Every form field eliminated is a user retained. Best onboarding is no onboarding.
+- **Pros:** Zero configuration for most users. Leverages AI that's already running.
+- **Cons:** Wrong inference requires correction. Mitigated by confirmation toast + Settings.
+- **Effort:** M (human: ~1 week / CC: ~30 min)
+- **Priority:** P2
+- **Files:** `functions/comprehend.js` (extend report_analysis schema), `frontend/src/context/AuthContext.jsx` (tenant config update)
+- **Depends on:** TODO-110
+
+### TODO-116: "What Should I Upload Next?" Smart Nudges
+- **What:** After each import, show contextual card speaking in business value: "Your account trends are live! To unlock reorder predictions, upload a purchase history." Progress ring ("3/5 data sources connected"). Distributor-specific instructions from reportGuides.js. Dismissable with don't-show-again.
+- **Why:** Turns import dead-end into a flywheel. Each file makes the next feel necessary.
+- **Pros:** Drives multi-file adoption. Uses existing availability flags + report guides.
+- **Cons:** Could feel nagging. Mitigated by dismiss + progress ring.
+- **Effort:** S (human: ~3 days / CC: ~20 min)
+- **Priority:** P2
+- **Files:** New `frontend/src/components/WhatsNextCard.jsx`
+- **Depends on:** Nothing
+
+### TODO-117: Zero-Config Auto-Confirm + Learned Mappings
+- **What:** Three changes: (1) Lower auto-confirm threshold to 70% for known report types (distributor_velocity, depletion, inventory). (2) Tenant-level learned mappings: user corrections stored in `tenants/{id}/config/learnedMappings`, applied on future uploads. Capped at 200 entries with LRU eviction. (3) Graceful auto-fix: if only 1-2 columns below threshold, auto-assign best guess + show dismissible toast instead of blocking.
+- **Why:** Every file needing manual review is a user thinking "I could've done this in Excel." Target: 95%+ auto-confirm rate.
+- **Pros:** System gets smarter per tenant. Dramatically improves AI perception.
+- **Cons:** Wrong auto-mappings could corrupt data. Mitigated by toast + undo.
+- **Effort:** M (human: ~1 week / CC: ~30 min)
+- **Priority:** P1
+- **Files:** `frontend/src/hooks/useFileQueue.js`, `frontend/src/context/UploadContext.jsx`, `frontend/src/services/firestoreService.js`
+- **Depends on:** TODO-110
+
+### TODO-118: Curated Story-Driven Demo Scenario
+- **What:** Replace generic demo seed data with curated scenario: "Ridge & Valley Vineyards" (fictional CA winery), 3 distributors across 4 states, realistic patterns (one account declining, one overdue reorder, one distributor underperforming). Pre-populated Daily Actions, AI narration card. Clear banner: "Sample data — upload yours to replace."
+- **Why:** Demo IS the sales pitch. Story beats numbers. Users should see demo and think "I want MY data to look like this."
+- **Pros:** Better conversion. Showcases all features. Story creates emotional connection.
+- **Cons:** Must maintain if data model changes.
+- **Effort:** M (human: ~1 week / CC: ~30 min)
+- **Priority:** P2
+- **Files:** `frontend/src/services/demoData.js` (new or refactored), `frontend/src/context/AuthContext.jsx`
+- **Depends on:** Nothing
+
+### TODO-119: Speed Badge + Analysis Stats
+- **What:** After AI analysis, show: "Analyzed 2,400 rows in 3.8 seconds — 47 accounts, 12 distributors, 3 states mapped automatically." Subtle badge below ReportAnalysisCard.
+- **Why:** Makes AI speed tangible. Creates micro-moment of delight. Implicit competitive positioning.
+- **Pros:** 10 minutes of work, permanent impression.
+- **Cons:** None.
+- **Effort:** XS (human: ~2 hours / CC: ~10 min)
+- **Priority:** P1
+- **Files:** `frontend/src/components/DataImport/ReportAnalysisCard.jsx` or new `SpeedBadge.jsx`
+- **Depends on:** Nothing
+
+### TODO-120: Conversational Error Recovery
+- **What:** When AI comprehension fails or returns low confidence, show conversational recovery instead of silent fallback: "I'm not sure about this file. Can you help?" Top 3 uncertain columns with dropdown overrides. "Is this a depletion report, inventory, or something else?" After correction: "Got it! I'll remember that for next time" (feeds learned mappings). Feature-flagged: `tenantConfig.features.conversationalRecovery`.
+- **Why:** Silent failures destroy trust. Asking for help builds it. Turns 30% failure case into relationship-building moment.
+- **Pros:** Improves trust. Feeds learned mappings. AI feels collaborative, not brittle.
+- **Cons:** Adds UI complexity. Only shows when confidence is genuinely low.
+- **Effort:** M (human: ~1 week / CC: ~30 min)
+- **Priority:** P1
+- **Files:** New `frontend/src/components/ConversationalRecovery.jsx`, `frontend/src/hooks/useFileQueue.js`
+- **Depends on:** TODO-110, TODO-117
+
+### TODO-121: "Ask CruFolio" Chat Interface (Phase 2)
+- **What:** Chat-style AI interface: "How's my CA territory doing?" "Which accounts should I visit this week?" Claude receives user's dashboard data as context, returns conversational answers with inline charts. Entry point: Cmd+K command palette or dedicated chat panel.
+- **Why:** Closes the remaining gap where ChatGPT wins — ad-hoc questions. CruFolio's advantage: it already HAS the data loaded. No paste required.
+- **Pros:** Massive competitive moat. True AI assistant, not just dashboard.
+- **Cons:** Significant engineering. Token costs scale with usage. Needs careful prompt engineering.
+- **Effort:** XL (human: ~1 month / CC: ~3-4 hours)
+- **Priority:** P3 (Phase 2 — after ease-of-use ships)
+- **Files:** New `frontend/src/components/AskCruFolio.jsx`, new `functions/chat.js`
+- **Depends on:** TODO-113 (narration proves the pattern), full ease-of-use plan shipped
+
+### TODO-122: AI Function Test Infrastructure (comprehend.js + ai.js)
+- **What:** Create test harness for `comprehend.js` and `ai.js` with mocked Claude Sonnet responses. Cover: valid mapping response, malformed JSON, empty response, timeout, refusal. Include `generateInsightNarration` (TODO-113) and role/distributor inference (TODO-115).
+- **Why:** These functions have ZERO tests today. The ease-of-use plan extends them with role inference, narration, and learned mappings. Any prompt change is flying blind without tests.
+- **Pros:** Catches regressions in AI behavior. Enables confident prompt iteration. Prevents silent failures in the AI backbone.
+- **Cons:** Mocked responses may drift from actual Claude output over time. Needs periodic fixture updates.
+- **Effort:** M (human: ~1 week / CC: ~20 min)
+- **Priority:** P1
+- **Files:** New `functions/__tests__/comprehend.unit.test.js`, new `functions/__tests__/ai.unit.test.js`
+- **Depends on:** Ships with PR3 (TODO-117 + TODO-120 + TODO-115)
+
+### TODO-123: Learned Mappings LRU Eviction Tests
+- **What:** Implement and thoroughly test LRU eviction logic for the 200-entry learned mappings cap. Test: eviction at cap, lastUsed timestamp updates on read, correct entry evicted, concurrent write safety.
+- **Why:** Without correct eviction, the Firestore doc grows unbounded. A bug could silently drop useful mappings or keep stale ones.
+- **Pros:** Prevents unbounded growth. Ensures most-used mappings survive eviction.
+- **Cons:** Minimal — straightforward logic, low risk.
+- **Effort:** S (human: ~2 days / CC: ~10 min)
+- **Priority:** P1 (ships with TODO-117 in PR3)
+- **Files:** `frontend/src/context/UploadContext.jsx` (or wherever learned mappings logic lives), test file
+- **Depends on:** Part of TODO-117 implementation
+
+### TODO-124: Component Integration Tests (React Testing Library)
+- **What:** Add integration tests for DataImport, Sidebar, and UploadHomepage components using React Testing Library + Vitest. Test: file drop interaction, queue rendering, progressive sidebar visibility, error recovery UI, preview rendering.
+- **Why:** Currently 0 component tests exist (all 22 test files test pure functions/hooks). The ease-of-use plan adds significant UI behavior that can't be tested with unit tests alone.
+- **Pros:** Catches rendering bugs, interaction regressions, state management issues at the component level.
+- **Cons:** Adds @testing-library/react dependency. Component tests are slower than unit tests. Require mock contexts.
+- **Effort:** M (human: ~1 week / CC: ~30 min)
+- **Priority:** P2
+- **Files:** New test files in `frontend/src/__tests__/`, `package.json` (add @testing-library/react)
+- **Depends on:** PR1 (TODO-110 UploadContext, useVisibleRoutes) ships first
+
+### Ease-of-Use Vision Items (Delight Opportunities)
+
+- **File-to-insight timer** — Animated timer showing seconds from drop to preview. "Your insights in 4.2 seconds." Reinforces speed. (~10 min, depends on TODO-112)
+- **Welcome video** — 30-second looping video on upload homepage showing the drop-to-dashboard flow with real data. Autoplay, muted. (~20 min production, ~5 min code)
+- **Smart notification** — After import, browser notification: "Your territory dashboard just updated with 2,400 new rows. 3 accounts need attention." (~15 min, depends on TODO-113)
+- **Drag-and-drop anywhere** — Global file drop handler on any page, not just upload page. Drop a file on the Depletions tab and it auto-imports and refreshes. (~20 min, depends on TODO-110)
+
+---
+
+## Phase Dependency Graph (Updated 2026-03-17 — CEO Ease-of-Use & AI-First Review)
 
 ```
 FOUNDATION (DONE):
@@ -1268,7 +1441,33 @@ REMAINING P1 — IMPLEMENTATION ORDER:
     PR 2: TODO-093 + 094 + 095
 
     TODO-097 (cross-file product matching at import time) ← P2, needs TODO-090 + TODO-075
-    TODO-098 (dashboard preview before import) ← P3, needs TODO-092
+    ~~TODO-098 (dashboard preview before import)~~ SUPERSEDED by TODO-112
+
+    ── Phase I: Ease-of-Use & AI-First UX ──
+    TODO-110 (extract UploadFlow + UploadContext) ← DO FIRST (prerequisite refactor)
+        │
+        ├── TODO-111 (upload-first homepage)
+        │
+        ├── TODO-112 (instant dashboard preview) ← supersedes TODO-098
+        │
+        ├── TODO-117 (zero-config auto-confirm + learned mappings)
+        │       │
+        │       └── TODO-120 (conversational error recovery) ← also needs TODO-117
+        │
+        └── TODO-115 (auto-infer role + distributors) ← P2
+
+    TODO-113 (AI insight narration) ← independent, can ship anytime
+    TODO-114 (progressive disclosure sidebar) ← independent, can ship anytime
+    TODO-116 ("What's Next" nudges) ← independent, can ship anytime
+    TODO-118 (curated demo scenario) ← independent, can ship anytime
+    TODO-119 (speed badge) ← independent, can ship anytime
+
+    PR 1 (Foundation): TODO-110 + TODO-114 + TODO-119
+    PR 2 (Upload-First): TODO-111 + TODO-118
+    PR 3 (AI Intelligence): TODO-117 + TODO-120 + TODO-115
+    PR 4 (Delight): TODO-112 + TODO-113 + TODO-116
+
+    TODO-121 ("Ask CruFolio" chat) ← P3, Phase 2 after ease-of-use ships
 
 P2+:
     TODO-054 (post-import "What's Next" card) ← needs TODO-049, TODO-051

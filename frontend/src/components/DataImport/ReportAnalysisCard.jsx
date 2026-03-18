@@ -45,7 +45,7 @@ const DASHBOARD_LABELS = {
   productCatalog: "Product Catalog",
 };
 
-export default function ReportAnalysisCard({ analysis, fileName, onRetry }) {
+export default function ReportAnalysisCard({ analysis, fileName, onRetry, analysisTiming }) {
   if (!analysis) return null;
 
   // Error state with smart recovery messages (TODO-096)
@@ -209,6 +209,30 @@ export default function ReportAnalysisCard({ analysis, fileName, onRetry }) {
               </span>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Speed Badge (TODO-119) */}
+      {analysisTiming && (
+        <div style={{
+          padding: "8px 16px",
+          borderTop: "1px solid rgba(107, 30, 30, 0.06)",
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          fontSize: 12,
+          color: "#6B6B6B",
+        }}>
+          <span style={{ fontSize: 13 }}>&#9889;</span>
+          <span>
+            Analyzed{analysisTiming.rowCount > 0 ? ` ${analysisTiming.rowCount.toLocaleString()} rows` : ""} in{" "}
+            <span style={{ fontWeight: 600, color: "#6B1E1E" }}>{analysisTiming.durationSec}s</span>
+          </span>
+          {analysis.columnSemantics && (
+            <span>
+              &mdash; {Object.keys(analysis.columnSemantics).length} columns mapped automatically
+            </span>
+          )}
         </div>
       )}
     </div>
