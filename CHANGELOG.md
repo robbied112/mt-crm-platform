@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.3.0] - 2026-03-18
+
+### Fixed
+- **Blank screen on direct URL navigation** — moved ErrorBoundary to wrap the entire provider tree in `main.jsx` so crashes during provider initialization show a fallback UI instead of a completely blank page
+- **CI production deploys failing** — added `--force` flag to `firebase deploy` in GitHub Actions to bypass missing `secretmanager.secrets.setIamPolicy` IAM permission
+
+### Added
+- Regression test for ErrorBoundary covering `getDerivedStateFromError`, fallback rendering, and `componentDidCatch` logging
+- TODO-130: Grant Secret Manager IAM to CI service account (deferred)
+- TODO-131: Upgrade Cloud Functions to Node.js 22 + firebase-functions 5.x (deadline 2026-04-30)
+
 ## [0.3.2.0] - 2026-03-18
 
 ### Added
