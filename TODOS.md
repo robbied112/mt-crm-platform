@@ -1325,6 +1325,16 @@
 - **Files:** `frontend/src/services/firestoreService.js`, `frontend/src/__tests__/firestoreService.test.js`
 - **Depends on:** None
 
+### TODO-127: Cloud Sync Multi-Sheet Support
+- **What:** Add sheet scoring to `processTenantSync()` in `functions/sync.js` so auto-synced Excel files from Google Drive also pick the best sheet (not just the first). Port the `scoreSheet` heuristic from `frontend/src/utils/parseFile.js` to `packages/pipeline/src/parseFile.js` so both browser and server can share it.
+- **Why:** Without this, a distributor report auto-synced from Drive will silently import the wrong sheet (e.g., a cover page) with no user intervention. Manual upload now handles this correctly; cloud sync is the remaining gap.
+- **Pros:** Parity between manual upload and auto-sync. Prevents silent bad imports from Drive.
+- **Cons:** Requires sharing the scoring heuristic in the pipeline package and updating the predeploy copy step.
+- **Effort:** S (human: ~4hr / CC: ~10 min)
+- **Priority:** P2
+- **Files:** `packages/pipeline/src/parseFile.js`, `functions/sync.js`, `functions/lib/pipeline/parseFile.js` (predeploy copy)
+- **Depends on:** Smart sheet selection PR (scoring heuristic exists to port)
+
 ### Ease-of-Use Vision Items (Delight Opportunities)
 
 - **File-to-insight timer** — Animated timer showing seconds from drop to preview. "Your insights in 4.2 seconds." Reinforces speed. (~10 min, depends on TODO-112)

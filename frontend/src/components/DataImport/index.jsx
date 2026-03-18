@@ -10,7 +10,7 @@ import { useReducer, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import { useCrm } from "../../context/CrmContext";
-import parseFile from "../../utils/parseFile";
+import parseFile, { parseFileSheet } from "../../utils/parseFile";
 import { autoDetectMapping, detectUploadType } from "../../utils/semanticMapper";
 import { t } from "../../utils/terminology";
 import { aiAutoDetectMapping } from "../../utils/aiMapper";
@@ -55,6 +55,8 @@ const initialState = {
   analysis: null,
   integrationPlan: null,
   smartImportEnabled: false,
+  // Sheet selection state
+  sheetInfo: null,
 };
 
 function reducer(state, action) {
@@ -96,6 +98,8 @@ function reducer(state, action) {
     }
     case "SET_INTEGRATION_PLAN":
       return { ...state, integrationPlan: action.payload };
+    case "SET_SHEET_INFO":
+      return { ...state, sheetInfo: action.payload };
     case "TOGGLE_AI":
       return { ...state, useAI: action.payload };
     case "RESET":
@@ -131,10 +135,40 @@ export default function DataImport() {
     step, file, parsed, mapping, confidence, uploadType,
     preview, summary, error, saving, dragOver, useAI, aiLoading,
     billbackItems, billbackMeta, unmatchedProducts,
-    analysis, analyses,
+    analysis, analyses, sheetInfo,
   } = state;
 
   const isBillbackEnabled = tenantConfig?.features?.billbacks;
+
+  // ── Shared mapping helper (DRY across all import paths) ──
+  // Tries AI mapper → falls back to rule-based → dispatches mapping + type.
+
+  const runMapping = useCallback(async (headers, rows) => {
+    let autoMap, conf;
+    if (useAI) {
+      dispatch({ type: "SET_AI_LOADING", payload: true });
+      try {
+        const aiResult = await aiAutoDetectMapping(headers, rows);
+        autoMap = aiResult.mapping;
+        conf = aiResult.confidence;
+      } catch {
+        const ruleResult = autoDetectMapping(headers, rows, userRole);
+        autoMap = ruleResult.mapping;
+        conf = ruleResult.confidence;
+      } finally {
+        dispatch({ type: "SET_AI_LOADING", payload: false });
+      }
+    } else {
+      const ruleResult = autoDetectMapping(headers, rows, userRole);
+      autoMap = ruleResult.mapping;
+      conf = ruleResult.confidence;
+    }
+    dispatch({ type: "SET_MAPPING", payload: autoMap });
+    dispatch({ type: "SET_CONFIDENCE", payload: conf });
+    const type = detectUploadType(headers, rows, autoMap);
+    dispatch({ type: "SET_UPLOAD_TYPE", payload: type });
+    return { mapping: autoMap, confidence: conf, type };
+  }, [useAI, userRole]);
 
   // ── Multi-file queue (from shared UploadContext) ──
 
@@ -292,12 +326,23 @@ export default function DataImport() {
     }
 
     try {
-      const result = await parseFile(f);
+      let result = await parseFile(f);
       if (result.rows.length === 0) {
         dispatch({ type: "SET_ERROR", payload: "File is empty or could not be parsed." });
         return;
       }
       dispatch({ type: "SET_PARSED", payload: result });
+      const originalSheetInfo = result.sheetInfo;
+      if (originalSheetInfo) {
+        dispatch({ type: "SET_SHEET_INFO", payload: originalSheetInfo });
+      }
+
+      // Build sheet summaries for AI context
+      const sheetSummaries = originalSheetInfo?.sheets?.map((s) => ({
+        name: s.name,
+        rowCount: s.rowCount,
+        headerCount: s.headerCount,
+      }));
 
       // Smart import path
       if (smartImportEnabled) {
@@ -309,10 +354,33 @@ export default function DataImport() {
             fileName: f.name,
             headers: result.headers,
             sampleRows: smartSampleRows(result.rows),
+            sheetNames: originalSheetInfo?.sheetNames,
+            selectedSheet: originalSheetInfo?.selectedSheet,
+            sheetSummaries,
           });
           if (!data.error) comprehendResult = data;
           dispatch({ type: "SET_ANALYSIS", payload: data });
           dispatch({ type: "SET_ANALYSES", payload: { fileName: f.name, analysis: data } });
+
+          // AI recommended a different sheet — re-parse with that sheet
+          if (comprehendResult?.recommendedSheet &&
+              comprehendResult.recommendedSheet !== originalSheetInfo?.selectedSheet &&
+              originalSheetInfo?.sheetNames?.includes(comprehendResult.recommendedSheet)) {
+            try {
+              const reParsed = await parseFileSheet(f, comprehendResult.recommendedSheet);
+              if (reParsed.rows.length > 0) {
+                result = reParsed;
+                dispatch({ type: "SET_PARSED", payload: reParsed });
+                dispatch({ type: "SET_SHEET_INFO", payload: {
+                  ...originalSheetInfo,
+                  selectedSheet: comprehendResult.recommendedSheet,
+                } });
+              }
+            } catch (sheetErr) {
+              console.warn(`[DataImport] AI recommended sheet "${comprehendResult.recommendedSheet}" but re-parse failed:`, sheetErr);
+              dispatch({ type: "SET_ERROR", payload: `AI recommended sheet "${comprehendResult.recommendedSheet}" but it couldn't be read. Showing "${originalSheetInfo.selectedSheet}" instead.` });
+            }
+          }
         } catch (err) {
           const errorAnalysis = {
             error: true,
@@ -325,67 +393,28 @@ export default function DataImport() {
           dispatch({ type: "SET_AI_LOADING", payload: false });
         }
 
-        let autoMap, conf;
+        // Use comprehendResult mapping if available, otherwise run standard mapping
         if (comprehendResult?.mapping) {
-          autoMap = comprehendResult.mapping;
-          conf = {};
+          const conf = {};
           if (comprehendResult.columnSemantics) {
             for (const [, semantic] of Object.entries(comprehendResult.columnSemantics)) {
               if (semantic.field) conf[semantic.field] = semantic.confidence || 0;
             }
           }
-        } else if (useAI) {
-          dispatch({ type: "SET_AI_LOADING", payload: true });
-          try {
-            const aiResult = await aiAutoDetectMapping(result.headers, result.rows);
-            autoMap = aiResult.mapping;
-            conf = aiResult.confidence;
-          } catch {
-            const ruleResult = autoDetectMapping(result.headers, result.rows, userRole);
-            autoMap = ruleResult.mapping;
-            conf = ruleResult.confidence;
-          } finally {
-            dispatch({ type: "SET_AI_LOADING", payload: false });
-          }
+          dispatch({ type: "SET_MAPPING", payload: comprehendResult.mapping });
+          dispatch({ type: "SET_CONFIDENCE", payload: conf });
+          const type = detectUploadType(result.headers, result.rows, comprehendResult.mapping);
+          dispatch({ type: "SET_UPLOAD_TYPE", payload: type });
+          dispatch({ type: "SET_STEP", payload: type?.type === "product_sheet" ? "product-sheet-review" : "mapping" });
         } else {
-          const ruleResult = autoDetectMapping(result.headers, result.rows, userRole);
-          autoMap = ruleResult.mapping;
-          conf = ruleResult.confidence;
+          const { type } = await runMapping(result.headers, result.rows);
+          dispatch({ type: "SET_STEP", payload: type?.type === "product_sheet" ? "product-sheet-review" : "mapping" });
         }
-
-        dispatch({ type: "SET_MAPPING", payload: autoMap });
-        dispatch({ type: "SET_CONFIDENCE", payload: conf });
-        const type = detectUploadType(result.headers, result.rows, autoMap);
-        dispatch({ type: "SET_UPLOAD_TYPE", payload: type });
-        dispatch({ type: "SET_STEP", payload: type?.type === "product_sheet" ? "product-sheet-review" : "mapping" });
         return;
       }
 
       // Standard path
-      let autoMap, conf;
-      if (useAI) {
-        dispatch({ type: "SET_AI_LOADING", payload: true });
-        try {
-          const aiResult = await aiAutoDetectMapping(result.headers, result.rows);
-          autoMap = aiResult.mapping;
-          conf = aiResult.confidence;
-        } catch {
-          const ruleResult = autoDetectMapping(result.headers, result.rows, userRole);
-          autoMap = ruleResult.mapping;
-          conf = ruleResult.confidence;
-        } finally {
-          dispatch({ type: "SET_AI_LOADING", payload: false });
-        }
-      } else {
-        const ruleResult = autoDetectMapping(result.headers, result.rows, userRole);
-        autoMap = ruleResult.mapping;
-        conf = ruleResult.confidence;
-      }
-
-      dispatch({ type: "SET_MAPPING", payload: autoMap });
-      dispatch({ type: "SET_CONFIDENCE", payload: conf });
-      const type = detectUploadType(result.headers, result.rows, autoMap);
-      dispatch({ type: "SET_UPLOAD_TYPE", payload: type });
+      const { type } = await runMapping(result.headers, result.rows);
       dispatch({ type: "SET_STEP", payload: type?.type === "product_sheet" ? "product-sheet-review" : "mapping" });
     } catch (err) {
       dispatch({ type: "SET_ERROR", payload: err.message });
@@ -647,6 +676,32 @@ export default function DataImport() {
     }
   }, [file, handleSingleFile]);
 
+  // ── Switch to a different sheet in the same Excel file ──
+
+  const handleSheetChange = useCallback(async (sheetName) => {
+    if (!file || !sheetInfo || sheetName === sheetInfo.selectedSheet) return;
+    dispatch({ type: "SET_ERROR", payload: "" });
+    dispatch({ type: "SET_AI_LOADING", payload: true });
+    try {
+      const result = await parseFileSheet(file, sheetName);
+      if (result.rows.length === 0) {
+        dispatch({ type: "SET_ERROR", payload: `Sheet "${sheetName}" has no data rows.` });
+        dispatch({ type: "SET_AI_LOADING", payload: false });
+        return;
+      }
+      // Preserve sheet scoring from the original parse, just update selectedSheet
+      dispatch({ type: "SET_SHEET_INFO", payload: { ...sheetInfo, selectedSheet: sheetName } });
+      dispatch({ type: "SET_PARSED", payload: result });
+
+      // Re-run mapping on the new sheet
+      await runMapping(result.headers, result.rows);
+    } catch (err) {
+      dispatch({ type: "SET_ERROR", payload: err.message });
+    } finally {
+      dispatch({ type: "SET_AI_LOADING", payload: false });
+    }
+  }, [file, sheetInfo, runMapping]);
+
   // ── Render ──
 
   return (
@@ -786,6 +841,13 @@ export default function DataImport() {
 
       {step === "mapping" && parsed && (
         <>
+          {sheetInfo?.multiSheet && (
+            <SheetSelector
+              sheetInfo={sheetInfo}
+              onSheetChange={handleSheetChange}
+              loading={aiLoading}
+            />
+          )}
           {smartImportEnabled && analysis && (
             <ReportAnalysisCard
               analysis={analysis}
@@ -893,6 +955,60 @@ const STATUS_COLORS = {
   done: { bg: "#d1f5e8", color: "#059669" },
   error: { bg: "#fee2e2", color: "#dc2626" },
 };
+
+function SheetSelector({ sheetInfo, onSheetChange, loading }) {
+  const { sheets, selectedSheet, sheetNames } = sheetInfo;
+  if (!sheetNames || sheetNames.length <= 1) return null;
+
+  // Use scored order if available, otherwise fall back to workbook order
+  const orderedSheets = sheets && sheets.length > 0
+    ? sheets
+    : sheetNames.map((name) => ({ name, rowCount: null, headerCount: null }));
+
+  return (
+    <div style={{
+      background: "#FDF8F0",
+      border: "1px solid #E5E0DA",
+      borderRadius: 8,
+      padding: "12px 16px",
+      marginBottom: 16,
+      fontSize: 13,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <span style={{ fontWeight: 600, color: "#2E2E2E", whiteSpace: "nowrap" }}>
+          &#128203; {sheetNames.length} sheets detected
+        </span>
+        <select
+          value={selectedSheet}
+          onChange={(e) => onSheetChange(e.target.value)}
+          disabled={loading}
+          style={{
+            padding: "4px 8px",
+            borderRadius: 6,
+            border: "1px solid #D1CBC4",
+            fontSize: 13,
+            background: "#fff",
+            minWidth: 200,
+            cursor: loading ? "wait" : "pointer",
+          }}
+        >
+          {orderedSheets.map((s) => (
+            <option key={s.name} value={s.name}>
+              {s.name}
+              {s.rowCount != null ? ` (${s.rowCount.toLocaleString()} rows, ${s.headerCount} cols)` : ""}
+            </option>
+          ))}
+        </select>
+        {loading && (
+          <span style={{ fontSize: 12, color: "#6B1E1E", fontWeight: 500 }}>Re-analyzing...</span>
+        )}
+      </div>
+      <div style={{ fontSize: 12, color: "#6B6B6B", marginTop: 8 }}>
+        AI auto-selected the sheet with the most data. Switch if this isn&apos;t the right one.
+      </div>
+    </div>
+  );
+}
 
 function QueuePanel({ queue, progress, batchDone, batchResults, onRemove, onReview, onReset, onAddMore }) {
   const totalRows = batchResults
