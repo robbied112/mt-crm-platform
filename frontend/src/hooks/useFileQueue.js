@@ -309,6 +309,25 @@ export default function useFileQueue(config = {}) {
     [updateItem]
   );
 
+  // ── claimNextImport ─────────────────────────────────────────
+  // Atomically find the first auto-confirmed item and mark it as
+  // "importing" inside a single setQueue updater.  This avoids the
+  // ref-timing race that caused the queue to stall: the status
+  // change is visible to every subsequent effect run, unlike a ref
+  // which can clear without triggering a re-render.
+  const claimNextImport = useCallback(() => {
+    let target = null;
+    setQueue((prev) => {
+      const idx = prev.findIndex((i) => i.status === "auto-confirmed");
+      if (idx === -1) return prev;
+      target = prev[idx];
+      const next = [...prev];
+      next[idx] = { ...next[idx], status: "importing" };
+      return next;
+    });
+    return target;
+  }, []);
+
   // ── markImporting / markDone / markError ────────────────────
   // Called by DataImport as it runs the actual import pipeline.
   const markImporting = useCallback(
@@ -371,6 +390,7 @@ export default function useFileQueue(config = {}) {
     removeFile,
     processNext,
     confirmFile,
+    claimNextImport,
     markImporting,
     markDone,
     markError,
