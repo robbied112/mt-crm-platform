@@ -207,6 +207,35 @@ export async function deleteImport(tenantId, importId) {
   await deleteDoc(doc(db, "tenants", tenantId, "imports", importId));
 }
 
+// ─── Delete All Data ─────────────────────────────────────────
+
+/**
+ * Delete all tenant data: datasets (data/ + views/), imports, uploads, and summary.
+ * Does NOT delete config, accounts, contacts, tasks, activities, opportunities, or products
+ * — those are handled by the caller via CrmContext.
+ */
+export async function deleteAllData(tenantId) {
+  // Helper: delete all docs (and their row subcollections) in a collection
+  async function deleteCollection(collPath) {
+    const colRef = collection(db, "tenants", tenantId, collPath);
+    const snap = await getDocs(colRef);
+    await Promise.all(snap.docs.map(async (d) => {
+      // Delete rows subcollection if it exists
+      const rowsRef = collection(db, "tenants", tenantId, collPath, d.id, "rows");
+      const rowsSnap = await getDocs(rowsRef);
+      await Promise.all(rowsSnap.docs.map((r) => deleteDoc(r.ref)));
+      await deleteDoc(d.ref);
+    }));
+  }
+
+  await Promise.all([
+    deleteCollection("data"),
+    deleteCollection("views"),
+    deleteCollection("imports"),
+    deleteCollection("uploads"),
+  ]);
+}
+
 // ─── Tenant Config ───────────────────────────────────────────
 
 /**

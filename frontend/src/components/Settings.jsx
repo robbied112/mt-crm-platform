@@ -167,6 +167,7 @@ export default function Settings({
   onSaveGoals,
   onChangePassword,
   onResetSettings,
+  onDeleteAllData,
   onManageBilling,
   onOpenBillingPortal,
 }) {
@@ -606,21 +607,38 @@ export default function Settings({
         <p style={{ fontSize: 13, color: "#C53030", marginBottom: 12 }}>
           These actions cannot be undone.
         </p>
-        <button
-          style={{
-            padding: "8px 16px",
-            background: "#C53030",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-          onClick={onResetSettings}
-        >
-          Reset All Settings to Defaults
-        </button>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <button
+            style={{
+              padding: "8px 16px",
+              background: "#C53030",
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+            onClick={onResetSettings}
+          >
+            Reset All Settings to Defaults
+          </button>
+          <button
+            style={{
+              padding: "8px 16px",
+              background: "#C53030",
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+            onClick={onDeleteAllData}
+          >
+            Delete All Data
+          </button>
+        </div>
       </div>
     </div>
   );
