@@ -149,7 +149,7 @@ export default function Sidebar({ onOpenCommandPalette, onOpenUpgradeModal, mobi
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem("sidebar-collapsed") === "true"; } catch { return false; }
   });
-  const { currentUser, logout, isAdmin } = useAuth();
+  const { currentUser, logout, isAdmin, userRole, userTerritory } = useAuth();
   const { availability, tenantConfig, loading: dataLoading, updateTenantConfig } = useData();
   const { products } = useCrm();
   const navigate = useNavigate();
@@ -372,7 +372,10 @@ export default function Sidebar({ onOpenCommandPalette, onOpenUpgradeModal, mobi
           {!collapsed && (
             <div className="sidebar__user-text">
               <span className="sidebar__user-name">{user?.name || user?.displayName || "User"}</span>
-              <span className="sidebar__user-role">{isAdmin ? "Admin" : "Rep"}</span>
+              <span className="sidebar__user-role">
+                {(userRole || "rep").charAt(0).toUpperCase() + (userRole || "rep").slice(1)}
+                {userTerritory && userTerritory !== "all" ? ` · ${userTerritory}` : ""}
+              </span>
             </div>
           )}
         </div>

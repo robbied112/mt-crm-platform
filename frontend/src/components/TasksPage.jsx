@@ -4,6 +4,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCrm } from "../context/CrmContext";
+import { useTeam } from "../context/TeamContext";
 import TaskForm from "./TaskForm";
 
 const PRIORITY_COLORS = {
@@ -23,27 +24,33 @@ const FILTER_TABS = [
 
 export default function TasksPage() {
   const { tasks, createTask, updateTask } = useCrm();
+  const { members } = useTeam();
   const navigate = useNavigate();
 
   const [filter, setFilter] = useState("all");
+  const [repFilter, setRepFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
 
   const today = new Date().toISOString().slice(0, 10);
 
   const filtered = useMemo(() => {
+    let list = tasks;
+    if (repFilter !== "all") {
+      list = list.filter((t) => t.createdBy === repFilter);
+    }
     switch (filter) {
       case "overdue":
-        return tasks.filter((t) => t.status !== "completed" && t.status !== "cancelled" && t.dueDate && t.dueDate < today);
+        return list.filter((t) => t.status !== "completed" && t.status !== "cancelled" && t.dueDate && t.dueDate < today);
       case "today":
-        return tasks.filter((t) => t.status !== "completed" && t.status !== "cancelled" && t.dueDate === today);
+        return list.filter((t) => t.status !== "completed" && t.status !== "cancelled" && t.dueDate === today);
       case "upcoming":
-        return tasks.filter((t) => t.status !== "completed" && t.status !== "cancelled" && (!t.dueDate || t.dueDate >= today));
+        return list.filter((t) => t.status !== "completed" && t.status !== "cancelled" && (!t.dueDate || t.dueDate >= today));
       case "completed":
-        return tasks.filter((t) => t.status === "completed");
+        return list.filter((t) => t.status === "completed");
       default:
-        return tasks;
+        return list;
     }
-  }, [tasks, filter, today]);
+  }, [tasks, filter, repFilter, today]);
 
   const overdueCount = useMemo(() =>
     tasks.filter((t) => t.status !== "completed" && t.status !== "cancelled" && t.dueDate && t.dueDate < today).length,
@@ -70,7 +77,17 @@ export default function TasksPage() {
         <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ Add Task</button>
       </div>
 
-      {/* Filter tabs */}
+      {/* Rep filter + tabs */}
+      {members.length > 1 && (
+        <div style={{ marginBottom: 12 }}>
+          <select className="form-input" value={repFilter} onChange={(e) => setRepFilter(e.target.value)}>
+            <option value="all">All Reps</option>
+            {members.map((m) => (
+              <option key={m.uid} value={m.uid}>{m.displayName || m.email?.split("@")[0]}</option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="tabs" style={{ marginBottom: 20 }}>
         {FILTER_TABS.map((tab) => (
           <button

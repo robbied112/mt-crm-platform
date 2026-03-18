@@ -1,6 +1,7 @@
 # TODOS — CruFolio (MT CRM Platform)
 
-> Updated from Subscription Gating implementation on 2026-03-18.
+> Updated from CEO Team Account Model Review on 2026-03-18.
+> Previous: Subscription Gating implementation on 2026-03-18.
 > Previous: CEO Ease-of-Use & AI-First UX Review on 2026-03-17.
 > Previous: CEO Smart Import Intelligence Engine Review on 2026-03-17.
 > Previous: CEO Financial Command Center Review on 2026-03-17.
@@ -1177,6 +1178,111 @@
 
 ---
 
+## Phase K: Team Account Model (CEO Review 2026-03-18)
+
+> Added from CEO Team Account Model Review on 2026-03-18. SCOPE EXPANSION mode.
+> Core insight: The product claims "Up to 5 users" on Starter and "15 users" on Growth, but multi-user tenants don't exist. Every signup creates a solo tenant (tenantId = user.uid). There's no invite flow, no roles beyond hardcoded 'admin', no team management UI, and user limits are unenforced. This is the #1 blocker for any B2B sale above single-user.
+> Vision: The team model IS the sales org. Territories are the lens through which reps see the product. Role-aware dashboards auto-filter by territory. Activity attribution surfaces who-did-what. Team setup wizard guides managers through territory creation → invite → assign after first upload.
+> Architecture: Invite-link join flow (no email service). 4 roles: admin/manager/rep/viewer. Hybrid territories (named groups mapped to states, auto-detected from data). Firestore rules + frontend permission enforcement. Separate TeamContext provider. Territory filtering is UX (frontend), not security (Firestore rules).
+> Key decisions: Invite links not email invites. 4 roles not 2. Hybrid territories not flat state lists. Frontend-only territory read filtering (teammates not adversaries). Firestore rules enforce write permissions by role.
+
+### TODO-200: Core Team Account Model (Invite Flow + Roles + Permissions) ✅ DONE
+- **What:** The foundational team infrastructure. Five changes: (1) **Invite link system**: New `tenants/{tenantId}/invites/{inviteId}` Firestore collection. Admin/manager generates invite link with `crypto.randomUUID()` code. Link includes: code, createdBy, assigned role, assigned territory, maxUses, usedCount, expiresAt (7 days default), active flag. Public `/join/{code}` route validates invite → user signs up → Firestore transaction sets user's tenantId + role + territory + increments usedCount. (2) **4-role system**: User profile `role` field accepts `admin|manager|rep|viewer`. Roles: Admin (full access + settings + billing + team management), Manager (read all data + CRM writes + team member viewing), Rep (own territory + CRM writes to owned accounts), Viewer (read-only, no CRM writes). (3) **usePermissions() hook**: Single source of truth for role → capability mapping. Methods: `canWrite(resource)`, `canManageTeam()`, `canAccessSettings()`, `canViewAllTerritories()`, `canAssignAccounts()`, `canImportData()`. (4) **Firestore rules update**: New `isTenantManager(tenantId)` helper (admin OR manager). Reps can only write to accounts/contacts/tasks where they are the owner. Viewers blocked from all CRM writes. Invites: admin/manager can create, anyone can read by code for validation. Settings/config: admin only (existing). (5) **User limit enforcement**: On invite creation, count users where `tenantId == X`, compare to `PLANS[plan].limits.users`. Block with upgrade modal if at limit.
+- **Why:** The product literally cannot be sold to teams without this. Every multi-user feature claim on the pricing page is false. This unblocks the entire B2B sales motion.
+- **Pros:** ~60% of infrastructure already exists (Firestore rules helpers, territory utility, createdBy tracking, plan limits). Invite links are simple (no email service). Feature-flagged for safe rollout.
+- **Cons:** Touches auth flow, Firestore rules, provider tree — high blast radius. AuthContext's `fetchOrCreateProfile` needs a new code path for invited users (set tenantId from invite, not user.uid).
+- **Context:** Key AuthContext change: `fetchOrCreateProfile` currently does `const tenantId = user.uid`. For invited users, tenantId comes from the invite document instead. Non-invited signups continue to create their own tenant.
+- **Error handling:** Invalid/expired invite → "This link is invalid or expired" + signup CTA. User already in tenant → "You're already part of a team." User in different tenant → "You belong to another company — contact your admin." Last admin demotion/removal → disabled button + tooltip. User limit reached → upgrade modal. Invite transaction race condition → Firestore transaction auto-retry.
+- **Effort:** L (human: ~1 week / CC: ~1 hour)
+- **Priority:** P1 — BLOCKS all team features
+- **Testing:** Unit: `usePermissions.test.js` (~24 cases: 4 roles × 6 capabilities). Unit: invite code generation/validation (~6 cases). Unit: "last admin" guard (~4 cases). Unit: user limit check (~4 cases). Integration (emulator): Firestore rules — role-based write permissions (~12 cases: rep writes to own/other account, viewer blocked, manager allowed, admin allowed). Integration: invite flow — create, join, expire, max uses (~8 cases). Integration: team member CRUD — add, update role, remove (~6 cases). ~70 test cases total.
+- **Files:** `frontend/src/context/AuthContext.jsx` (invite join path), new `frontend/src/hooks/usePermissions.js`, `firestore.rules` (role-based rules), new `frontend/src/services/teamService.js` (invite CRUD, member CRUD), new join page component, `frontend/src/config/routes.js` (/join/:code route)
+- **Depends on:** Nothing
+- **Blocks:** TODO-201, TODO-202, TODO-203, TODO-204, TODO-205, TODO-206
+
+### TODO-201: TeamContext Provider + Team Management UI ✅ DONE
+- **What:** New `TeamContext` provider mounted in `main.jsx` (parallel to CrmContext). Subscribes to all users where `tenantId == current tenant` via `onSnapshot`. Exposes: `members[]`, `invites[]`, `territories`, member CRUD methods. New "Team" section in Settings page with: (1) Member list table (name, email, role dropdown, territory dropdown, last active, remove button). (2) Invite button → modal with: link generation, copy button, role selector, territory selector, expiry config. (3) Role change with confirmation dialog (warns on self-demotion). (4) Remove member with account reassignment prompt. Empty state for solo tenants: "You're the only user — invite your team to collaborate."
+- **Why:** Without UI, the team model is invisible. Admins need self-service team management.
+- **Pros:** Follows existing CrmContext pattern. Settings page already has section-based layout. Feature-flagged.
+- **Cons:** New Firestore subscription (user list). New UI surface in Settings.
+- **Effort:** M (human: ~4 hours / CC: ~30 min)
+- **Priority:** P1
+- **Files:** New `frontend/src/context/TeamContext.jsx`, `frontend/src/main.jsx` (add provider), `frontend/src/components/Settings.jsx` (Team section), new `frontend/src/components/TeamSettings.jsx`
+- **Depends on:** TODO-200 (core model)
+
+### TODO-202: Hybrid Territory Configuration ✅ DONE
+- **What:** Territory config stored in `tenants/{tenantId}/config/main.territories`. Schema: `{ [territoryId]: { name: string, states: string[], color?: string } }`. Territory configuration UI in Settings > Team: create named territories, assign US states via multi-select dropdown (all 50 states), visual state badges showing assignment. Territory auto-detection from imported data: scan `state` column from depletion/inventory imports, surface unique states, suggest groupings (e.g., "I found accounts in FL, GA, SC, NC — create a 'Southeast' territory?"). Auto-detect runs after first upload and from Team Setup Wizard. `matchesUserTerritory()` in `utils/territory.js` updated to read from config.territories (currently reads from hardcoded TENANT_CONFIG.regionMap). Unassigned states get a yellow badge.
+- **Why:** Territories are the lens through which reps see the product. Without territory config, role-aware filtering can't work. Auto-detection makes setup feel magical instead of manual.
+- **Pros:** Hybrid approach (named groups + state mapping) matches how wine/spirits orgs actually think. Auto-detection from data is near-free — state column already parsed.
+- **Cons:** US-state-centric for v1 (international markets would need country/region support later). Territory config adds a new config surface.
+- **Effort:** M (human: ~4 hours / CC: ~30 min)
+- **Priority:** P1
+- **Files:** `frontend/src/utils/territory.js` (update to read config), `frontend/src/components/Settings.jsx` (territory config UI), new `frontend/src/components/TerritoryConfig.jsx`, `frontend/src/context/TeamContext.jsx` (territory CRUD)
+- **Depends on:** TODO-200 (core model), TODO-201 (TeamContext)
+
+### TODO-203: Role-Aware Dashboard Filtering ✅ DONE
+- **What:** Wire `matchesUserTerritory()` into DataContext and CrmContext so every dashboard auto-filters by the logged-in user's territory. Implementation: DataContext applies territory filter when computing derived data (accounts, depletions, inventory, pipeline) — filter rows where state matches user's territory. CrmContext applies territory filter to account queries (accounts in user's territory states). Admins and managers see all data. Reps see only their territory. Viewers see all data (read-only executives). FilterBar gains a "Territory" filter showing only when user has `canViewAllTerritories()` permission (managers/admins). Rep's UserBar shows territory badge: "Sarah Chen · Southeast".
+- **Why:** THIS is the value proposition of team accounts. Without role-aware filtering, adding users just means everyone sees the same dashboard. Territory filtering makes each rep's CruFolio feel personal — "built for MY territory."
+- **Pros:** Uses existing `matchesUserTerritory()` — just needs wiring. Filter happens in context (not per-component), so all dashboards benefit automatically. UserBar territory badge is a 10-minute touch that reinforces personalization.
+- **Cons:** Touches DataContext and CrmContext (wide blast radius via context). Need to handle: user with no territory assigned (show all data + nudge), territory with no matching data (empty state), territory config changes (re-filter on config update).
+- **Effort:** M (human: ~5 hours / CC: ~30 min)
+- **Priority:** P1
+- **Files:** `frontend/src/context/DataContext.jsx` (territory filter), `frontend/src/context/CrmContext.jsx` (account territory filter), `frontend/src/components/FilterBar.jsx` (territory filter option), `frontend/src/components/UserBar.jsx` (territory badge), `frontend/src/utils/territory.js` (ensure config-aware)
+- **Depends on:** TODO-202 (territory configuration)
+
+### TODO-204: Account Ownership + Assignment ✅ DONE
+- **What:** Add `ownerId` field to account documents (`tenants/{tenantId}/accounts/{accountId}.ownerId`). Features: (1) "Assign to rep" button on account cards and account detail page — dropdown of team members filtered to reps in matching territory. (2) "My Accounts" filter on AccountsPage — quick-toggle showing only accounts where `ownerId == currentUser.uid`. (3) Unassigned accounts badge — yellow "unassigned" indicator on accounts with no owner. (4) Auto-assign on territory setup: when territories are configured and reps assigned, offer "Auto-assign accounts to reps by territory?" — bulk sets `ownerId` on accounts matching each rep's territory states. (5) Reassignment on rep removal: when removing a team member, prompt "Reassign 23 accounts to [dropdown] or leave unassigned?" (6) Firestore rules: reps can write to accounts where `resource.data.ownerId == request.auth.uid` (existing tenant member write rules stay for admin/manager).
+- **Why:** Account ownership is the bridge between "we have users" and "this is a real CRM." Without it, accounts float in a shared pool with no accountability. The `owner` field already exists on opportunities for pipeline "By Owner" breakdowns — extending to accounts is natural.
+- **Pros:** Clean CRM ownership model. Auto-assign by territory reduces manual work. Reassignment on removal prevents orphaned accounts. Firestore rules enforce rep-scoped writes.
+- **Cons:** Bulk auto-assign could be slow for large account sets (mitigated: batch writes). Owner field is a uid, needs display name resolution via TeamContext.members.
+- **Effort:** M (human: ~4 hours / CC: ~25 min)
+- **Priority:** P1
+- **Files:** `frontend/src/context/CrmContext.jsx` (ownerId on accounts), `frontend/src/components/AccountsPage.jsx` (My Accounts filter + assign button), `frontend/src/components/AccountDetailPage.jsx` (assign dropdown), `firestore.rules` (rep-scoped writes), `frontend/src/services/crmService.js` (bulk assign helper)
+- **Depends on:** TODO-200 (roles), TODO-201 (TeamContext for member list), TODO-202 (territories for auto-assign)
+
+### TODO-205: Activity Attribution + Rep Performance ✅ DONE
+- **What:** Surface the `createdBy` field that already exists on all CRM entities. Three features: (1) "Created by [Name]" labels on account detail activities, notes, and tasks — resolve uid to display name via TeamContext.members map. (2) Activity leaderboard on Team Settings page — table showing per-rep metrics: activities logged (7d/30d), accounts touched, tasks completed, pipeline value. Reads from activityLog and tasks collections filtered by `createdBy`. (3) Filter-by-rep on CRM list views (Accounts, Contacts, Activities, Tasks) — dropdown in FilterBar showing team members, filters list by `createdBy` or `ownerId`.
+- **Why:** The `createdBy` data is already being captured on every CRM entity — this just makes it visible. A sales manager who can't see what their reps are doing won't use the CRM. Attribution transforms a shared database into a team tool.
+- **Pros:** Near-zero backend work — data already exists. uid→name resolution via TeamContext. Activity leaderboard creates healthy accountability without being punitive.
+- **Cons:** uid→name resolution needs TeamContext.members loaded (adds dependency). Activity leaderboard could feel surveillance-y if not framed well (frame as "team activity" not "rep tracking").
+- **Effort:** M (human: ~4 hours / CC: ~25 min)
+- **Priority:** P2 (ships after core team model)
+- **Files:** `frontend/src/components/AccountDetailPage.jsx` (attribution labels), `frontend/src/components/TeamSettings.jsx` (activity leaderboard), `frontend/src/components/FilterBar.jsx` (filter-by-rep), `frontend/src/components/AccountsPage.jsx`, `frontend/src/components/ActivitiesPage.jsx`, `frontend/src/components/TasksPage.jsx`
+- **Depends on:** TODO-200 (roles), TODO-201 (TeamContext for name resolution)
+
+### TODO-206: Team Setup Wizard ✅ DONE
+- **What:** Post-first-upload guided flow integrated into SetupAssistant. Three steps: (1) Territory creation — triggered by territory auto-detection from uploaded data ("I found accounts in FL, GA, SC, NC — create territories?"). Pre-populates suggested groups. Manager can rename, split, or merge. (2) Invite team — email fields or generate shareable invite links. Pre-assign roles (rep by default) and territories. (3) Assign territories — visual assignment of team members to territories with account counts per territory. Shown as a new "Set Up Your Team" card in SetupAssistant after first data upload (after existing setup steps). Skippable — "I'll do this later" persists state. Resumable — revisit anytime from Settings > Team.
+- **Why:** Onboarding is the #1 activation blocker (per CEO App Review). "Set up your team" as a natural post-upload step is the highest-leverage onboarding improvement for multi-user adoption. The wizard mirrors how real sales orgs onboard: data first, then team structure.
+- **Pros:** Builds on existing SetupAssistant infrastructure. Territory auto-detection makes it feel magical. Skippable/resumable respects user time. Natural progression after data upload.
+- **Cons:** Needs all team features working first (depends on most other team TODOs). Adds complexity to SetupAssistant which is already substantial.
+- **Effort:** M (human: ~5 hours / CC: ~30 min)
+- **Priority:** P2 (polish after core team features work)
+- **Files:** `frontend/src/components/SetupAssistant.jsx` (new team setup steps), new `frontend/src/components/TeamSetupWizard.jsx` (extracted wizard component)
+- **Depends on:** TODO-200, TODO-201, TODO-202, TODO-204
+
+### TODO-207: Team Hierarchy — Manager → Rep Relationships ✅ DONE
+- **What:** Add `managerId` field to user docs. Manager assignment UI in TeamSettings. `assignManager()` and `getDirectReports()` in TeamContext.
+- **Why:** Needed for orgs with multiple management layers. Managers can now see their direct reports.
+- **Implemented:** `TeamContext.jsx` (assignManager, getDirectReports, managers memo), `TeamSettings.jsx` (Reports To dropdown column)
+- **Depends on:** TODO-200 (core team model)
+
+### TODO-208: Contextual Invite Emails ✅ DONE
+- **What:** Rich invite emails via Resend API with CruFolio branding, role/territory context, account count. Falls back to console logging when RESEND_API_KEY is not configured.
+- **Why:** Makes reps feel expected, not confused. Higher invite-to-join conversion rate.
+- **Implemented:** `functions/email.js` (buildInviteEmailHtml, buildInviteEmailText, sendInviteEmailInternal, sendInviteEmail callable), `functions/index.js` (re-export), `TeamSettings.jsx` (email button + inline form on invite rows)
+- **Depends on:** TODO-200 (invite flow must work first)
+
+### Team Delight Items (from CEO Review 2026-03-18) ✅ ALL DONE
+
+- **Rep activity sparklines** ✅ — Sparkline SVG component in TeamSettings showing 30-day activity trends per rep
+- **"Assign to Rep" context menu** ✅ — Right-click account name on AccountsPage → assign to rep dropdown
+- **Role badge in sidebar** ✅ — Sidebar footer shows role name + territory (e.g. "Rep · Southeast")
+- **Account ownership indicator** ✅ — Owner column on AccountsPage with memberMap lookup, yellow "Unassigned" badge
+- **Territory map visualization** ✅ — TerritoryMap.jsx SVG-based US state map colored by territory assignment
+- **"Share with your team" prompt** ✅ — Post-import admin prompt in DataImport done step, dismissible via tenantConfig
+
+---
+
 ## Phase Dependency Graph (Updated 2026-03-18 — TODO Audit: 25+ items marked DONE, duplicates renumbered to 300-series)
 
 ```
@@ -1276,6 +1382,30 @@ REMAINING P1 — IMPLEMENTATION ORDER:
 
     ✅ TODO-085 (revenue + financial test suite) DONE
     TODO-086 (shared KpiCard component) ← P2, independent
+
+    ── Phase K: Team Account Model ──
+    TODO-200 (core team model: invite flow + roles + permissions) ← DO FIRST in this phase
+        │
+        ├── TODO-201 (TeamContext + team management UI)
+        │       │
+        │       ├── TODO-202 (hybrid territory configuration + auto-detect)
+        │       │       │
+        │       │       ├── TODO-203 (role-aware dashboard filtering)
+        │       │       │
+        │       │       └── TODO-204 (account ownership + assignment) ← also needs TODO-202
+        │       │               │
+        │       │               └── TODO-206 (team setup wizard) ← P2, needs TODO-200+201+202+204
+        │       │
+        │       └── TODO-205 (activity attribution + rep performance) ← P2
+        │
+        ├── TODO-207 (team hierarchy — manager→rep) ← P3, DEFERRED
+        │
+        └── TODO-208 (contextual invite emails) ← P3, DEFERRED
+
+    PR 1: TODO-200 (core model + invite + roles + permissions + rules)
+    PR 2: TODO-201 + TODO-202 (TeamContext + team UI + territory config)
+    PR 3: TODO-203 + TODO-204 (role-aware filtering + account ownership)
+    PR 4: TODO-205 + TODO-206 (attribution + team setup wizard)
 
     ── Phase H: Smart Import Intelligence Engine ──
     TODO-099 (DataImport/ directory extraction) ← DO FIRST (prerequisite refactor)
