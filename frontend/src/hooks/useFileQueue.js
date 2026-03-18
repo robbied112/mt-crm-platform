@@ -10,24 +10,13 @@
  */
 
 import { useState, useCallback, useRef } from "react";
+import { runComprehend } from "../utils/runComprehend";
 
 // ─── Constants ──────────────────────────────────────────────────
 const AUTO_CONFIRM_THRESHOLD = 0.8;
 const MIN_MAPPED_FIELDS = 3;
 const MAX_BATCH_SIZE = 20;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-
-// ─── Helpers ────────────────────────────────────────────────────
-
-/** Build a smart sample of rows for comprehendReport. */
-function smartSample(rows) {
-  if (rows.length <= 50) return rows;
-  const first20 = rows.slice(0, 20);
-  const midStart = Math.floor(rows.length / 2) - 10;
-  const mid20 = rows.slice(midStart, midStart + 20);
-  const last10 = rows.slice(-10);
-  return [...first20, ...mid20, ...last10];
-}
 
 /**
  * Determine whether a mapping qualifies for auto-confirm.
@@ -214,63 +203,35 @@ export default function useFileQueue(config = {}) {
       }
       updateItem(id, { parsed, sheetInfo: parsed.sheetInfo || null });
 
-      // Build sheet summaries for AI context
-      const sheetSummaries = parsed.sheetInfo?.sheets?.map((s) => ({
-        name: s.name,
-        rowCount: s.rowCount,
-        headerCount: s.headerCount,
-      }));
-
-      // 2. Smart import path: call comprehendReport if enabled
+      // 2. Smart import path: call comprehendReport via shared helper
       let analysis = null;
       let smartMapping = null;
       let smartConfidence = null;
 
       if (smartImportEnabled && comprehendReport) {
         try {
-          const sample = smartSample(parsed.rows);
-          const { data } = await comprehendReport({
+          const comprehendOut = await runComprehend({
+            file,
+            parsed,
+            comprehendCallable: comprehendReport,
             tenantId,
-            fileName: file.name,
-            headers: parsed.headers,
-            sampleRows: sample,
-            sheetNames: parsed.sheetInfo?.sheetNames,
-            selectedSheet: parsed.sheetInfo?.selectedSheet,
-            sheetSummaries,
           });
 
-          analysis = data;
+          analysis = comprehendOut.analysis;
           updateItem(id, { analysis });
 
-          // AI recommended a different sheet — re-parse with that sheet
-          const originalSheetInfo = parsed.sheetInfo;
-          if (data && !data.error && data.recommendedSheet &&
-              data.recommendedSheet !== originalSheetInfo?.selectedSheet &&
-              originalSheetInfo?.sheetNames?.includes(data.recommendedSheet)) {
-            try {
-              const reParsed = await parseFile(file, { sheet: data.recommendedSheet });
-              if (reParsed.rows?.length > 0) {
-                parsed = reParsed;
-                updateItem(id, {
-                  parsed: reParsed,
-                  sheetInfo: { ...originalSheetInfo, selectedSheet: data.recommendedSheet },
-                });
-              }
-            } catch {
-              console.warn(`[useFileQueue] AI recommended sheet "${data.recommendedSheet}" but re-parse failed; keeping original.`);
-            }
+          // Use re-parsed or merged data if available
+          if (comprehendOut.parsed !== parsed) {
+            parsed = comprehendOut.parsed;
+            updateItem(id, { parsed });
+          }
+          if (comprehendOut.sheetInfo) {
+            updateItem(id, { sheetInfo: comprehendOut.sheetInfo });
           }
 
-          // If comprehendReport returned a usable mapping, prefer it
-          if (data && !data.error && data.mapping) {
-            smartMapping = data.mapping;
-            // Build confidence from columnSemantics (matching DataImport pattern)
-            smartConfidence = {};
-            if (data.columnSemantics) {
-              for (const [, semantic] of Object.entries(data.columnSemantics)) {
-                if (semantic.field) smartConfidence[semantic.field] = semantic.confidence || 0;
-              }
-            }
+          if (comprehendOut.mapping) {
+            smartMapping = comprehendOut.mapping;
+            smartConfidence = comprehendOut.confidence || {};
           }
         } catch (err) {
           // Smart import failed — fall through to standard mapping

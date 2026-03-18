@@ -16,6 +16,8 @@ const {
   normalizeRows,
   writeChunked,
   createAdminFirestoreAdapter,
+  getSheetNames,
+  mergeSheets,
 } = require("./lib/pipeline/index");
 const { rebuildViewsForTenant } = require("./rebuild");
 
@@ -334,8 +336,57 @@ async function processTenantSync(tenantId, config, clientId, clientSecret, apiKe
       // Download file
       const { buffer, ext } = await downloadFile(drive, file);
 
-      // Parse
-      const { headers, rows } = parseFileBuffer(buffer, ext);
+      // Check for multi-sheet Excel files
+      const sheetNamesList = getSheetNames(buffer, ext);
+      let headers, rows;
+
+      if (sheetNamesList.length > 1 && (ext === ".xlsx" || ext === ".xls")) {
+        // Multi-sheet: parse all sheets, send to comprehend for merge analysis
+        const allParsed = parseFileBuffer(buffer, ext, { sheets: sheetNamesList });
+        const validSheets = allParsed.filter((s) => s.rows.length > 0);
+
+        if (validSheets.length > 1) {
+          // Use the best sheet as the primary (most rows)
+          const primarySheet = validSheets.reduce((best, s) =>
+            s.rows.length > best.rows.length ? s : best
+          );
+
+          // Heuristic merge: if sheets have similar headers, combine them
+          const primaryHeaders = new Set(primarySheet.headers);
+          const similarSheets = validSheets.filter((s) => {
+            if (s === primarySheet) return true;
+            const overlap = s.headers.filter((h) => primaryHeaders.has(h)).length;
+            return overlap >= Math.min(3, primarySheet.headers.length * 0.5);
+          });
+
+          if (similarSheets.length > 1) {
+            // Merge similar sheets using append strategy
+            const sheetsData = similarSheets.map((s) => ({
+              name: s.sheetName,
+              headers: s.headers,
+              rows: s.rows,
+            }));
+            const merged = mergeSheets(sheetsData, { strategy: "append", sheetMappings: {} });
+            headers = merged.headers;
+            rows = merged.rows;
+            console.log(`[CloudSync] Merged ${similarSheets.length} sheets (${rows.length} total rows) for ${file.name}`);
+          } else {
+            headers = primarySheet.headers;
+            rows = primarySheet.rows;
+          }
+        } else if (validSheets.length === 1) {
+          headers = validSheets[0].headers;
+          rows = validSheets[0].rows;
+        } else {
+          continue; // no valid sheets
+        }
+      } else {
+        // Single sheet — existing behavior
+        const parsed = parseFileBuffer(buffer, ext);
+        headers = parsed.headers;
+        rows = parsed.rows;
+      }
+
       if (rows.length === 0) continue;
 
       // AI mapping
