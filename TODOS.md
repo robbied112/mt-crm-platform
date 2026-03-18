@@ -1305,6 +1305,26 @@
 - **Files:** New test files in `frontend/src/__tests__/`, `package.json` (add @testing-library/react)
 - **Depends on:** PR1 (TODO-110 UploadContext, useVisibleRoutes) ships first
 
+### TODO-125: Server-Side Delete-All-Data Cloud Function
+- **What:** Add a Cloud Function endpoint that performs tenant data deletion server-side using Firestore batch deletes with proper 500-doc batch limits.
+- **Why:** The current client-side `deleteAllData` + `deleteAllCrmData` approach works at current scale but will hit Firestore rate limits and timeouts for large tenants. A server-side function can use batched writes, handle retries, and provide atomicity guarantees.
+- **Pros:** Reliable at any scale, proper batch handling, can run as a background task with progress reporting.
+- **Cons:** Requires Cloud Function deployment, service account permissions, and a UI to show progress.
+- **Effort:** M (human: ~1 week / CC: ~30 min)
+- **Priority:** P2 — needed before large enterprise tenants
+- **Files:** `functions/admin.js` (new), `functions/index.js` (re-export)
+- **Depends on:** None
+
+### TODO-126: Delete Operational Collections in Delete-All-Data
+- **What:** Extend `deleteAllData` in `firestoreService.js` to also delete `pendingMatches`, `syncState`, `syncHistory`, and `rebuildHistory` collections — all listed in the Firestore schema under CLAUDE.md.
+- **Why:** Current "Delete All Data" leaves these operational collections behind. Users expecting a clean slate will have stale sync/rebuild/match state that could confuse future imports or syncs.
+- **Pros:** True clean-slate behavior. Prevents stale state from interfering with fresh data.
+- **Cons:** Users may want to preserve sync configuration while deleting data. May need a "delete data only" vs "factory reset" distinction.
+- **Effort:** S (human: ~2 hours / CC: ~5 min)
+- **Priority:** P2
+- **Files:** `frontend/src/services/firestoreService.js`, `frontend/src/__tests__/firestoreService.test.js`
+- **Depends on:** None
+
 ### Ease-of-Use Vision Items (Delight Opportunities)
 
 - **File-to-insight timer** — Animated timer showing seconds from drop to preview. "Your insights in 4.2 seconds." Reinforces speed. (~10 min, depends on TODO-112)
