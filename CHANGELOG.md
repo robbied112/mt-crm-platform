@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2.0] - 2026-03-18
+
+### Added
+- **Smart sheet selection for multi-sheet Excel files** — when uploading Excel workbooks with multiple sheets, the system now auto-selects the data-rich sheet using a quality heuristic (scores by row count, header quality, data density, and sheet name pattern matching)
+- **Sheet scoring heuristic** (`scoreSheet()` in `frontend/src/utils/parseFile.js`) — evaluates sheets by data volume (capped at 5000 rows), header presence (3+ columns bonus, <3 penalty), data density (filled-cell ratio in first 10 rows), and name penalties/bonuses (e.g., "Summary" → -500, "Sales" → +50)
+- **Workbook caching** — XLSX workbooks are cached in-memory by `file.name|size|lastModified` to avoid re-reading files when manually switching sheets
+- **Manual sheet selection UI** (`SheetSelector` component) — dropdown shows all sheets with row/column counts in scored order; users can switch sheets and re-run mapping without re-uploading
+- **AI sheet validation** — `comprehendReport` Cloud Function receives per-sheet summaries and can recommend a different sheet via `recommendedSheet` field; browser re-parses automatically if recommended sheet differs
+- **63 unit tests** covering sheet scoring, penalty/bonus regex patterns, multi-sheet heuristics, CSV/single-sheet passthrough, and `requestedSheet` override flows
+- **TODO-127** — Cloud Sync Multi-Sheet Support (deferred to next phase) — tracks future parity for auto-synced files from Google Drive
+
+### Changed
+- `parseFile(file)` now accepts optional `{ sheet: sheetName }` parameter for explicit sheet selection
+- `parseFile()` result now always includes `sheetInfo` object with `{ sheetNames, selectedSheet, sheets: [{name, score, rowCount, headerCount}], multiSheet }`
+- DataImport stores `originalSheetInfo` before AI sheet re-parse to preserve full scoring data
+- useFileQueue passes sheet context (`sheetNames`, `selectedSheet`, `sheetSummaries`) to `comprehendReport` for AI analysis
+- SheetSelector inline styles calibrated to DESIGN.md (border-radius 8px cards, Input Border color, 4px spacing scale)
+
+### Fixed
+- useFileQueue sheetInfo loss after AI-recommended sheet re-parse — now stores `originalSheetInfo` before reassignment to preserve full scoring metadata
+
 ## [0.3.1.0] - 2026-03-17
 
 ### Added

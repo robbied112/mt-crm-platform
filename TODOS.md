@@ -1,6 +1,7 @@
 # TODOS — CruFolio (MT CRM Platform)
 
-> Updated from CEO Ease-of-Use & AI-First UX Review on 2026-03-17.
+> Updated from Subscription Gating implementation on 2026-03-18.
+> Previous: CEO Ease-of-Use & AI-First UX Review on 2026-03-17.
 > Previous: CEO Smart Import Intelligence Engine Review on 2026-03-17.
 > Previous: CEO Financial Command Center Review on 2026-03-17.
 > Previous: CEO CRM Pipeline Review on 2026-03-16.
@@ -1050,16 +1051,9 @@
 - **Files:** `frontend/src/context/CrmContext.jsx`, `frontend/src/context/DataContext.jsx`, potentially new per-feature context providers
 - **Depends on:** TODO-081 (Revenue tab), TODO-082 (Executive Dashboard) — wait until feature set is stable
 
-### TODO-089: Portfolio Feature Gate
-- **What:** Add `tenantConfig.features.portfolio` gate — hide sidebar link + route if disabled for a tenant.
-- **Why:** CEO Portfolio Review specified "Feature-gated: tenantConfig.features.portfolio" but the current implementation always shows Portfolio. For multi-tenant rollout, you may want to control which tenants see the feature.
-- **Pros:** Standard feature flag pattern. Enables controlled rollout per tenant. ~15 min implementation.
-- **Cons:** Extra config surface. May not be needed if all tenants benefit from Portfolio. DataGate + EmptyState already handle the no-data case gracefully.
-- **Context:** No other features are currently gated, so this would be the first feature flag. Implementation: check `tenantConfig.features?.portfolio` in `Sidebar.jsx` to hide/show link, and in route definition or `App.jsx` to redirect. The tenantConfig is already loaded in DataContext and available app-wide.
-- **Effort:** S (30 min)
-- **Priority:** P3
-- **Files:** `frontend/src/components/Sidebar.jsx`, `frontend/src/App.jsx` or route guard
-- **Depends on:** Nothing
+### TODO-089: Portfolio Feature Gate — ~~SUPERSEDED~~
+- **Status:** SUPERSEDED by subscription tier gating in `useVisibleRoutes.js` + `config/plans.js`. Portfolio is now gated by plan tier (Growth+ only) rather than a per-tenant feature flag. The `isRouteAllowed(plan, routeKey)` system handles route visibility across all tiers. Individual feature flags per route are no longer needed.
+- **Superseded by:** Subscription tier gating (plans.js `routeAccess` arrays + useVisibleRoutes tier check)
 
 ---
 
@@ -1325,6 +1319,16 @@
 - **Files:** `frontend/src/services/firestoreService.js`, `frontend/src/__tests__/firestoreService.test.js`
 - **Depends on:** None
 
+### TODO-127: Cloud Sync Multi-Sheet Support
+- **What:** Add sheet scoring to `processTenantSync()` in `functions/sync.js` so auto-synced Excel files from Google Drive also pick the best sheet (not just the first). Port the `scoreSheet` heuristic from `frontend/src/utils/parseFile.js` to `packages/pipeline/src/parseFile.js` so both browser and server can share it.
+- **Why:** Without this, a distributor report auto-synced from Drive will silently import the wrong sheet (e.g., a cover page) with no user intervention. Manual upload now handles this correctly; cloud sync is the remaining gap.
+- **Pros:** Parity between manual upload and auto-sync. Prevents silent bad imports from Drive.
+- **Cons:** Requires sharing the scoring heuristic in the pipeline package and updating the predeploy copy step.
+- **Effort:** S (human: ~4hr / CC: ~10 min)
+- **Priority:** P2
+- **Files:** `packages/pipeline/src/parseFile.js`, `functions/sync.js`, `functions/lib/pipeline/parseFile.js` (predeploy copy)
+- **Depends on:** Smart sheet selection PR (scoring heuristic exists to port)
+
 ### TODO-130: Data Source Guide Library (Report Helper Reframe)
 - **What:** Reframe SetupAssistant Step 2 from "Your Distributors" to "Your Data Sources." Category grouping (Distributor Portals, Accounting Software, DTC/E-Commerce, Industry Reports). Add QuickBooks (revenue + AR/AP aging) and iDig guides. Coming Soon badges for planned connectors (Shopify, WooCommerce, Xero). Request-a-Guide form replacing "Other" text input. Freshness hints ("Upload weekly"/"Upload monthly"). Role-based category ordering. Rename `portalName` → `sourceName`. New `getAllSourceIds()`, `getSystemsByCategory()`, `getCategoryOrder()` functions.
 - **Why:** Current distributor-only framing makes the system feel limited. Users with QuickBooks/iDig data don't know they can upload it. Users working with non-Big-4 distributors see a list that excludes them and think "this tool isn't for me." Blocks activation for a significant segment of users.
@@ -1354,6 +1358,23 @@
 - **Welcome video** — 30-second looping video on upload homepage showing the drop-to-dashboard flow with real data. Autoplay, muted. (~20 min production, ~5 min code)
 - **Smart notification** — After import, browser notification: "Your territory dashboard just updated with 2,400 new rows. 3 accounts need attention." (~15 min, depends on TODO-113)
 - **Drag-and-drop anywhere** — Global file drop handler on any page, not just upload page. Drop a file on the Depletions tab and it auto-imports and refreshes. (~20 min, depends on TODO-110)
+
+---
+
+## Phase J: Subscription & Usage Tracking
+
+> Added from Subscription Gating implementation on 2026-03-18.
+
+### TODO-125: Usage Tracking Dashboard & Limit Enforcement
+- **What:** Track per-tenant usage metrics (uploads/month, user count, AI calls) against plan limits defined in `config/plans.js`. Show usage dashboard in Settings. Enforce soft limits (warning banners when approaching cap) and hard limits (block action when exceeded). Cloud Function `trackUsage` increments counters in `tenants/{tenantId}/usage/{month}`.
+- **Why:** Plan limits (5 users on Starter, 10 uploads/mo on Starter, no AI on Starter) are defined in `plans.js` but not enforced anywhere. Without enforcement, tier gating is incomplete — a Starter user can upload unlimited files and use AI features.
+- **Pros:** Completes the billing model. Creates natural upgrade pressure. Prevents abuse. Usage data informs pricing decisions.
+- **Cons:** Adds Firestore writes on every upload/AI call. Needs monthly reset logic. Usage UI adds complexity to Settings.
+- **Context:** `PLANS[planId].limits` already defines caps: `{ users, uploadsPerMonth, aiCalls, cloudSync }`. The `useSubscription` hook already provides `plan` and `isActive`. Implementation: (1) Cloud Function middleware increments `tenants/{tid}/usage/2026-03` doc on each upload/AI call, (2) `useSubscription` or new `useUsage` hook reads usage doc, (3) Settings shows usage bars, (4) Upload flow checks limit before processing, (5) AI calls check `limits.aiCalls` before calling Claude.
+- **Effort:** M (human: ~1 week / CC: ~30 min)
+- **Priority:** P2
+- **Files:** New `functions/usage.js`, new `frontend/src/hooks/useUsage.js`, `frontend/src/components/Settings.jsx` (usage section), `functions/ai.js` (limit check), `frontend/src/components/DataImport/index.jsx` (upload limit check)
+- **Depends on:** Subscription gating (done). Plans config (done).
 
 ---
 

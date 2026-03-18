@@ -207,12 +207,19 @@ export default function useFileQueue(config = {}) {
     const { id, file } = target;
 
     try {
-      // 1. Parse the file
-      const parsed = await parseFile(file);
+      // 1. Parse the file (with smart sheet selection for multi-sheet Excel)
+      let parsed = await parseFile(file);
       if (!parsed || !parsed.headers || !parsed.rows) {
         throw new Error("Could not parse file — no data found");
       }
-      updateItem(id, { parsed });
+      updateItem(id, { parsed, sheetInfo: parsed.sheetInfo || null });
+
+      // Build sheet summaries for AI context
+      const sheetSummaries = parsed.sheetInfo?.sheets?.map((s) => ({
+        name: s.name,
+        rowCount: s.rowCount,
+        headerCount: s.headerCount,
+      }));
 
       // 2. Smart import path: call comprehendReport if enabled
       let analysis = null;
@@ -227,10 +234,32 @@ export default function useFileQueue(config = {}) {
             fileName: file.name,
             headers: parsed.headers,
             sampleRows: sample,
+            sheetNames: parsed.sheetInfo?.sheetNames,
+            selectedSheet: parsed.sheetInfo?.selectedSheet,
+            sheetSummaries,
           });
 
           analysis = data;
           updateItem(id, { analysis });
+
+          // AI recommended a different sheet — re-parse with that sheet
+          const originalSheetInfo = parsed.sheetInfo;
+          if (data && !data.error && data.recommendedSheet &&
+              data.recommendedSheet !== originalSheetInfo?.selectedSheet &&
+              originalSheetInfo?.sheetNames?.includes(data.recommendedSheet)) {
+            try {
+              const reParsed = await parseFile(file, { sheet: data.recommendedSheet });
+              if (reParsed.rows?.length > 0) {
+                parsed = reParsed;
+                updateItem(id, {
+                  parsed: reParsed,
+                  sheetInfo: { ...originalSheetInfo, selectedSheet: data.recommendedSheet },
+                });
+              }
+            } catch {
+              console.warn(`[useFileQueue] AI recommended sheet "${data.recommendedSheet}" but re-parse failed; keeping original.`);
+            }
+          }
 
           // If comprehendReport returned a usable mapping, prefer it
           if (data && !data.error && data.mapping) {
