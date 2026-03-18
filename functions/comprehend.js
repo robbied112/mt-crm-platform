@@ -210,6 +210,13 @@ const REPORT_ANALYSIS_TOOL = {
           "Map of internal field name → source column header string.",
         additionalProperties: { type: "string" },
       },
+      recommendedSheet: {
+        description:
+          "If this Excel file has multiple sheets and the currently selected sheet " +
+          "is NOT the best one for data import, set this to the name of the sheet " +
+          "that contains the primary data. null if the current sheet is correct.",
+        oneOf: [{ type: "string" }, { type: "null" }],
+      },
     },
     required: [
       "reportType",
@@ -425,6 +432,8 @@ const comprehendReport = functions
       sampleRows,
       fileName,
       sheetNames,
+      selectedSheet,
+      sheetSummaries,
     } = data;
 
     if (!tenantId || !headers || !sampleRows || !fileName) {
@@ -449,21 +458,44 @@ const comprehendReport = functions
     const table = buildMarkdownTable(headers, sampleRows);
 
     const safeFileName = sanitizeForPrompt(fileName, 200);
-    const safeSheetNames =
-      Array.isArray(sheetNames) && sheetNames.length
-        ? sheetNames.map((s) => sanitizeForPrompt(s, 80)).join(", ")
-        : "(single sheet)";
+    const safeSelectedSheet = selectedSheet ? sanitizeForPrompt(selectedSheet, 80) : "";
+
+    // Build sheet context block for multi-sheet files
+    let sheetContextBlock = "";
+    if (Array.isArray(sheetSummaries) && sheetSummaries.length > 1) {
+      const sheetLines = sheetSummaries.map((s) => {
+        const name = sanitizeForPrompt(s.name, 80);
+        const marker = name === safeSelectedSheet ? " [CURRENTLY SELECTED]" : "";
+        return `  - "${name}": ${s.rowCount ?? "?"} data rows, ${s.headerCount ?? "?"} columns${marker}`;
+      }).join("\n");
+      sheetContextBlock =
+        `<sheet_context>\n` +
+        `This Excel file has ${sheetSummaries.length} sheets. ` +
+        `The system auto-selected "${safeSelectedSheet}" based on data quality scoring.\n` +
+        `All sheets:\n${sheetLines}\n` +
+        `If the selected sheet does NOT contain the primary data (e.g. it's a summary, ` +
+        `cover page, or metadata sheet), set recommendedSheet to the sheet name that ` +
+        `contains the actual data rows.\n` +
+        `</sheet_context>\n`;
+    } else if (Array.isArray(sheetNames) && sheetNames.length > 1) {
+      const safeNames = sheetNames.map((s) => sanitizeForPrompt(s, 80)).join(", ");
+      sheetContextBlock =
+        `<sheet_context>\n` +
+        `Sheets in workbook: ${safeNames}. Currently analyzing: "${safeSelectedSheet}".\n` +
+        `</sheet_context>\n`;
+    }
 
     const userMessage =
       `<file_data>\n` +
       `<file_name>${safeFileName}</file_name>\n` +
-      `<sheet_names>${safeSheetNames}</sheet_names>\n` +
+      (sheetContextBlock ? sheetContextBlock : `<sheet_names>(single sheet)</sheet_names>\n`) +
       `<headers>${headers.length} columns</headers>\n` +
       `<sample_rows count="${sampleRows.length}">\n` +
       `${table}\n` +
       `</sample_rows>\n` +
       `</file_data>\n\n` +
-      `Analyze the file above and call the report_analysis tool with your findings.`;
+      `Analyze the file above and call the report_analysis tool with your findings.` +
+      (sheetContextBlock ? ` If a different sheet would be better, set recommendedSheet to that sheet name.` : "");
 
     const Anthropic = require("@anthropic-ai/sdk");
     const client = new Anthropic({ apiKey });
