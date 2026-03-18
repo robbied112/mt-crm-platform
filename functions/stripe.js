@@ -32,7 +32,7 @@ const {
 // -------------------------------------------------------------------
 
 const stripeWebhook = onRequest(
-  { secrets: [stripeWebhookSecret, stripeSecretKey], memory: "256MiB" },
+  { secrets: [stripeWebhookSecret, stripeSecretKey], memory: "256MB" },
   async (req, res) => {
     if (req.method !== "POST") {
       res.status(405).send("Method Not Allowed");

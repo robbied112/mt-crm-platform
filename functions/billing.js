@@ -31,7 +31,7 @@ const {
 // Output: { url: "https://checkout.stripe.com/..." }
 // -------------------------------------------------------------------
 const createCheckoutSession = functions
-  .runWith({ secrets: [stripeSecretKey], memory: "256MiB" })
+  .runWith({ secrets: [stripeSecretKey], memory: "256MB" })
   .https.onCall(async (data, context) => {
     if (!context.auth) {
       throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
@@ -106,7 +106,7 @@ const createCheckoutSession = functions
 // Output: { status: "active", plan: "growth" }
 // -------------------------------------------------------------------
 const verifyCheckoutSession = functions
-  .runWith({ secrets: [stripeSecretKey], memory: "256MiB" })
+  .runWith({ secrets: [stripeSecretKey], memory: "256MB" })
   .https.onCall(async (data, context) => {
     if (!context.auth) {
       throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
@@ -175,7 +175,7 @@ const verifyCheckoutSession = functions
 // Output: { url: "https://billing.stripe.com/..." }
 // -------------------------------------------------------------------
 const createBillingPortalSession = functions
-  .runWith({ secrets: [stripeSecretKey], memory: "256MiB" })
+  .runWith({ secrets: [stripeSecretKey], memory: "256MB" })
   .https.onCall(async (data, context) => {
     if (!context.auth) {
       throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
