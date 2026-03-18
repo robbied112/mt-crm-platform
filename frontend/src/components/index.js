@@ -41,6 +41,7 @@ export { default as AccountDetailPage } from "./AccountDetailPage";
 export { default as AccountForm } from "./AccountForm";
 export { default as ContactsPage } from "./ContactsPage";
 export { default as ContactForm } from "./ContactForm";
+export { default as EmailLink } from "./EmailLink";
 export { default as ActivitiesPage } from "./ActivitiesPage";
 export { default as LogActivityModal } from "./LogActivityModal";
 export { default as TasksPage } from "./TasksPage";
