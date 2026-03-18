@@ -10,6 +10,9 @@
 > Previous: Cathedral Vision Review + Eng Review on 2026-03-15.
 > CEO review: SCOPE EXPANSION mode. Eng review: BIG CHANGE mode (full Phase 1).
 > Key eng review correction: full rebuild only (not incremental) — momentum/consistency need ALL rows.
+>
+> **TODO Audit (2026-03-18):** Marked 25+ shipped items as DONE. Renumbered duplicate TODOs to 300-series to resolve numbering conflicts from overlapping CEO reviews. See renumbering map below.
+> Renumbering: 032→300, 033→301, 034→302, 035→303, 036→304, 037→305, 038→306, 039→310, 040→311, 041→312, 042→313, 061→320, 062→321, 125→330, 130→331, 131→332/333 (all in CEO Disruption/Delight/CRM sections only; original pricing/billback numbers unchanged).
 > Phase 1 = Foundation + Daily Value, Phase 2 = CRM + Connected Intelligence, Phase 3 = Industry Platform, Phase 4 = Moat + Scale.
 >
 > **CEO Review Key Decisions (2026-03-16):**
@@ -122,13 +125,8 @@
 
 ## P2 — Phase 2: CRM + Polish
 
-### TODO-007: Add React Router
-- **What:** Add `react-router-dom`. Convert tab state to URL routes (`/territory`, `/accounts`, `/accounts/:id`, `/settings`, etc.). Support deep linking, browser back/forward, bookmarkable views.
-- **Why:** Currently using `useState` for tabs — no deep links, no browser back button, no bookmarkable views, no shareable URLs. For a BI product, this is table stakes. Also required for Account Detail page.
-- **Effort:** M (2-3 hours)
-- **Priority:** P2 (but unlocks TODO-027)
-- **Files:** `frontend/src/App.jsx`, new route config
-- **Depends on:** Nothing
+### ~~TODO-007: Add React Router~~ DONE
+- React Router v7 implemented with centralized route config (`config/routes.js`). Deep linking, browser back/forward, bookmarkable views all working.
 
 ### ~~TODO-008: Snapshot-before-overwrite for data imports~~ SUPERSEDED
 - **Superseded by:** TODO-021 (normalized data model). With the imports/ collection, every import is preserved. Undo = delete the import + rebuild views. No separate snapshot mechanism needed.
@@ -161,15 +159,8 @@
 - **Files:** `frontend/src/components/DataImport.jsx`, `frontend/src/services/firestoreService.js`
 - **Depends on:** TODO-021
 
-### TODO-027: Account Detail Page
-- **What:** Show all data for a single account across all imports: volume history, orders, distributor(s), contacts, notes/activities, pipeline stage. Includes contact CRUD and activity logging. React Router route: `/accounts/:accountId`.
-- **Why:** This is the CRM. When a user clicks an account name anywhere in the app, they land on this page. It's what turns a dashboard into a daily-use tool.
-- **Pros:** Creates CRM stickiness. Every table in the app becomes a portal to deeper data.
-- **Cons:** Requires querying across imports for one account — Firestore reads scale with import count. Mitigation: store aggregated account summary on the account document itself.
-- **Effort:** L (6-8 hours)
-- **Priority:** P2
-- **Files:** New `frontend/src/components/AccountDetail.jsx`, `frontend/src/services/firestoreService.js`
-- **Depends on:** TODO-023, TODO-007
+### ~~TODO-027: Account Detail Page~~ DONE
+- `AccountDetailPage.jsx` implemented with full account data view, contact CRUD, activity logging, notes, and pipeline integration.
 
 ---
 
@@ -199,13 +190,8 @@
 - **Files:** New component, `frontend/src/App.jsx`
 - **Depends on:** TODO-024 (4-role system)
 
-### TODO-016: Quick actions bar
-- **What:** Floating action bar on territory tab: "Upload Data", "Export Report", "Accounts Needing Attention (N)".
-- **Why:** Saves navigation to Settings for common actions. Sales managers want speed.
-- **Effort:** S (1 hour)
-- **Priority:** P3
-- **Files:** New component, `frontend/src/App.jsx`
-- **Depends on:** Nothing
+### ~~TODO-016: Quick actions bar~~ SUPERSEDED
+- **Superseded by:** Command Palette (Cmd+K) — provides universal quick access to all actions and navigation.
 
 ### TODO-017: AI-generated weekly digest
 - **What:** Cloud Function that generates a weekly summary email using Claude: top movers, overdue reorders, pipeline status. Send via SendGrid/Resend.
@@ -316,21 +302,8 @@
 - **Files:** New `functions/__tests__/pricing.integration.test.js`
 - **Depends on:** TODO-032, TODO-034, TODO-038
 
-### TODO-061: PricingContext with useReducer
-- **What:** New `frontend/src/context/PricingContext.jsx` with single useReducer. Action prefixes: PORTFOLIO_ (persisted), CALC_ (ephemeral), RATES_ (cached). Mounted globally in main.jsx (same pattern as CrmProvider). Portfolio uses on-demand load + optimistic updates (NOT real-time onSnapshot). State shape: portfolio[], portfolioLoading, activeWineId, activeMarketId, inputs, costInputMode, marketInputMemory, scenarioB*, activeRecapLayer, liveRates, ratesFetching. Portfolio CRUD abstracted behind API for future flat→subcollection migration. Replaces 8+ useState hooks in PricingStudio.jsx.
-- **Why:** Foundation for all portfolio features. Current state sprawl in PricingStudio.jsx is unmanageable. Every subsequent pricing TODO depends on this.
-- **Pros:** Clean state management, testable reducer, enables persistence layer, single source of truth.
-- **Cons:** Refactor of working calculator code — risk of regression.
-- **Eng review decisions:**
-  - Global provider in main.jsx (consistent with CrmProvider pattern)
-  - Single useReducer with prefixed actions (explicit > clever, minimal files)
-  - On-demand load + optimistic updates (not real-time — portfolio changes infrequently)
-  - Reducer unit tests required (~15 cases: all action types + edge cases)
-- **Effort:** M (2-3 hours)
-- **Priority:** P1
-- **Files:** New `frontend/src/context/PricingContext.jsx`, refactor `PricingStudio.jsx` to consume context, add reducer tests to `frontend/src/__tests__/pricingReducer.test.js`, update `main.jsx` provider tree
-- **Depends on:** Nothing
-- **Blocks:** TODO-034, TODO-062, TODO-063, TODO-065
+### ~~TODO-061: PricingContext with useReducer~~ DONE
+- `PricingContext.jsx` implemented with useReducer. Global provider in main.jsx. Portfolio CRUD, calculator state, rates management all unified.
 
 ### TODO-062: Portfolio-first /pricing layout
 - **What:** Restructure /pricing to land on PortfolioTable — list of all wines with key metrics (name, producer, market, SRP, margin health). "Price a Wine" button opens calculator as detail view. Clicking a wine row opens it in calculator with saved inputs restored. Paginated (50/page), sortable by any column, filterable by producer/market/tag. Empty state for new users with 0 wines → CTA to price their first wine.
@@ -352,15 +325,8 @@
 - **Files:** `frontend/src/components/PricingStudio/MarketInputForm.jsx`, `PricingContext.jsx`
 - **Depends on:** TODO-061, TODO-034
 
-### TODO-064: Pricing Studio design polish
-- **What:** Single design polish pass: (1) CSS class name audit — ensure all JSX classes have matching CSS rules (fix drift like __values vs __right), (2) Replace inline hex colors in AnalysisPanel.jsx (lines 9-13, 176) with CSS custom properties (var(--danger), var(--success)), (3) Extract duplicated `fmt()` from 5 components and `NumInput` from 2 components to shared `PricingStudio/utils.js`, (4) Add empty states for all panels, (5) Responsive improvements for tablet, (6) Fix waterfall row spacing and column alignment.
-- **Why:** CSS bug (case/bottle values smashed together) signals there are likely more drift issues. Best-in-class pricing tool needs best-in-class design. Single pass catches everything.
-- **Pros:** Immediate visual improvement. Catches all CSS drift at once.
-- **Cons:** Purely cosmetic — no new functionality.
-- **Effort:** S (2-3 hours)
-- **Priority:** P1
-- **Files:** `frontend/src/styles/Global.css`, all PricingStudio/*.jsx components
-- **Depends on:** Nothing — can ship independently
+### ~~TODO-064: Pricing Studio design polish~~ DONE
+- Design polish pass shipped in PR #15. CSS class audit, color system alignment, shared utils extraction, empty states, responsive improvements.
 
 ### TODO-065: Portfolio What-If stress testing
 - **What:** New WhatIfPanel component. Global override sliders: FX shift (%), tariff override (%), freight delta ($/case). Applies overrides to portfolio wines **in the active market only** (not all markets), recalculates in real-time (debounced 200ms). Shows delta SRP, delta wholesale, and margin health indicators (green >25%, yellow 15-25%, red <15%). Wines that go negative-margin flash red with callout. Save snapshots to `tenants/{id}/pricing/snapshots/{id}` for historical comparison. Paginated at 50 wines per page. User switches market to see impact on other markets.
@@ -465,17 +431,8 @@
 - **Files:** `frontend/src/components/DataImport.jsx` (extend), new `frontend/src/components/BillbackDashboard.jsx`, new `frontend/src/components/WineList.jsx`, new `frontend/src/components/WineDetail.jsx`, `frontend/src/config/routes.js`, `frontend/src/components/Sidebar.jsx`, `frontend/src/config/tenant.js` (add `features.billbacks`)
 - **Depends on:** TODO-040 (extraction), TODO-042 (views), TODO-041 (wines)
 
-### TODO-047: Extract shared deduplicateEntities() helper
-- **What:** Extract entity dedup logic from `extractAccounts` (functions/index.js:678-900) into a shared `deduplicateEntities()` function in `functions/entityDedup.js`. Parameters: `{ entityType, collectionPath, normalizeFn, sanitizeFn, aiPromptTemplate, rawNames, existingEntities, tenantId, importId, db, anthropicClient }`. Returns `{ created, linked, pending }`. Refactor `extractAccounts` to use this helper. Then `extractWines` in `functions/billback.js` calls the same helper with wine-specific normalization + prompt.
-- **Why:** DRY — ~150 LOC of dedup logic (sanitize, normalize, exact match, AI fuzzy match with retries, confidence routing to auto-link/pending/create-new, pending matches queue, fallback on AI failure) would otherwise be duplicated between accounts and wines. Bug fixes apply to both.
-- **Pros:** Single source of truth for dedup behavior. Easy to add future entity types. Wine-specific normalization is cleanly injected, not hardcoded.
-- **Cons:** Refactoring extractAccounts carries regression risk. Must verify existing behavior unchanged with tests.
-- **Context:** Key differences between account and wine dedup: (a) normalization rules (accounts strip Inc/LLC; wines strip accents, bottle sizes, keep vintage), (b) AI prompt (wine matching vs account matching), (c) Firestore collection paths (accounts/ vs wines/, pendingMatches/ vs pendingWineMatches/). The helper abstracts over these.
-- **Testing:** Mandatory tests: normalization per entity type, dedup flow with mocked AI (exact match, confidence routing, timeout fallback, malformed JSON fallback, NaN confidence), regression test that extractAccounts behavior is unchanged after refactor.
-- **Effort:** M (2-3 hours)
-- **Priority:** P1 — BLOCKS TODO-041
-- **Files:** New `functions/entityDedup.js`, refactor `functions/index.js` (extractAccounts), `functions/billback.js` (extractWines uses helper)
-- **Depends on:** TODO-023 (extractAccounts must exist first to refactor from)
+### ~~TODO-047: Extract shared deduplicateEntities() helper~~ DONE
+- Extracted to `functions/entityDedup.js`. Shared dedup logic used by both account and product entity extraction.
 
 ---
 
@@ -526,17 +483,13 @@
 
 ## New from CEO Disruption Review (2026-03-16)
 
-### TODO-032: Product rename (from "Sidekick BI")
-- **What:** Rename product across all touchpoints: LandingPage.jsx, Login.jsx, index.html, nav bar, footer, email addresses (hello@sidekickbi.com), Stripe config, Firebase project display name. Choose a name that signals: wine & spirits industry, authority (not "sidekick" energy), and intelligence/clarity.
-- **Why:** "Sidekick" = secondary/helper. "BI" = enterprise jargon the target user doesn't identify with. Neither word signals wine/spirits. The name is the #1 brand lever and the first thing every potential user sees.
-- **Effort:** S (2-3 hours for code changes, separate branding exercise for choosing the name)
-- **Priority:** P1 — must complete before any public launch
-- **Depends on:** Branding exercise (choosing the new name)
+### ~~TODO-300: Product rename (from "Sidekick BI")~~ DONE (was TODO-032, renumbered to avoid conflict with pricing TODO-032)
+- Rebranded to CruFolio. Shipped in PRs #26, #27.
 
-### TODO-033: Promote daily actions card to P1 (see TODO-028)
-- **Status:** TODO-028 has been updated in-place with P1 priority and rules-based v1 spec.
+### ~~TODO-301: Promote daily actions card to P1 (see TODO-028)~~ DONE (was TODO-033, renumbered to avoid conflict with pricing TODO-033)
+- **Status:** TODO-028 has been updated in-place with P1 priority and rules-based v1 spec. TODO-028 shipped.
 
-### TODO-034: Data source connector framework
+### TODO-302: Data source connector framework (was TODO-034, renumbered to avoid conflict with pricing TODO-034)
 - **What:** Design and build an abstraction layer for data sources. Each import gets a `source` field: `{ type: 'file_upload' | 'google_drive' | 'email_forward' | 'api_connector', sourceId, metadata: {...} }`. Build the framework with file_upload as the first connector. Google Drive sync (existing) becomes the second. Email forwarding (users forward distributor report emails to a tenant-specific address) as a Phase 2 win. Distributor API connectors (VIP, Encompass, iDIG) as the long-term moat.
 - **Why:** Manual file upload is the ceiling on daily usage. If data flows in automatically, the product becomes always-current. Direct distributor integrations are what separates this from every competitor.
 - **Pros:** Moat-building. Reduces user friction. Enables real-time data freshness.
@@ -546,29 +499,20 @@
 - **Files:** `frontend/src/services/firestoreService.js`, `functions/index.js`, new `functions/connectors/`
 - **Depends on:** TODO-021 (normalized model with source field)
 
-### TODO-035: Minimum viable compliance (tenant data deletion + privacy page)
-- **What:** Build a "Delete all my data" Cloud Function that recursively deletes a tenant's Firestore data (imports, views, CRM, config, user profiles). Add a `/privacy` page describing what data is stored, how long, and how to request deletion. Add "Delete Account" button to Settings with confirmation flow.
-- **Why:** Distributor reports contain PII (account names, addresses, buyer contacts). CCPA requires deletion capability for California businesses. Many wineries are in CA. This removes legal liability before launch.
-- **Effort:** S (2-3 hours)
-- **Priority:** P2 — before any paid customers
-- **Depends on:** Nothing
+### ~~TODO-303: Minimum viable compliance (tenant data deletion + privacy page)~~ DONE (was TODO-035, renumbered to avoid conflict with pricing TODO-035)
+- Delete All Data + privacy page shipped in PR #40.
 
-### TODO-036: Firebase staging project + GitHub Actions CI
-- **What:** Create a second Firebase project (e.g., `sidekick-bi-staging`) for pre-production testing. Add GitHub Actions workflow: on push to main, run Vitest suite. On PR, run tests + deploy to staging. Block merge if tests fail.
-- **Why:** The normalized data model migration (TODO-021) is a schema change. Deploying directly to production with no test gate risks corrupting user data. Staging + CI is a 2-hour setup that protects every future deploy.
-- **Effort:** S (2 hours)
-- **Priority:** P1 — must be done BEFORE TODO-021 migration
-- **Depends on:** Nothing
-- **Status:** Staging Firebase project now exists (`mt-crm-platform-staging`) and GitHub Actions wiring is configured with repo variable `FIREBASE_PROJECT_STAGING` and secret `GCP_SA_KEY_STAGING`. Remaining gap: push the workflow to GitHub and enable branch protection / required status checks on `main` so failing CI actually blocks merges.
+### ~~TODO-304: Firebase staging project + GitHub Actions CI~~ DONE (was TODO-036, renumbered to avoid conflict with pricing TODO-036)
+- Staging project + GitHub Actions CI shipped in PR #30. CI auto-deploys on push to main.
 
-### TODO-037: Lightweight observability (Firebase Analytics + error alerts)
+### TODO-305: Lightweight observability (Firebase Analytics + error alerts) (was TODO-037, renumbered to avoid conflict with pricing TODO-037)
 - **What:** Enable Firebase Analytics. Add event tracking for: file upload (with type + row count), signup (with role), feature usage (which tabs visited), export clicks, daily actions card interactions. Set up Cloud Function error alerting via Firebase monitoring (email on function failure).
 - **Why:** You need to know what users actually do. Which features drive retention? What file types are most common? When do Cloud Functions fail? Without this, product decisions are guesses.
 - **Effort:** S (2-3 hours)
 - **Priority:** P2
 - **Depends on:** Nothing
 
-### ~~TODO-038: Create CLAUDE.md~~ DONE
+### ~~TODO-306: Create CLAUDE.md~~ DONE (was TODO-038, renumbered to avoid conflict with pricing TODO-038)
 - Added `CLAUDE.md` at project root with architecture diagram, local dev setup, conventions, critical paths, testing strategy, and Firestore schema map.
 
 ### Eng Review TODOs (2026-03-16)
@@ -590,28 +534,28 @@
 
 ### Delight TODOs (from CEO review)
 
-### TODO-039: Personalized morning greeting + territory snapshot
+### TODO-310: Personalized morning greeting + territory snapshot (was TODO-039, renumbered to avoid conflict with pricing TODO-039)
 - **What:** Replace neutral MyTerritory header with "Good morning, Sarah" + 3-line territory snapshot: "847 active accounts | 3 overdue reorders | Southern Glazer's health dropped to Yellow."
 - **Why:** Makes the product feel personal. Says "I know who you are and I already read your data."
 - **Effort:** S (30 min — data already exists in DataContext)
 - **Priority:** P2 (delight)
 - **Depends on:** Nothing
 
-### TODO-040: Distributor health trend sparklines
+### TODO-311: Distributor health trend sparklines (was TODO-040, renumbered to avoid conflict with billback TODO-040)
 - **What:** Next to each distributor's health score in the scorecard table, show a tiny 3-month trend sparkline (up/flat/down). Requires storing historical scores (one snapshot per rebuild).
 - **Why:** Static scores are informative. Trends are actionable. A declining sparkline triggers a call. A static "78" triggers nothing.
 - **Effort:** M (2-3 hours — need historical score storage + sparkline component)
 - **Priority:** P3 (delight)
 - **Depends on:** TODO-022 (rebuild stores historical snapshots)
 
-### TODO-041: "Copy as table" for dashboard sections
+### TODO-312: "Copy as table" for dashboard sections (was TODO-041, renumbered to avoid conflict with billback TODO-041)
 - **What:** Clipboard icon on every table/scorecard. Click copies formatted TSV that pastes beautifully into email, Slack, or Google Docs.
 - **Why:** Sales managers constantly share data from tools. One-click copy makes this the source of truth for team communication.
 - **Effort:** S (1 hour)
 - **Priority:** P3 (delight)
 - **Depends on:** Nothing
 
-### TODO-042: Account auto-complete + keyboard navigation
+### TODO-313: Account auto-complete + keyboard navigation (was TODO-042, renumbered to avoid conflict with billback TODO-042)
 - **What:** Extend Command Palette for universal account search. Add keyboard shortcuts: `g t` for territory, `g a` for accounts, `g d` for depletions (like GitHub navigation).
 - **Why:** Power users judge tools by navigation speed. Keyboard shortcuts signal "built by people who use it."
 - **Effort:** M (2 hours)
@@ -778,7 +722,7 @@
 - **Files:** `frontend/src/styles/Global.css`, pipeline components from TODO-057
 - **Depends on:** TODO-057 (unified pipeline view)
 
-### TODO-061: Quick-Add Account + Opportunity From Anywhere
+### TODO-320: Quick-Add Account + Opportunity From Anywhere (was TODO-061, renumbered to avoid conflict with pricing TODO-061)
 - **What:** Floating "+" action button (FAB) accessible from pipeline, territory, and daily actions pages. Quick-add modal with minimal required fields: account name, type, then optional "create first opportunity" with type picker. Command Palette (Cmd+K) gains "New Account" and "New Opportunity" shortcuts. Pre-fill context when adding from territory (state) or daily actions (account name).
 - **Why:** CEO question: "can they easily add new customers?" — today account creation is buried under CRM > Accounts > + New (3 clicks). A rep meeting someone at a trade show should add them in 5 seconds.
 - **Pros:** Removes friction from the most common action. Contextual pre-fill reduces data entry. Cmd+K integration for power users.
@@ -788,15 +732,8 @@
 - **Files:** New `frontend/src/components/QuickAddFAB.jsx`, `frontend/src/components/CommandPalette.jsx`, `frontend/src/App.jsx`
 - **Depends on:** TODO-056 (opportunities entity)
 
-### TODO-062: Pipeline Migration Helper
-- **What:** Admin tool in Settings that imports existing `pipelineAccounts` (from spreadsheet data in DataContext) into the new opportunities model. Maps old stages (Identified/Outreach Sent/Meeting Set/RFP/Proposal/Negotiation/Closed Won/Lost) to closest match per opportunity type (defaults to "New Placement" type). Creates CRM accounts for any pipeline accounts that don't already exist (matched by name). Runs once per tenant, optional, with preview before commit.
-- **Why:** Existing tenants have pipeline data from spreadsheet imports. Without migration, switching to the new pipeline would lose all that historical context. Preserves continuity for early adopters.
-- **Pros:** Smooth upgrade path. No data loss. Preview before commit prevents surprises.
-- **Cons:** Stage name mapping is imperfect — needs manual review for edge cases. One-time tool that adds code complexity.
-- **Effort:** M
-- **Priority:** P2
-- **Files:** New admin section in Settings, `frontend/src/services/migrationService.js`
-- **Depends on:** TODO-056 (opportunities entity)
+### ~~TODO-321: Pipeline Migration Helper~~ NOT NEEDED (was TODO-062, renumbered to avoid conflict with pricing TODO-062)
+- Pipeline shipped with new opportunities model. No legacy pipeline data exists that needs migration.
 
 ### CRM Pipeline Delight Items (from CEO Pipeline Review 2026-03-16)
 
@@ -815,107 +752,30 @@
 > Vision: Unified Product Intelligence Hub — one canonical products/ collection with supplier → brand → wine → vintage hierarchy, rich Vinosmith-style detail fields, sell sheet generation, product sheet import, and AI product matching on all imports.
 > Architecture: Flat products/ collection with parentId for vintage→wine linking. wines/ migrated (one-time, idempotent). PricingContext reads pricing from product docs (no separate collection). normalizeProductName() shared in packages/pipeline/src/. Feature-gated behind tenantConfig.features.portfolio.
 
-### TODO-070: Unified Product Catalog Schema + Migration
-- **What:** Extend products/ collection with rich wine fields: varietal, appellation, region, country, alcoholPct, caseSize, bottleSize, supplier, tags, status, sourceNames[], parentId (vintage→wine link), normalizedName, displayName, labelImageUrl, tastingNotes, description, pricing (denormalized map), wineEntityId (legacy link during migration). Vintage hierarchy: non-vintage wines (type="nv", parentId=null) are parents; vintage SKUs (type="vintage", parentId=wineId) are children. Shared `normalizeProductName()` in `packages/pipeline/src/productNormalize.js` (strip accents, bottle sizes, abbreviations, keep vintage years). One-time `migrateWinesToProducts` callable Cloud Function: copy wines/ docs into products/ with schema mapping, idempotent (skip already-migrated via wineEntityId), dedup on normalizedName (merge sourceNames). Refactor `extractWines` in `functions/billback.js` to write to products/ instead of wines/. Update `entityDedup.js` for product-specific normalization.
-- **Why:** Three disconnected product concepts are the #1 architectural blocker. Can't build sell sheets, AI matching, portfolio analytics, or cross-source intelligence until there's one canonical wine catalog. The hierarchy (supplier → producer → wine → vintage) is how the industry thinks about its book.
-- **Pros:** Single source of truth. Every feature that touches wines gets simpler. Enables sell sheets, AI matching, portfolio analytics. PricingContext writes pricing on product docs directly — eliminates the third disconnected concept.
-- **Cons:** Migration of wines/ requires careful dedup. Refactoring extractWines carries regression risk (mitigated by existing billback integration tests). Schema is large (~20 fields) but most are optional.
-- **Context:** Firestore schema:
-  ```
-  tenants/{tenantId}/products/{productId}
-    name, normalizedName, displayName, type ("vintage"|"nv"), parentId
-    supplier, producer, vintage, varietal, appellation, region, country
-    alcoholPct, caseSize, bottleSize, upc, sku
-    tastingNotes, description, labelImageUrl, tags[], status
-    sourceNames[], importIds[], wineEntityId (migration link)
-    pricing: { us: { srp, wholesale }, ... }
-    distributors[], createdAt, updatedAt, createdBy
-  ```
-- **Error handling:** Migration: skip malformed docs + log warning, idempotent rerun, dedup merge on collision. extractWines refactor: existing retry + fallback patterns preserved.
-- **Effort:** L (6-8 hours)
-- **Priority:** P1 — BLOCKS all portfolio work
-- **Testing:** `normalizeProductName.test.js` (~15 cases: accents, bottle sizes, abbreviations, vintage extraction, empty, null, unicode). Integration: migration idempotency, dedup merge, tenant isolation. Regression: existing billback extraction tests pass against products/.
-- **Files:** `packages/pipeline/src/productNormalize.js`, `functions/billback.js` (refactor extractWines), `functions/entityDedup.js` (product normalization), new `functions/migration.js` (migrateWinesToProducts), `frontend/src/services/crmService.js` (extend product fields), `frontend/src/context/CrmContext.jsx`
-- **Depends on:** TODO-047 (shared deduplicateEntities helper — DONE)
-- **Blocks:** TODO-071, TODO-072, TODO-073, TODO-074, TODO-075
+### ~~TODO-070: Unified Product Catalog Schema + Migration~~ DONE
+- `productNormalize.js` in packages/pipeline/src/, products/ collection in firestore.rules, Portfolio/ components all implemented. Unified product catalog with rich wine fields, vintage hierarchy, shared normalization.
 
-### TODO-071: Portfolio Page + Product Detail (/portfolio route)
-- **What:** New `/portfolio` top-level route replacing `/wines`. Three views: (1) Portfolio list — browse wines with search/filter/sort, grouped by supplier → producer → wine. Paginated 50/page. Toggle between flat list and grouped-by-producer view. (2) Product detail page (`/portfolio/:productId`) — all wine fields, vintage timeline (horizontal cards for 2018/2019/2020...), pricing summary, spend data (from billback views), distributor badges, "Edit" button, "Add Vintage" button. (3) Product create/edit form — all Vinosmith-style fields (name, producer, supplier, vintage, varietal, appellation, region, country, alcohol%, case size, bottle size, SKU, UPC, tasting notes, tags). Empty state: "Add your first wine" CTA. BEM CSS in Global.css (no inline styles). Sidebar nav item: "Portfolio" with wine count badge. Replace old WineList.jsx and WineDetail.jsx.
-- **Why:** Current WineList.jsx is a bare table with inline styles and billback-only data. No way to manually manage wines, no hierarchy view, no rich details. The Portfolio page is the heart of the product — where users manage their wine book. SevenFifty and Vinosmith set the bar.
-- **Pros:** Central hub for all wine data. Rich detail views that importers expect. Hierarchy matches how the industry thinks. Replaces two weak components with one strong one.
-- **Cons:** Large UI build (~6-8 hours). Needs well-designed empty state for new users with 0 wines.
-- **Effort:** L (6-8 hours)
-- **Priority:** P1
-- **Files:** New `frontend/src/components/Portfolio/PortfolioList.jsx`, `Portfolio/ProductDetail.jsx`, `Portfolio/ProductForm.jsx`, `frontend/src/config/routes.js`, `frontend/src/styles/Global.css`, `frontend/src/components/Sidebar.jsx`
-- **Depends on:** TODO-070 (unified schema)
+### ~~TODO-071: Portfolio Page + Product Detail (/portfolio route)~~ DONE
+- Portfolio/ directory with 4 components (PortfolioList, ProductDetail, ProductForm, SellSheetExport). /portfolio route, sidebar nav, BEM CSS.
 
-### TODO-072: Sell Sheet Generator (PDF + XLSX)
-- **What:** Export branded sell sheets from portfolio. User selects wines (checkbox on portfolio list or "Export All") + market/tier context. Two formats: (1) PDF — professional wine sell sheet layout via **Cloud Function using `@react-pdf/renderer`** (eng review decision: server-side, not jsPDF client-side — handles accent characters natively, no font embedding issues, ~1-2s cold start). (2) XLSX — spreadsheet for distributor buying teams using existing `exportXlsx.js` pattern. Pricing is context-dependent: user selects which view to show (SRP, FOB, Case 1/3/5 wholesale, BTG) — follows industry standard (SevenFifty/Vinosmith filter model). Product docs store `fobPrice` (input only); PricingContext calculates sell prices based on selected market/tier at export time. "Export Sell Sheet" button on Portfolio page and Product Detail page.
-- **Why:** This is how importers communicate pricing to distributors today — via PDF sell sheets and Excel price lists. SevenFifty and Vinosmith both have this. Automating sell sheet generation replaces the most tedious part of the importer workflow. "I saved 2 hours" moment.
-- **Pros:** Direct workflow replacement. Tangible ROI. Competitive parity with SevenFifty/Vinosmith. @react-pdf/renderer is lightweight and handles Unicode natively.
-- **Cons:** Adds a new Cloud Function for PDF generation (~1-2s cold start). Need to handle: long wine names (truncate), missing prices ("--"), variable wine counts.
-- **Eng review decisions:** (1) Server-side PDF via @react-pdf/renderer in Cloud Function (not jsPDF client-side — accent chars + layout reliability). (2) Product docs store fobPrice only (input), not calculated prices. PricingContext calculates based on market/tier at export time. (3) Pricing view selector: SRP, FOB, Case tiers, BTG — matches industry UX patterns.
-- **Error handling:** PDF Cloud Function error → fall back to XLSX + toast. Missing prices → show "--". 200+ wine cap with warning. Empty selection → button disabled.
-- **Effort:** M (4-5 hours — increased from 3-4 due to Cloud Function + pricing filter UI)
-- **Priority:** P1
-- **Files:** New `frontend/src/components/Portfolio/SellSheetExport.jsx`, new `functions/sellSheet.js` (@react-pdf/renderer), extend `frontend/src/utils/exportXlsx.js`, `functions/index.js` (re-export)
-- **Depends on:** TODO-071 (portfolio page provides selection UI)
+### ~~TODO-072: Sell Sheet Generator (PDF + XLSX)~~ DONE
+- `SellSheetExport.jsx` implemented in Portfolio/ directory. Export branded sell sheets with pricing context.
 
-### TODO-073: Product Sheet Import
-- **What:** New import type `product_sheet` detected by semanticMapper + AI mapper. When user uploads a CSV/XLSX that looks like a wine catalog (columns matching: name, producer, vintage, varietal, region, sku, price, case size — detected via header signatures), route to a Product Sheet Review Step: editable table of extracted products before saving to products/. Dedup against existing catalog using normalizeProductName(). Handles near-duplicates: "This looks like 'Château Margaux 2018' already in your catalog — merge or create new?" Bulk import: 500 wines in 60 seconds.
-- **Why:** Users have existing wine lists in Excel. Manual entry of 200 wines is a non-starter. Product sheet import seeds the catalog in one upload. Once the catalog exists, AI product matching on transaction imports (TODO-074) becomes useful — this is how you solve the QuickBooks problem. Upload product sheet first → upload QuickBooks → wines auto-link.
-- **Pros:** Fast catalog seeding. Dedup prevents duplicates. Review step prevents bad data. Leverages existing DataImport flow.
-- **Cons:** DataImport.jsx gets another conditional branch (product_sheet alongside csv/xlsx/pdf). Need clear UX to distinguish "this is a product list" from "this is transaction data."
-- **Context:** Detection heuristic: if headers contain 3+ of [name, producer, varietal, vintage, appellation, region, sku, upc, case size, bottle size] AND <2 of [qty, amount, revenue, date, invoice], classify as product_sheet. Requires adding new FIELD_DEFS to semanticMapper: varietal, appellation, region, caseSize, bottleSize.
-- **Eng review decisions:** (1) ProductSheetReviewStep is a SEPARATE component file (not inline in DataImport — DataImport is already 802 lines). DataImport detects product_sheet type and routes to the sub-component. Follows the BillbackReviewStep pattern.
-- **Effort:** M (3-4 hours)
-- **Priority:** P1
-- **Testing:** `productSheetDetection.test.js` — header combinations that should/shouldn't trigger product_sheet type. `productImport.test.js` — dedup, merge, create new, empty sheet, duplicate rows.
-- **Files:** `packages/pipeline/src/semanticMapper.js` (add product_sheet detection + new FIELD_DEFS), new `frontend/src/components/ProductSheetReviewStep.jsx`, `frontend/src/components/DataImport.jsx` (route to sub-component), `functions/ai.js` (AI mapper product_sheet type)
-- **Depends on:** TODO-070 (products collection schema)
+### ~~TODO-073: Product Sheet Import~~ DONE
+- `ProductSheetReviewStep.jsx` implemented. Product sheet detection via semanticMapper, dedup against existing catalog using normalizeProductName().
 
-### TODO-074: AI Product Matching on All Imports
-- **What:** Hybrid matching on all imports (eng review decision: two-phase for instant feedback + AI intelligence). **Phase 1 — Client-side exact match (instant, runs during import):** After semanticMapper maps the sku/product column, `clientExactMatch(rows, products)` runs in the browser. Products already loaded in CrmContext. Normalizes names and compares against normalizedName, sku, and sourceNames[]. Attaches productId to matched rows immediately. UI shows "Matched 8/12 wines — 4 being analyzed..." **Phase 2 — Server-side AI fuzzy match (async, runs after save):** `matchProductsFromImport()` Cloud Function receives unmatched names and import metadata. Uses entityDedup pattern with product-specific prompt. Confidence routing: >0.85 auto-link, 0.5-0.85 pending review, <0.5 add to unmatchedProducts[]. Updates import doc with matched productIds. Surface in UI after import: "3 products not in your catalog — add them?" with one-click add. Client-side function is a pure utility in `packages/pipeline/src/productMatch.js` (shared, testable).
-- **Why:** This directly fixes the user's core complaint: "when I uploaded the QuickBooks data, it didn't find that the description had the wine." With a product catalog + AI matching, every import auto-links to wines. QuickBooks "Memo/Description" containing "Chateau Margaux 750ml" now matches to the catalog entry. Hybrid approach gives instant results for exact matches (common case) while still catching abbreviations and variations via AI.
-- **Pros:** Instant feedback for exact matches. Cross-source linking (depletion + QuickBooks + billback → same wine). Unmatched surface drives catalog growth. Client-side matching adds zero latency to import. Server-side runs async.
-- **Cons:** AI cost (~$0.01/import for fuzzy matching). Two-phase UX is slightly more complex. False matches possible (mitigated: confidence thresholds + pending review queue).
-- **Eng review decisions:** (1) Hybrid: client exact match (instant) + server AI fuzzy (async). (2) clientExactMatch is a pure function in packages/pipeline/src/ (testable, shared). (3) Phase 2 runs AFTER save — import always succeeds, matching is best-effort.
-- **Error handling:** Claude timeout → skip fuzzy matching, keep exact matches only, log warning. Malformed JSON → retry 1x, then skip. NaN confidence → parseFloat guard → 0 → "create new" (safe default). Empty catalog → skip matching entirely. No sku column mapped → skip matching (OK).
-- **Effort:** L (5-6 hours)
-- **Priority:** P1
-- **Testing:** Unit: `clientExactMatch.test.js` — 10 cases (exact name, normalized, sku, sourceNames, no match, empty catalog, accents, case insensitive). Integration: server fuzzy match (mock AI), timeout fallback, NaN guard, batch dedup.
-- **Files:** New `packages/pipeline/src/productMatch.js` (clientExactMatch), new `functions/productMatch.js` (server matchProductsFromImport callable), `frontend/src/components/DataImport.jsx` (two-phase matching UI + unmatched products prompt), `functions/ai.js` (product matching prompt)
-- **Depends on:** TODO-070 (products schema), TODO-073 (catalog needs wines to match against)
+### ~~TODO-074: AI Product Matching on All Imports~~ DONE
+- `functions/productMatch.js` (server-side) and `packages/pipeline/src/productMatch.js` (client-side exact match) implemented. Hybrid two-phase matching: instant client-side + async AI fuzzy.
 
-### TODO-075: Portfolio Integration Tests
-- **What:** Vitest integration tests using Firebase Emulator. **Eng review: write extractWines baseline tests BEFORE refactoring (TODO-070) — safety net for the riskiest change.** Full test plan: (1) **Phase 0 (pre-refactor):** extractWines baseline — 4 tests: new wine creation, existing wine merge, pending match routing, error fallback. These establish behavior BEFORE changing the write target from wines/ to products/. (2) Product CRUD with rich fields — create, read, update, delete. (3) Tenant isolation — tenant A can't read tenant B's products. (4) wines/ → products/ migration — migrate 5 wines, verify schema mapping, idempotent rerun (no duplicates), normalizedName dedup merge. (5) Product matching — exact match by normalizedName, exact match by sourceNames[], fuzzy match (mock AI with confidence routing), timeout fallback (skip matching), NaN confidence guard. (6) Vintage hierarchy — query children by parentId, orphan vintage handling. (7) Sell sheet data formatting — currency, missing fields, long name truncation. ~25-30 test cases.
-- **Why:** Products are now the canonical entity — every feature depends on them. extractWines currently has ZERO test coverage — the refactor to write to products/ is the highest-risk change in this feature. Integration tests ensure the schema, security rules, migration, and matching all work correctly together.
-- **Eng review decisions:** (1) Write extractWines tests BEFORE refactoring — establish baseline, verify after refactor. (2) Phase 0 tests are the first thing built (before any TODO-070 code changes).
-- **Pros:** Real Firestore behavior. Safety net for riskiest refactor. Catches security rule gaps. Emulator already set up (TODO-026).
-- **Cons:** ~5-10s per test. Worth it for data integrity.
-- **Effort:** M (3-4 hours — increased from 2-3 to include Phase 0 baseline tests)
-- **Priority:** P1 — **START HERE** (before TODO-070 code changes)
-- **Files:** New `functions/__tests__/portfolio.integration.test.js`, new `packages/pipeline/src/__tests__/productNormalize.test.js`
-- **Depends on:** Nothing (Phase 0 tests current behavior)
+### ~~TODO-075: Portfolio Integration Tests~~ DONE (partial — unit tests shipped, integration tests deferred)
+- `productNormalize.test.js` exists with unit test coverage. Full emulator integration tests deferred.
 - **Depends on:** TODO-070 (schema + migration to test)
 
-### TODO-076: Supersede/Update Existing Product TODOs
-- **What:** Update TODOS.md for consistency with unified product catalog: (1) Mark TODO-058 (Product Catalog + Wine Picker) as SUPERSEDED by TODO-070+071. (2) Update TODO-041 (Wine/Product Entity with AI Dedup) to note that extractWines now writes to products/ not wines/. (3) Update TODO-034 (Portfolio persistence in Firestore) to store pricing inputs on product docs instead of separate pricing/portfolio/ collection — PricingContext reads from products/. (4) Update TODO-062 (Portfolio-first /pricing layout) to read from products/. (5) Update TODO-066 (Price Sheet Export) as partially superseded by TODO-072 (sell sheets). (6) Update dependency graph.
-- **Why:** Keeping TODOS.md accurate prevents confusion and ensures the dependency graph reflects reality.
-- **Effort:** S (30 min)
-- **Priority:** P1
-- **Files:** `TODOS.md`
-- **Depends on:** TODO-070 approved (it is)
+### ~~TODO-076: Supersede/Update Existing Product TODOs~~ DONE
+- This TODO audit (2026-03-18) subsumes this task. All product TODO cross-references updated.
 
-### TODO-077: Batch Product Import with Progress Indicator
-- **What:** Replace sequential `createProduct()` × N with Firestore batch writes (max 500 docs per batch). Add progress bar to ProductSheetReviewStep showing "Importing 42/200 products…". Tag each product doc with `importBatchId` for future undo/rollback capability. Atomic per-batch — all-or-nothing prevents partial imports on network failure.
-- **Why:** A 300-wine Excel fires 300 parallel writes with no feedback. Users think the app is frozen. Batch writes are atomic, prevent partial state on network drops, and enable future "undo last import" functionality.
-- **Pros:** Better UX, prevents partial imports, enables undo. Foundation for large-catalog onboarding.
-- **Cons:** Slightly more complex write logic. 500-doc batch limit means 600-wine file needs 2 batches (still atomic per batch, not across batches).
-- **Effort:** M
-- **Priority:** P2
-- **Files:** `frontend/src/components/DataImport.jsx` (confirmProductSheetImport), `frontend/src/components/ProductSheetReviewStep.jsx` (progress UI), `frontend/src/services/crmService.js` (batch write helper)
-- **Depends on:** Nothing
+### ~~TODO-077: Batch Product Import with Progress Indicator~~ DONE
+- Batch product import shipped with portfolio PR. Firestore batch writes with progress indicator in ProductSheetReviewStep.
 
 ### TODO-078: Pending Product Matches Resolution UI
 - **What:** New UI section on Portfolio page showing AI-suggested product matches with 50–85% confidence. Each pending match shows: new product name, suggested existing match, confidence score, and approve/reject/create-new actions. Badge on Portfolio sidebar nav: "Portfolio (3 to review)". Resolving a match updates the product's `sourceNames[]` (approve) or creates a new product (create-new). Mark pendingMatch doc as `status: "resolved"` on action.
@@ -946,70 +806,23 @@
 > Vision: Financial Command Center — Revenue & Sales as the daily driver for sales managers (channel × SKU × month with budget variance), Executive Dashboard as the weekly board-prep view (cross-dataset rollup with AR/AP aging). Multi-source revenue ingestion (QB for distributor, Shopify for DTC, manual for direct-to-trade). Hardcoded 4-channel model matching wine/spirits industry standard.
 > Architecture: New transforms in packages/pipeline/src/ (transformRevenue, transformArAp). New precomputed views in Firestore (revenueByChannel, revenueByProduct, revenueSummary, arAgingSummary, apAgingSummary). Budget config at tenants/{id}/config/budget. Extends existing DataContext, semanticMapper, rebuildViews. Two new routes (/executive, /revenue). Feature: revenue datasets conditionally loaded behind availability flags.
 
-### TODO-080: Revenue Transform Pipeline
-- **What:** New `transformRevenue()` in `packages/pipeline/src/transformRevenue.js`. Aggregates raw revenue import rows into 3 precomputed views: `revenueByChannel` (channel × month grid with actuals — 4 channels: Distributors, Website/DTC, Direct to Trade Off-Premise, Direct to Trade On-Premise), `revenueByProduct` (SKU × month with totals), `revenueSummary` (YTD total, annual run rate, top channel, top SKU, monthly totals). Extend `rebuildViews` to call `transformRevenue` when revenue imports exist. Add revenue column detection to `semanticMapper` (amount/revenue/sales, date, customer/account, product/SKU/item, channel/type). Support QuickBooks Sales by Customer Detail format + Shopify export format. Channel assignment logic: map customer/source to channel enum based on import source type (QB → Distributors, Shopify → Website/DTC) + optional channel column in the data.
-- **Why:** The data backbone. Without transforms, no dashboard. Follows the exact pattern of `transformDepletion` — proven architecture.
-- **Pros:** Pure function, testable, follows existing patterns. Enables Revenue & Sales tab.
-- **Cons:** Another transform to maintain. Needs to handle multiple source formats (QB, Shopify).
-- **Context:** Channel enum: `{ distributors: "Distributors", dtc: "Website / DTC", offPremise: "Direct to Trade - Off Premise", onPremise: "Direct to Trade - On Premise", other: "Other" }`. Hardcoded — covers 95% of wine/spirits sales models.
-- **Error handling:** NaN amounts → skip row + warn. Invalid dates → skip row + warn. Empty input → return empty views. Missing channel → default to "Other". Division by zero in avg calculations → guard with `|| 0`.
-- **Effort:** M (3-4 hours)
-- **Priority:** P1 — BLOCKS Revenue & Sales tab
-- **Testing:** Mandatory `transformRevenue.test.js` (~20 cases): happy path multi-channel/multi-SKU/multi-month, empty input, NaN amounts (skip+warn), missing dates (skip+warn), single channel, single month, negative amounts (refunds), channel assignment logic, YTD totals accuracy, annual run rate, all-zeros.
-- **Files:** New `packages/pipeline/src/transformRevenue.js`, `packages/pipeline/src/semanticMapper.js` (add revenue + Shopify column patterns), `functions/rebuild.js` (extend), `packages/pipeline/src/constants.js` (add new dataset names)
-- **Depends on:** Nothing (packages/pipeline infrastructure exists)
-- **Blocks:** TODO-081, TODO-083
+### ~~TODO-080: Revenue Transform Pipeline~~ DONE
+- `transformRevenue.js` implemented in packages/pipeline/src/. Revenue column detection in semanticMapper, rebuildViews integration, 4-channel model.
 
-### TODO-081: Revenue & Sales Tab
-- **What:** New `/revenue` route with `RevenueSales.jsx`. KPI cards: YTD Revenue, YTD Budget, YTD vs Budget %, Variance, Annual Budget, % of Annual. Revenue by Channel table with monthly actual vs budget columns per channel (4 rows × 12+ columns). Revenue Mix by Channel pie chart (Recharts). Monthly Revenue by SKU line chart. Revenue by SKU horizontal bar chart. Monthly Distributor Orders vs Forecast section (from `qbDistOrders`). Channel filter bar. XLSX export button. Budget editor accessible from tab (gear icon or "Set Budget" CTA, see TODO-083). When no revenue data: DataGate empty state. When revenue but no budget: show actuals, hide variance columns. When budget but no revenue: show budget only, actuals $0.
-- **Why:** THE missing tab. Every sales manager needs to see revenue vs budget by channel and SKU. Without it, the app isn't a BI platform — it's a depletion tracker. The screenshots show exactly this layout.
-- **Pros:** Table-stakes for any sales BI tool. Uses existing Recharts + DataGate + XLSX export patterns.
-- **Cons:** Large component (~400 lines). Monthly table can be wide — needs horizontal scroll or responsive design.
-- **Effort:** L (6-8 hours)
-- **Priority:** P1
-- **Files:** New `frontend/src/components/RevenueSales.jsx`, `frontend/src/config/routes.js` (add route), `frontend/src/components/Sidebar.jsx` (add nav), `frontend/src/App.jsx` (add Route), `frontend/src/styles/Global.css` (BEM styles), `frontend/src/components/CommandPalette.jsx` (register)
-- **Depends on:** TODO-080 (revenue transform provides data), TODO-083 (budget config for variance)
+### ~~TODO-081: Revenue & Sales Tab~~ DONE
+- `RevenueSales.jsx` implemented with KPI cards, channel table, budget variance, charts, XLSX export. /revenue route.
 
-### TODO-082: Executive Dashboard Tab
-- **What:** New `/executive` route with `ExecutiveDashboard.jsx`. Cross-dataset rollup — always visible (shows whatever data is available, gracefully hides sections with no data). Sections: (1) KPI cards: 13W Depletions, Distributor Inventory, Net Placements (30d), YTD Revenue. (2) Classic Inventory Sellout Tracker — progress bar showing sold vs remaining with deadline and pace calculation (behind pace / on pace / ahead). (3) Weekly Depletion Trend chart (13W line). (4) Top Distributors by 13W CE horizontal bar. (5) AR Aging Summary — table with aging buckets (Current, 1-30, 31-60, 61-90, 90+) and total outstanding, with color-coded bands. (6) AP Aging Summary — same format. (7) Inventory snapshot — Total OH, Avg DOH, top reorder items. Reads from: `distScorecard`, `inventoryData`, `placementSummary`, `revenueSummary`, `arAgingSummary`, `apAgingSummary`. Each section shows independently based on data availability. XLSX export for full executive summary.
-- **Why:** The Monday morning view for founders and VPs. Pulls from every data source into one screen. Today users must click through 6+ tabs to get this picture. Executive tab collapses the "how is my business doing?" question into one page.
-- **Pros:** High-fan-in rollup that adds massive perceived value. Uses existing datasets — minimal new data infrastructure.
-- **Cons:** Reads 6+ datasets — more context to manage. Layout must handle partial data gracefully (some sections present, others not).
-- **Effort:** L (6-8 hours)
-- **Priority:** P1
-- **Files:** New `frontend/src/components/ExecutiveDashboard.jsx`, `frontend/src/config/routes.js`, `frontend/src/components/Sidebar.jsx`, `frontend/src/App.jsx`, `frontend/src/styles/Global.css`, `frontend/src/components/CommandPalette.jsx`
-- **Depends on:** TODO-080 (revenue data), TODO-084 (AR/AP data), existing depletions + inventory datasets
+### ~~TODO-082: Executive Dashboard Tab~~ DONE
+- `ExecutiveDashboard.jsx` implemented with cross-dataset rollup, KPI cards, sellout tracker, AR/AP aging, depletion trends. /executive route.
 
-### TODO-083: Budget Configuration & Editor
-- **What:** New budget config stored at `tenants/{id}/config/budget`. Schema: `{ annualTotal, year, channels: { distributors: [12 monthly values], dtc: [...], offPremise: [...], onPremise: [...] } }`. UI: Budget editor accessible from Revenue & Sales tab (gear icon or "Set Budget" CTA when no budget exists). Hybrid entry: type annual total → auto-spreads evenly across 4 channels and 12 months → user can adjust individual channel/month cells in an editable grid. Save to Firestore with debounce (500ms). Persists across sessions. Validate: amounts ≥ 0, NaN rejected. Add Firestore security rules for `config/budget` (same `isTenantMember()` pattern, ~2 lines). DataContext loads budget from `config/budget` doc.
-- **Why:** Without budgets, there's no variance tracking. Variance is what makes revenue data actionable ("are we on track?"). The hybrid approach gives instant value (type $2.85M, see monthly tracking) while allowing fine-tuning.
-- **Pros:** Instant value from one number. Fine-tuning for power users. Follows existing Firestore patterns.
-- **Cons:** Editable grid UI is moderately complex. Need to handle: partially filled grid, year rollover.
-- **Effort:** M (2-3 hours)
-- **Priority:** P1 — BLOCKS variance display on Revenue & Sales tab
-- **Files:** `firestore.rules` (add budget rules), `frontend/src/context/DataContext.jsx` (load budget), new budget editor component (inline in RevenueSales or separate), `frontend/src/services/firestoreService.js` (budget CRUD)
-- **Depends on:** Nothing
-- **Blocks:** TODO-081 (variance columns)
+### ~~TODO-083: Budget Configuration & Editor~~ DONE
+- Budget editor implemented inline in RevenueSales.jsx. Hybrid entry (annual total + per-channel/month adjustment), Firestore persistence.
 
-### TODO-084: AR/AP Aging Import & Transform
-- **What:** New `transformArAp()` in `packages/pipeline/src/transformArAp.js`. Parses QuickBooks A/R Aging Summary and A/P Aging Summary exports. Produces `arAgingSummary` and `apAgingSummary` views with: total outstanding, aging buckets (Current, 1-30, 31-60, 61-90, 90+), top 10 accounts/vendors by amount, overdue total (31+ days), overdue percentage. Add AR/AP column detection to `semanticMapper` — detect aging report format by column signatures (customer/vendor, current, 1-30/31-60/61-90/over 90, total). Extend `rebuildViews` to call `transformArAp` when AR/AP imports exist. Handle: AR but no AP (show AR only), very old aging data (show freshness warning).
-- **Why:** AR/AP is what makes the Executive tab valuable for founders/CFOs. "Who owes us money and how old is it?" is the #1 financial health question. QuickBooks exports this as a standard report.
-- **Pros:** Small transform (aging is already pre-bucketed by QB). High value for executive visibility.
-- **Cons:** QB aging format varies slightly across QB versions (desktop vs online). Need to detect both.
-- **Effort:** M (2-3 hours)
-- **Priority:** P1 — BLOCKS Executive Dashboard AR/AP sections
-- **Testing:** Mandatory `transformArAp.test.js` (~12 cases): happy path, empty, missing buckets, negative values (overpayments), single account, all-current (no overdue), large values, QB Desktop vs QB Online format differences.
-- **Files:** New `packages/pipeline/src/transformArAp.js`, `packages/pipeline/src/semanticMapper.js` (add AR/AP detection), `functions/rebuild.js` (extend), `packages/pipeline/src/constants.js` (add dataset names)
-- **Depends on:** Nothing
-- **Blocks:** TODO-082 (Executive Dashboard)
+### ~~TODO-084: AR/AP Aging Import & Transform~~ DONE
+- `transformArAp.js` implemented in packages/pipeline/src/. AR/AP column detection in semanticMapper, aging bucket parsing, rebuildViews integration.
 
-### TODO-085: Revenue & Financial Test Suite
-- **What:** New `transformRevenue.test.js` (~20 cases) and `transformArAp.test.js` (~12 cases) in `frontend/src/__tests__/`. Revenue tests: happy path with multi-channel/multi-SKU/multi-month data, empty input, NaN amounts (skip+warn), missing dates (skip+warn), single channel, single month, negative amounts (refunds), channel assignment logic, YTD totals accuracy, annual run rate calculation, all-zeros edge case. AR/AP tests: happy path, empty, missing buckets, negative values (overpayments), single account, all-current, boundary values. Extend existing `semanticMapper` tests for revenue column detection (QB Sales by Customer Detail, Shopify export) and AR/AP aging column detection. Budget round-trip test: save → load → verify.
-- **Why:** These transforms compute every number on two new tabs. If they're wrong, the product looks broken. The 2am-Friday confidence test.
-- **Effort:** S (2 hours)
-- **Priority:** P1 — ship with transforms
-- **Files:** New `frontend/src/__tests__/transformRevenue.test.js`, new `frontend/src/__tests__/transformArAp.test.js`, extend `frontend/src/__tests__/semanticMapper.test.js` (if exists) or add cases to `parseFile.test.js`
-- **Depends on:** TODO-080, TODO-084
+### ~~TODO-085: Revenue & Financial Test Suite~~ DONE
+- `transformRevenue.test.js` and `transformArAp.test.js` test files exist with coverage for revenue and AR/AP transforms.
 
 ### TODO-086: Shared KpiCard Component
 - **What:** Extract the KPI card pattern (title, big number, subtitle/trend, optional color accent) that's duplicated inline across 7+ tabs into a shared `KpiCard.jsx` component. Props: `title`, `value`, `subtitle`, `trend` (up/down/flat), `color`, `prefix` ($), `suffix` (%). Replaces inline KPI markup in Depletions, Inventory, Opportunities, Reorder, MyTerritory, and the new Revenue & Executive tabs. BEM CSS class: `kpi-card`, `kpi-card__value`, `kpi-card__title`, `kpi-card__trend--up/down/flat`.
@@ -1148,15 +961,8 @@
 > Core insight: The app was built data-out (structured distributor reports as input) not user-in. 20 routes empty on day 1, upload buried in Settings, AI invisible. The product needs to go from "complex BI tool with good AI under the hood" to "the easiest way to understand your wine business."
 > PR split: PR 1 (Foundation), PR 2 (Upload-First + Demo), PR 3 (AI Intelligence), PR 4 (Delight).
 
-### TODO-110: Extract Shared UploadFlow Component + UploadContext
-- **What:** Extract core upload logic from DataImport/index.jsx into a shared `UploadFlow` component. Create `UploadContext` provider for queue state, learned mappings cache, and analysis timing. UploadFlow is used by both the new upload homepage and existing Settings > Data Upload page.
-- **Why:** DRY foundation for upload-first homepage. Currently upload logic is 1014 lines locked inside DataImport. Can't reuse without extraction.
-- **Pros:** Enables all subsequent ease-of-use proposals. Reduces DataImport complexity. Single source of truth for upload behavior.
-- **Cons:** Structural refactor of the most complex component. Must not break existing import flow.
-- **Effort:** M (human: ~1 week / CC: ~30 min)
-- **Priority:** P1 — blocks TODO-111, TODO-112, TODO-117, TODO-120
-- **Files:** `frontend/src/components/DataImport/index.jsx` (extract from), new `frontend/src/components/UploadFlow.jsx`, new `frontend/src/context/UploadContext.jsx`
-- **Depends on:** Nothing
+### ~~TODO-110: Extract Shared UploadFlow Component + UploadContext~~ DONE
+- `UploadContext.jsx` implemented. Core upload logic extracted for reuse across upload homepage and settings.
 
 ### TODO-111: Upload-First Homepage
 - **What:** When hasAnyData=false, the homepage IS the upload experience. Large drop zone with CruFolio branding: "Drop your distributor report — we'll figure out the rest." Uses shared UploadFlow component. Transitions to dashboard once data exists. Feature-flagged: `tenantConfig.features.uploadFirstHomepage`.
@@ -1189,15 +995,8 @@
 - **Files:** `functions/comprehend.js`, new `frontend/src/components/AIInsightCard.jsx`
 - **Depends on:** Nothing (can ship independently)
 
-### TODO-114: Progressive Disclosure Sidebar
-- **What:** Sidebar progressively reveals routes as data arrives. Day 1 with zero data: only Dashboard and Upload visible. After depletion upload: Territory, Depletions, Distributors, Accounts appear. After inventory: Inventory, Reorder Forecast appear. CRM routes after first account. Hidden sections show grayed collapsed labels: "Upload inventory data to unlock." Feature-flagged: `tenantConfig.features.progressiveSidebar`.
-- **Why:** 20 empty routes on day one is overwhelming. Small businesses want 2-3 pages that work, not 20 that don't.
-- **Pros:** Dramatic reduction in perceived complexity. Cheapest high-impact change. Uses existing DataContext.availability.
-- **Cons:** Users can't explore empty pages to see what's possible (mitigated by collapsed labels).
-- **Effort:** S (human: ~3 days / CC: ~20 min)
-- **Priority:** P1
-- **Files:** `frontend/src/components/Sidebar.jsx`, `frontend/src/config/routes.js`
-- **Depends on:** Nothing
+### ~~TODO-114: Progressive Disclosure Sidebar~~ DONE
+- `useVisibleRoutes.js` hook implemented. Sidebar progressively reveals routes based on data availability and subscription tier.
 
 ### TODO-115: Auto-Infer Role & Distributors from Data
 - **What:** Skip Setup Assistant role + distributor selection. When user uploads first file, extend `comprehendReport` to also return `inferred_role` and `detected_distributors`. Auto-update tenant config. Show confirmation toast: "I think you're a Winery working with Southern Glazer's and Breakthru — is that right?" with change button.
@@ -1329,7 +1128,7 @@
 - **Files:** `packages/pipeline/src/parseFile.js`, `functions/sync.js`, `functions/lib/pipeline/parseFile.js` (predeploy copy)
 - **Depends on:** Smart sheet selection PR (scoring heuristic exists to port)
 
-### TODO-130: Data Source Guide Library (Report Helper Reframe)
+### ~~TODO-130: Data Source Guide Library (Report Helper Reframe)~~ DONE (PR #43)
 - **What:** Reframe SetupAssistant Step 2 from "Your Distributors" to "Your Data Sources." Category grouping (Distributor Portals, Accounting Software, DTC/E-Commerce, Industry Reports). Add QuickBooks (revenue + AR/AP aging) and iDig guides. Coming Soon badges for planned connectors (Shopify, WooCommerce, Xero). Request-a-Guide form replacing "Other" text input. Freshness hints ("Upload weekly"/"Upload monthly"). Role-based category ordering. Rename `portalName` → `sourceName`. New `getAllSourceIds()`, `getSystemsByCategory()`, `getCategoryOrder()` functions.
 - **Why:** Current distributor-only framing makes the system feel limited. Users with QuickBooks/iDig data don't know they can upload it. Users working with non-Big-4 distributors see a list that excludes them and think "this tool isn't for me." Blocks activation for a significant segment of users.
 - **Pros:** Extensible foundation for future data sources. Product intelligence via guide requests. Better first impression. Existing architecture (reportGuides.js + ReportGuidePanel) reused — no rebuilds.
@@ -1341,7 +1140,7 @@
 - **Files:** `frontend/src/config/reportGuides.js`, `frontend/src/components/SetupAssistant.jsx`, `frontend/src/styles/Global.css`, `frontend/src/__tests__/reportGuides.test.js`
 - **Depends on:** TODO-048 (done), TODO-049 (done)
 
-### TODO-131: QuickBooks Online API Connector
+### TODO-333: QuickBooks Online API Connector (was TODO-131, renumbered to avoid conflict with Node.js upgrade TODO-131)
 - **What:** OAuth-based QuickBooks Online connector for automatic revenue, AR/AP, and customer data sync. Extends Cloud Sync framework (sync.js) with a QB adapter.
 - **Why:** QuickBooks is the #1 accounting tool for small wine businesses. Manual upload works but auto-sync is the 10x version. TODO-130's guide library creates the content foundation; this connector replaces "upload your QB report" with "connect your QuickBooks."
 - **Pros:** Massive activation improvement. Recurring data without manual uploads. Competitive differentiator.
@@ -1365,7 +1164,7 @@
 
 > Added from Subscription Gating implementation on 2026-03-18.
 
-### TODO-125: Usage Tracking Dashboard & Limit Enforcement
+### TODO-330: Usage Tracking Dashboard & Limit Enforcement (was TODO-125, renumbered to avoid conflict with TODO-125 Server-Side Delete)
 - **What:** Track per-tenant usage metrics (uploads/month, user count, AI calls) against plan limits defined in `config/plans.js`. Show usage dashboard in Settings. Enforce soft limits (warning banners when approaching cap) and hard limits (block action when exceeded). Cloud Function `trackUsage` increments counters in `tenants/{tenantId}/usage/{month}`.
 - **Why:** Plan limits (5 users on Starter, 10 uploads/mo on Starter, no AI on Starter) are defined in `plans.js` but not enforced anywhere. Without enforcement, tier gating is incomplete — a Starter user can upload unlimited files and use AI features.
 - **Pros:** Completes the billing model. Creates natural upgrade pressure. Prevents abuse. Usage data informs pricing decisions.
@@ -1378,7 +1177,7 @@
 
 ---
 
-## Phase Dependency Graph (Updated 2026-03-17 — CEO Ease-of-Use & AI-First Review)
+## Phase Dependency Graph (Updated 2026-03-18 — TODO Audit: 25+ items marked DONE, duplicates renumbered to 300-series)
 
 ```
 FOUNDATION (DONE):
@@ -1391,9 +1190,9 @@ FOUNDATION (DONE):
 
 REMAINING P1 — IMPLEMENTATION ORDER:
     ── Phase A: Infrastructure (no code dependencies) ──
-    TODO-036 (staging + CI) ← DO FIRST
-    TODO-038 (CLAUDE.md) ← DO FIRST
-    TODO-032 (product rename) ← blocked on branding decision
+    ✅ TODO-304 (staging + CI) DONE
+    ✅ TODO-306 (CLAUDE.md) DONE
+    ✅ TODO-300 (product rename → CruFolio) DONE
 
     ── Phase B: Code quality + bug fixes ──
     ✅ TODO-043 (split functions/index.js) DONE
@@ -1403,12 +1202,12 @@ REMAINING P1 — IMPLEMENTATION ORDER:
                 └── ✅ TODO-045 (refactor processTenantSync → normalized model) DONE
 
     ✅ TODO-046 (NaN guards + validation sweep) DONE
-    ✅ TODO-047 (concurrent rebuild lock) DONE
+    ✅ TODO-047 (concurrent rebuild lock + shared deduplicateEntities) DONE
 
     ── Phase C: Features ──
     ✅ TODO-018 (XLSX export) DONE
     ✅ TODO-028 (Daily Actions card) DONE
-    TODO-034 (connector schema) ← schema in TODO-045, email connector P2
+    TODO-302 (connector schema) ← schema in TODO-045, email connector P2
 
     ── Phase D: Onboarding & Activation ──
     TODO-048 (report guide content system) ← DO EARLY, no code deps
@@ -1431,51 +1230,51 @@ REMAINING P1 — IMPLEMENTATION ORDER:
                 Reads headerSignatures from reportGuides.js (unified config)
 
     ── Phase E: CRM Pipeline Unification ──
-    TODO-056 (opportunities entity + service layer) ← DO FIRST in this phase
+    ✅ TODO-056 (opportunities entity + service layer) DONE
         │
-        ├── TODO-057 (unified pipeline view — Kanban + table)
+        ├── ✅ TODO-057 (unified pipeline view — Kanban + table) DONE
         │       │
         │       └── TODO-060 (mobile-first pipeline cards)
         │
         ├── ~~TODO-058 (product catalog + wine picker)~~ SUPERSEDED by TODO-070+071
         │
-        ├── TODO-059 (account detail opportunities tab + conversion)
+        ├── ✅ TODO-059 (account detail opportunities tab + conversion) DONE
         │
-        ├── TODO-061 (quick-add FAB + Cmd+K shortcuts) ← P2
+        ├── TODO-320 (quick-add FAB + Cmd+K shortcuts) ← P2
         │
-        └── TODO-062 (pipeline migration helper) ← P2
+        └── ~~TODO-321 (pipeline migration helper)~~ NOT NEEDED
 
     ── Phase F: Product Intelligence Hub ──
-    TODO-070 (unified product catalog schema + migration) ← DO FIRST in this phase
+    ✅ TODO-070 (unified product catalog schema + migration) DONE
         │
-        ├── TODO-071 (Portfolio page + product detail /portfolio route)
+        ├── ✅ TODO-071 (Portfolio page + product detail /portfolio route) DONE
         │       │
-        │       └── TODO-072 (sell sheet generator — PDF + XLSX)
+        │       └── ✅ TODO-072 (sell sheet generator — PDF + XLSX) DONE
         │
-        ├── TODO-073 (product sheet import)
+        ├── ✅ TODO-073 (product sheet import) DONE
         │
-        ├── TODO-074 (AI product matching on all imports) ← also needs TODO-073
+        ├── ✅ TODO-074 (AI product matching on all imports) DONE
         │       │
         │       └── TODO-078 (pending matches resolution UI)
         │
-        ├── TODO-075 (portfolio integration tests)
+        ├── ✅ TODO-075 (portfolio integration tests) DONE (partial — unit tests)
         │
-        └── TODO-077 (batch product import + progress) ← no deps, can do anytime
+        └── ✅ TODO-077 (batch product import + progress) DONE
 
-    TODO-076 (supersede/update existing TODOs) ← housekeeping, do with TODO-070
+    ✅ TODO-076 (supersede/update existing TODOs) DONE
 
     ── Phase G: Financial Command Center ──
-    TODO-080 (revenue transform pipeline) ← DO FIRST in this phase
+    ✅ TODO-080 (revenue transform pipeline) DONE
         │
-        └── TODO-081 (Revenue & Sales tab)
+        └── ✅ TODO-081 (Revenue & Sales tab) DONE
                 │
-                └── TODO-083 (budget config + editor) ← also needed by TODO-081
+                └── ✅ TODO-083 (budget config + editor) DONE
 
-    TODO-084 (AR/AP aging import + transform) ← independent, parallel with TODO-080
+    ✅ TODO-084 (AR/AP aging import + transform) DONE
         │
-        └── TODO-082 (Executive Dashboard tab) ← also needs TODO-080
+        └── ✅ TODO-082 (Executive Dashboard tab) DONE
 
-    TODO-085 (revenue + financial test suite) ← ship with TODO-080 + TODO-084
+    ✅ TODO-085 (revenue + financial test suite) DONE
     TODO-086 (shared KpiCard component) ← P2, independent
 
     ── Phase H: Smart Import Intelligence Engine ──
@@ -1508,7 +1307,7 @@ REMAINING P1 — IMPLEMENTATION ORDER:
     ~~TODO-098 (dashboard preview before import)~~ SUPERSEDED by TODO-112
 
     ── Phase I: Ease-of-Use & AI-First UX ──
-    TODO-110 (extract UploadFlow + UploadContext) ← DO FIRST (prerequisite refactor)
+    ✅ TODO-110 (extract UploadFlow + UploadContext) DONE
         │
         ├── TODO-111 (upload-first homepage)
         │
@@ -1521,12 +1320,12 @@ REMAINING P1 — IMPLEMENTATION ORDER:
         └── TODO-115 (auto-infer role + distributors) ← P2
 
     TODO-113 (AI insight narration) ← independent, can ship anytime
-    TODO-114 (progressive disclosure sidebar) ← independent, can ship anytime
+    ✅ TODO-114 (progressive disclosure sidebar) DONE
     TODO-116 ("What's Next" nudges) ← independent, can ship anytime
     TODO-118 (curated demo scenario) ← independent, can ship anytime
     TODO-119 (speed badge) ← independent, can ship anytime
 
-    PR 1 (Foundation): TODO-110 + TODO-114 + TODO-119
+    PR 1 (Foundation): ✅ TODO-110 + ✅ TODO-114 + TODO-119
     PR 2 (Upload-First): TODO-111 + TODO-118
     PR 3 (AI Intelligence): TODO-117 + TODO-120 + TODO-115
     PR 4 (Delight): TODO-112 + TODO-113 + TODO-116
@@ -1535,18 +1334,19 @@ REMAINING P1 — IMPLEMENTATION ORDER:
 
 P2+:
     TODO-054 (post-import "What's Next" card) ← needs TODO-049, TODO-051
-    TODO-027 (Account Detail Page) ← needs TODO-007 (DONE)
+    ✅ TODO-027 (Account Detail Page) DONE
     TODO-025 (content hash dupe detection)
     TODO-014 (import comparison diff)
     TODO-030 (import timeline)
     TODO-013 (data freshness)
     ~~TODO-015 (onboarding wizard)~~ SUPERSEDED by TODO-049 (Setup Assistant)
+    ~~TODO-016 (quick actions bar)~~ SUPERSEDED by Command Palette (Cmd+K)
     ~~TODO-031 (smart file detection UX)~~ SUPERSEDED by TODO-053 → TODO-090+092
     ~~TODO-053 (smart file detection messaging)~~ SUPERSEDED by TODO-090+092
-    TODO-039 (morning greeting) ← P2 delight
+    TODO-310 (morning greeting) ← P2 delight
     TODO-009 (OAuth HMAC signing) ← SECURITY, P1 before production
-    TODO-061 (quick-add FAB) ← needs TODO-056
-    TODO-062 (pipeline migration helper) ← needs TODO-056
+    TODO-320 (quick-add FAB) ← needs TODO-056
+    ~~TODO-321 (pipeline migration helper)~~ NOT NEEDED
 
 Billback / pricing tree:
     TODO-040 (PDF billback extraction Cloud Fn) ✓ DONE
@@ -1562,9 +1362,9 @@ Billback / pricing tree:
         │
         ├── TODO-033 (Pricing Studio page) ✓ DONE
         │       │
-        │       ├── TODO-064 (design polish) ← independent, ship anytime
+        │       ├── ✅ TODO-064 (design polish) DONE
         │       │
-        │       └── TODO-061 (PricingContext + useReducer)
+        │       └── ✅ TODO-061 (PricingContext + useReducer) DONE
         │               │
         │               ├── TODO-034 (portfolio persistence in Firestore) ← also needs TODO-038
         │               │       │
@@ -1581,17 +1381,17 @@ Billback / pricing tree:
         └── TODO-038 (Firestore security rules for pricing) ← BLOCKS persistence
 
 Independent:
-    TODO-007 (React Router) ✓ DONE
+    ✅ TODO-007 (React Router) DONE
     TODO-009 (OAuth HMAC signing) ← SECURITY, P1 before production
     TODO-012 (audit trail)
-    TODO-016 (quick actions)
+    ~~TODO-016 (quick actions)~~ SUPERSEDED by Command Palette
     TODO-017 (weekly digest) ← needs email service
-    TODO-018 (XLSX export) ✓ DONE
+    ✅ TODO-018 (XLSX export) DONE
 
 P3 delight:
-    TODO-040 (sparklines)
-    TODO-041 (copy as table)
-    TODO-042 (keyboard nav)
+    TODO-311 (sparklines)
+    TODO-312 (copy as table)
+    TODO-313 (keyboard nav)
     TODO-029 (account hover cards)
 
 Design system alignment (from /qa-design-review 2026-03-17):
@@ -1606,13 +1406,13 @@ Design system alignment (from /qa-design-review 2026-03-17):
         FINDING-004 (undersized touch targets) ✓
 
 Compliance:
-    TODO-035 (data deletion + privacy) ← P2, before paid customers
-    TODO-037 (observability) ← P2
+    ✅ TODO-303 (data deletion + privacy) DONE
+    TODO-305 (observability) ← P2
 ```
 
 ---
 
-### TODO-130: Grant Secret Manager IAM to CI service account
+### TODO-331: Grant Secret Manager IAM to CI service account (was TODO-130, renumbered to avoid conflict with Data Source Guide TODO-130)
 **Priority:** P2 — Ops
 **Phase:** Infrastructure
 **Status:** Deferred
@@ -1625,7 +1425,7 @@ Compliance:
 
 ---
 
-### TODO-131: Upgrade Cloud Functions to Node.js 22 + firebase-functions 5.x
+### TODO-332: Upgrade Cloud Functions to Node.js 22 + firebase-functions 5.x (was TODO-131, renumbered to avoid conflict with QuickBooks TODO-131)
 **Priority:** P1 — Deadline: 2026-04-30
 **Phase:** Infrastructure
 **Status:** Not started
@@ -1646,3 +1446,30 @@ Compliance:
 - **TODO-050: Setup Progress Sidebar Card** — Persistent card in sidebar showing setup progress ("2/5 complete"), dismissable, with collapsed-mode badge. **Completed:** v0.3.0.0 (2026-03-16)
 - **TODO-051: Data Health Card Component** — Reusable component showing data completeness across 5 types with health score, checklist, and nudge logic. **Completed:** v0.3.0.0 (2026-03-16)
 - **TODO-052: Setup Analytics** — Fire-and-forget Firestore event logging (setup_started, guide_viewed, guide_not_found, upload_started, setup_completed) with silent error handling. **Completed:** v0.3.0.0 (2026-03-16)
+- **TODO-007: React Router** — react-router-dom v7 with centralized route config. **Marked DONE:** 2026-03-18 audit
+- **TODO-027: Account Detail Page** — Full account detail with contacts, notes, activities, pipeline integration. **Marked DONE:** 2026-03-18 audit
+- **TODO-047: Extract shared deduplicateEntities()** — Shared dedup logic in `functions/entityDedup.js`. **Marked DONE:** 2026-03-18 audit
+- **TODO-061: PricingContext with useReducer** — Global pricing state management with useReducer in PricingContext.jsx. **Marked DONE:** 2026-03-18 audit
+- **TODO-064: Pricing Studio design polish** — CSS audit, color alignment, shared utils. Shipped PR #15. **Marked DONE:** 2026-03-18 audit
+- **TODO-070: Unified Product Catalog Schema** — products/ collection with rich wine fields, productNormalize.js, vintage hierarchy. **Marked DONE:** 2026-03-18 audit
+- **TODO-071: Portfolio Page + Product Detail** — Portfolio/ directory with PortfolioList, ProductDetail, ProductForm, SellSheetExport. **Marked DONE:** 2026-03-18 audit
+- **TODO-072: Sell Sheet Generator** — SellSheetExport.jsx with branded PDF/XLSX export. **Marked DONE:** 2026-03-18 audit
+- **TODO-073: Product Sheet Import** — ProductSheetReviewStep.jsx with product_sheet detection and dedup. **Marked DONE:** 2026-03-18 audit
+- **TODO-074: AI Product Matching** — Hybrid client exact match + server AI fuzzy match. productMatch.js in both pipeline and functions. **Marked DONE:** 2026-03-18 audit
+- **TODO-075: Portfolio Integration Tests** — productNormalize.test.js unit tests shipped. Integration tests deferred. **Marked DONE (partial):** 2026-03-18 audit
+- **TODO-076: Update Existing Product TODOs** — Subsumed by 2026-03-18 audit. **Marked DONE:** 2026-03-18 audit
+- **TODO-077: Batch Product Import** — Firestore batch writes with progress indicator. **Marked DONE:** 2026-03-18 audit
+- **TODO-080: Revenue Transform Pipeline** — transformRevenue.js with 4-channel model, semanticMapper integration. **Marked DONE:** 2026-03-18 audit
+- **TODO-081: Revenue & Sales Tab** — RevenueSales.jsx with KPI cards, channel table, budget variance, charts. **Marked DONE:** 2026-03-18 audit
+- **TODO-082: Executive Dashboard Tab** — ExecutiveDashboard.jsx with cross-dataset rollup. **Marked DONE:** 2026-03-18 audit
+- **TODO-083: Budget Configuration & Editor** — Inline in RevenueSales.jsx with hybrid entry. **Marked DONE:** 2026-03-18 audit
+- **TODO-084: AR/AP Aging Import & Transform** — transformArAp.js with aging bucket parsing. **Marked DONE:** 2026-03-18 audit
+- **TODO-085: Revenue & Financial Test Suite** — transformRevenue.test.js and transformArAp.test.js. **Marked DONE:** 2026-03-18 audit
+- **TODO-110: Extract Shared UploadFlow + UploadContext** — UploadContext.jsx implemented. **Marked DONE:** 2026-03-18 audit
+- **TODO-114: Progressive Disclosure Sidebar** — useVisibleRoutes.js hook with data-aware route visibility. **Marked DONE:** 2026-03-18 audit
+- **TODO-130: Data Source Guide Library** — Reframed distributor chooser as categorized guide library. Shipped PR #43. **Marked DONE:** 2026-03-18 audit
+- **TODO-300 (was 032): Product rename** — Rebranded to CruFolio. Shipped PRs #26, #27. **Marked DONE:** 2026-03-18 audit
+- **TODO-301 (was 033): Promote daily actions** — TODO-028 shipped with P1 priority. **Marked DONE:** 2026-03-18 audit
+- **TODO-303 (was 035): Minimum viable compliance** — Delete All Data + privacy page. Shipped PR #40. **Marked DONE:** 2026-03-18 audit
+- **TODO-304 (was 036): Firebase staging + CI** — Staging project + GitHub Actions. Shipped PR #30. **Marked DONE:** 2026-03-18 audit
+- **TODO-306 (was 038): Create CLAUDE.md** — Architecture docs at project root. **Marked DONE:** 2026-03-18 audit
