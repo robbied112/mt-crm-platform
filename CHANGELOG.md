@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0.0] - 2026-03-18
+
+### Added
+- **Multi-sheet Excel import with AI-driven merge** — when importing Excel files with multiple sheets, the system now analyzes all sheets via the `comprehendReport` Cloud Function to intelligently merge related data instead of discarding non-primary sheets
+- **AI merge instructions** — `comprehendReport` returns `sheetsToMerge` (sheet names to combine), `sheetMappings` (per-sheet column mappings), `mergeStrategy` (dedup_by_key, append, enrich), and `mergeKeyField` (dedup/join field)
+- **Lazy two-phase parsing** — `peekAllSheets()` samples all sheets with dynamic token budget (50 rows ÷ N sheets) for AI analysis; full parsing only happens for merge target sheets (performance optimization)
+- **Shared merge utilities** — `mergeSheets()` pure function and `runComprehend()` helper extracted to `packages/pipeline/src/` for reuse by frontend DataImport + useFileQueue + functions/sync.js
+- **Server-side multi-sheet support** — `functions/sync.js` detects multi-sheet Google Drive files, applies heuristic merge when AI instructions unavailable (header similarity check), streams normalized imports with source metadata
+- **React component tests with RTL** — comprehensive test suite for core import flows: `ProductSheetReviewStep`, `MappingStep`, `PreviewStep` (39 test files, 814 tests total)
+- **Error boundary regression test** — covers `getDerivedStateFromError`, fallback UI rendering, and `componentDidCatch` logging
+
+### Changed
+- `parseFile()` now exports `peekAllSheets()` (returns headers + sample rows for all sheets without full parse) and `parseSheets()` (full-parse specific sheets from cached workbook)
+- `comprehendReport` Cloud Function now accepts optional `allSheets` parameter and extends system prompt with multi-sheet merge analysis instructions
+- DataImport and useFileQueue now use shared `runComprehend()` helper, eliminating ~65 lines of duplicate comprehend orchestration logic
+- `ProductSheetReviewStep` accepts optional `preBuiltProducts` prop to skip `buildProducts()` when merge already produced product-shaped objects
+- CI workflow: removed non-fatal `firebase deploy` failures by adding `--force` flag (bypasses missing IAM permission)
+
+### Fixed
+- **Dead code in functions/sync.js** — removed unreachable try-catch block attempting to call non-existent `./comprehend-helpers` module; kept working heuristic merge
+- **ErrorBoundary placement** — moved to wrap entire provider tree in `main.jsx` so crashes during provider initialization show fallback UI instead of blank screen
+
+### Removed
+- Removed manual code paths in DataImport/useFileQueue for comprehend calling (consolidated into `runComprehend()`)
+- Removed unused `smartSampleRows()` helper (replaced by dynamic `peekAllSheets()` budget)
+
+## [0.3.3.0] - 2026-03-18
+
+### Fixed
+- **Blank screen on direct URL navigation** — moved ErrorBoundary to wrap the entire provider tree in `main.jsx` so crashes during provider initialization show a fallback UI instead of a completely blank page
+- **CI production deploys failing** — added `--force` flag to `firebase deploy` in GitHub Actions to bypass missing `secretmanager.secrets.setIamPolicy` IAM permission
+
+### Added
+- Regression test for ErrorBoundary covering `getDerivedStateFromError`, fallback rendering, and `componentDidCatch` logging
+- TODO-130: Grant Secret Manager IAM to CI service account (deferred)
+- TODO-131: Upgrade Cloud Functions to Node.js 22 + firebase-functions 5.x (deadline 2026-04-30)
+
 ## [0.3.2.0] - 2026-03-18
 
 ### Added

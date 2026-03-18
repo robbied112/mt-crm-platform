@@ -14,6 +14,7 @@ import parseFile, { parseFileSheet } from "../../utils/parseFile";
 import { autoDetectMapping, detectUploadType } from "../../utils/semanticMapper";
 import { t } from "../../utils/terminology";
 import { aiAutoDetectMapping } from "../../utils/aiMapper";
+import { runComprehend } from "../../utils/runComprehend";
 import { transformAll, generateSummary } from "../../utils/transformData";
 import { transformBillback } from "../../utils/transformBillback";
 import { normalizeRows } from "../../utils/normalize.js";
@@ -339,49 +340,41 @@ export default function DataImport() {
         dispatch({ type: "SET_SHEET_INFO", payload: originalSheetInfo });
       }
 
-      // Build sheet summaries for AI context
-      const sheetSummaries = originalSheetInfo?.sheets?.map((s) => ({
-        name: s.name,
-        rowCount: s.rowCount,
-        headerCount: s.headerCount,
-      }));
-
-      // Smart import path
+      // Smart import path — uses shared runComprehend helper
       if (smartImportEnabled) {
         dispatch({ type: "SET_AI_LOADING", payload: true });
-        let comprehendResult = null;
         try {
-          const { data } = await comprehendCallable({
+          const comprehendOut = await runComprehend({
+            file: f,
+            parsed: result,
+            comprehendCallable,
             tenantId,
-            fileName: f.name,
-            headers: result.headers,
-            sampleRows: smartSampleRows(result.rows),
-            sheetNames: originalSheetInfo?.sheetNames,
-            selectedSheet: originalSheetInfo?.selectedSheet,
-            sheetSummaries,
           });
-          if (!data.error) comprehendResult = data;
-          dispatch({ type: "SET_ANALYSIS", payload: data });
-          dispatch({ type: "SET_ANALYSES", payload: { fileName: f.name, analysis: data } });
 
-          // AI recommended a different sheet — re-parse with that sheet
-          if (comprehendResult?.recommendedSheet &&
-              comprehendResult.recommendedSheet !== originalSheetInfo?.selectedSheet &&
-              originalSheetInfo?.sheetNames?.includes(comprehendResult.recommendedSheet)) {
-            try {
-              const reParsed = await parseFileSheet(f, comprehendResult.recommendedSheet);
-              if (reParsed.rows.length > 0) {
-                result = reParsed;
-                dispatch({ type: "SET_PARSED", payload: reParsed });
-                dispatch({ type: "SET_SHEET_INFO", payload: {
-                  ...originalSheetInfo,
-                  selectedSheet: comprehendResult.recommendedSheet,
-                } });
-              }
-            } catch (sheetErr) {
-              console.warn(`[DataImport] AI recommended sheet "${comprehendResult.recommendedSheet}" but re-parse failed:`, sheetErr);
-              dispatch({ type: "SET_ERROR", payload: `AI recommended sheet "${comprehendResult.recommendedSheet}" but it couldn't be read. Showing "${originalSheetInfo.selectedSheet}" instead.` });
-            }
+          // Update state from comprehend results
+          dispatch({ type: "SET_ANALYSIS", payload: comprehendOut.analysis });
+          dispatch({ type: "SET_ANALYSES", payload: { fileName: f.name, analysis: comprehendOut.analysis } });
+
+          if (comprehendOut.sheetInfo) {
+            dispatch({ type: "SET_SHEET_INFO", payload: comprehendOut.sheetInfo });
+          }
+
+          // Use merged or re-parsed data if available
+          if (comprehendOut.parsed !== result) {
+            result = comprehendOut.parsed;
+            dispatch({ type: "SET_PARSED", payload: result });
+          }
+
+          // Use AI mapping if available, otherwise run standard mapping
+          if (comprehendOut.mapping) {
+            dispatch({ type: "SET_MAPPING", payload: comprehendOut.mapping });
+            dispatch({ type: "SET_CONFIDENCE", payload: comprehendOut.confidence || {} });
+            const type = detectUploadType(result.headers, result.rows, comprehendOut.mapping);
+            dispatch({ type: "SET_UPLOAD_TYPE", payload: type });
+            dispatch({ type: "SET_STEP", payload: type?.type === "product_sheet" ? "product-sheet-review" : "mapping" });
+          } else {
+            const { type } = await runMapping(result.headers, result.rows);
+            dispatch({ type: "SET_STEP", payload: type?.type === "product_sheet" ? "product-sheet-review" : "mapping" });
           }
         } catch (err) {
           const errorAnalysis = {
@@ -391,26 +384,11 @@ export default function DataImport() {
           };
           dispatch({ type: "SET_ANALYSIS", payload: errorAnalysis });
           dispatch({ type: "SET_ANALYSES", payload: { fileName: f.name, analysis: errorAnalysis } });
-        } finally {
-          dispatch({ type: "SET_AI_LOADING", payload: false });
-        }
-
-        // Use comprehendResult mapping if available, otherwise run standard mapping
-        if (comprehendResult?.mapping) {
-          const conf = {};
-          if (comprehendResult.columnSemantics) {
-            for (const [, semantic] of Object.entries(comprehendResult.columnSemantics)) {
-              if (semantic.field) conf[semantic.field] = semantic.confidence || 0;
-            }
-          }
-          dispatch({ type: "SET_MAPPING", payload: comprehendResult.mapping });
-          dispatch({ type: "SET_CONFIDENCE", payload: conf });
-          const type = detectUploadType(result.headers, result.rows, comprehendResult.mapping);
-          dispatch({ type: "SET_UPLOAD_TYPE", payload: type });
-          dispatch({ type: "SET_STEP", payload: type?.type === "product_sheet" ? "product-sheet-review" : "mapping" });
-        } else {
+          // Fallback to standard mapping
           const { type } = await runMapping(result.headers, result.rows);
           dispatch({ type: "SET_STEP", payload: type?.type === "product_sheet" ? "product-sheet-review" : "mapping" });
+        } finally {
+          dispatch({ type: "SET_AI_LOADING", payload: false });
         }
         return;
       }
@@ -948,17 +926,6 @@ export default function DataImport() {
       )}
     </div>
   );
-}
-
-// ─── Smart sampling helper ──────────────────────────────────────
-
-function smartSampleRows(rows) {
-  if (rows.length <= 50) return rows;
-  const first20 = rows.slice(0, 20);
-  const midStart = Math.floor(rows.length / 2) - 10;
-  const mid20 = rows.slice(midStart, midStart + 20);
-  const last10 = rows.slice(-10);
-  return [...first20, ...mid20, ...last10];
 }
 
 // ─── Queue Panel Sub-Component ──────────────────────────────────

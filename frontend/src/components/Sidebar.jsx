@@ -145,7 +145,7 @@ const ICONS = {
   ),
 };
 
-export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClose }) {
+export default function Sidebar({ onOpenCommandPalette, onOpenUpgradeModal, mobileOpen, onMobileClose }) {
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem("sidebar-collapsed") === "true"; } catch { return false; }
   });

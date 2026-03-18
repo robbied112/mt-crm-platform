@@ -214,7 +214,55 @@ const REPORT_ANALYSIS_TOOL = {
         description:
           "If this Excel file has multiple sheets and the currently selected sheet " +
           "is NOT the best one for data import, set this to the name of the sheet " +
-          "that contains the primary data. null if the current sheet is correct.",
+          "that contains the primary data. null if the current sheet is correct " +
+          "or if you are recommending a multi-sheet merge via sheetsToMerge.",
+        oneOf: [{ type: "string" }, { type: "null" }],
+      },
+      sheetsToMerge: {
+        description:
+          "When this Excel file has multiple sheets containing related data that should " +
+          "be combined into a single import, list the sheet names to merge here. " +
+          "For example, if batches of products are split across sheets, or if one sheet " +
+          "has base data and another has supplementary columns. null or empty if only " +
+          "one sheet should be imported.",
+        oneOf: [
+          { type: "array", items: { type: "string" }, minItems: 2 },
+          { type: "null" },
+        ],
+      },
+      sheetMappings: {
+        description:
+          "Per-sheet column mappings when sheetsToMerge is used. Object keyed by sheet name, " +
+          "where each value is a mapping of internal field name → source column header string " +
+          "for that specific sheet. Required when sheetsToMerge is provided.",
+        oneOf: [
+          {
+            type: "object",
+            additionalProperties: {
+              type: "object",
+              additionalProperties: { type: "string" },
+            },
+          },
+          { type: "null" },
+        ],
+      },
+      mergeStrategy: {
+        description:
+          "How to merge the sheets listed in sheetsToMerge. " +
+          "dedup_by_key: merge rows by a key field (e.g. SKU), later sheets enrich earlier ones. " +
+          "append: concatenate all rows from all sheets. " +
+          "enrich: join supplementary columns from additional sheets by key (no new rows). " +
+          "null if sheetsToMerge is not used.",
+        oneOf: [
+          { type: "string", enum: ["dedup_by_key", "append", "enrich"] },
+          { type: "null" },
+        ],
+      },
+      mergeKeyField: {
+        description:
+          "The internal field name to use as the merge/dedup key when mergeStrategy is " +
+          "dedup_by_key or enrich. Typically 'sku' for product catalogs, 'acct' for accounts. " +
+          "null if mergeStrategy is append or sheetsToMerge is not used.",
         oneOf: [{ type: "string" }, { type: "null" }],
       },
     },
@@ -361,7 +409,20 @@ DASHBOARD TARGETS (which CruFolio views this data feeds):
 Map every column you recognize to an internal field. \
 Use your best judgment for columns that are similar but not exact matches. \
 Set confidence below 0.7 for uncertain mappings. \
-Always validate your headerRow and dataStartRow against the sample rows shown.`;
+Always validate your headerRow and dataStartRow against the sample rows shown.
+
+MULTI-SHEET MERGE:
+When you see data from multiple sheets (in <all_sheets>), determine if sheets contain \
+related data that should be combined. Common patterns:
+- Product catalogs split by batch (e.g. "Batch 1", "Batch 2") → dedup_by_key on sku
+- One sheet has base data, another has supplementary columns (varietal, images) → enrich on sku
+- Transaction data split by period or region → append
+- A sheet with cross-reference codes (e.g. distributor SKU mappings) → enrich on sku
+
+When merging, provide sheetMappings with a column mapping for EACH sheet (since different \
+sheets may have different column names for the same field). The mapping field should use \
+the primary sheet's mapping for the main mapping field, and sheetsToMerge + sheetMappings \
+for per-sheet column resolution.`;
 }
 
 /**
@@ -434,6 +495,7 @@ const comprehendReport = functions
       sheetNames,
       selectedSheet,
       sheetSummaries,
+      allSheets,
     } = data;
 
     if (!tenantId || !headers || !sampleRows || !fileName) {
@@ -462,7 +524,44 @@ const comprehendReport = functions
 
     // Build sheet context block for multi-sheet files
     let sheetContextBlock = "";
-    if (Array.isArray(sheetSummaries) && sheetSummaries.length > 1) {
+    let allSheetsBlock = "";
+    const hasAllSheets = Array.isArray(allSheets) && allSheets.length > 1;
+
+    if (hasAllSheets) {
+      // Full multi-sheet mode — we have actual data from each sheet
+      const sheetBlocks = allSheets.map((s) => {
+        const safeName = sanitizeForPrompt(s.name, 80);
+        const marker = safeName === safeSelectedSheet ? " [PRIMARY / AUTO-SELECTED]" : "";
+        const sheetTable = buildMarkdownTable(
+          s.headers || [],
+          (s.sampleRows || []).slice(0, 10)
+        );
+        return (
+          `<sheet name="${safeName}"${marker}>\n` +
+          `${sheetTable}\n` +
+          `</sheet>`
+        );
+      }).join("\n\n");
+
+      allSheetsBlock =
+        `<all_sheets count="${allSheets.length}">\n` +
+        `${sheetBlocks}\n` +
+        `</all_sheets>\n`;
+
+      sheetContextBlock =
+        `<sheet_context>\n` +
+        `This Excel file has ${allSheets.length} sheets with FULL DATA shown below. ` +
+        `The system auto-selected "${safeSelectedSheet}" as the primary sheet.\n` +
+        `Review ALL sheets to determine:\n` +
+        `1. If multiple sheets contain related data that should be merged (set sheetsToMerge, sheetMappings, mergeStrategy)\n` +
+        `2. If a different single sheet would be better (set recommendedSheet)\n` +
+        `3. If the selected sheet is correct (leave recommendedSheet null)\n` +
+        `\nWhen sheets contain related data (e.g. same products split by batch, or a supplementary sheet ` +
+        `with extra columns like varietal/images), use sheetsToMerge to combine them. ` +
+        `Provide a sheetMappings entry for EACH sheet mapping its column headers to internal fields.\n` +
+        `</sheet_context>\n`;
+    } else if (Array.isArray(sheetSummaries) && sheetSummaries.length > 1) {
+      // Metadata-only mode (backwards compat — allSheets not provided)
       const sheetLines = sheetSummaries.map((s) => {
         const name = sanitizeForPrompt(s.name, 80);
         const marker = name === safeSelectedSheet ? " [CURRENTLY SELECTED]" : "";
@@ -485,17 +584,30 @@ const comprehendReport = functions
         `</sheet_context>\n`;
     }
 
+    let mergeInstruction = "";
+    if (hasAllSheets) {
+      mergeInstruction =
+        ` Examine ALL sheets shown. If multiple sheets contain related data, ` +
+        `set sheetsToMerge, sheetMappings (per-sheet column→field mappings), ` +
+        `mergeStrategy, and mergeKeyField. Otherwise set recommendedSheet if ` +
+        `a different single sheet is better, or leave it null.`;
+    } else if (sheetContextBlock) {
+      mergeInstruction =
+        ` If a different sheet would be better, set recommendedSheet to that sheet name.`;
+    }
+
     const userMessage =
       `<file_data>\n` +
       `<file_name>${safeFileName}</file_name>\n` +
       (sheetContextBlock ? sheetContextBlock : `<sheet_names>(single sheet)</sheet_names>\n`) +
       `<headers>${headers.length} columns</headers>\n` +
-      `<sample_rows count="${sampleRows.length}">\n` +
+      `<sample_rows count="${sampleRows.length}" sheet="${safeSelectedSheet || "primary"}">\n` +
       `${table}\n` +
       `</sample_rows>\n` +
+      (allSheetsBlock ? allSheetsBlock : ``) +
       `</file_data>\n\n` +
       `Analyze the file above and call the report_analysis tool with your findings.` +
-      (sheetContextBlock ? ` If a different sheet would be better, set recommendedSheet to that sheet name.` : "");
+      mergeInstruction;
 
     const Anthropic = require("@anthropic-ai/sdk");
     const client = new Anthropic({ apiKey });
@@ -504,7 +616,7 @@ const comprehendReport = functions
     try {
       response = await client.messages.create({
         model: "claude-sonnet-4-5-20241022",
-        max_tokens: 4096,
+        max_tokens: hasAllSheets ? 8192 : 4096,
         system: buildComprehendSystemPrompt(),
         tools: [REPORT_ANALYSIS_TOOL],
         tool_choice: { type: "tool", name: "report_analysis" },
