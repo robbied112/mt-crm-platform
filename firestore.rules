@@ -27,6 +27,17 @@ service cloud.firestore {
       return isAuth() && getUserProfile().role == 'admin' && getUserProfile().tenantId == tenantId;
     }
 
+    // Helper: check if user is manager or admin of a specific tenant
+    function isTenantManager(tenantId) {
+      return isAuth() && getUserProfile().tenantId == tenantId
+        && (getUserProfile().role == 'admin' || getUserProfile().role == 'manager');
+    }
+
+    // Helper: check if user can write CRM data (not a viewer)
+    function canWriteCrm(tenantId) {
+      return isTenantMember(tenantId) && getUserProfile().role != 'viewer';
+    }
+
     // Users collection: users can read/write their own profile, tenant admins can manage their tenant's users
     match /users/{userId} {
       allow read: if isAuth() && (
@@ -39,7 +50,9 @@ service cloud.firestore {
         (getUserProfile().role == 'admin' && getUserProfile().tenantId == resource.data.tenantId)
       );
       allow delete: if isAuth() && getUserProfile().role == 'admin' && getUserProfile().tenantId == resource.data.tenantId;
-      allow list: if isAuth() && getUserProfile().role == 'admin';
+      // List: admin can only list users in their own tenant (query must filter by tenantId)
+      allow list: if isAuth() && getUserProfile().role == 'admin'
+        && resource.data.tenantId == getUserProfile().tenantId;
     }
 
     // Tenant config: only members of that tenant can read, only tenant admins can write.
@@ -55,6 +68,15 @@ service cloud.firestore {
       match /config/{doc} {
         allow read: if isTenantMember(tenantId);
         allow write: if isTenantAdmin(tenantId);
+      }
+
+      // Invite links — admins manage, validated server-side via Cloud Function
+      match /invites/{inviteId} {
+        allow read: if isTenantAdmin(tenantId);
+        allow create: if isTenantAdmin(tenantId);
+        allow delete: if isTenantAdmin(tenantId);
+        // Updates (usedCount increment) happen server-side via Admin SDK
+        allow update: if false;
       }
 
       // Tenant data subcollections — legacy pre-computed dashboards
@@ -99,7 +121,7 @@ service cloud.firestore {
       // Wine entities (auto-extracted from billback imports)
       match /wines/{wineId} {
         allow read: if isTenantMember(tenantId);
-        allow write: if isTenantMember(tenantId);
+        allow write: if canWriteCrm(tenantId);
       }
 
       // Pending wine matches (AI dedup review queue for wines)
@@ -142,58 +164,61 @@ service cloud.firestore {
         allow write: if isTenantMember(tenantId);
       }
 
-      // Contacts scoped under tenant
+      // Contacts scoped under tenant (viewers cannot write)
       match /contacts/{contactId} {
         allow read: if isTenantMember(tenantId);
-        allow write: if isTenantMember(tenantId);
+        allow write: if canWriteCrm(tenantId);
       }
 
-      // Tasks scoped under tenant
+      // Tasks scoped under tenant (viewers cannot write)
       match /tasks/{taskId} {
         allow read: if isTenantMember(tenantId);
-        allow write: if isTenantMember(tenantId);
+        allow write: if canWriteCrm(tenantId);
       }
 
-      // Accounts scoped under tenant (readable/writable by all tenant members)
+      // Accounts scoped under tenant (viewers cannot write)
       match /accounts/{accountId} {
         allow read: if isTenantMember(tenantId);
-        allow write: if isTenantMember(tenantId);
+        allow write: if canWriteCrm(tenantId);
 
         match /notes/{noteId} {
-          allow read, write: if isTenantMember(tenantId);
+          allow read: if isTenantMember(tenantId);
+          allow write: if canWriteCrm(tenantId);
         }
 
         match /emails/{emailId} {
-          allow read, write: if isTenantMember(tenantId);
+          allow read: if isTenantMember(tenantId);
+          allow write: if canWriteCrm(tenantId);
         }
 
         match /files/{fileId} {
-          allow read, write: if isTenantMember(tenantId);
+          allow read: if isTenantMember(tenantId);
+          allow write: if canWriteCrm(tenantId);
         }
       }
 
-      // Pipeline scoped under tenant
+      // Pipeline scoped under tenant (viewers cannot write)
       match /pipeline/{docId} {
         allow read: if isTenantMember(tenantId);
-        allow write: if isTenantMember(tenantId);
+        allow write: if canWriteCrm(tenantId);
       }
 
-      // Opportunities scoped under tenant
+      // Opportunities scoped under tenant (viewers cannot write)
       match /opportunities/{oppId} {
         allow read: if isTenantMember(tenantId);
-        allow write: if isTenantMember(tenantId);
+        allow write: if canWriteCrm(tenantId);
       }
 
-      // Products (wine catalog) scoped under tenant
+      // Products (wine catalog) scoped under tenant (viewers cannot write)
       match /products/{productId} {
         allow read: if isTenantMember(tenantId);
-        allow write: if isTenantMember(tenantId);
+        allow write: if canWriteCrm(tenantId);
       }
 
-      // Activity log scoped under tenant
+      // Activity log scoped under tenant (viewers cannot write)
       match /activityLog/{logId} {
         allow read: if isTenantMember(tenantId);
-        allow write: if isTenantMember(tenantId);
+        allow write: if canWriteCrm(tenantId);
       }
 
       // Analytics — tenant members can write events, admins can read

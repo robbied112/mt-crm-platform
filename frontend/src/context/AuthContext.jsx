@@ -54,6 +54,7 @@ async function fetchOrCreateProfile(user, accountType) {
       companyName: "",
       createdBy: user.uid,
       createdAt: serverTimestamp(),
+      memberCount: 1,
       subscription: {
         status: "trial",
         plan: null,
@@ -91,6 +92,8 @@ export default function AuthProvider({ children }) {
   const tenantId = userProfile?.tenantId || null;
   const userRole = userProfile?.role || "admin";
   const isAdmin = userRole === "admin";
+  const isManager = userRole === "manager" || isAdmin;
+  const userTerritory = userProfile?.territory || "all";
 
   function login(email, password) {
     return signInWithEmailAndPassword(auth, email, password);
@@ -141,6 +144,8 @@ export default function AuthProvider({ children }) {
     tenantId,
     userRole,
     isAdmin,
+    isManager,
+    userTerritory,
     login,
     signup,
     logout,

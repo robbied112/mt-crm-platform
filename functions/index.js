@@ -19,6 +19,8 @@ const {
   verifyCheckoutSession,
   createBillingPortalSession,
 } = require("./billing");
+const { validateInvite, joinTeam } = require("./team");
+const { sendInviteEmail } = require("./email");
 
 exports.stripeWebhook = stripeWebhook;
 exports.aiMapper = aiMapper;
@@ -39,3 +41,6 @@ exports.generateIntegrationPlan = generateIntegrationPlan;
 exports.createCheckoutSession = createCheckoutSession;
 exports.verifyCheckoutSession = verifyCheckoutSession;
 exports.createBillingPortalSession = createBillingPortalSession;
+exports.validateInvite = validateInvite;
+exports.joinTeam = joinTeam;
+exports.sendInviteEmail = sendInviteEmail;
