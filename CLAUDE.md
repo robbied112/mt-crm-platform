@@ -35,7 +35,7 @@ Shared Pipeline Package
     -> constants
     -> firestore
 
-Cloud Functions (Node 20)
+Cloud Functions (Node 22)
   functions/index.js
     -> ai.js
     -> rebuild.js
