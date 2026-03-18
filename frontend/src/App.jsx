@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import "./styles/Global.css";
 import {
   FilterBar,
@@ -32,6 +32,7 @@ import {
   ProductDetail,
   RevenueSales,
   ExecutiveDashboard,
+  JoinPage,
 } from "./components";
 import Sidebar from "./components/Sidebar";
 import CommandPalette from "./components/CommandPalette";
@@ -147,6 +148,13 @@ function App() {
   }, []);
 
   const openCommandPalette = useCallback(() => setCmdPaletteOpen(true), []);
+
+  // Join page renders outside the normal auth flow — accessible to both
+  // logged-in and unauthenticated users (they can sign up inline).
+  const location = useLocation();
+  if (location.pathname.startsWith("/join/")) {
+    return <JoinPage />;
+  }
 
   if (authLoading) {
     return (
