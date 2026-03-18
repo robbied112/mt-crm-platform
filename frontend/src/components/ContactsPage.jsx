@@ -5,6 +5,7 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCrm } from "../context/CrmContext";
 import ContactForm from "./ContactForm";
+import EmailLink from "./EmailLink";
 
 const ROLE_LABELS = {
   sommelier: "Sommelier", beverage_director: "Beverage Director",
@@ -108,7 +109,7 @@ export default function ContactsPage() {
                       c.accountName || "--"
                     )}
                   </td>
-                  <td>{c.email || "--"}</td>
+                  <td><EmailLink email={c.email} /></td>
                   <td>{c.phone || "--"}</td>
                   <td>{c.isPrimary ? "\u2705" : ""}</td>
                   <td>

@@ -8,6 +8,7 @@ import { useCrm } from "../context/CrmContext";
 import { useData } from "../context/DataContext";
 import AccountForm from "./AccountForm";
 import ContactForm from "./ContactForm";
+import EmailLink from "./EmailLink";
 import LogActivityModal from "./LogActivityModal";
 import TaskForm from "./TaskForm";
 import OpportunityForm from "./OpportunityForm";
@@ -285,7 +286,7 @@ function OverviewTab({ account, contacts, biData, activities }) {
             <h3 className="table-title" style={{ marginBottom: 12 }}>Primary Contact</h3>
             <InfoRow label="Name" value={`${primaryContact.firstName} ${primaryContact.lastName}`} />
             <InfoRow label="Title" value={primaryContact.title || formatLabel(primaryContact.role || "")} />
-            <InfoRow label="Email" value={primaryContact.email} />
+            <InfoRow label="Email" value={<EmailLink email={primaryContact.email} />} />
             <InfoRow label="Phone" value={primaryContact.phone} />
           </div>
         )}
@@ -446,7 +447,7 @@ function ContactsTab({ contacts, onAdd, onEdit, onDelete }) {
               <tr key={c.id}>
                 <td style={{ fontWeight: 600 }}>{c.firstName} {c.lastName}</td>
                 <td>{c.title || formatLabel(c.role || "")}</td>
-                <td>{c.email || "--"}</td>
+                <td><EmailLink email={c.email} /></td>
                 <td>{c.phone || "--"}</td>
                 <td>{c.isPrimary ? "\u2705" : ""}</td>
                 <td>
