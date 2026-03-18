@@ -67,3 +67,7 @@ export { default as ProductForm } from "./Portfolio/ProductForm";
 export { default as SellSheetExport } from "./Portfolio/SellSheetExport";
 export { default as RevenueSales } from "./RevenueSales";
 export { default as ExecutiveDashboard } from "./ExecutiveDashboard";
+export { default as JoinPage } from "./JoinPage";
+export { default as TeamSettings } from "./TeamSettings";
+export { default as TeamSetupWizard } from "./TeamSetupWizard";
+export { default as TerritoryMap } from "./TerritoryMap";

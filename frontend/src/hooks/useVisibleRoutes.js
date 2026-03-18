@@ -49,7 +49,7 @@ const SECTION_CONFIG = {
  *   sections: { analytics, tools, crm, portfolio, billbacks, admin } — arrays of visible routes
  *   hiddenHints: array of { label, hint } for collapsed progressive disclosure labels
  */
-export default function useVisibleRoutes(routes, { isAdmin, availability, tenantConfig } = {}) {
+export default function useVisibleRoutes(routes, { isAdmin, userRole, availability, tenantConfig } = {}) {
   return useMemo(() => {
     const progressive = !!tenantConfig?.features?.progressiveSidebar;
     const billbacksEnabled = !!tenantConfig?.features?.billbacks;
@@ -140,7 +140,7 @@ export default function useVisibleRoutes(routes, { isAdmin, availability, tenant
     };
 
     return { sections, hiddenHints };
-  }, [routes, isAdmin, availability, tenantConfig]);
+  }, [routes, isAdmin, userRole, availability, tenantConfig]);
 }
 
 export { SECTION_CONFIG, UPLOAD_HINTS };

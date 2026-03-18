@@ -21,6 +21,7 @@ import { normalizeRows } from "../../utils/normalize.js";
 import { clientExactMatch } from "../../utils/productNormalize";
 import { logUpload } from "../../services/firestoreService";
 import { useAuth } from "../../context/AuthContext";
+import { useTeam } from "../../context/TeamContext";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { useUpload } from "../../context/UploadContext";
 import ProductSheetReviewStep from "../ProductSheetReviewStep";
@@ -119,7 +120,8 @@ function reducer(state, action) {
 export default function DataImport() {
   const { importDatasets, userRole, tenantId, useNormalized, tenantConfig, updateTenantConfig, refreshData } = useData();
   const { products, createProduct } = useCrm();
-  const { currentUser } = useAuth();
+  const { currentUser, isAdmin } = useAuth();
+  const { memberCount } = useTeam();
   const navigate = useNavigate();
   const inputRef = useRef();
   // importingRef removed — auto-import now uses the atomic
@@ -890,6 +892,31 @@ export default function DataImport() {
               <button className="btn btn-secondary" onClick={() => navigate("/portfolio")}>
                 Add to Portfolio &rarr;
               </button>
+            </div>
+          )}
+          {isAdmin && memberCount <= 1 && !tenantConfig?.teamPromptDismissed && (
+            <div style={{
+              marginBottom: 16, padding: "12px 16px",
+              background: "rgba(107, 30, 30, 0.04)", border: "1px solid #E5E0DA",
+              borderRadius: 8, textAlign: "left",
+            }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#2E2E2E", margin: "0 0 4px" }}>
+                Your data is live! Invite your team.
+              </p>
+              <p style={{ fontSize: 13, color: "#6B6B6B", margin: "0 0 8px" }}>
+                Share this with reps and managers so they can see their territories.
+              </p>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="btn btn-primary btn-small" onClick={() => navigate("/settings#team")}>
+                  Invite Teammates
+                </button>
+                <button
+                  className="btn btn-secondary btn-small"
+                  onClick={() => updateTenantConfig({ teamPromptDismissed: true })}
+                >
+                  Later
+                </button>
+              </div>
             </div>
           )}
           <button className="btn btn-primary" onClick={reset}>

@@ -10,10 +10,13 @@ import { useState } from "react";
 import TENANT_CONFIG from "../config/tenant";
 import { t } from "../utils/terminology";
 import { useData } from "../context/DataContext";
+import { useAuth } from "../context/AuthContext";
 import useSubscription from "../hooks/useSubscription";
 import { PLANS } from "../config/plans";
 import DataImport from "./DataImport";
 import CloudSyncSettings from "./CloudSyncSettings";
+import TeamSettings from "./TeamSettings";
+import TeamSetupWizard from "./TeamSetupWizard";
 
 function SettingsSection({ title, children, headerRight, id }) {
   return (
@@ -172,7 +175,9 @@ export default function Settings({
   onOpenBillingPortal,
 }) {
   const { updateTenantConfig } = useData();
+  const { isAdmin } = useAuth();
   const sub = useSubscription();
+  const [showWizard, setShowWizard] = useState(false);
   const [userRole, setUserRole] = useState(config.userRole || "supplier");
   const [roleSaving, setRoleSaving] = useState(false);
   const [roleSaved, setRoleSaved] = useState(false);
@@ -242,6 +247,29 @@ export default function Settings({
           Change Password
         </button>
       </SettingsSection>
+
+      {/* Team Setup Wizard (modal) */}
+      {showWizard && <TeamSetupWizard onClose={() => setShowWizard(false)} />}
+
+      {/* Team Management (2nd section per design review) */}
+      {isAdmin && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 12,
+          padding: "12px 16px", background: "rgba(107, 30, 30, 0.04)",
+          border: "1px solid #E5E0DA", borderRadius: 8, marginBottom: 20,
+        }}>
+          <span style={{ fontSize: 14, color: "#2E2E2E", flex: 1 }}>
+            Need to set up your team? The wizard walks you through naming your company, defining territories, and inviting your first teammate.
+          </span>
+          <button className="btn btn-primary" onClick={() => setShowWizard(true)} style={{ whiteSpace: "nowrap" }}>
+            Launch Setup Wizard
+          </button>
+        </div>
+      )}
+      <TeamSettings
+        territories={config.territories || {}}
+        onSaveTerritories={(territories) => updateTenantConfig({ territories })}
+      />
 
       {/* Business Role */}
       <SettingsSection

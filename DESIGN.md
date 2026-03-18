@@ -91,6 +91,9 @@
 - **Sidebar nav items:** Active state uses cream text (`#FDF8F0`) + 3px burgundy left border + `rgba(107, 30, 30, 0.15)` burgundy-tinted background
 - **Sidebar text:** Default items at 70% cream opacity, hover at full cream, section labels at 45% opacity
 - **Sidebar search:** Warm-tinted background `rgba(253, 248, 240, 0.06)` with warm border
+- **Modals:** Card White bg, 8px radius, 24px padding, backdrop `rgba(30, 27, 30, 0.5)`. Focus trap on open, Escape to close. Title: H3 Inter Tight Semibold 20px. For destructive actions, primary button uses Error red `#C53030`. Uses `role="alertdialog"` for confirmation dialogs.
+- **Progress bar:** 4px height, Parchment `#FDF8F0` background, Deep Burgundy `#6B1E1E` fill, 9999px radius. Step indicator: Caption/Label style (12px Inter, uppercase) showing "Step X of Y". Use `role="progressbar"` with `aria-valuenow`/`aria-valuemax`.
+- **Role badges:** 12px radius (pill), role-specific colors: Admin `#6B1E1E`, Manager `#B87333`, Rep `#1F865A`, Viewer `#6B6B6B`. White text, 10% opacity background variant for inline use.
 
 ## Motion
 - **Approach:** Minimal-functional — only transitions that aid comprehension
@@ -117,3 +120,4 @@
 | 2026-03-17 | Logo: 32px → 40px in sidebar, burgundy fill on dark backgrounds | Logo was too small and gold-on-navy lacked contrast; burgundy-on-dark is more refined |
 | 2026-03-17 | Focus ring: Gold → Burgundy (`rgba(107,30,30,0.25)`) | Consistent with burgundy-first accent strategy |
 | 2026-03-17 | Sidebar text opacity: 55% → 70% default | Previous opacity was too dim for comfortable reading |
+| 2026-03-18 | Added modal, progress bar, and role badge component specs | Team account model requires confirmation modals, setup wizard progress, and role indicators |
