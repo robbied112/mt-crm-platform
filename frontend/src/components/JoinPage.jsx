@@ -37,27 +37,36 @@ export default function JoinPage() {
   const [formError, setFormError] = useState(null);
 
   // Validate invite code on mount
-  useEffect(() => {
-    async function validateInvite() {
-      try {
-        const fns = getFunctions();
-        const validate = httpsCallable(fns, "validateInvite");
-        const result = await validate({ code });
-        setInvite(result.data);
-      } catch (err) {
-        const msg = err.message || "Invalid invite link";
-        if (msg.includes("expired")) {
-          setError("This invite link has expired. Ask your team admin for a new one.");
-        } else if (msg.includes("used")) {
-          setError("This invite link has already been used. Ask your team admin for a new one.");
-        } else {
-          setError("This invite link is invalid. Check the URL or ask your team admin for a new link.");
-        }
-      } finally {
-        setLoading(false);
+  async function runValidation() {
+    setLoading(true);
+    setError(null);
+    try {
+      const fns = getFunctions();
+      const validate = httpsCallable(fns, "validateInvite", { timeout: 15000 });
+      // Race against a timeout so the user never stares at a spinner forever
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("__timeout__")), 15000)
+      );
+      const result = await Promise.race([validate({ code }), timeout]);
+      setInvite(result.data);
+    } catch (err) {
+      const msg = err.message || "Invalid invite link";
+      if (msg === "__timeout__") {
+        setError("Took too long to verify. Check your connection and try again.");
+      } else if (msg.includes("expired")) {
+        setError("This invite link has expired. Ask your team admin for a new one.");
+      } else if (msg.includes("used")) {
+        setError("This invite link has already been used. Ask your team admin for a new one.");
+      } else {
+        setError("This invite link is invalid. Check the URL or ask your team admin for a new link.");
       }
+    } finally {
+      setLoading(false);
     }
-    if (code) validateInvite();
+  }
+
+  useEffect(() => {
+    if (code) runValidation();
     else setError("No invite code provided.");
   }, [code]);
 
@@ -137,14 +146,22 @@ export default function JoinPage() {
 
   // ─── Error state ───────────────────────────────────────────────
   if (error) {
+    const isRetryable = error.includes("too long") || error.includes("connection");
     return (
       <div style={styles.page}>
         <div style={styles.center}>
           <CruFolioLogo size={40} />
           <div style={styles.errorCard}>
-            <h2 style={styles.errorTitle}>Invite Not Valid</h2>
+            <h2 style={isRetryable ? styles.warningTitle : styles.errorTitle}>
+              {isRetryable ? "Connection Issue" : "Invite Not Valid"}
+            </h2>
             <p style={styles.errorText}>{error}</p>
-            <a href="/" style={styles.homeLink}>Go to CruFolio</a>
+            {isRetryable && (
+              <button style={styles.primaryButton} onClick={runValidation}>
+                Try Again
+              </button>
+            )}
+            <a href="/" style={{ ...styles.homeLink, display: "block", marginTop: 16 }}>Go to CruFolio</a>
           </div>
         </div>
       </div>
