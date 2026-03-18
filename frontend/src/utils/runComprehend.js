@@ -4,19 +4,24 @@
  *
  * Handles:
  *   1. Collecting allSheets data for multi-sheet files
- *   2. Calling comprehendReport Cloud Function
- *   3. Handling recommendedSheet re-parse
- *   4. Handling sheetsToMerge → mergeSheets
- *   5. Falling back to rule-based mapping on failure
+ *   2. Deterministic heuristic merge for sheets sharing key columns
+ *   3. Calling comprehendReport Cloud Function
+ *   4. Handling recommendedSheet re-parse
+ *   5. Handling sheetsToMerge → mergeSheets (AI-driven fallback)
+ *   6. Falling back to rule-based mapping on failure
  *
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Flow:                                                        │
  * │  parseFile() result + peekAllSheets()                       │
  * │    ↓                                                         │
- * │  comprehendReport (Cloud Function) with allSheets           │
+ * │  detectMergeableSheets() — deterministic heuristic           │
+ * │    ↓ (if merge found)                                        │
+ * │  parseSheets() → mergeSheets() — merge BEFORE AI call       │
  * │    ↓                                                         │
- * │  recommendedSheet? → re-parse that sheet                    │
- * │  sheetsToMerge? → parseSheets() → mergeSheets()             │
+ * │  comprehendReport (Cloud Function) with merged/allSheets    │
+ * │    ↓                                                         │
+ * │  AI refines mapping (merge already done by heuristic)       │
+ * │  OR sheetsToMerge? → parseSheets() → mergeSheets() (AI path)│
  * │    ↓                                                         │
  * │  Return { parsed, mapping, confidence, analysis, mergedData }│
  * └──────────────────────────────────────────────────────────────┘
@@ -37,6 +42,120 @@ function smartSample(rows) {
   const mid20 = rows.slice(midStart, midStart + 20);
   const last10 = rows.slice(-10);
   return [...first20, ...mid20, ...last10];
+}
+
+/**
+ * Column name patterns that suggest a key/identifier field.
+ * Ordered by strength — stronger identifiers (SKU, UPC) score higher
+ * than weaker ones (Product, Item) which are often descriptive labels.
+ */
+const KEY_PATTERNS = [
+  { pattern: /^sku$/i, bonus: 15 },
+  { pattern: /\bsku\b/i, bonus: 12 },
+  { pattern: /^upc$/i, bonus: 15 },
+  { pattern: /^gtin$/i, bonus: 15 },
+  { pattern: /\bitem.?(?:number|code|id)\b/i, bonus: 12 },
+  { pattern: /\bproduct.?(?:code|id|number)\b/i, bonus: 12 },
+  { pattern: /^code$/i, bonus: 10 },
+  { pattern: /^item$/i, bonus: 8 },
+  { pattern: /^product$/i, bonus: 5 },  // weaker — often a label, not an ID
+];
+
+/**
+ * Deterministic heuristic: detect sheets that share a key column and can
+ * be merged without relying on AI.
+ *
+ * Scans peekAllSheets output for columns that appear (case-insensitive) in
+ * 2+ sheets, scores them by key-likeness and value uniqueness, then returns
+ * a merge config or null if no confident merge is found.
+ *
+ * @param {Array<{ name: string, headers: string[], sampleRows: object[] }>} allSheets
+ * @returns {{ sheetsToMerge: string[], strategy: string, keyField: string } | null}
+ */
+export function detectMergeableSheets(allSheets) {
+  if (!allSheets || allSheets.length < 2) return null;
+
+  // Map lowercased column name → list of { sheetIdx, actualHeader }
+  const columnMap = new Map();
+  for (let i = 0; i < allSheets.length; i++) {
+    for (const header of allSheets[i].headers) {
+      const lower = header.toLowerCase().trim();
+      if (!lower) continue;
+      if (!columnMap.has(lower)) columnMap.set(lower, []);
+      columnMap.get(lower).push({ sheetIdx: i, actualHeader: header });
+    }
+  }
+
+  // Find columns shared across 2+ sheets
+  const shared = [];
+  for (const [lower, entries] of columnMap) {
+    const uniqueSheets = new Set(entries.map((e) => e.sheetIdx));
+    if (uniqueSheets.size >= 2) {
+      shared.push({ lower, entries, sheetCount: uniqueSheets.size });
+    }
+  }
+  if (shared.length === 0) return null;
+
+  // Score each shared column — higher = better key candidate
+  let bestKey = null;
+  let bestScore = -1;
+
+  for (const { lower, entries, sheetCount } of shared) {
+    let score = sheetCount; // more sheets sharing = better
+
+    // Bonus for key-like names — stronger identifiers score higher
+    for (const { pattern, bonus } of KEY_PATTERNS) {
+      if (pattern.test(lower)) {
+        score += bonus;
+        break;
+      }
+    }
+
+    // Check value uniqueness in sample data — keys should be mostly unique
+    let allUnique = true;
+    let hasOverlap = false;
+    const allValues = new Set();
+    for (const { sheetIdx, actualHeader } of entries) {
+      const sheet = allSheets[sheetIdx];
+      const values = sheet.sampleRows
+        .map((r) => String(r[actualHeader] || "").trim())
+        .filter((v) => v);
+      const uniqueRatio = values.length > 0 ? new Set(values).size / values.length : 0;
+      if (uniqueRatio < 0.5) allUnique = false;
+
+      // Track cross-sheet overlap
+      for (const v of values) {
+        const vLower = v.toLowerCase();
+        if (allValues.has(vLower)) hasOverlap = true;
+        allValues.add(vLower);
+      }
+    }
+
+    if (allUnique) score += 5;
+    if (hasOverlap) score += 3; // values shared across sheets = likely same entities
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestKey = { lower, entries };
+    }
+  }
+
+  // Require a minimum confidence: must match a key pattern (score >= 12)
+  // or have both uniqueness and overlap (score >= 10)
+  if (!bestKey || bestScore < 10) return null;
+
+  // Determine which sheets participate in the merge
+  const sheetIndices = new Set(bestKey.entries.map((e) => e.sheetIdx));
+  const sheetsToMerge = [...sheetIndices].map((i) => allSheets[i].name);
+
+  // Use the actual header name from the first participating sheet as keyField
+  const keyField = bestKey.entries[0].actualHeader;
+
+  console.log(
+    `[runComprehend] Heuristic detected mergeable sheets: [${sheetsToMerge.join(", ")}] on key "${keyField}"`
+  );
+
+  return { sheetsToMerge, strategy: "dedup_by_key", keyField };
 }
 
 /**
@@ -86,14 +205,52 @@ export async function runComprehend({ file, parsed, comprehendCallable, tenantId
     }
   }
 
-  // Call comprehendReport
+  // ★ Heuristic merge — deterministic fallback that doesn't depend on AI
+  let heuristicMerged = false;
+  if (allSheets && allSheets.length >= 2) {
+    const heuristicMerge = detectMergeableSheets(allSheets);
+    if (heuristicMerge) {
+      try {
+        const sheetsData = parseSheets(file, heuristicMerge.sheetsToMerge);
+        if (sheetsData.length > 1) {
+          const merged = mergeSheets(sheetsData, {
+            strategy: heuristicMerge.strategy,
+            keyField: heuristicMerge.keyField,
+          });
+          if (merged.rows.length > 0) {
+            heuristicMerged = true;
+            result.mergedData = merged;
+            result.parsed = {
+              headers: merged.headers,
+              rows: merged.rows,
+              sheetInfo: {
+                ...originalSheetInfo,
+                selectedSheet: `Merged (${heuristicMerge.sheetsToMerge.join(", ")})`,
+                merged: true,
+              },
+            };
+            result.sheetInfo = result.parsed.sheetInfo;
+            console.log(
+              `[runComprehend] Heuristic merge produced ${merged.rows.length} rows from ${sheetsData.length} sheets`
+            );
+          }
+        }
+      } catch (err) {
+        console.warn("[runComprehend] Heuristic merge failed, continuing with primary sheet:", err);
+      }
+    } else {
+      console.debug("[runComprehend] No heuristic merge candidates found for sheets:", allSheets.map((s) => s.name));
+    }
+  }
+
+  // Call comprehendReport — send merged data if heuristic merged, otherwise original
   let comprehendResult = null;
   try {
     const { data } = await comprehendCallable({
       tenantId,
       fileName: file.name,
-      headers: parsed.headers,
-      sampleRows: smartSample(parsed.rows),
+      headers: result.parsed.headers,
+      sampleRows: smartSample(result.parsed.rows),
       sheetNames: originalSheetInfo?.sheetNames,
       selectedSheet: originalSheetInfo?.selectedSheet,
       sheetSummaries,
@@ -139,7 +296,8 @@ export async function runComprehend({ file, parsed, comprehendCallable, tenantId
   }
 
   // Handle sheetsToMerge — AI says combine multiple sheets
-  if (comprehendResult.sheetsToMerge?.length > 1) {
+  // Skip if heuristic already merged (avoid double-merge)
+  if (!heuristicMerged && comprehendResult.sheetsToMerge?.length > 1) {
     try {
       // Validate sheet names — only merge sheets that actually exist
       const validSheets = comprehendResult.sheetsToMerge.filter(
