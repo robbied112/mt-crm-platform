@@ -6,6 +6,7 @@ import AuthProvider from "./context/AuthContext";
 import DataProvider from "./context/DataContext";
 import CrmProvider from "./context/CrmContext";
 import PricingProvider from "./context/PricingContext";
+import UploadProvider from "./context/UploadContext";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -14,7 +15,9 @@ createRoot(document.getElementById("root")).render(
         <DataProvider>
           <CrmProvider>
             <PricingProvider>
-              <App />
+              <UploadProvider>
+                <App />
+              </UploadProvider>
             </PricingProvider>
           </CrmProvider>
         </DataProvider>

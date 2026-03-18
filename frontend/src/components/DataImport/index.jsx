@@ -18,15 +18,15 @@ import { transformAll, generateSummary } from "../../utils/transformData";
 import { transformBillback } from "../../utils/transformBillback";
 import { normalizeRows } from "../../utils/normalize.js";
 import { clientExactMatch } from "../../utils/productNormalize";
-import { logUpload, loadRecentUploads } from "../../services/firestoreService";
+import { logUpload } from "../../services/firestoreService";
 import { useAuth } from "../../context/AuthContext";
 import { getFunctions, httpsCallable } from "firebase/functions";
+import { useUpload } from "../../context/UploadContext";
 import ProductSheetReviewStep from "../ProductSheetReviewStep";
 import MappingStep from "./MappingStep";
 import PreviewStep from "./PreviewStep";
 import BillbackReviewStep from "./BillbackReviewStep";
 import ReportAnalysisCard from "./ReportAnalysisCard";
-import useFileQueue from "../../hooks/useFileQueue";
 import s from "./styles";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -117,7 +117,7 @@ export default function DataImport() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const inputRef = useRef();
-  const processingRef = useRef(false);
+  const importingRef = useRef(false);
 
   const smartImportEnabled = !!tenantConfig?.features?.smartImport;
 
@@ -135,41 +135,10 @@ export default function DataImport() {
 
   const isBillbackEnabled = tenantConfig?.features?.billbacks;
 
-  // ── Multi-file queue ──
+  // ── Multi-file queue (from shared UploadContext) ──
 
-  const comprehendCallable = useCallback(async (args) => {
-    const fns = getFunctions();
-    const comprehendReport = httpsCallable(fns, "comprehendReport");
-    return comprehendReport(args);
-  }, []);
-
-  const fq = useFileQueue({
-    parseFile,
-    autoDetectMapping,
-    aiAutoDetectMapping,
-    detectUploadType,
-    comprehendReport: smartImportEnabled ? comprehendCallable : null,
-    loadRecentUploads,
-    useAI,
-    smartImportEnabled,
-    userRole,
-    tenantId,
-  });
-
+  const fq = useUpload();
   const isBatchMode = fq.queue.length > 0;
-
-  // ── Auto-process queue: when a file is queued, process it ──
-
-  useEffect(() => {
-    if (processingRef.current) return;
-    const nextQueued = fq.queue.find((i) => i.status === "queued");
-    if (!nextQueued) return;
-
-    processingRef.current = true;
-    fq.processNext().finally(() => {
-      processingRef.current = false;
-    });
-  }, [fq.queue, fq.processNext]);
 
   // ── Import a queue item (auto-confirmed or user-confirmed) ──
 
@@ -180,12 +149,13 @@ export default function DataImport() {
 
       // Product sheet — cannot auto-import, should be in needs-review
       if (itemType?.type === "product_sheet") {
-        // This shouldn't happen for auto-confirmed, but guard anyway
+        fq.markError(item.id, "Product sheets require manual review");
         return;
       }
 
       // Billback PDF — cannot auto-import
       if (itemFile && /\.pdf$/i.test(itemFile.name)) {
+        fq.markError(item.id, "PDF files require manual review");
         return;
       }
 
@@ -227,12 +197,17 @@ export default function DataImport() {
   }, [fq, userRole, useNormalized, importDatasets, tenantConfig, updateTenantConfig, tenantId, currentUser]);
 
   // ── Auto-import: when a file is auto-confirmed, import it ──
+  // Process one import at a time to avoid Firestore write contention.
 
   useEffect(() => {
+    if (importingRef.current) return;
     const autoItem = fq.queue.find((i) => i.status === "auto-confirmed");
     if (!autoItem) return;
 
-    importQueueFile(autoItem);
+    importingRef.current = true;
+    importQueueFile(autoItem).finally(() => {
+      importingRef.current = false;
+    });
   }, [fq.queue, importQueueFile]);
 
   // ── Handle files dropped or selected ──
@@ -798,6 +773,7 @@ export default function DataImport() {
               analysis={analysis}
               fileName={file?.name}
               onRetry={analysis.error ? retryAnalysis : undefined}
+              analysisTiming={fq.analysisTiming}
             />
           )}
           <MappingStep
