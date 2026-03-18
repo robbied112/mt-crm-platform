@@ -117,7 +117,8 @@ export default function DataImport() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const inputRef = useRef();
-  const importingRef = useRef(false);
+  // importingRef removed — auto-import now uses the atomic
+  // claimNextImport() + status-based guard (same pattern as processNext).
 
   const smartImportEnabled = !!tenantConfig?.features?.smartImport;
 
@@ -174,7 +175,7 @@ export default function DataImport() {
   // ── Import a queue item (auto-confirmed or user-confirmed) ──
 
   const importQueueFile = useCallback(async (item) => {
-    fq.markImporting(item.id);
+    // Note: caller (claimNextImport) already marked item as "importing".
     try {
       const { parsed: itemParsed, mapping: itemMapping, type: itemType, file: itemFile } = item;
 
@@ -225,23 +226,23 @@ export default function DataImport() {
     } catch (err) {
       fq.markError(item.id, err.message || String(err));
     }
-  }, [fq, userRole, useNormalized, importDatasets, tenantConfig, updateTenantConfig, tenantId, currentUser]);
+  }, [fq.markDone, fq.markError, userRole, useNormalized, importDatasets, tenantConfig, updateTenantConfig, tenantId, currentUser]);
 
   // ── Auto-import: when a file is auto-confirmed, import it ──
-  // Process one import at a time to avoid Firestore write contention.
+  // Guard with queue status (not a ref) — same fix as auto-process.
+  // claimNextImport() atomically finds + marks the next item so
+  // concurrent effect runs can never start a double-import.
 
   useEffect(() => {
-    if (importingRef.current) return;
     const isImporting = fq.queue.some((i) => i.status === "importing");
     if (isImporting) return;
-    const autoItem = fq.queue.find((i) => i.status === "auto-confirmed");
-    if (!autoItem) return;
+    const hasAutoConfirmed = fq.queue.some((i) => i.status === "auto-confirmed");
+    if (!hasAutoConfirmed) return;
 
-    importingRef.current = true;
-    importQueueFile(autoItem).finally(() => {
-      importingRef.current = false;
-    });
-  }, [fq.queue, importQueueFile]);
+    const item = fq.claimNextImport();
+    if (!item) return;
+    importQueueFile(item);
+  }, [fq.queue, fq.claimNextImport, importQueueFile]);
 
   // ── Handle files dropped or selected ──
 
