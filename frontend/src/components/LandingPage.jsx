@@ -6,22 +6,22 @@ import { useEffect } from "react";
 function DashboardMockup() {
   const kpis = [
     { label: "Revenue", value: "12.4k", sub: "cases this quarter", color: "#6B1E1E" },
-    { label: "Accounts", value: "847", sub: "active accounts", color: "#2563EB" },
-    { label: "Sell-Thru", value: "94.2%", sub: "avg across distros", color: "#059669" },
+    { label: "Accounts", value: "847", sub: "active accounts", color: "#B87333" },
+    { label: "Sell-Thru", value: "94.2%", sub: "avg across distros", color: "#1F865A" },
   ];
   const bars = [
     { label: "Annual Volume Goal", pct: 72, color: "#6B1E1E" },
-    { label: "Distribution Target", pct: 58, color: "#2563EB" },
+    { label: "Distribution Target", pct: 58, color: "#B87333" },
   ];
   const rows = [
-    { name: "Premium Wine Distributors", state: "CA", dot: "#059669" },
-    { name: "Atlantic Beverage Co.", state: "NY", dot: "#D97706" },
-    { name: "Midwest Spirits Group", state: "IL", dot: "#059669" },
+    { name: "Premium Wine Distributors", state: "CA", dot: "#1F865A" },
+    { name: "Atlantic Beverage Co.", state: "NY", dot: "#C07B01" },
+    { name: "Midwest Spirits Group", state: "IL", dot: "#1F865A" },
   ];
 
   return (
     <div style={{
-      background: "#1A1F3E", borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)",
+      background: "#1F1B1E", borderRadius: 16, border: "1px solid rgba(253,248,240,0.08)",
       padding: 24, maxWidth: 720, margin: "0 auto",
       boxShadow: "0 0 80px rgba(107,30,30,0.18), 0 20px 60px rgba(0,0,0,0.4)",
       animation: "float 6s ease-in-out infinite",
@@ -31,8 +31,8 @@ function DashboardMockup() {
       <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
         {kpis.map((k, i) => (
           <div key={i} style={{
-            flex: 1, background: "#0f172a", borderRadius: 8, padding: "16px 16px",
-            border: "1px solid rgba(255,255,255,0.06)",
+            flex: 1, background: "#2A2528", borderRadius: 8, padding: "16px 16px",
+            border: "1px solid rgba(253,248,240,0.06)",
           }}>
             <div style={{ fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{k.label}</div>
             <div style={{ fontSize: 28, fontWeight: 700, color: k.color, lineHeight: 1.2, marginTop: 4, fontFeatureSettings: "'tnum'" }}>{k.value}</div>
@@ -48,15 +48,15 @@ function DashboardMockup() {
               <span style={{ fontSize: 12, color: "#6B6B6B", fontWeight: 500 }}>{b.label}</span>
               <span style={{ fontSize: 12, color: b.color, fontWeight: 700 }}>{b.pct}%</span>
             </div>
-            <div style={{ background: "#0f172a", borderRadius: 6, height: 8, overflow: "hidden" }}>
+            <div style={{ background: "#2A2528", borderRadius: 6, height: 8, overflow: "hidden" }}>
               <div style={{ width: `${b.pct}%`, height: "100%", background: b.color, borderRadius: 6, transition: "width 400ms ease-out" }} />
             </div>
           </div>
         ))}
       </div>
       {/* Mini scorecard table */}
-      <div style={{ background: "#0f172a", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)" }}>
-        <div style={{ display: "flex", padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+      <div style={{ background: "#2A2528", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(253,248,240,0.06)" }}>
+        <div style={{ display: "flex", padding: "10px 16px", borderBottom: "1px solid rgba(253,248,240,0.06)" }}>
           <span style={{ flex: 2, fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase" }}>Distributor</span>
           <span style={{ flex: 0.5, fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>State</span>
           <span style={{ flex: 0.5, fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Health</span>
@@ -64,9 +64,9 @@ function DashboardMockup() {
         {rows.map((r, i) => (
           <div key={i} style={{
             display: "flex", alignItems: "center", padding: "10px 16px",
-            borderBottom: i < rows.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+            borderBottom: i < rows.length - 1 ? "1px solid rgba(253,248,240,0.04)" : "none",
           }}>
-            <span style={{ flex: 2, fontSize: 13, color: "#D2C78A", fontWeight: 500 }}>{r.name}</span>
+            <span style={{ flex: 2, fontSize: 13, color: "#FDF8F0", fontWeight: 500 }}>{r.name}</span>
             <span style={{ flex: 0.5, fontSize: 12, color: "#6B6B6B", textAlign: "center" }}>{r.state}</span>
             <span style={{ flex: 0.5, textAlign: "center" }}>
               <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: r.dot }} />
@@ -95,9 +95,9 @@ function Check() {
    ────────────────────────────────────────────── */
 function ScorecardMockup() {
   const rows = [
-    { name: "Valley Wine Group", score: 92, dot: "#059669" },
-    { name: "Coastal Spirits", score: 78, dot: "#D97706" },
-    { name: "Metro Beverage", score: 45, dot: "#ef4444" },
+    { name: "Valley Wine Group", score: 92, dot: "#1F865A" },
+    { name: "Coastal Spirits", score: 78, dot: "#C07B01" },
+    { name: "Metro Beverage", score: 45, dot: "#C53030" },
   ];
   return (
     <div style={{ background: "#FDF8F0", borderRadius: 12, padding: 20, border: "1px solid #E5E0DA" }}>
@@ -107,7 +107,7 @@ function ScorecardMockup() {
         <span style={{ flex: 0.4, fontSize: 11, color: "#6B6B6B", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Status</span>
       </div>
       {rows.map((r, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? "1px solid #f1f5f9" : "none" }}>
+        <div key={i} style={{ display: "flex", alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? "1px solid #E5E0DA" : "none" }}>
           <span style={{ flex: 2, fontSize: 14, color: "#2E2E2E", fontWeight: 500 }}>{r.name}</span>
           <span style={{ flex: 0.6, fontSize: 14, color: "#2E2E2E", fontWeight: 700, textAlign: "center" }}>{r.score}</span>
           <span style={{ flex: 0.4, textAlign: "center" }}>
@@ -122,9 +122,9 @@ function ScorecardMockup() {
 function TerritoryMockup() {
   const states = [
     { abbr: "CA", rep: "Sarah M.", color: "#6B1E1E" },
-    { abbr: "NY", rep: "James K.", color: "#2563EB" },
+    { abbr: "NY", rep: "James K.", color: "#8B6A4C" },
     { abbr: "TX", rep: "Maria L.", color: "#B87333" },
-    { abbr: "IL", rep: "David P.", color: "#D97706" },
+    { abbr: "IL", rep: "David P.", color: "#C07B01" },
   ];
   return (
     <div style={{ background: "#FDF8F0", borderRadius: 12, padding: 20, border: "1px solid #E5E0DA" }}>
@@ -153,9 +153,9 @@ function TerritoryMockup() {
 function PipelineMockup() {
   const stages = [
     { label: "Prospect", count: 24, pct: 100, color: "#6B6B6B" },
-    { label: "Outreach", count: 18, pct: 75, color: "#2563EB" },
+    { label: "Outreach", count: 18, pct: 75, color: "#8B6A4C" },
     { label: "Sampling", count: 12, pct: 50, color: "#6B1E1E" },
-    { label: "Closed", count: 8, pct: 33, color: "#059669" },
+    { label: "Closed", count: 8, pct: 33, color: "#1F865A" },
   ];
   return (
     <div style={{ background: "#FDF8F0", borderRadius: 12, padding: 20, border: "1px solid #E5E0DA" }}>
@@ -189,25 +189,25 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
 
         /* Landing page interactive states */
         .lp-btn-primary { transition: background-color 200ms ease-out, box-shadow 200ms ease-out, transform 200ms ease-out; }
-        .lp-btn-primary:hover { background-color: #8A2035 !important; }
-        .lp-btn-primary:focus-visible { box-shadow: 0 0 0 3px rgba(210,199,138,0.3); outline: none; }
+        .lp-btn-primary:hover { background-color: #7A2530 !important; }
+        .lp-btn-primary:focus-visible { box-shadow: 0 0 0 3px rgba(107,30,30,0.25); outline: none; }
         .lp-btn-primary:active { transform: scale(0.98); }
 
         .lp-btn-ghost { transition: border-color 200ms ease-out, color 200ms ease-out, background-color 200ms ease-out; }
         .lp-btn-ghost:hover { border-color: rgba(255,255,255,0.5) !important; color: #fff !important; background-color: rgba(255,255,255,0.05) !important; }
-        .lp-btn-ghost:focus-visible { box-shadow: 0 0 0 3px rgba(210,199,138,0.3); outline: none; }
+        .lp-btn-ghost:focus-visible { box-shadow: 0 0 0 3px rgba(107,30,30,0.25); outline: none; }
 
         .lp-btn-white { transition: background-color 200ms ease-out, box-shadow 200ms ease-out, transform 200ms ease-out; }
         .lp-btn-white:hover { background-color: #FDF8F0 !important; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
-        .lp-btn-white:focus-visible { box-shadow: 0 0 0 3px rgba(210,199,138,0.3); outline: none; }
+        .lp-btn-white:focus-visible { box-shadow: 0 0 0 3px rgba(107,30,30,0.25); outline: none; }
         .lp-btn-white:active { transform: scale(0.98); }
 
         .lp-nav-link { transition: color 200ms ease-out; }
         .lp-nav-link:hover { color: #fff !important; }
 
         .lp-nav-cta { transition: background-color 200ms ease-out, box-shadow 200ms ease-out; }
-        .lp-nav-cta:hover { background-color: #8A2035 !important; }
-        .lp-nav-cta:focus-visible { box-shadow: 0 0 0 3px rgba(210,199,138,0.3); outline: none; }
+        .lp-nav-cta:hover { background-color: #7A2530 !important; }
+        .lp-nav-cta:focus-visible { box-shadow: 0 0 0 3px rgba(107,30,30,0.25); outline: none; }
 
         .lp-price-card { transition: transform 200ms ease-out, box-shadow 200ms ease-out; }
         .lp-price-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
@@ -216,8 +216,8 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
         .lp-footer-link:hover { color: #fff !important; }
 
         .lp-contact-btn { transition: border-color 200ms ease-out, color 200ms ease-out, background-color 200ms ease-out; }
-        .lp-contact-btn:hover { background-color: #f9fafb !important; border-color: #6B1E1E !important; color: #6B1E1E !important; }
-        .lp-contact-btn:focus-visible { box-shadow: 0 0 0 3px rgba(210,199,138,0.3); outline: none; }
+        .lp-contact-btn:hover { background-color: #FDF8F0 !important; border-color: #6B1E1E !important; color: #6B1E1E !important; }
+        .lp-contact-btn:focus-visible { box-shadow: 0 0 0 3px rgba(107,30,30,0.25); outline: none; }
 
         /* Mobile responsive overrides */
         @media (max-width: 768px) {
@@ -261,7 +261,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
   }, []);
 
   return (
-    <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", color: "#1a1a2e", lineHeight: 1.6 }}>
+    <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", color: "#2E2E2E", lineHeight: 1.6 }}>
 
       {/* ── Nav ──────────────────────────────── */}
       <nav style={s.nav}>
@@ -282,7 +282,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
           <h1 className="lp-hero-h1" style={s.heroH1}>
             Your sales data,{" "}
             <span style={{
-              background: "linear-gradient(135deg, #6B1E1E, #8A2035)",
+              background: "linear-gradient(135deg, #6B1E1E, #7A2530)",
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
               backgroundClip: "text",
             }}>finally useful.</span>
@@ -385,7 +385,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
               </div>
               {i < 2 && (
                 <div className="lp-step-arrow" style={s.stepFlowArrow}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D1CBC4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14M13 6l6 6-6 6" />
                   </svg>
                 </div>
@@ -441,7 +441,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
 
       {/* ── Footer ───────────────────────────── */}
       <footer style={s.footer}>
-        <p>&copy; 2026 CruFolio. All rights reserved. | <a href="mailto:hello@crufolio.com" className="lp-footer-link" style={{ color: "#D2C78A", textDecoration: "none", padding: "10px 4px" }}>hello@crufolio.com</a></p>
+        <p>&copy; 2026 CruFolio. All rights reserved. | <a href="mailto:hello@crufolio.com" className="lp-footer-link" style={{ color: "#FDF8F0", textDecoration: "none", padding: "10px 4px" }}>hello@crufolio.com</a></p>
       </footer>
     </div>
   );
@@ -472,14 +472,14 @@ const s = {
   /* Nav */
   nav: {
     position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-    background: "rgba(10,15,26,0.85)", backdropFilter: "blur(12px)",
-    borderBottom: "1px solid rgba(255,255,255,0.06)",
+    background: "rgba(31,27,30,0.90)", backdropFilter: "blur(12px)",
+    borderBottom: "1px solid rgba(253,248,240,0.06)",
   },
   navInner: {
     maxWidth: 1200, margin: "0 auto", padding: "16px 24px",
     display: "flex", alignItems: "center", justifyContent: "space-between",
   },
-  navLogo: { fontSize: 22, fontWeight: 400, color: "#D2C78A", fontFamily: "'Libre Baskerville', Georgia, serif", letterSpacing: "2px" },
+  navLogo: { fontSize: 22, fontWeight: 400, color: "#FDF8F0", fontFamily: "'Libre Baskerville', Georgia, serif", letterSpacing: "2px" },
   navLinks: { display: "flex", gap: 24, alignItems: "center" },
   navLink: { textDecoration: "none", color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: 500, padding: "10px 12px" },
   navLinkBtn: {
@@ -495,12 +495,12 @@ const s = {
   /* Hero */
   hero: {
     padding: "140px 24px 80px", textAlign: "center",
-    background: "linear-gradient(180deg, #0a0f1a 0%, #111827 60%, #1A1F3E 100%)",
+    background: "linear-gradient(180deg, #1F1B1E 0%, #2A2528 60%, #1F1B1E 100%)",
     overflow: "hidden",
   },
   heroH1: {
     fontSize: 60, fontWeight: 700, lineHeight: 1.3,
-    color: "#f1f5f9", marginBottom: 20, letterSpacing: "-0.02em",
+    color: "#FDF8F0", marginBottom: 20, letterSpacing: "-0.02em",
     fontFamily: "'Libre Baskerville', Georgia, serif",
   },
   heroSub: {
@@ -527,10 +527,10 @@ const s = {
 
   /* Sections */
   sectionWhite: { padding: "60px 24px 80px", maxWidth: 1200, margin: "0 auto" },
-  sectionGray: { padding: "60px 24px", background: "#f9fafb" },
+  sectionGray: { padding: "60px 24px", background: "#F5EDE3" },
   sectionH2: {
     fontSize: 38, fontWeight: 400, textAlign: "center", marginBottom: 16,
-    color: "#0f172a", letterSpacing: "-0.01em",
+    color: "#2E2E2E", letterSpacing: "-0.01em",
     fontFamily: "'Libre Baskerville', Georgia, serif",
   },
   sectionSub: {
@@ -549,7 +549,7 @@ const s = {
   },
   statNum: {
     fontSize: 48, fontWeight: 700, color: "#6B1E1E", lineHeight: 1,
-    background: "linear-gradient(135deg, #6B1E1E, #8A2035)",
+    background: "linear-gradient(135deg, #6B1E1E, #7A2530)",
     WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
   },
   statLabel: { fontSize: 16, fontWeight: 700, color: "#2E2E2E", marginTop: 8 },
@@ -568,7 +568,7 @@ const s = {
     textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 12,
   },
   featureH3: {
-    fontSize: 24, fontWeight: 400, color: "#0f172a", lineHeight: 1.35, marginBottom: 12,
+    fontSize: 24, fontWeight: 400, color: "#2E2E2E", lineHeight: 1.35, marginBottom: 12,
     fontFamily: "'Libre Baskerville', Georgia, serif",
   },
   featureP: { fontSize: 16, color: "#6B6B6B", lineHeight: 1.7 },
@@ -586,7 +586,7 @@ const s = {
     fontFamily: "'Libre Baskerville', Georgia, serif", lineHeight: 1,
     minWidth: 28,
   },
-  stepFlowTitle: { fontSize: 16, fontWeight: 700, color: "#0f172a", marginBottom: 4 },
+  stepFlowTitle: { fontSize: 16, fontWeight: 700, color: "#2E2E2E", marginBottom: 4 },
   stepFlowDesc: { fontSize: 14, color: "#6B6B6B", lineHeight: 1.6 },
   stepFlowArrow: {
     flexShrink: 0, padding: "8px 12px", display: "flex", alignItems: "center",
@@ -624,9 +624,9 @@ const s = {
   /* Final CTA */
   ctaSection: {
     padding: "100px 24px", textAlign: "center",
-    background: "linear-gradient(180deg, #0a0f1a 0%, #1A1F3E 100%)",
+    background: "linear-gradient(180deg, #2A2528 0%, #1F1B1E 100%)",
   },
-  ctaH2: { fontSize: 38, fontWeight: 400, color: "#f1f5f9", marginBottom: 16, fontFamily: "'Libre Baskerville', Georgia, serif" },
+  ctaH2: { fontSize: 38, fontWeight: 400, color: "#FDF8F0", marginBottom: 16, fontFamily: "'Libre Baskerville', Georgia, serif" },
   ctaSub: {
     fontSize: 18, color: "#6B6B6B", maxWidth: 500, margin: "0 auto 32px", lineHeight: 1.6,
   },
@@ -639,7 +639,7 @@ const s = {
 
   /* Footer */
   footer: {
-    padding: "40px 24px", textAlign: "center", background: "#0a0f1a",
-    color: "#6B6B6B", fontSize: 13, borderTop: "1px solid rgba(255,255,255,0.06)",
+    padding: "40px 24px", textAlign: "center", background: "#1F1B1E",
+    color: "#6B6B6B", fontSize: 13, borderTop: "1px solid rgba(253,248,240,0.06)",
   },
 };

@@ -14,10 +14,10 @@ const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.readonly";
 
 function StatusBadge({ status }) {
   const colors = {
-    success: { bg: "#F0FDF4", color: "#166534", border: "#BBF7D0" },
-    error: { bg: "#FEF2F2", color: "#991B1B", border: "#FECACA" },
-    running: { bg: "#FEF3C7", color: "#92400E", border: "#FDE68A" },
-    skipped: { bg: "#F9FAFB", color: "#6B7280", border: "#E5E7EB" },
+    success: { bg: "rgba(31, 134, 90, 0.08)", color: "#1F865A", border: "#1F865A" },
+    error: { bg: "rgba(197, 48, 48, 0.08)", color: "#C53030", border: "rgba(197, 48, 48, 0.2)" },
+    running: { bg: "rgba(192, 123, 1, 0.08)", color: "#C07B01", border: "rgba(192, 123, 1, 0.2)" },
+    skipped: { bg: "#FDF8F0", color: "#6B6B6B", border: "#E5E0DA" },
   };
   const c = colors[status] || colors.skipped;
   return (
@@ -213,12 +213,12 @@ export default function CloudSyncSettings() {
   if (!isConnected) {
     return (
       <div>
-        <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 16 }}>
           Connect your Google Drive to automatically pull spreadsheet files from a shared folder.
           Your team updates the files — CruFolio processes them on your schedule.
         </p>
         {error && (
-          <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 13, color: "#991B1B" }}>
+          <div style={{ background: "rgba(197, 48, 48, 0.08)", border: "1px solid rgba(197, 48, 48, 0.2)", borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 13, color: "#C53030" }}>
             {error}
             <span style={{ float: "right", cursor: "pointer" }} onClick={() => setError(null)}>&times;</span>
           </div>
@@ -246,7 +246,7 @@ export default function CloudSyncSettings() {
   return (
     <div>
       {error && (
-        <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 13, color: "#991B1B" }}>
+        <div style={{ background: "rgba(197, 48, 48, 0.08)", border: "1px solid rgba(197, 48, 48, 0.2)", borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 13, color: "#C53030" }}>
           {error}
           <span style={{ float: "right", cursor: "pointer" }} onClick={() => setError(null)}>&times;</span>
         </div>
@@ -255,14 +255,14 @@ export default function CloudSyncSettings() {
       {/* Connection status */}
       <div style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
-        background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 8,
+        background: "rgba(31, 134, 90, 0.08)", border: "1px solid #1F865A", borderRadius: 8,
         padding: 12, marginBottom: 16,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#059669", display: "inline-block" }} />
-          <span style={{ fontSize: 13, fontWeight: 600, color: "#166534" }}>Google Drive Connected</span>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#1F865A", display: "inline-block" }} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#1F865A" }}>Google Drive Connected</span>
           {cloudSync?.folderName && (
-            <span style={{ fontSize: 12, color: "#4B5563" }}>
+            <span style={{ fontSize: 12, color: "#6B6B6B" }}>
               — syncing from <strong>{cloudSync.folderName}</strong>
             </span>
           )}
@@ -271,7 +271,7 @@ export default function CloudSyncSettings() {
           onClick={disconnectDrive}
           style={{
             padding: "4px 12px", fontSize: 11, fontWeight: 600,
-            background: "transparent", border: "1px solid #DC2626", color: "#DC2626",
+            background: "transparent", border: "1px solid #C53030", color: "#C53030",
             borderRadius: 6, cursor: "pointer",
           }}
         >
@@ -282,7 +282,7 @@ export default function CloudSyncSettings() {
       {/* Folder picker */}
       {!isConfigured && (
         <div style={{ marginBottom: 16 }}>
-          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 8 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#2E2E2E", marginBottom: 8 }}>
             Select a folder to sync from:
           </label>
           {folders.length === 0 && !loadingFolders && (
@@ -294,16 +294,16 @@ export default function CloudSyncSettings() {
               Browse Folders
             </button>
           )}
-          {loadingFolders && <p style={{ fontSize: 13, color: "#6B7280" }}>Loading folders...</p>}
+          {loadingFolders && <p style={{ fontSize: 13, color: "#6B6B6B" }}>Loading folders...</p>}
           {folders.length > 0 && (
-            <div style={{ border: "1px solid #E5E7EB", borderRadius: 8, overflow: "hidden" }}>
+            <div style={{ border: "1px solid #E5E0DA", borderRadius: 8, overflow: "hidden" }}>
               {/* Breadcrumb */}
-              <div style={{ background: "#F9FAFB", padding: "8px 12px", fontSize: 12, color: "#6B7280", borderBottom: "1px solid #E5E7EB" }}>
+              <div style={{ background: "#FDF8F0", padding: "8px 12px", fontSize: 12, color: "#6B6B6B", borderBottom: "1px solid #E5E0DA" }}>
                 {folderPath.map((p, i) => (
                   <span key={i}>
                     {i > 0 && " / "}
                     <span
-                      style={{ cursor: i < folderPath.length - 1 ? "pointer" : "default", color: i < folderPath.length - 1 ? "#2563EB" : "#374151", fontWeight: i === folderPath.length - 1 ? 600 : 400 }}
+                      style={{ cursor: i < folderPath.length - 1 ? "pointer" : "default", color: i < folderPath.length - 1 ? "#8B6A4C" : "#2E2E2E", fontWeight: i === folderPath.length - 1 ? 600 : 400 }}
                       onClick={() => i < folderPath.length - 1 && navigateToPath(i)}
                     >
                       {p.name}
@@ -318,12 +318,12 @@ export default function CloudSyncSettings() {
                     key={f.id}
                     style={{
                       display: "flex", justifyContent: "space-between", alignItems: "center",
-                      padding: "8px 12px", borderBottom: "1px solid #F3F4F6",
+                      padding: "8px 12px", borderBottom: "1px solid #F5EDE3",
                       fontSize: 13,
                     }}
                   >
                     <span
-                      style={{ cursor: "pointer", color: "#1F2937" }}
+                      style={{ cursor: "pointer", color: "#2E2E2E" }}
                       onClick={() => openFolder(f)}
                     >
                       &#128193; {f.name}
@@ -333,7 +333,7 @@ export default function CloudSyncSettings() {
                       disabled={saving}
                       style={{
                         padding: "4px 12px", fontSize: 11, fontWeight: 600,
-                        background: "#059669", color: "#fff", border: "none",
+                        background: "#1F865A", color: "#fff", border: "none",
                         borderRadius: 6, cursor: "pointer",
                       }}
                     >
@@ -342,7 +342,7 @@ export default function CloudSyncSettings() {
                   </div>
                 ))}
                 {folders.length === 0 && (
-                  <p style={{ padding: 12, fontSize: 13, color: "#9CA3AF", textAlign: "center" }}>No subfolders</p>
+                  <p style={{ padding: 12, fontSize: 13, color: "#6B6B6B", textAlign: "center" }}>No subfolders</p>
                 )}
               </div>
             </div>
@@ -354,7 +354,7 @@ export default function CloudSyncSettings() {
       {isConfigured && (
         <div style={{ display: "flex", gap: 16, alignItems: "flex-end", marginBottom: 16 }}>
           <div style={{ flex: 1 }}>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#6B7280", marginBottom: 4 }}>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#6B6B6B", marginBottom: 4 }}>
               Sync Frequency
             </label>
             <select
@@ -372,8 +372,8 @@ export default function CloudSyncSettings() {
           </div>
           <label style={{
             display: "flex", alignItems: "center", gap: 8, padding: "8px 16px",
-            background: enabled ? "#F0FDF4" : "#F9FAFB",
-            border: `1px solid ${enabled ? "#BBF7D0" : "#E5E7EB"}`,
+            background: enabled ? "rgba(31, 134, 90, 0.08)" : "#FDF8F0",
+            border: `1px solid ${enabled ? "#1F865A" : "#E5E0DA"}`,
             borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600,
           }}>
             <input
@@ -396,7 +396,7 @@ export default function CloudSyncSettings() {
             disabled={syncing}
             style={{
               padding: "8px 16px", whiteSpace: "nowrap",
-              background: syncing ? "#D1D5DB" : "#2563EB",
+              background: syncing ? "#D1D5DB" : "#8B6A4C",
               color: "#fff", border: "none", borderRadius: 8,
               fontSize: 13, fontWeight: 600, cursor: syncing ? "default" : "pointer",
             }}
@@ -419,7 +419,7 @@ export default function CloudSyncSettings() {
               });
             }}
             style={{
-              padding: "4px 12px", fontSize: 11, color: "#6B7280",
+              padding: "4px 12px", fontSize: 11, color: "#6B6B6B",
               background: "transparent", border: "1px solid #D1D5DB",
               borderRadius: 6, cursor: "pointer",
             }}
@@ -432,39 +432,39 @@ export default function CloudSyncSettings() {
       {/* Sync history */}
       {syncHistory.length > 0 && (
         <div>
-          <h4 style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 8 }}>
+          <h4 style={{ fontSize: 13, fontWeight: 700, color: "#2E2E2E", marginBottom: 8 }}>
             Recent Syncs
           </h4>
-          <div style={{ border: "1px solid #E5E7EB", borderRadius: 8, overflow: "hidden" }}>
+          <div style={{ border: "1px solid #E5E0DA", borderRadius: 8, overflow: "hidden" }}>
             <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: "#F9FAFB" }}>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Date</th>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Status</th>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Files</th>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Rows</th>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B7280" }}>Trigger</th>
+                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B6B6B" }}>Date</th>
+                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B6B6B" }}>Status</th>
+                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B6B6B" }}>Files</th>
+                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B6B6B" }}>Rows</th>
+                  <th style={{ padding: "8px 12px", textAlign: "left", fontWeight: 600, color: "#6B6B6B" }}>Trigger</th>
                 </tr>
               </thead>
               <tbody>
                 {syncHistory.map((h, i) => (
-                  <tr key={i} style={{ borderTop: "1px solid #F3F4F6" }}>
-                    <td style={{ padding: "8px 12px", color: "#374151" }}>
+                  <tr key={i} style={{ borderTop: "1px solid #F5EDE3" }}>
+                    <td style={{ padding: "8px 12px", color: "#2E2E2E" }}>
                       {h.startedAt ? new Date(h.startedAt).toLocaleString() : "—"}
                     </td>
                     <td style={{ padding: "8px 12px" }}>
                       <StatusBadge status={h.status} />
                     </td>
-                    <td style={{ padding: "8px 12px", color: "#374151" }}>
+                    <td style={{ padding: "8px 12px", color: "#2E2E2E" }}>
                       {h.filesProcessed || 0}
                       {h.fileNames?.length > 0 && (
-                        <span style={{ color: "#9CA3AF", marginLeft: 4 }} title={h.fileNames.join(", ")}>
+                        <span style={{ color: "#6B6B6B", marginLeft: 4 }} title={h.fileNames.join(", ")}>
                           ({h.fileNames[0]}{h.fileNames.length > 1 ? ` +${h.fileNames.length - 1}` : ""})
                         </span>
                       )}
                     </td>
-                    <td style={{ padding: "8px 12px", color: "#374151" }}>{h.rowsIngested || 0}</td>
-                    <td style={{ padding: "8px 12px", color: "#6B7280" }}>{h.triggeredBy || "—"}</td>
+                    <td style={{ padding: "8px 12px", color: "#2E2E2E" }}>{h.rowsIngested || 0}</td>
+                    <td style={{ padding: "8px 12px", color: "#6B6B6B" }}>{h.triggeredBy || "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -473,7 +473,7 @@ export default function CloudSyncSettings() {
           {syncHistory.some((h) => h.error) && (
             <div style={{ marginTop: 8 }}>
               {syncHistory.filter((h) => h.error).slice(0, 1).map((h, i) => (
-                <p key={i} style={{ fontSize: 11, color: "#DC2626" }}>
+                <p key={i} style={{ fontSize: 11, color: "#C53030" }}>
                   Last error: {h.error}
                 </p>
               ))}

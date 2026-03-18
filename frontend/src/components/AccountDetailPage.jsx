@@ -82,7 +82,7 @@ export default function AccountDetailPage() {
 
   if (!account) {
     return (
-      <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
+      <div style={{ textAlign: "center", padding: "60px 20px", color: "#6B6B6B" }}>
         <p style={{ fontSize: 16 }}>Account not found.</p>
         <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => navigate("/accounts")}>
           Back to Accounts
@@ -122,7 +122,7 @@ export default function AccountDetailPage() {
           <div style={{ display: "flex", gap: 8 }}>
             <button className="btn btn-primary btn-small" onClick={() => setShowActivityModal(true)}>Log Activity</button>
             <button className="btn btn-secondary btn-small" onClick={() => setShowEditForm(true)}>Edit</button>
-            <button className="btn btn-small" style={{ background: "#fee2e2", color: "#dc2626", border: "1px solid #fca5a5" }} onClick={handleDeleteAccount}>
+            <button className="btn btn-small" style={{ background: "rgba(197, 48, 48, 0.08)", color: "#C53030", border: "1px solid rgba(197, 48, 48, 0.2)" }} onClick={handleDeleteAccount}>
               Delete
             </button>
           </div>
@@ -452,7 +452,7 @@ function ContactsTab({ contacts, onAdd, onEdit, onDelete }) {
                 <td>
                   <div style={{ display: "flex", gap: 4 }}>
                     <button className="btn btn-small btn-secondary" onClick={() => onEdit(c)}>Edit</button>
-                    <button className="btn btn-small" style={{ color: "#dc2626", background: "none", border: "none" }} onClick={() => onDelete(c)}>&times;</button>
+                    <button className="btn btn-small" style={{ color: "#C53030", background: "none", border: "none" }} onClick={() => onDelete(c)}>&times;</button>
                   </div>
                 </td>
               </tr>
@@ -495,7 +495,7 @@ function TasksTab({ tasks, onAdd, onToggle }) {
 
 function TaskRow({ task, onToggle }) {
   const isOverdue = task.status !== "completed" && task.dueDate && task.dueDate < new Date().toISOString().slice(0, 10);
-  const priorityColors = { urgent: "#dc2626", high: "#f97316", medium: "#d97706", low: "#64748b" };
+  const priorityColors = { urgent: "#C53030", high: "#B87333", medium: "#C07B01", low: "#6B6B6B" };
 
   return (
     <div style={{
@@ -513,15 +513,15 @@ function TaskRow({ task, onToggle }) {
           {task.title}
         </span>
         {task.dueDate && (
-          <span style={{ marginLeft: 8, fontSize: 12, color: isOverdue ? "#dc2626" : "var(--text-dim)" }}>
+          <span style={{ marginLeft: 8, fontSize: 12, color: isOverdue ? "#C53030" : "var(--text-dim)" }}>
             Due {task.dueDate}
           </span>
         )}
       </div>
       <span style={{
         fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 10,
-        color: priorityColors[task.priority] || "#64748b",
-        background: task.priority === "urgent" ? "#fee2e2" : task.priority === "high" ? "#fed7aa" : "#f8fafc",
+        color: priorityColors[task.priority] || "#6B6B6B",
+        background: task.priority === "urgent" ? "rgba(197, 48, 48, 0.08)" : task.priority === "high" ? "rgba(184, 115, 51, 0.1)" : "#F5EDE3",
       }}>
         {task.priority || "medium"}
       </span>
@@ -552,7 +552,7 @@ function NotesTab({ notes, loading, noteText, onNoteChange, onAddNote, onDeleteN
               <div className="meta">
                 {n.authorName || "Unknown"} &middot; {n.createdAt?.toDate ? n.createdAt.toDate().toLocaleDateString() : ""}
                 <button
-                  style={{ float: "right", background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 14 }}
+                  style={{ float: "right", background: "none", border: "none", cursor: "pointer", color: "#C53030", fontSize: 14 }}
                   onClick={() => onDeleteNote(n.id)}
                   title="Delete note"
                 >
@@ -571,9 +571,9 @@ function NotesTab({ notes, loading, noteText, onNoteChange, onAddNote, onDeleteN
 // ─── Opportunities Tab ────────────────────────────────────────
 
 const OPP_STAGE_COLORS = {
-  Won: "#10b981", Lost: "#ef4444", Completed: "#10b981",
-  Identified: "#94a3b8", Outreach: "#60a5fa", Meeting: "#818cf8",
-  Tasting: "#a78bfa", Proposal: "#f59e0b", Negotiation: "#f97316",
+  Won: "#1F865A", Lost: "#C53030", Completed: "#1F865A",
+  Identified: "#6B6B6B", Outreach: "#8B6A4C", Meeting: "#8B6A4C",
+  Tasting: "#8B6A4C", Proposal: "#C07B01", Negotiation: "#B87333",
 };
 
 function OpportunitiesTab({ opportunities, oppTypes, onAdd, onAdvance }) {
@@ -630,7 +630,7 @@ function OppRow({ opp, typeLabel, onAdvance, oppTypes, isClosed }) {
           <span className="badge badge-blue" style={{ fontSize: 10 }}>{typeLabel}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--text-dim)" }}>
-          <span className="pipeline-stage-badge" style={{ background: OPP_STAGE_COLORS[opp.stage] || "#94a3b8", fontSize: 10, padding: "1px 8px" }}>
+          <span className="pipeline-stage-badge" style={{ background: OPP_STAGE_COLORS[opp.stage] || "#6B6B6B", fontSize: 10, padding: "1px 8px" }}>
             {opp.stage}
           </span>
           <span style={{ fontWeight: 600, color: "var(--text)" }}>{formatCurrency(opp.estValue || 0)}</span>
@@ -657,7 +657,7 @@ function OppRow({ opp, typeLabel, onAdvance, oppTypes, isClosed }) {
 
 function InfoRow({ label, value }) {
   return (
-    <div style={{ display: "flex", padding: "6px 0", borderBottom: "1px solid #f1f5f9", fontSize: 13 }}>
+    <div style={{ display: "flex", padding: "6px 0", borderBottom: "1px solid #E5E0DA", fontSize: 13 }}>
       <span style={{ fontWeight: 600, color: "var(--text-dim)", minWidth: 120 }}>{label}</span>
       <span>{value || "--"}</span>
     </div>

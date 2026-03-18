@@ -124,9 +124,9 @@ export default function AccountsPage() {
         </div>
 
         {pageData.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "40px 20px", color: "#64748b" }}>
+          <div style={{ textAlign: "center", padding: "40px 20px", color: "#6B6B6B" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>{"\u{1F4CB}"}</div>
-            <p style={{ fontSize: 15, fontWeight: 600, color: "#334155", marginBottom: 4 }}>No accounts yet</p>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "#2E2E2E", marginBottom: 4 }}>No accounts yet</p>
             <p style={{ fontSize: 13 }}>Click &quot;+ Add Account&quot; to create your first account.</p>
           </div>
         ) : (
@@ -184,7 +184,7 @@ export default function AccountsPage() {
             {totalPages > 1 && (
               <div style={{ display: "flex", justifyContent: "center", gap: 8, padding: "16px 0" }}>
                 <button className="btn btn-small btn-secondary" disabled={page === 0} onClick={() => setPage(page - 1)}>Prev</button>
-                <span style={{ fontSize: 13, color: "#64748b", lineHeight: "28px" }}>
+                <span style={{ fontSize: 13, color: "#6B6B6B", lineHeight: "28px" }}>
                   Page {page + 1} of {totalPages}
                 </span>
                 <button className="btn btn-small btn-secondary" disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)}>Next</button>

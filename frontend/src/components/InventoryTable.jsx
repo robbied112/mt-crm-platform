@@ -12,13 +12,13 @@ const PAGE_SIZE = 50;
 
 function StatusBadge({ status }) {
   const styles = {
-    Healthy: { bg: "#d1fae5", color: "#065f46" },
+    Healthy: { bg: "rgba(31, 134, 90, 0.08)", color: "#1F865A" },
     "Reorder Opportunity": { bg: "#fed7aa", color: "#9a3412" },
-    Overstocked: { bg: "#dbeafe", color: "#1e40af" },
-    "Dead Stock": { bg: "#e5e7eb", color: "#374151" },
-    "Review Needed": { bg: "#dbeafe", color: "#1e40af" },
+    Overstocked: { bg: "rgba(139, 106, 76, 0.1)", color: "#8B6A4C" },
+    "Dead Stock": { bg: "#E5E0DA", color: "#2E2E2E" },
+    "Review Needed": { bg: "rgba(139, 106, 76, 0.1)", color: "#8B6A4C" },
   };
-  const s = styles[status] || { bg: "#f1f5f9", color: "#64748b" };
+  const s = styles[status] || { bg: "#F5EDE3", color: "#6B6B6B" };
   return (
     <span
       style={{
@@ -70,10 +70,10 @@ function InventoryRow({ row, skuFilter }) {
     if (row.isGroup && row.children) {
       return (
         <>
-          <tr style={{ backgroundColor: "#f0f4f8", fontWeight: 600 }}>
+          <tr style={{ backgroundColor: "#F5EDE3", fontWeight: 600 }}>
             <td>
               <span
-                style={{ cursor: "pointer", color: "#3498db", fontSize: 12, marginRight: 4 }}
+                style={{ cursor: "pointer", color: "#8B6A4C", fontSize: 12, marginRight: 4 }}
                 onClick={() => setExpanded(!expanded)}
               >
                 {expanded ? "\u25BC" : "\u25B6"}
@@ -92,15 +92,15 @@ function InventoryRow({ row, skuFilter }) {
             const childSku = (child.skus || []).find((s) => s.w === skuFilter);
             if (!childSku) return null;
             return (
-              <tr key={ci} style={{ backgroundColor: "#f9f9f9", fontSize: 12, borderLeft: "3px solid #3498db" }}>
-                <td style={{ padding: "4px 10px 4px 28px", borderBottom: "1px solid #e5e7eb" }}>{child.name}</td>
-                <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{child.st}</td>
-                <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{(childSku.oh || 0).toFixed(1)}</td>
-                <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{(childSku.rate || 0).toFixed(2)}</td>
-                <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{Math.round(childSku.doh || 0)}</td>
-                <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>-</td>
-                <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}><StatusBadge status={childSku.status} /></td>
-                <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>-</td>
+              <tr key={ci} style={{ backgroundColor: "#FDF8F0", fontSize: 12, borderLeft: "3px solid #8B6A4C" }}>
+                <td style={{ padding: "4px 10px 4px 28px", borderBottom: "1px solid #E5E0DA" }}>{child.name}</td>
+                <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{child.st}</td>
+                <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{(childSku.oh || 0).toFixed(1)}</td>
+                <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{(childSku.rate || 0).toFixed(2)}</td>
+                <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{Math.round(childSku.doh || 0)}</td>
+                <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>-</td>
+                <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}><StatusBadge status={childSku.status} /></td>
+                <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>-</td>
               </tr>
             );
           })}
@@ -128,17 +128,17 @@ function InventoryRow({ row, skuFilter }) {
   if (row.isGroup && row.children) {
     return (
       <>
-        <tr style={{ backgroundColor: "#f0f4f8", fontWeight: 600 }}>
+        <tr style={{ backgroundColor: "#F5EDE3", fontWeight: 600 }}>
           <td>
             <span
-              style={{ cursor: "pointer", color: "#3498db", fontSize: 12, marginRight: 4 }}
+              style={{ cursor: "pointer", color: "#8B6A4C", fontSize: 12, marginRight: 4 }}
               onClick={() => setExpanded(!expanded)}
               title="Show warehouses"
             >
               {expanded ? "\u25BC" : "\u25B6"}
             </span>
             {row.name}{" "}
-            <span style={{ fontSize: 10, color: "#6B7280", fontWeight: 400 }}>
+            <span style={{ fontSize: 10, color: "#6B6B6B", fontWeight: 400 }}>
               ({row.children.length} locations)
             </span>
           </td>
@@ -154,11 +154,11 @@ function InventoryRow({ row, skuFilter }) {
           const childHasSkus = child.skus && child.skus.length > 0;
           return (
             <React.Fragment key={ci}>
-              <tr style={{ backgroundColor: "#f9f9f9", fontSize: 12, borderLeft: "3px solid #3498db" }}>
-                <td style={{ padding: "4px 10px 4px 28px", borderBottom: "1px solid #e5e7eb", fontWeight: 500 }}>
+              <tr style={{ backgroundColor: "#FDF8F0", fontSize: 12, borderLeft: "3px solid #8B6A4C" }}>
+                <td style={{ padding: "4px 10px 4px 28px", borderBottom: "1px solid #E5E0DA", fontWeight: 500 }}>
                   {childHasSkus && (
                     <span
-                      style={{ cursor: "pointer", color: "#3498db", fontSize: 11, marginRight: 2 }}
+                      style={{ cursor: "pointer", color: "#8B6A4C", fontSize: 11, marginRight: 2 }}
                       onClick={() => toggleChild(ci)}
                       title="Show product breakdown"
                     >
@@ -167,13 +167,13 @@ function InventoryRow({ row, skuFilter }) {
                   )}
                   {child.name}
                 </td>
-                <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{child.st}</td>
-                <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{(child.oh || 0).toFixed(1)}</td>
-                <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{(child.rate || 0).toFixed(2)}</td>
-                <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{Math.round(child.doh || 0)}</td>
-                <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{(child.dep90 || 0).toFixed(1)}</td>
-                <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}><StatusBadge status={child.status} /></td>
-                <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{(child.proj || 0).toFixed(1)}</td>
+                <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{child.st}</td>
+                <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{(child.oh || 0).toFixed(1)}</td>
+                <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{(child.rate || 0).toFixed(2)}</td>
+                <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{Math.round(child.doh || 0)}</td>
+                <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{(child.dep90 || 0).toFixed(1)}</td>
+                <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}><StatusBadge status={child.status} /></td>
+                <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{(child.proj || 0).toFixed(1)}</td>
               </tr>
               {childExpanded[ci] && childHasSkus && (
                 <tr>
@@ -200,7 +200,7 @@ function InventoryRow({ row, skuFilter }) {
         <td>
           {hasSkus && (
             <span
-              style={{ cursor: "pointer", color: "#3498db", fontSize: 12, marginRight: 4 }}
+              style={{ cursor: "pointer", color: "#8B6A4C", fontSize: 12, marginRight: 4 }}
               onClick={() => setExpanded(!expanded)}
               title="Show product breakdown"
             >
@@ -365,7 +365,7 @@ export default function InventoryTable({ data = [], onExport }) {
             <tr>
               <td
                 colSpan={8}
-                style={{ textAlign: "center", padding: 40, color: "#64748b" }}
+                style={{ textAlign: "center", padding: 40, color: "#6B6B6B" }}
               >
                 No inventory data available.
               </td>
@@ -383,7 +383,7 @@ export default function InventoryTable({ data = [], onExport }) {
             justifyContent: "space-between",
             padding: "8px 4px",
             fontSize: 12,
-            color: "#64748b",
+            color: "#6B6B6B",
           }}
         >
           <span>

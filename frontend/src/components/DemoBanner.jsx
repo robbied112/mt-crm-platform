@@ -45,9 +45,9 @@ export default function DemoBanner({ onGoToSettings, onClearDemo }) {
 
 const styles = {
   banner: {
-    background: "#fffbeb",
-    border: "1px solid #fde68a",
-    borderRadius: 10,
+    background: "rgba(192, 123, 1, 0.08)",
+    border: "1px solid rgba(192, 123, 1, 0.2)",
+    borderRadius: 7,
     padding: "12px 20px",
     marginBottom: 16,
   },
@@ -60,7 +60,7 @@ const styles = {
   },
   message: {
     fontSize: 14,
-    color: "#92400e",
+    color: "#C07B01",
     fontWeight: 600,
   },
   actions: {
@@ -74,9 +74,9 @@ const styles = {
   },
   clearBtn: {
     background: "transparent",
-    border: "1px solid #d97706",
+    border: "1px solid #C07B01",
     borderRadius: 6,
-    color: "#92400e",
+    color: "#C07B01",
     padding: "6px 14px",
     fontSize: 13,
     fontWeight: 600,

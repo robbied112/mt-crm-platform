@@ -64,7 +64,7 @@ function DataRow({ row, onDrillIn }) {
     <tr>
       <td>
         <span
-          style={{ cursor: "pointer", textDecoration: "underline", color: "#0F766E" }}
+          style={{ cursor: "pointer", textDecoration: "underline", color: "#6B1E1E" }}
           onClick={() => onDrillIn?.(row.name)}
         >
           {row.name}
@@ -90,22 +90,22 @@ function GroupRow({ row, onDrillIn }) {
 
   return (
     <>
-      <tr style={{ backgroundColor: "#f0f4f8", fontWeight: 600 }}>
+      <tr style={{ backgroundColor: "#F5EDE3", fontWeight: 600 }}>
         <td>
           <span
-            style={{ cursor: "pointer", color: "#3498db", fontSize: 12, marginRight: 4 }}
+            style={{ cursor: "pointer", color: "#8B6A4C", fontSize: 12, marginRight: 4 }}
             onClick={() => setExpanded(!expanded)}
             title="Show warehouses"
           >
             {expanded ? "\u25BC" : "\u25B6"}
           </span>
           <span
-            style={{ cursor: "pointer", textDecoration: "underline", color: "#0F766E" }}
+            style={{ cursor: "pointer", textDecoration: "underline", color: "#6B1E1E" }}
             onClick={() => onDrillIn?.(row.name)}
           >
             {row.name}
           </span>{" "}
-          <span style={{ fontSize: 10, color: "#6B7280", fontWeight: 400 }}>
+          <span style={{ fontSize: 10, color: "#6B6B6B", fontWeight: 400 }}>
             ({row.children.length} locations)
           </span>
         </td>
@@ -126,23 +126,23 @@ function GroupRow({ row, onDrillIn }) {
           <tr
             key={ci}
             style={{
-              backgroundColor: "#f9f9f9",
+              backgroundColor: "#FDF8F0",
               fontSize: 12,
-              borderLeft: "3px solid #3498db",
+              borderLeft: "3px solid #8B6A4C",
             }}
           >
-            <td style={{ padding: "4px 10px 4px 28px", borderBottom: "1px solid #e5e7eb" }}>{child.name}</td>
-            <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{child.st}</td>
-            <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{(child.ce || 0).toFixed(1)}</td>
-            <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}><MomentumBadge value={child.momentum} /></td>
-            <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{(child.w4 || 0).toFixed(1)}</td>
-            <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}><MomentumBadge value={child.w4trend} /></td>
-            <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{(child.oh || 0).toFixed(1)}</td>
-            <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{Math.round(child.doh || 0)}</td>
-            <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}>{child.net}</td>
-            <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb", textAlign: "center" }}><VelTrend value={child.velTrend} /></td>
-            <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}><SellThru value={child.sellThru} /></td>
-            <td style={{ padding: "4px 6px", borderBottom: "1px solid #e5e7eb" }}><StageBadge value={child.conLabel} /></td>
+            <td style={{ padding: "4px 10px 4px 28px", borderBottom: "1px solid #E5E0DA" }}>{child.name}</td>
+            <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{child.st}</td>
+            <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{(child.ce || 0).toFixed(1)}</td>
+            <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}><MomentumBadge value={child.momentum} /></td>
+            <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{(child.w4 || 0).toFixed(1)}</td>
+            <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}><MomentumBadge value={child.w4trend} /></td>
+            <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{(child.oh || 0).toFixed(1)}</td>
+            <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{Math.round(child.doh || 0)}</td>
+            <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}>{child.net}</td>
+            <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA", textAlign: "center" }}><VelTrend value={child.velTrend} /></td>
+            <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}><SellThru value={child.sellThru} /></td>
+            <td style={{ padding: "4px 6px", borderBottom: "1px solid #E5E0DA" }}><StageBadge value={child.conLabel} /></td>
           </tr>
         ))}
     </>

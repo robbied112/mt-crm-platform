@@ -22,7 +22,7 @@ export default function PreviewStep({ summary, preview, uploadType, saving, onCo
         <div style={{ fontSize: 14, fontWeight: 600, color: "#6B1E1E", marginBottom: 6 }}>
           Executive Summary
         </div>
-        <p style={{ fontSize: 13, color: "#374151", margin: 0, lineHeight: 1.6 }}>{summary}</p>
+        <p style={{ fontSize: 13, color: "#2E2E2E", margin: 0, lineHeight: 1.6 }}>{summary}</p>
       </div>
 
       {/* Dataset counts */}
@@ -32,7 +32,7 @@ export default function PreviewStep({ summary, preview, uploadType, saving, onCo
           return (
             <div key={name} style={s.previewCard}>
               <div style={{ fontSize: 20, fontWeight: 700, color: "#6B1E1E" }}>{count}</div>
-              <div style={{ fontSize: 11, color: "#6B7280", textTransform: "capitalize" }}>
+              <div style={{ fontSize: 11, color: "#6B6B6B", textTransform: "capitalize" }}>
                 {name.replace(/([A-Z])/g, " $1").trim()}
               </div>
             </div>
@@ -43,7 +43,7 @@ export default function PreviewStep({ summary, preview, uploadType, saving, onCo
       {/* Sample rows from first dataset */}
       {datasets.length > 0 && Array.isArray(datasets[0][1]) && datasets[0][1].length > 0 && (
         <div style={{ overflowX: "auto" }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "#6B7280", marginBottom: 6 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#6B6B6B", marginBottom: 6 }}>
             Sample: {datasets[0][0]} (first 5 rows)
           </div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
@@ -56,7 +56,7 @@ export default function PreviewStep({ summary, preview, uploadType, saving, onCo
             </thead>
             <tbody>
               {datasets[0][1].slice(0, 5).map((row, i) => (
-                <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                <tr key={i} style={{ borderBottom: "1px solid #E5E0DA" }}>
                   {Object.entries(row).filter(([k]) => k !== "skus" && k !== "weeks" && k !== "months").slice(0, 8).map(([k, v], j) => (
                     <td key={j} style={s.td}>
                       {typeof v === "number" ? v.toLocaleString() : String(v).slice(0, 30)}

@@ -11,7 +11,7 @@ export default function MappingStep({ fileName, headers, rows, mapping, confiden
       <div style={s.stepHeader}>
         <div>
           <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Column Mapping</h4>
-          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B7280" }}>
+          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B6B6B" }}>
             {fileName} &mdash; {rows.length} rows
             {isQB && <span style={s.qbBadge}>QuickBooks Detected</span>}
             {!isQB && uploadType?.type && (
@@ -50,10 +50,10 @@ export default function MappingStep({ fileName, headers, rows, mapping, confiden
                 ? sampleRows.map((r) => r[currentCol]).filter(Boolean).join(", ")
                 : "";
               return (
-                <tr key={def.field} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                <tr key={def.field} style={{ borderBottom: "1px solid #E5E0DA" }}>
                   <td style={s.td}>
                     <span style={{ fontWeight: 600 }}>{def.label}</span>
-                    <span style={{ fontSize: 10, color: "#9CA3AF", marginLeft: 6 }}>{def.field}</span>
+                    <span style={{ fontSize: 10, color: "#6B6B6B", marginLeft: 6 }}>{def.field}</span>
                   </td>
                   <td style={s.td}>
                     <select
@@ -71,14 +71,14 @@ export default function MappingStep({ fileName, headers, rows, mapping, confiden
                     {currentCol && (
                       <span style={{
                         ...s.confBadge,
-                        background: conf >= 0.8 ? "#d1f5e8" : conf >= 0.5 ? "#fef3c7" : "#fee2e2",
-                        color: conf >= 0.8 ? "#059669" : conf >= 0.5 ? "#d97706" : "#dc2626",
+                        background: conf >= 0.8 ? "rgba(31, 134, 90, 0.1)" : conf >= 0.5 ? "rgba(192, 123, 1, 0.08)" : "rgba(197, 48, 48, 0.08)",
+                        color: conf >= 0.8 ? "#1F865A" : conf >= 0.5 ? "#C07B01" : "#C53030",
                       }}>
                         {Math.round(conf * 100)}%
                       </span>
                     )}
                   </td>
-                  <td style={{ ...s.td, fontSize: 12, color: "#6B7280", maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <td style={{ ...s.td, fontSize: 12, color: "#6B6B6B", maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {samples || <span style={{ color: "#d1d5db" }}>--</span>}
                   </td>
                 </tr>

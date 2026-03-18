@@ -20,13 +20,13 @@ const FILTER_OPTIONS = [
 
 const TAG_COLORS = {
   VIP: "#B87333",
-  "At Risk": "#DC2626",
-  "Hot Lead": "#F59E0B",
-  "Needs Visit": "#2563EB",
-  "Follow Up": "#10b981",
-  Chain: "#6B7280",
-  Independent: "#6B7280",
-  Seasonal: "#D97706",
+  "At Risk": "#C53030",
+  "Hot Lead": "#C07B01",
+  "Needs Visit": "#8B6A4C",
+  "Follow Up": "#1F865A",
+  Chain: "#6B6B6B",
+  Independent: "#6B6B6B",
+  Seasonal: "#C07B01",
 };
 
 export default function MyAccountsList({
@@ -53,7 +53,7 @@ export default function MyAccountsList({
     <div
       style={{
         background: "#fff",
-        border: "1px solid #e2e8f0",
+        border: "1px solid #E5E0DA",
         borderRadius: 8,
         marginBottom: 24,
         overflow: "hidden",
@@ -63,7 +63,7 @@ export default function MyAccountsList({
       <div
         style={{
           padding: 16,
-          borderBottom: "1px solid #e2e8f0",
+          borderBottom: "1px solid #E5E0DA",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -76,7 +76,7 @@ export default function MyAccountsList({
             margin: 0,
             fontSize: 16,
             fontWeight: 700,
-            color: "#0F766E",
+            color: "#6B1E1E",
           }}
         >
           My Accounts
@@ -101,7 +101,7 @@ export default function MyAccountsList({
             style={{
               textAlign: "center",
               padding: 24,
-              color: "#9ca3af",
+              color: "#6B6B6B",
             }}
           >
             <div style={{ fontSize: 13 }}>No accounts match this filter.</div>
@@ -123,7 +123,7 @@ export default function MyAccountsList({
                   <div
                     style={{
                       fontWeight: 600,
-                      color: "#0F766E",
+                      color: "#6B1E1E",
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -134,7 +134,7 @@ export default function MyAccountsList({
                   <div
                     style={{
                       fontSize: 11,
-                      color: "#6B7280",
+                      color: "#6B6B6B",
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -155,7 +155,7 @@ export default function MyAccountsList({
                   }}
                 >
                   {(a.tags || []).map((tag) => {
-                    const bg = TAG_COLORS[tag] || "#6B7280";
+                    const bg = TAG_COLORS[tag] || "#6B6B6B";
                     return (
                       <span
                         key={tag}
@@ -175,8 +175,8 @@ export default function MyAccountsList({
                   {a.noteCount > 0 && (
                     <span
                       style={{
-                        background: "#E0E7FF",
-                        color: "#4338CA",
+                        background: "rgba(139, 106, 76, 0.15)",
+                        color: "#8B6A4C",
                         padding: "1px 6px",
                         borderRadius: 8,
                         fontSize: 9,
@@ -194,7 +194,7 @@ export default function MyAccountsList({
                     <span
                       style={{
                         fontSize: 10,
-                        color: "#059669",
+                        color: "#1F865A",
                         fontWeight: 600,
                       }}
                     >
@@ -205,7 +205,7 @@ export default function MyAccountsList({
                       <span
                         style={{
                           fontSize: 9,
-                          color: "#DC2626",
+                          color: "#C53030",
                           fontWeight: 700,
                           marginLeft: 4,
                         }}
@@ -225,9 +225,9 @@ export default function MyAccountsList({
       <div
         style={{
           padding: "8px 16px",
-          borderTop: "1px solid #e2e8f0",
+          borderTop: "1px solid #E5E0DA",
           fontSize: 11,
-          color: "#6B7280",
+          color: "#6B6B6B",
         }}
       >
         Showing {filtered.length} of {accounts.length} accounts |{" "}

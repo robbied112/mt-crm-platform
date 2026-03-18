@@ -9,11 +9,11 @@ import { fmt } from './utils';
 
 const SEGMENT_COLORS = {
   cost: 'var(--color-burgundy, #6B1E1E)',
-  tax: 'var(--color-amber, #f59e0b)',
+  tax: 'var(--color-amber, #C07B01)',
   logistics: 'var(--color-indigo, #6366f1)',
 };
 const MARGIN_PALETTE = [
-  'var(--color-green, #22c55e)',
+  'var(--color-green, #1F865A)',
   'var(--color-blue, #3b82f6)',
   'var(--color-purple, #a855f7)',
   'var(--color-pink, #ec4899)',

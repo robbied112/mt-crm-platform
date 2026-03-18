@@ -12,11 +12,11 @@ import ChartPanel from "./ChartPanel";
 import { t } from "../utils/terminology";
 
 const AGING_COLORS = {
-  current: "#22c55e",
-  "1-30": "#84cc16",
-  "31-60": "#facc15",
-  "61-90": "#f97316",
-  "90+": "#ef4444",
+  current: "#1F865A",
+  "1-30": "#8B6A4C",
+  "31-60": "#C07B01",
+  "61-90": "#B87333",
+  "90+": "#C53030",
 };
 
 function fmt(v) {
@@ -71,7 +71,7 @@ function AgingTable({ title, data }) {
                 <td className="exec-dash__cell-number">{fmt(e.current)}</td>
                 <td className="exec-dash__cell-number">{fmt(e["31-60"])}</td>
                 <td className="exec-dash__cell-number">{fmt(e["61-90"])}</td>
-                <td className="exec-dash__cell-number" style={{ color: e["90+"] > 0 ? "#ef4444" : undefined }}>
+                <td className="exec-dash__cell-number" style={{ color: e["90+"] > 0 ? "#C53030" : undefined }}>
                   {fmt(e["90+"])}
                 </td>
               </tr>
@@ -125,8 +125,8 @@ export default function ExecutiveDashboard({
         datasets: [{
           label: "Total CE",
           data: weeklyTotals,
-          borderColor: "#0F766E",
-          backgroundColor: "rgba(15, 118, 110, 0.1)",
+          borderColor: "#6B1E1E",
+          backgroundColor: "rgba(107, 30, 30, 0.1)",
           fill: true,
           tension: 0.3,
         }],
@@ -150,7 +150,7 @@ export default function ExecutiveDashboard({
         datasets: [{
           label: "13W CE",
           data: sorted.map((d) => d.ce || 0),
-          backgroundColor: "#0F766E",
+          backgroundColor: "#6B1E1E",
         }],
       },
       options: {
