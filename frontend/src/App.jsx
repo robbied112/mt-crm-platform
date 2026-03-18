@@ -38,11 +38,15 @@ import CommandPalette from "./components/CommandPalette";
 import DataGate from "./components/DataGate";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { WelcomeState } from "./components/EmptyState";
+import UpgradeModal from "./components/UpgradeModal";
+import SubscriptionBanner from "./components/SubscriptionBanner";
 import useFilters from "./hooks/useFilters";
+import useSubscription from "./hooks/useSubscription";
 import { useAuth } from "./context/AuthContext";
 import { useData } from "./context/DataContext";
 import { clearDemoData } from "./services/demoData";
 import { sendPasswordResetEmail } from "firebase/auth";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import { auth } from "./config/firebase";
 import TENANT_CONFIG from "./config/tenant";
 
@@ -50,6 +54,8 @@ function App() {
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authView, setAuthView] = useState("landing"); // "landing" | "login" | "signup"
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [upgradeContext, setUpgradeContext] = useState(null);
   const { filters, updateFilter, clearAll } = useFilters();
   const { currentUser, logout, isAdmin, authError, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -83,6 +89,48 @@ function App() {
     updateBudget,
     refreshData,
   } = useData();
+
+  const subscription = useSubscription();
+
+  const openUpgradeModal = useCallback((context) => {
+    setUpgradeContext(context || null);
+    setUpgradeModalOpen(true);
+  }, []);
+
+  const openBillingPortal = useCallback(async () => {
+    try {
+      const fns = getFunctions();
+      const createPortal = httpsCallable(fns, "createBillingPortalSession");
+      const result = await createPortal({
+        tenantId,
+        origin: window.location.origin,
+        returnUrl: `${window.location.origin}/settings`,
+      });
+      if (result.data?.url) {
+        window.location.href = result.data.url;
+      }
+    } catch (err) {
+      alert("Unable to open billing portal: " + err.message);
+    }
+  }, [tenantId]);
+
+  // Verify checkout session on return from Stripe
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgraded") === "true" && tenantId) {
+      const sessionId = sessionStorage.getItem("pendingCheckoutSession");
+      if (sessionId) {
+        sessionStorage.removeItem("pendingCheckoutSession");
+        const functions = getFunctions();
+        const verify = httpsCallable(functions, "verifyCheckoutSession");
+        verify({ tenantId, sessionId }).catch((err) => {
+          console.warn("Checkout verification failed (webhook will handle it):", err.message);
+        });
+      }
+      // Clean URL
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [tenantId]);
 
   // Global Cmd+K listener
   useEffect(() => {
@@ -160,11 +208,15 @@ function App() {
         )}
         <Sidebar
           onOpenCommandPalette={openCommandPalette}
+          onOpenUpgradeModal={openUpgradeModal}
           mobileOpen={mobileMenuOpen}
           onMobileClose={() => setMobileMenuOpen(false)}
         />
 
         <main className="main-content" id="mainContent">
+          {/* Subscription status banner */}
+          <SubscriptionBanner onUpgrade={() => openUpgradeModal()} onOpenBillingPortal={openBillingPortal} />
+
           {/* Top bar */}
           <div className="topbar">
             <DemoBanner
@@ -426,9 +478,8 @@ function App() {
                           alert("Failed to reset settings: " + err.message);
                         }
                       }}
-                      onManageBilling={() => {
-                        alert("Billing management is not yet available. Contact support for plan changes.");
-                      }}
+                      onManageBilling={() => openUpgradeModal()}
+                      onOpenBillingPortal={openBillingPortal}
                     />
                   }
                 />
@@ -449,6 +500,13 @@ function App() {
       <CommandPalette
         isOpen={cmdPaletteOpen}
         onClose={() => setCmdPaletteOpen(false)}
+      />
+
+      <UpgradeModal
+        isOpen={upgradeModalOpen}
+        onClose={() => setUpgradeModalOpen(false)}
+        currentPlan={subscription.plan}
+        context={upgradeContext}
       />
     </>
   );

@@ -12,6 +12,7 @@ import { describe, it, expect } from "vitest";
 // as sidebarSetupCard.test.js).
 
 import useVisibleRoutes, { SECTION_CONFIG, UPLOAD_HINTS } from "../hooks/useVisibleRoutes";
+import { isRouteAllowed } from "../config/plans";
 
 // Minimal route fixtures
 const makeRoute = (overrides) => ({
@@ -47,6 +48,25 @@ function computeVisibleRoutes(routes, { isAdmin, availability, tenantConfig } = 
       if (isAdmin) admin.push(route);
       continue;
     }
+
+    // Subscription tier gating
+    const subStatus = tenantConfig?.subscription?.status;
+    const subPlan = tenantConfig?.subscription?.plan?.toLowerCase();
+    if (subStatus === "active" && subPlan) {
+      if (!isRouteAllowed(subPlan, route.key)) {
+        if (progressive) {
+          hiddenHints.push({
+            label: route.label,
+            hint: `Upgrade to unlock ${route.label}`,
+            dataKey: route.dataKey,
+            section: route.section,
+            tierLocked: true,
+          });
+        }
+        continue;
+      }
+    }
+
     if (route.section === "billbacks") {
       if (!billbacksEnabled) continue;
     }
@@ -254,6 +274,114 @@ describe("useVisibleRoutes", () => {
         expect(UPLOAD_HINTS[key]).toBeDefined();
         expect(typeof UPLOAD_HINTS[key]).toBe("string");
       }
+    });
+  });
+
+  describe("subscription tier gating", () => {
+    it("hides routes not in starter plan for active starter subscription", () => {
+      const routes = [
+        makeRoute({ key: "depletions", label: "Depletions" }),  // in starter
+        makeRoute({ key: "reorder", label: "Reorder" }),        // NOT in starter
+        makeRoute({ key: "revenue", label: "Revenue" }),        // NOT in starter
+      ];
+      const { sections } = computeVisibleRoutes(routes, {
+        tenantConfig: { subscription: { status: "active", plan: "starter" } },
+      });
+      expect(sections.analytics).toHaveLength(1);
+      expect(sections.analytics[0].key).toBe("depletions");
+    });
+
+    it("shows all routes for active growth subscription", () => {
+      const routes = [
+        makeRoute({ key: "depletions", label: "Depletions" }),
+        makeRoute({ key: "reorder", label: "Reorder" }),
+        makeRoute({ key: "revenue", label: "Revenue" }),
+      ];
+      const { sections } = computeVisibleRoutes(routes, {
+        tenantConfig: { subscription: { status: "active", plan: "growth" } },
+      });
+      expect(sections.analytics).toHaveLength(3);
+    });
+
+    it("shows all routes for enterprise (routeAccess = null)", () => {
+      const routes = [
+        makeRoute({ key: "depletions", label: "Depletions" }),
+        makeRoute({ key: "reorder", label: "Reorder" }),
+        makeRoute({ key: "some-future-route", label: "Future" }),
+      ];
+      const { sections } = computeVisibleRoutes(routes, {
+        tenantConfig: { subscription: { status: "active", plan: "enterprise" } },
+      });
+      expect(sections.analytics).toHaveLength(3);
+    });
+
+    it("trial users see all routes (no tier gating)", () => {
+      const routes = [
+        makeRoute({ key: "reorder", label: "Reorder" }),  // premium route
+        makeRoute({ key: "revenue", label: "Revenue" }),   // premium route
+      ];
+      const { sections } = computeVisibleRoutes(routes, {
+        tenantConfig: { subscription: { status: "trial", plan: null } },
+      });
+      expect(sections.analytics).toHaveLength(2);
+    });
+
+    it("expired/no subscription users see all routes (read-only gating elsewhere)", () => {
+      const routes = [
+        makeRoute({ key: "reorder", label: "Reorder" }),
+        makeRoute({ key: "revenue", label: "Revenue" }),
+      ];
+      const { sections } = computeVisibleRoutes(routes, {
+        tenantConfig: {},
+      });
+      expect(sections.analytics).toHaveLength(2);
+    });
+
+    it("generates upgrade hints for tier-locked routes when progressive sidebar is on", () => {
+      const routes = [
+        makeRoute({ key: "reorder", label: "Reorder Forecast" }),
+      ];
+      const { sections, hiddenHints } = computeVisibleRoutes(routes, {
+        tenantConfig: {
+          features: { progressiveSidebar: true },
+          subscription: { status: "active", plan: "starter" },
+        },
+      });
+      expect(sections.analytics).toHaveLength(0);
+      expect(hiddenHints).toHaveLength(1);
+      expect(hiddenHints[0].hint).toBe("Upgrade to unlock Reorder Forecast");
+      expect(hiddenHints[0].tierLocked).toBe(true);
+    });
+
+    it("silently hides tier-locked routes when progressive sidebar is off", () => {
+      const routes = [
+        makeRoute({ key: "reorder", label: "Reorder" }),
+      ];
+      const { sections, hiddenHints } = computeVisibleRoutes(routes, {
+        tenantConfig: {
+          subscription: { status: "active", plan: "starter" },
+        },
+      });
+      expect(sections.analytics).toHaveLength(0);
+      expect(hiddenHints).toHaveLength(0);
+    });
+
+    it("tier gating applies before progressive disclosure", () => {
+      // Route is tier-locked AND has no data — tier lock should take priority
+      const routes = [
+        makeRoute({ key: "reorder", label: "Reorder", dataKey: "reorder" }),
+      ];
+      const { hiddenHints } = computeVisibleRoutes(routes, {
+        tenantConfig: {
+          features: { progressiveSidebar: true },
+          subscription: { status: "active", plan: "starter" },
+        },
+        availability: {},
+      });
+      expect(hiddenHints).toHaveLength(1);
+      // Should be an upgrade hint, not a data upload hint
+      expect(hiddenHints[0].tierLocked).toBe(true);
+      expect(hiddenHints[0].hint).toContain("Upgrade");
     });
   });
 });

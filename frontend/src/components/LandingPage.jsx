@@ -450,20 +450,17 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
 /* ──────────────────────────────────────────────
    Data
    ────────────────────────────────────────────── */
-const pricingTiers = [
-  {
-    name: "Starter", price: "$49", unit: "/mo", desc: "One supplier, full visibility",
-    features: ["Up to 5 users", "Distributor health scores", "Territory management", "Pipeline tracking", "Excel data uploads", "Email support"],
-  },
-  {
-    name: "Growth", price: "$99", unit: "/mo", desc: "For multi-state sales teams", popular: true,
-    features: ["Up to 15 users", "Everything in Starter", "Account CRM with files", "Email logging", "Reorder forecasting", "Priority support"],
-  },
-  {
-    name: "Enterprise", price: "Custom", unit: "", desc: "Multi-brand portfolios and integrations", cta: "contact",
-    features: ["Unlimited users", "Everything in Growth", "Custom integrations", "API access", "Dedicated support", "Custom onboarding"],
-  },
-];
+// Import from shared plans config (single source of truth)
+import { PLANS_DISPLAY } from "../config/plans";
+const pricingTiers = PLANS_DISPLAY.map((p) => ({
+  name: p.name,
+  price: p.price,
+  unit: p.unit,
+  desc: p.description,
+  popular: p.popular,
+  cta: p.cta,
+  features: p.features,
+}));
 
 /* ──────────────────────────────────────────────
    Styles

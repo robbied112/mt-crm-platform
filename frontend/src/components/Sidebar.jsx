@@ -11,6 +11,7 @@ import { useData } from "../context/DataContext";
 import CruFolioLogo from "./CruFolioLogo";
 import { useCrm } from "../context/CrmContext";
 import useVisibleRoutes, { SECTION_CONFIG } from "../hooks/useVisibleRoutes";
+import { TrialBadge } from "./SubscriptionBanner";
 
 import { ONBOARDING_STEPS } from "../config/reportGuides";
 
@@ -319,6 +320,13 @@ export default function Sidebar({ onOpenCommandPalette, mobileOpen, onMobileClos
           </div>
         )}
       </nav>
+
+      {/* Trial countdown badge */}
+      {!collapsed && (
+        <div style={{ padding: "0 12px", marginBottom: 8 }}>
+          <TrialBadge onClick={onOpenUpgradeModal} />
+        </div>
+      )}
 
       {/* Setup progress card */}
       {setupProgress.show && (

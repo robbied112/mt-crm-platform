@@ -10,6 +10,8 @@ import { useState } from "react";
 import TENANT_CONFIG from "../config/tenant";
 import { t } from "../utils/terminology";
 import { useData } from "../context/DataContext";
+import useSubscription from "../hooks/useSubscription";
+import { PLANS } from "../config/plans";
 import DataImport from "./DataImport";
 import CloudSyncSettings from "./CloudSyncSettings";
 
@@ -166,8 +168,10 @@ export default function Settings({
   onChangePassword,
   onResetSettings,
   onManageBilling,
+  onOpenBillingPortal,
 }) {
   const { updateTenantConfig } = useData();
+  const sub = useSubscription();
   const [userRole, setUserRole] = useState(config.userRole || "supplier");
   const [roleSaving, setRoleSaving] = useState(false);
   const [roleSaved, setRoleSaved] = useState(false);
@@ -508,40 +512,82 @@ export default function Settings({
         <CloudSyncSettings />
       </SettingsSection>
 
-      {/* Billing (placeholder) */}
+      {/* Billing */}
       <SettingsSection title="Billing & Subscription" id="settings-billing">
         <p style={{ fontSize: 12, color: "#6B6B6B", marginBottom: 16 }}>
           Manage your subscription plan and payment details.
         </p>
+
+        {/* Current plan status */}
         <div
           style={{
-            background: "rgba(31, 134, 90, 0.08)",
-            border: "1px solid #1F865A",
+            background: sub.isActive
+              ? "rgba(31, 134, 90, 0.08)"
+              : sub.isTrial
+              ? "rgba(192, 123, 1, 0.08)"
+              : "rgba(197, 48, 48, 0.06)",
+            border: `1px solid ${
+              sub.isActive ? "#1F865A" : sub.isTrial ? "#C07B01" : "#C53030"
+            }`,
             borderRadius: 8,
             padding: 16,
             marginBottom: 16,
             display: "flex",
             alignItems: "center",
-            gap: 8,
+            gap: 10,
           }}
         >
-          <span style={{ fontSize: 18 }}>&#9989;</span>
-          <div>
-            <span style={{ fontWeight: 700, fontSize: 14, color: "#1F865A" }}>
-              Free Trial
+          <span style={{ fontSize: 18 }}>
+            {sub.isActive && !sub.isTrial ? "\u2705" : sub.isTrial ? "\u23F3" : "\u26A0\uFE0F"}
+          </span>
+          <div style={{ flex: 1 }}>
+            <span
+              style={{
+                fontWeight: 700,
+                fontSize: 14,
+                color: sub.isActive ? "#1F865A" : sub.isTrial ? "#C07B01" : "#C53030",
+              }}
+            >
+              {sub.isTrial
+                ? `Free Trial — ${sub.daysLeft} day${sub.daysLeft !== 1 ? "s" : ""} remaining`
+                : sub.isActive
+                ? `${PLANS[sub.plan]?.name || "Active"} Plan`
+                : sub.status === "cancelled"
+                ? "Subscription Cancelled"
+                : "Trial Expired"}
             </span>
-            <div style={{ fontSize: 13, color: "#6B6B6B" }}>
-              Upgrade anytime to unlock full features.
+            <div style={{ fontSize: 13, color: "#6B6B6B", marginTop: 2 }}>
+              {sub.isTrial
+                ? "Full access to all features during your trial."
+                : sub.isActive
+                ? `${PLANS[sub.plan]?.description || "Full access to all features."}`
+                : "Upgrade to restore full access. Your data is safe."}
             </div>
+            {sub.subscription?.nextBilling && sub.isActive && !sub.isTrial && (
+              <div style={{ fontSize: 12, color: "#6B6B6B", marginTop: 4 }}>
+                Next billing: {sub.subscription.nextBilling}
+              </div>
+            )}
           </div>
         </div>
-        {onManageBilling && (
-          <div style={{ textAlign: "center" }}>
-            <button className="btn btn-secondary" onClick={onManageBilling}>
-              Manage Subscription
+
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+          {(!sub.isActive || sub.isTrial) && onManageBilling && (
+            <button className="btn btn-primary" onClick={onManageBilling}>
+              {sub.isTrial ? "Upgrade Now" : "Choose a Plan"}
             </button>
-          </div>
-        )}
+          )}
+          {sub.isActive && !sub.isTrial && onManageBilling && (
+            <button className="btn btn-secondary" onClick={onManageBilling}>
+              Change Plan
+            </button>
+          )}
+          {sub.subscription?.customerId && onOpenBillingPortal && (
+            <button className="btn btn-secondary" onClick={onOpenBillingPortal}>
+              Manage Billing
+            </button>
+          )}
+        </div>
       </SettingsSection>
 
       {/* Danger Zone */}
