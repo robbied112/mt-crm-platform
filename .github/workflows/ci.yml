@@ -37,6 +37,9 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Copy frontend env from checked-in example
+        run: cp frontend/.env.example frontend/.env
+
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
@@ -79,6 +82,9 @@ jobs:
         run: |
           test -n "$FIREBASE_SERVICE_ACCOUNT" || { echo "Missing repository secret FIREBASE_SERVICE_ACCOUNT"; exit 1; }
 
+      - name: Copy frontend env from checked-in example
+        run: cp frontend/.env.example frontend/.env
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -117,6 +123,9 @@ jobs:
         run: |
           test -n "$FIREBASE_PROJECT_STAGING" || { echo "Missing repository variable FIREBASE_PROJECT_STAGING"; exit 1; }
           test -n "$GCP_SA_KEY_STAGING" || { echo "Missing repository secret GCP_SA_KEY_STAGING"; exit 1; }
+
+      - name: Copy frontend env from checked-in example
+        run: cp frontend/.env.example frontend/.env
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
