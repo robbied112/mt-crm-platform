@@ -1612,6 +1612,33 @@ Compliance:
 
 ---
 
+### TODO-130: Grant Secret Manager IAM to CI service account
+**Priority:** P2 — Ops
+**Phase:** Infrastructure
+**Status:** Deferred
+**Added:** 2026-03-18 (QA/Eng Review)
+
+- **What:** Grant `secretmanager.secrets.setIamPolicy` permission to the GitHub Actions CI service account (`FIREBASE_SERVICE_ACCOUNT`) in GCP IAM.
+- **Why:** The `deploy_production` CI job fails when Firebase CLI tries to grant function SA access to secrets. Currently worked around with `--force` flag, which skips IAM policy steps. If a new secret is added (e.g., a second API key), deploy will fail until access is manually granted.
+- **How:** GCP Console → IAM → find the CI service account → add `Secret Manager Admin` role (or the narrower `secretmanager.secrets.setIamPolicy` permission via custom role).
+- **Depends on:** GCP console access.
+
+---
+
+### TODO-131: Upgrade Cloud Functions to Node.js 22 + firebase-functions 5.x
+**Priority:** P1 — Deadline: 2026-04-30
+**Phase:** Infrastructure
+**Status:** Not started
+**Added:** 2026-03-18 (QA/Eng Review)
+
+- **What:** Upgrade Cloud Functions runtime from Node.js 20 to Node.js 22, and upgrade `firebase-functions` SDK from 4.9.0 to 5.x.
+- **Why:** Node.js 20 is deprecated on 2026-04-30 and decommissioned on 2026-10-30. After decommission, deploys will fail. The firebase-functions 5.x upgrade is recommended to be bundled (breaking changes in 5.x require testing anyway).
+- **How:** Update `engines.node` in `functions/package.json`, update `firebase.json` runtime field, run `npm install firebase-functions@latest` in functions/, test all 19 functions locally with emulators.
+- **Risk:** firebase-functions 5.x has breaking changes — review migration guide before upgrading.
+- **Depends on:** Nothing. Should be done before April 30.
+
+---
+
 ## Completed
 
 - **TODO-048: Report Guide Content System** — Static config (`config/reportGuides.js`) with unified schema for 5 distributor systems + role-aware recommendations. **Completed:** v0.3.0.0 (2026-03-16)
