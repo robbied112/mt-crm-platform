@@ -6,22 +6,22 @@
  * duplicates by normalizedName. Idempotent — skips wines already migrated
  * (matched via wineEntityId on the product doc).
  */
-const { functions, admin, db, verifyTenantMembership } = require("./helpers");
+const { onCall, HttpsError, admin, db, verifyTenantMembership } = require("./helpers");
 const { buildNormalizedName } = require("./lib/pipeline/productNormalize");
 
-exports.migrateWinesToProducts = functions
-  .runWith({ timeoutSeconds: 300, memory: "512MB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+exports.migrateWinesToProducts = onCall(
+  { timeoutSeconds: 300, memory: "512MiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { tenantId } = data;
+    const { tenantId } = req.data;
     if (!tenantId) {
-      throw new functions.https.HttpsError("invalid-argument", "tenantId required");
+      throw new HttpsError("invalid-argument", "tenantId required");
     }
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
 
     const tenantRef = db.collection("tenants").doc(tenantId);
 
