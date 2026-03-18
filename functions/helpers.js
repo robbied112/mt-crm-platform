@@ -1,4 +1,5 @@
-const functions = require("firebase-functions");
+const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
 const { defineSecret } = require("firebase-functions/params");
 const { DATASETS, CHUNK_SIZE } = require("./lib/pipeline/index");
@@ -37,12 +38,12 @@ const INTERNAL_FIELDS = [
 
 /**
  * Verify that the authenticated user belongs to the specified tenant.
- * @throws {functions.https.HttpsError} if not a member
+ * @throws {HttpsError} if not a member
  */
 async function verifyTenantMembership(uid, tenantId) {
   const userSnap = await db.collection("users").doc(uid).get();
   if (!userSnap.exists || userSnap.data().tenantId !== tenantId) {
-    throw new functions.https.HttpsError("permission-denied", "Not a member of this tenant");
+    throw new HttpsError("permission-denied", "Not a member of this tenant");
   }
   return userSnap.data();
 }
@@ -82,17 +83,17 @@ Return ONLY valid JSON.`;
  * Safely parse JSON from an AI response text.
  * @param {string} text - Raw AI response
  * @returns {object} Parsed JSON
- * @throws {functions.https.HttpsError} if no valid JSON found or parse fails
+ * @throws {HttpsError} if no valid JSON found or parse fails
  */
 function parseAIResponse(text) {
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    throw new functions.https.HttpsError("internal", "AI returned no valid JSON");
+    throw new HttpsError("internal", "AI returned no valid JSON");
   }
   try {
     return JSON.parse(jsonMatch[0]);
   } catch (err) {
-    throw new functions.https.HttpsError("internal", `AI returned invalid JSON: ${err.message}`);
+    throw new HttpsError("internal", `AI returned invalid JSON: ${err.message}`);
   }
 }
 
@@ -140,7 +141,10 @@ async function findTenantByCustomerId(customerId) {
 }
 
 module.exports = {
-  functions,
+  onCall,
+  onRequest,
+  onSchedule,
+  HttpsError,
   admin,
   db,
   defineSecret,

@@ -4,7 +4,7 @@
   },
   "functions": {
     "source": "functions",
-    "runtime": "nodejs20",
+    "runtime": "nodejs22",
     "predeploy": [
       "rm -rf functions/lib/pipeline && cp -r packages/pipeline/src functions/lib/pipeline"
     ]
