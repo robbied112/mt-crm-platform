@@ -73,9 +73,9 @@ export default function ContactsPage() {
         </div>
 
         {filtered.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "40px 20px", color: "#64748b" }}>
+          <div style={{ textAlign: "center", padding: "40px 20px", color: "#6B6B6B" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>{"\u{1F465}"}</div>
-            <p style={{ fontSize: 15, fontWeight: 600, color: "#334155", marginBottom: 4 }}>No contacts yet</p>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "#2E2E2E", marginBottom: 4 }}>No contacts yet</p>
             <p style={{ fontSize: 13 }}>Add contacts from an account detail page or click &quot;+ Add Contact&quot;.</p>
           </div>
         ) : (
@@ -114,7 +114,7 @@ export default function ContactsPage() {
                   <td>
                     <div style={{ display: "flex", gap: 4 }}>
                       <button className="btn btn-small btn-secondary" onClick={() => { setEditContact(c); setFormAccountId(c.accountId); setShowForm(true); }}>Edit</button>
-                      <button className="btn btn-small" style={{ color: "#dc2626", background: "none", border: "none" }}
+                      <button className="btn btn-small" style={{ color: "#C53030", background: "none", border: "none" }}
                         onClick={() => { if (window.confirm(`Remove ${c.firstName} ${c.lastName}?`)) deleteContact(c.id); }}
                       >&times;</button>
                     </div>

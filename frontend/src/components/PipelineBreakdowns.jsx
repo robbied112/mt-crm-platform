@@ -8,9 +8,9 @@ import { formatCurrency } from "../utils/formatting";
 
 const TIER_COLORS = {
   Enterprise: "#B87333",
-  "On-Premise Natl": "#DC2626",
-  Regional: "#2563EB",
-  Emerging: "#6B7280",
+  "On-Premise Natl": "#C53030",
+  Regional: "#8B6A4C",
+  Emerging: "#6B6B6B",
 };
 
 const TIER_ORDER = ["Enterprise", "On-Premise Natl", "Regional", "Emerging"];
@@ -22,17 +22,17 @@ function BreakdownTable({ title, data, showTierBadge = false }) {
         background: "#fff",
         borderRadius: 10,
         padding: 16,
-        border: "1px solid #e5e7eb",
+        border: "1px solid #E5E0DA",
       }}
     >
-      <h4 style={{ margin: "0 0 12px 0", fontSize: 14, color: "#0F766E" }}>
+      <h4 style={{ margin: "0 0 12px 0", fontSize: 14, color: "#6B1E1E" }}>
         {title}
       </h4>
       <table
         style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}
       >
         <thead>
-          <tr style={{ borderBottom: "1px solid #e5e7eb" }}>
+          <tr style={{ borderBottom: "1px solid #E5E0DA" }}>
             <th style={{ textAlign: "left", padding: "4px 8px" }}>
               {showTierBadge ? "Tier" : "Owner"}
             </th>
@@ -47,7 +47,7 @@ function BreakdownTable({ title, data, showTierBadge = false }) {
         </thead>
         <tbody>
           {data.map(([key, d]) => (
-            <tr key={key} style={{ borderBottom: "1px solid #f1f5f9" }}>
+            <tr key={key} style={{ borderBottom: "1px solid #E5E0DA" }}>
               <td style={{ padding: "6px 8px", fontWeight: 600 }}>
                 {showTierBadge ? (
                   <span
@@ -57,7 +57,7 @@ function BreakdownTable({ title, data, showTierBadge = false }) {
                       fontSize: 11,
                       fontWeight: 600,
                       color: "#fff",
-                      background: TIER_COLORS[key] || "#6B7280",
+                      background: TIER_COLORS[key] || "#6B6B6B",
                     }}
                   >
                     {key}

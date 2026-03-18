@@ -10,9 +10,9 @@ const ILLUSTRATIONS = {
   depletions: (
     <svg width="120" height="80" viewBox="0 0 120 80" fill="none">
       <rect x="10" y="50" width="12" height="20" rx="2" fill="rgba(107, 30, 30, 0.08)" />
-      <rect x="28" y="35" width="12" height="35" rx="2" fill="#D2C78A" />
-      <rect x="46" y="20" width="12" height="50" rx="2" fill="#8A2035" />
-      <rect x="64" y="40" width="12" height="30" rx="2" fill="#D2C78A" />
+      <rect x="28" y="35" width="12" height="35" rx="2" fill="#FDF8F0" />
+      <rect x="46" y="20" width="12" height="50" rx="2" fill="#7A2530" />
+      <rect x="64" y="40" width="12" height="30" rx="2" fill="#FDF8F0" />
       <rect x="82" y="15" width="12" height="55" rx="2" fill="#8B6A4C" />
       <rect x="100" y="25" width="12" height="45" rx="2" fill="#6B1E1E" />
       <path d="M16 48L34 33L52 18L70 38L88 13L106 23" stroke="#6B1E1E" strokeWidth="2" strokeDasharray="4 2" opacity="0.5" />
@@ -21,11 +21,11 @@ const ILLUSTRATIONS = {
   distributors: (
     <svg width="120" height="80" viewBox="0 0 120 80" fill="none">
       <rect x="5" y="10" width="50" height="60" rx="4" fill="#FDF8F0" stroke="rgba(107, 30, 30, 0.08)" strokeWidth="1.5" />
-      <rect x="15" y="22" width="30" height="3" rx="1.5" fill="#D2C78A" />
+      <rect x="15" y="22" width="30" height="3" rx="1.5" fill="#FDF8F0" />
       <rect x="15" y="30" width="22" height="3" rx="1.5" fill="rgba(107, 30, 30, 0.08)" />
-      <rect x="15" y="38" width="26" height="3" rx="1.5" fill="#D2C78A" />
+      <rect x="15" y="38" width="26" height="3" rx="1.5" fill="#FDF8F0" />
       <rect x="65" y="10" width="50" height="60" rx="4" fill="#FDF8F0" stroke="rgba(107, 30, 30, 0.08)" strokeWidth="1.5" />
-      <circle cx="90" cy="35" r="12" fill="#F5EDE3" stroke="#8A2035" strokeWidth="1.5" />
+      <circle cx="90" cy="35" r="12" fill="#F5EDE3" stroke="#7A2530" strokeWidth="1.5" />
       <path d="M85 35l3 3 7-7" stroke="#6B1E1E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
@@ -34,24 +34,24 @@ const ILLUSTRATIONS = {
       <rect x="20" y="15" width="80" height="50" rx="4" fill="#FDF8F0" stroke="rgba(107, 30, 30, 0.08)" strokeWidth="1.5" />
       <rect x="30" y="25" width="24" height="14" rx="2" fill="#F5EDE3" />
       <rect x="60" y="25" width="24" height="14" rx="2" fill="rgba(107, 30, 30, 0.08)" />
-      <rect x="30" y="45" width="24" height="14" rx="2" fill="#D2C78A" />
+      <rect x="30" y="45" width="24" height="14" rx="2" fill="#FDF8F0" />
       <rect x="60" y="45" width="24" height="14" rx="2" fill="#F5EDE3" />
-      <path d="M94 20l8-6v52l-8-6" stroke="#8A2035" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M94 20l8-6v52l-8-6" stroke="#7A2530" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   ),
   accounts: (
     <svg width="120" height="80" viewBox="0 0 120 80" fill="none">
-      <circle cx="35" cy="30" r="12" fill="#F5EDE3" stroke="#8A2035" strokeWidth="1.5" />
+      <circle cx="35" cy="30" r="12" fill="#F5EDE3" stroke="#7A2530" strokeWidth="1.5" />
       <circle cx="60" cy="25" r="15" fill="rgba(107, 30, 30, 0.08)" stroke="#8B6A4C" strokeWidth="1.5" />
-      <circle cx="85" cy="32" r="10" fill="#F5EDE3" stroke="#8A2035" strokeWidth="1.5" />
-      <path d="M20 65c0-8 7-14 15-14s15 6 15 14" stroke="#D2C78A" strokeWidth="1.5" />
+      <circle cx="85" cy="32" r="10" fill="#F5EDE3" stroke="#7A2530" strokeWidth="1.5" />
+      <path d="M20 65c0-8 7-14 15-14s15 6 15 14" stroke="#FDF8F0" strokeWidth="1.5" />
       <path d="M40 60c0-10 9-18 20-18s20 8 20 18" stroke="#8B6A4C" strokeWidth="1.5" />
-      <path d="M68 63c0-7 7-12 17-12s17 5 17 12" stroke="#D2C78A" strokeWidth="1.5" />
+      <path d="M68 63c0-7 7-12 17-12s17 5 17 12" stroke="#FDF8F0" strokeWidth="1.5" />
     </svg>
   ),
   opportunities: (
     <svg width="120" height="80" viewBox="0 0 120 80" fill="none">
-      <path d="M60 8l7 14 15.5 2.3-11.2 10.9 2.7 15.3L60 43.5l-14 7.5 2.7-15.3L37.5 24.3 53 22 60 8z" fill="#F5EDE3" stroke="#8A2035" strokeWidth="1.5" />
+      <path d="M60 8l7 14 15.5 2.3-11.2 10.9 2.7 15.3L60 43.5l-14 7.5 2.7-15.3L37.5 24.3 53 22 60 8z" fill="#F5EDE3" stroke="#7A2530" strokeWidth="1.5" />
       <path d="M30 65h60" stroke="rgba(107, 30, 30, 0.08)" strokeWidth="2" strokeLinecap="round" />
       <path d="M40 72h40" stroke="#F5EDE3" strokeWidth="2" strokeLinecap="round" />
     </svg>
@@ -60,7 +60,7 @@ const ILLUSTRATIONS = {
     <svg width="120" height="80" viewBox="0 0 120 80" fill="none">
       <circle cx="60" cy="40" r="28" fill="#FDF8F0" stroke="rgba(107, 30, 30, 0.08)" strokeWidth="1.5" />
       <path d="M60 20v20l12 8" stroke="#6B1E1E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M85 25l5-8M90 45h10M82 60l7 5" stroke="#8A2035" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M85 25l5-8M90 45h10M82 60l7 5" stroke="#7A2530" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   ),
   pipeline: (
@@ -68,7 +68,7 @@ const ILLUSTRATIONS = {
       <path d="M10 15h100l-15 25 15 25H10l15-25L10 15z" fill="#FDF8F0" stroke="rgba(107, 30, 30, 0.08)" strokeWidth="1.5" />
       <path d="M25 25h70" stroke="#F5EDE3" strokeWidth="8" strokeLinecap="round" />
       <path d="M30 40h55" stroke="rgba(107, 30, 30, 0.08)" strokeWidth="8" strokeLinecap="round" />
-      <path d="M35 55h35" stroke="#D2C78A" strokeWidth="8" strokeLinecap="round" />
+      <path d="M35 55h35" stroke="#FDF8F0" strokeWidth="8" strokeLinecap="round" />
     </svg>
   ),
   welcome: (
@@ -76,7 +76,7 @@ const ILLUSTRATIONS = {
       <rect x="10" y="10" width="120" height="80" rx="8" fill="#FDF8F0" stroke="rgba(107, 30, 30, 0.08)" strokeWidth="1.5" />
       <rect x="22" y="25" width="40" height="25" rx="4" fill="#F5EDE3" />
       <rect x="22" y="56" width="40" height="25" rx="4" fill="rgba(107, 30, 30, 0.08)" />
-      <rect x="70" y="25" width="48" height="56" rx="4" fill="#D2C78A" />
+      <rect x="70" y="25" width="48" height="56" rx="4" fill="#FDF8F0" />
       <circle cx="94" cy="48" r="10" fill="#6B1E1E" opacity="0.3" />
       <path d="M90 48l3 3 7-7" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>

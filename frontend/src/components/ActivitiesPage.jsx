@@ -68,9 +68,9 @@ export default function ActivitiesPage() {
         </div>
 
         {grouped.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "40px 20px", color: "#64748b" }}>
+          <div style={{ textAlign: "center", padding: "40px 20px", color: "#6B6B6B" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>{"\u{1F4DD}"}</div>
-            <p style={{ fontSize: 15, fontWeight: 600, color: "#334155", marginBottom: 4 }}>No activities yet</p>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "#2E2E2E", marginBottom: 4 }}>No activities yet</p>
             <p style={{ fontSize: 13 }}>Log your first activity to start tracking interactions.</p>
           </div>
         ) : (

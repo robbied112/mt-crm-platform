@@ -12,7 +12,7 @@ export default function RecentActivity({ activities = [] }) {
   return (
     <div
       style={{
-        background: "#f3f4f6",
+        background: "#F5EDE3",
         borderRadius: 8,
         padding: 16,
       }}
@@ -25,14 +25,14 @@ export default function RecentActivity({ activities = [] }) {
           key={i}
           style={{
             padding: "8px 0",
-            borderBottom: "1px solid #d1d5db",
+            borderBottom: "1px solid #E5E0DA",
             fontSize: 12,
           }}
         >
-          <span style={{ color: "#6B7280" }}>{esc(entry.date)}</span> -{" "}
+          <span style={{ color: "#6B6B6B" }}>{esc(entry.date)}</span> -{" "}
           <strong>{esc(entry.account)}</strong>
           <br />
-          <span style={{ color: "#6B7280" }}>by {esc(entry.by)}</span>
+          <span style={{ color: "#6B6B6B" }}>by {esc(entry.by)}</span>
         </div>
       ))}
     </div>

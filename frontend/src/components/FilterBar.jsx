@@ -78,7 +78,7 @@ export default function FilterBar({
           style={{
             padding: "6px 10px",
             borderRadius: 6,
-            border: "1px solid #e2e8f0",
+            border: "1px solid #D1CBC4",
             fontSize: 12,
           }}
         >
@@ -102,7 +102,7 @@ export default function FilterBar({
               style={{
                 padding: "4px 6px",
                 borderRadius: 6,
-                border: "1px solid #e2e8f0",
+                border: "1px solid #D1CBC4",
                 fontSize: 11,
                 width: 120,
               }}
@@ -114,7 +114,7 @@ export default function FilterBar({
               style={{
                 padding: "4px 6px",
                 borderRadius: 6,
-                border: "1px solid #e2e8f0",
+                border: "1px solid #D1CBC4",
                 fontSize: 11,
                 width: 120,
               }}
@@ -132,7 +132,7 @@ export default function FilterBar({
           style={{
             padding: "6px 10px",
             borderRadius: 6,
-            border: "1px solid #e2e8f0",
+            border: "1px solid #D1CBC4",
             fontSize: 12,
           }}
         >
@@ -154,7 +154,7 @@ export default function FilterBar({
           style={{
             padding: "6px 10px",
             borderRadius: 6,
-            border: "1px solid #e2e8f0",
+            border: "1px solid #D1CBC4",
             fontSize: 12,
           }}
         >
@@ -176,7 +176,7 @@ export default function FilterBar({
           style={{
             padding: "6px 10px",
             borderRadius: 6,
-            border: "1px solid #e2e8f0",
+            border: "1px solid #D1CBC4",
             fontSize: 12,
           }}
         >
@@ -198,7 +198,7 @@ export default function FilterBar({
           style={{
             padding: "6px 10px",
             borderRadius: 6,
-            border: "1px solid #e2e8f0",
+            border: "1px solid #D1CBC4",
             fontSize: 12,
           }}
         >
@@ -220,7 +220,7 @@ export default function FilterBar({
           style={{
             padding: "6px 10px",
             borderRadius: 6,
-            border: "1px solid #e2e8f0",
+            border: "1px solid #D1CBC4",
             fontSize: 12,
           }}
         >
@@ -242,7 +242,7 @@ export default function FilterBar({
           style={{
             padding: "6px 10px",
             borderRadius: 6,
-            border: "1px solid #e2e8f0",
+            border: "1px solid #D1CBC4",
             fontSize: 12,
           }}
         >
@@ -267,9 +267,9 @@ export default function FilterBar({
           onClick={onClearAll}
           style={{
             padding: "6px 12px",
-            background: "#F3F4F6",
-            color: "#6B7280",
-            border: "1px solid #E5E7EB",
+            background: "#F5EDE3",
+            color: "#6B6B6B",
+            border: "1px solid #E5E0DA",
             borderRadius: 6,
             fontSize: 11,
             fontWeight: 600,
@@ -283,7 +283,7 @@ export default function FilterBar({
         {activeCount > 0 && (
           <span
             style={{
-              background: "#0F766E",
+              background: "#6B1E1E",
               color: "#fff",
               fontSize: 10,
               fontWeight: 700,
@@ -299,7 +299,7 @@ export default function FilterBar({
             style={{
               fontSize: 12,
               fontWeight: 600,
-              color: "#0F766E",
+              color: "#6B1E1E",
               whiteSpace: "nowrap",
             }}
           >
@@ -327,13 +327,13 @@ export default function FilterBar({
             cursor: "pointer",
             fontSize: 13,
             fontWeight: 600,
-            color: "#475569",
+            color: "#6B6B6B",
           }}
         >
           <span>
             Filters{activeCount > 0 && (
               <span style={{
-                background: "#0F766E", color: "#fff", fontSize: 10,
+                background: "#6B1E1E", color: "#fff", fontSize: 10,
                 fontWeight: 700, padding: "2px 7px", borderRadius: 10, marginLeft: 8,
               }}>{activeCount}</span>
             )}

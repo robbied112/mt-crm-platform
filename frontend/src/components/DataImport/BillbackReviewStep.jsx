@@ -8,12 +8,12 @@ export default function BillbackReviewStep({ fileName, items, metadata, saving, 
       <div style={s.stepHeader}>
         <div>
           <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Review Billback Extraction</h4>
-          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B7280" }}>
+          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B6B6B" }}>
             {fileName} &mdash; {items.length} line items &mdash; ${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} total
             <span style={s.typeBadge}>Billback PDF</span>
           </p>
           {metadata?.distributor && (
-            <p style={{ margin: "2px 0 0", fontSize: 11, color: "#9CA3AF" }}>
+            <p style={{ margin: "2px 0 0", fontSize: 11, color: "#6B6B6B" }}>
               Distributor: {metadata.distributor}
               {metadata.invoiceNo ? ` | Invoice: ${metadata.invoiceNo}` : ""}
               {metadata.date ? ` | Date: ${metadata.date}` : ""}
@@ -28,7 +28,7 @@ export default function BillbackReviewStep({ fileName, items, metadata, saving, 
         </div>
       </div>
 
-      <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#1e40af", marginBottom: 16 }}>
+      <div style={{ background: "rgba(139, 106, 76, 0.08)", border: "1px solid rgba(139, 106, 76, 0.25)", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#8B6A4C", marginBottom: 16 }}>
         AI extracted these line items from your PDF. Review and edit before importing.
       </div>
 
@@ -47,7 +47,7 @@ export default function BillbackReviewStep({ fileName, items, metadata, saving, 
           </thead>
           <tbody>
             {items.map((item, idx) => (
-              <tr key={idx} style={{ borderBottom: "1px solid #f1f5f9" }}>
+              <tr key={idx} style={{ borderBottom: "1px solid #E5E0DA" }}>
                 <td style={s.td}>
                   <input
                     type="text"
@@ -99,7 +99,7 @@ export default function BillbackReviewStep({ fileName, items, metadata, saving, 
                 <td style={s.td}>
                   <button
                     onClick={() => onDeleteItem(idx)}
-                    style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontSize: 16, padding: 4 }}
+                    style={{ background: "none", border: "none", color: "#C53030", cursor: "pointer", fontSize: 16, padding: 4 }}
                     title="Remove row"
                   >
                     &times;

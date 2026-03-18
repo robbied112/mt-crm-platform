@@ -13,7 +13,7 @@ import { getFilteredData } from "../utils/filterData";
 import { t } from "../utils/terminology";
 import TENANT_CONFIG from "../config/tenant";
 
-const CHART_COLORS = ["#0F766E", "#14B8A6", "#F8992D", "#0D9F6E", "#2563EB", "#D97706"];
+const CHART_COLORS = ["#6B1E1E", "#8B6A4C", "#F8992D", "#1F865A", "#B87333", "#C07B01"];
 
 export default function Depletions({
   distScorecard = [],

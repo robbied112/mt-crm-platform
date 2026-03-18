@@ -28,8 +28,8 @@ export default function AttentionNeeded({ items = [] }) {
     return (
       <div
         style={{
-          background: "#ECFDF5",
-          border: "1px solid #6EE7B7",
+          background: "rgba(31, 134, 90, 0.08)",
+          border: "1px solid rgba(31, 134, 90, 0.2)",
           borderRadius: 8,
           padding: 16,
           marginBottom: 24,
@@ -37,7 +37,7 @@ export default function AttentionNeeded({ items = [] }) {
         }}
       >
         <span style={{ fontSize: 20 }}>&#10003;</span>{" "}
-        <span style={{ fontSize: 14, fontWeight: 600, color: "#065F46" }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "#1F865A" }}>
           All clear! No urgent items right now.
         </span>
       </div>
@@ -47,8 +47,8 @@ export default function AttentionNeeded({ items = [] }) {
   return (
     <div
       style={{
-        background: "#FFFBEB",
-        border: "1px solid #FCD34D",
+        background: "rgba(192, 123, 1, 0.08)",
+        border: "1px solid rgba(192, 123, 1, 0.2)",
         borderRadius: 8,
         padding: 16,
         marginBottom: 24,
@@ -59,11 +59,11 @@ export default function AttentionNeeded({ items = [] }) {
           margin: "0 0 12px 0",
           fontSize: 16,
           fontWeight: 700,
-          color: "#B45309",
+          color: "#C07B01",
         }}
       >
         Attention Needed{" "}
-        <span style={{ fontSize: 12, fontWeight: 400, color: "#92400E" }}>
+        <span style={{ fontSize: 12, fontWeight: 400, color: "#C07B01" }}>
           ({sorted.length} items)
         </span>
       </h3>
@@ -75,7 +75,7 @@ export default function AttentionNeeded({ items = [] }) {
             alignItems: "center",
             gap: 10,
             padding: "10px 0",
-            borderBottom: "1px solid #FEE3B0",
+            borderBottom: "1px solid rgba(192, 123, 1, 0.15)",
             fontSize: 13,
           }}
         >
@@ -95,7 +95,7 @@ export default function AttentionNeeded({ items = [] }) {
             </span>
             <br />
             <strong>{esc(item.account)}</strong>{" "}
-            <span style={{ color: "#6B7280" }}>- {esc(item.detail)}</span>
+            <span style={{ color: "#6B6B6B" }}>- {esc(item.detail)}</span>
           </div>
         </div>
       ))}

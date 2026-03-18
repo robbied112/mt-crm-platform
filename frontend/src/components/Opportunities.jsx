@@ -64,7 +64,7 @@ export default function Opportunities({
           {
             label: "Re-engagement",
             data: topPlacement.map((d) => d.reEngageA || 0),
-            backgroundColor: "#2563EB",
+            backgroundColor: "#8B6A4C",
           },
         ],
       },
@@ -129,7 +129,7 @@ export default function Opportunities({
                   style={{
                     textAlign: "center",
                     padding: 40,
-                    color: "#64748b",
+                    color: "#6B6B6B",
                   }}
                 >
                   No re-engagement opportunities found.
@@ -183,7 +183,7 @@ export default function Opportunities({
                   style={{
                     textAlign: "center",
                     padding: 40,
-                    color: "#64748b",
+                    color: "#6B6B6B",
                   }}
                 >
                   No new wins in this period.

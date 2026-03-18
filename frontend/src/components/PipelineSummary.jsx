@@ -5,13 +5,13 @@
  */
 
 const STAGE_COLORS = {
-  Identified: "#94a3b8",
-  "Outreach Sent": "#60a5fa",
-  "Meeting Set": "#a78bfa",
-  "RFP/Proposal": "#f59e0b",
-  Negotiation: "#f97316",
-  "Closed Won": "#10b981",
-  "Closed Lost": "#DC2626",
+  Identified: "#6B6B6B",
+  "Outreach Sent": "#8B6A4C",
+  "Meeting Set": "#8B6A4C",
+  "RFP/Proposal": "#C07B01",
+  Negotiation: "#B87333",
+  "Closed Won": "#1F865A",
+  "Closed Lost": "#C53030",
 };
 
 export default function PipelineSummary({ deals = [] }) {
@@ -20,7 +20,7 @@ export default function PipelineSummary({ deals = [] }) {
   return (
     <div
       style={{
-        background: "#f3f4f6",
+        background: "#F5EDE3",
         borderRadius: 8,
         padding: 16,
         marginBottom: 24,
@@ -51,14 +51,14 @@ export default function PipelineSummary({ deals = [] }) {
         </thead>
         <tbody>
           {deals.slice(0, 8).map((deal, i) => (
-            <tr key={i} style={{ borderBottom: "1px solid #e5e7eb" }}>
+            <tr key={i} style={{ borderBottom: "1px solid #E5E0DA" }}>
               <td style={{ padding: "8px 0", fontWeight: 600 }}>
                 {deal.acct}
               </td>
               <td style={{ textAlign: "center", padding: "8px 0" }}>
                 <span
                   style={{
-                    background: STAGE_COLORS[deal.stage] || "#94a3b8",
+                    background: STAGE_COLORS[deal.stage] || "#6B6B6B",
                     color: "#fff",
                     padding: "2px 8px",
                     borderRadius: 4,

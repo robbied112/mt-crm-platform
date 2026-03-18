@@ -17,13 +17,13 @@ const STAGE_ORDER = [
 ];
 
 const STAGE_COLORS = {
-  Identified: "#94a3b8",
-  "Outreach Sent": "#60a5fa",
-  "Meeting Set": "#a78bfa",
-  "RFP/Proposal": "#f59e0b",
-  Negotiation: "#f97316",
-  "Closed Won": "#10b981",
-  "Closed Lost": "#DC2626",
+  Identified: "#6B6B6B",
+  "Outreach Sent": "#8B6A4C",
+  "Meeting Set": "#8B6A4C",
+  "RFP/Proposal": "#C07B01",
+  Negotiation: "#B87333",
+  "Closed Won": "#1F865A",
+  "Closed Lost": "#C53030",
 };
 
 export default function PipelineFunnel({ rows = [] }) {
@@ -39,10 +39,10 @@ export default function PipelineFunnel({ rows = [] }) {
         borderRadius: 10,
         padding: 20,
         marginBottom: 20,
-        border: "1px solid #e5e7eb",
+        border: "1px solid #E5E0DA",
       }}
     >
-      <h4 style={{ margin: "0 0 14px 0", fontSize: 14, color: "#0F766E" }}>
+      <h4 style={{ margin: "0 0 14px 0", fontSize: 14, color: "#6B1E1E" }}>
         Pipeline Funnel
       </h4>
       {STAGE_ORDER.map((stage) => {
@@ -67,7 +67,7 @@ export default function PipelineFunnel({ rows = [] }) {
                 fontSize: 12,
                 fontWeight: 600,
                 textAlign: "right",
-                color: "#374151",
+                color: "#2E2E2E",
               }}
             >
               {stage}
@@ -96,12 +96,12 @@ export default function PipelineFunnel({ rows = [] }) {
               style={{
                 width: 180,
                 fontSize: 12,
-                color: "#6B7280",
+                color: "#6B6B6B",
                 textAlign: "right",
               }}
             >
               {formatCurrency(val)}{" "}
-              <span style={{ color: "#9ca3af" }}>
+              <span style={{ color: "#6B6B6B" }}>
                 (wtd: {formatCurrency(wVal)})
               </span>
             </div>

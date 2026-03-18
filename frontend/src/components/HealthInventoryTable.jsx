@@ -5,23 +5,23 @@
  */
 
 const ACTION_STYLES = {
-  "Reorder Now": { bg: "#fee2e2", color: "#991b1b" },
-  Monitor: { bg: "#fef3c7", color: "#92400e" },
-  Healthy: { bg: "#d1fae5", color: "#065f46" },
-  Reduce: { bg: "#ede9fe", color: "#5b21b6" },
+  "Reorder Now": { bg: "rgba(197, 48, 48, 0.08)", color: "#C53030" },
+  Monitor: { bg: "rgba(192, 123, 1, 0.08)", color: "#C07B01" },
+  Healthy: { bg: "rgba(31, 134, 90, 0.08)", color: "#1F865A" },
+  Reduce: { bg: "rgba(139, 106, 76, 0.1)", color: "#8B6A4C" },
 };
 
 function getRatioColor(ratio) {
-  if (ratio >= 80) return "#27ae60";
-  if (ratio >= 50) return "#f39c12";
-  return "#e74c3c";
+  if (ratio >= 80) return "#1F865A";
+  if (ratio >= 50) return "#C07B01";
+  return "#C53030";
 }
 
 function getSupplyInfo(wkSupply) {
-  if (wkSupply > 26) return { label: "Overstocked", color: "#e67e22" };
-  if (wkSupply >= 8) return { label: "Healthy", color: "#27ae60" };
-  if (wkSupply > 0) return { label: "Reorder Soon", color: "#e74c3c" };
-  return { label: "-", color: "#95a5a6" };
+  if (wkSupply > 26) return { label: "Overstocked", color: "#B87333" };
+  if (wkSupply >= 8) return { label: "Healthy", color: "#1F865A" };
+  if (wkSupply > 0) return { label: "Reorder Soon", color: "#C53030" };
+  return { label: "-", color: "#6B6B6B" };
 }
 
 export default function HealthInventoryTable({ skus = [], totalSellIn, totalSellThru, totalRatio, totalOH, doh }) {
@@ -45,7 +45,7 @@ export default function HealthInventoryTable({ skus = [], totalSellIn, totalSell
         <tbody>
           {skus.map((s, i) => {
             const supply = getSupplyInfo(s.wkSupply);
-            const actionStyle = ACTION_STYLES[s.invAction] || { bg: "#f1f5f9", color: "#64748b" };
+            const actionStyle = ACTION_STYLES[s.invAction] || { bg: "#F5EDE3", color: "#6B6B6B" };
 
             return (
               <tr key={i}>
@@ -82,13 +82,13 @@ export default function HealthInventoryTable({ skus = [], totalSellIn, totalSell
             );
           })}
           {/* Totals row */}
-          <tr style={{ fontWeight: 700, borderTop: "2px solid #2c3e50" }}>
+          <tr style={{ fontWeight: 700, borderTop: "2px solid #2E2E2E" }}>
             <td>Total</td>
             <td>{(totalSellIn || 0).toFixed(1)}</td>
             <td>{(totalSellThru || 0).toFixed(1)}</td>
             <td
               style={{
-                color: (totalRatio || 0) >= 80 ? "#27ae60" : "#f39c12",
+                color: (totalRatio || 0) >= 80 ? "#1F865A" : "#C07B01",
                 fontWeight: 700,
               }}
             >

@@ -23,7 +23,7 @@ export default function UserBar({
         borderRadius: 20,
         padding: "4px 14px 4px 10px",
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-        border: "1px solid #e5e7eb",
+        border: "1px solid #E5E0DA",
         fontSize: 12,
         display: "flex",
         alignItems: "center",
@@ -35,7 +35,7 @@ export default function UserBar({
           width: 24,
           height: 24,
           borderRadius: "50%",
-          background: "#0F766E",
+          background: "#6B1E1E",
           color: "#fff",
           display: "flex",
           alignItems: "center",
@@ -46,7 +46,7 @@ export default function UserBar({
       >
         {user.initials || "?"}
       </div>
-      <span style={{ fontWeight: 600, color: "#374151" }}>
+      <span style={{ fontWeight: 600, color: "#2E2E2E" }}>
         {user.name || "--"}
       </span>
       {onManageUsers && (
@@ -55,7 +55,7 @@ export default function UserBar({
           style={{
             background: "none",
             border: "none",
-            color: "#6B7280",
+            color: "#6B6B6B",
             fontSize: 13,
             cursor: "pointer",
             padding: "2px 4px",
@@ -70,7 +70,7 @@ export default function UserBar({
         style={{
           background: "none",
           border: "none",
-          color: "#9ca3af",
+          color: "#6B6B6B",
           fontSize: 11,
           cursor: "pointer",
           padding: "2px 6px",

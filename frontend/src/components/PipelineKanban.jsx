@@ -11,13 +11,13 @@ import { formatCurrency } from "../utils/formatting";
 import OpportunityForm from "./OpportunityForm";
 
 const STAGE_COLORS = {
-  Identified: "#94a3b8", Outreach: "#60a5fa", Meeting: "#818cf8",
-  Tasting: "#a78bfa", Proposal: "#f59e0b", Negotiation: "#f97316",
-  "Menu Trial": "#c084fc", Confirmed: "#1F865A", "Menu Planning": "#fb923c",
-  Pitched: "#60a5fa", "Samples Sent": "#93c5fd", Approved: "#1F865A",
-  Contacted: "#60a5fa", Proposed: "#818cf8", Scheduled: "#fbbf24",
+  Identified: "#6B6B6B", Outreach: "#8B6A4C", Meeting: "#8B6A4C",
+  Tasting: "#8B6A4C", Proposal: "#C07B01", Negotiation: "#B87333",
+  "Menu Trial": "#8B6A4C", Confirmed: "#1F865A", "Menu Planning": "#B87333",
+  Pitched: "#8B6A4C", "Samples Sent": "#8B6A4C", Approved: "#1F865A",
+  Contacted: "#8B6A4C", Proposed: "#8B6A4C", Scheduled: "#C07B01",
   Executed: "#1F865A", Completed: "#1F865A", "Menu Approved": "#1F865A",
-  Won: "#1F865A", Lost: "#ef4444",
+  Won: "#1F865A", Lost: "#C53030",
 };
 
 export default function PipelineKanban() {
@@ -176,11 +176,11 @@ export default function PipelineKanban() {
         </div>
         <div className="kpi-card">
           <div className="kpi-label">Open Pipeline</div>
-          <div className="kpi-value" style={{ color: "#2563eb" }}>{formatCurrency(totalOpen)}</div>
+          <div className="kpi-value" style={{ color: "#8B6A4C" }}>{formatCurrency(totalOpen)}</div>
         </div>
         <div className="kpi-card">
           <div className="kpi-label">Won</div>
-          <div className="kpi-value" style={{ color: "#10b981" }}>{formatCurrency(totalWon)}</div>
+          <div className="kpi-value" style={{ color: "#1F865A" }}>{formatCurrency(totalWon)}</div>
         </div>
         <div className="kpi-card">
           <div className="kpi-label">Win Rate</div>
@@ -234,7 +234,7 @@ export default function PipelineKanban() {
                   onDrop={(e) => handleDrop(e, stage)}
                 >
                   <div className="pipeline-col__header">
-                    <span className="pipeline-col__dot" style={{ background: STAGE_COLORS[stage] || "#94a3b8" }} />
+                    <span className="pipeline-col__dot" style={{ background: STAGE_COLORS[stage] || "#6B6B6B" }} />
                     <span className="pipeline-col__name">{stage}</span>
                     <span className="pipeline-col__count">{cards.length}</span>
                   </div>
@@ -286,7 +286,7 @@ export default function PipelineKanban() {
                   <td>{opp.title}</td>
                   <td><span className="badge badge-blue" style={{ fontSize: 11 }}>{typeLabel(opp.type)}</span></td>
                   <td>
-                    <span className="pipeline-stage-badge" style={{ background: STAGE_COLORS[opp.stage] || "#94a3b8" }}>
+                    <span className="pipeline-stage-badge" style={{ background: STAGE_COLORS[opp.stage] || "#6B6B6B" }}>
                       {opp.stage}
                     </span>
                   </td>
@@ -350,7 +350,7 @@ function OppCard({ opp, typeLabel, onDragStart, onClick, onEdit }) {
         {opp.wines?.length > 0 && (
           <span className="pipeline-card__wines">{opp.wines.length} wine{opp.wines.length > 1 ? "s" : ""}</span>
         )}
-        <span className="pipeline-card__days" style={{ color: daysInStage > 21 ? "#dc2626" : daysInStage > 14 ? "#d97706" : "var(--text-dim)" }}>
+        <span className="pipeline-card__days" style={{ color: daysInStage > 21 ? "#C53030" : daysInStage > 14 ? "#C07B01" : "var(--text-dim)" }}>
           {daysInStage}d
         </span>
       </div>

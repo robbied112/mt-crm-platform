@@ -30,7 +30,7 @@ export default function DataFreshnessBadge({ lastUpdated, variant = "compact" })
   }
 
   if (variant === "dot") {
-    const colors = { fresh: "#1F865A", aging: "#facc15", stale: "#f87171" };
+    const colors = { fresh: "#1F865A", aging: "#C07B01", stale: "#C53030" };
     return (
       <span
         className="freshness-dot"
@@ -43,7 +43,7 @@ export default function DataFreshnessBadge({ lastUpdated, variant = "compact" })
   return (
     <span className={`freshness-badge freshness-badge--${status}`} title={`Last updated ${label}`}>
       <span className="freshness-dot" style={{
-        background: status === "fresh" ? "#059669" : status === "aging" ? "#d97706" : "#dc2626",
+        background: status === "fresh" ? "#1F865A" : status === "aging" ? "#C07B01" : "#C53030",
       }} />
       {label}
     </span>

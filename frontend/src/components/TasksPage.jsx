@@ -7,10 +7,10 @@ import { useCrm } from "../context/CrmContext";
 import TaskForm from "./TaskForm";
 
 const PRIORITY_COLORS = {
-  urgent: { bg: "#fee2e2", color: "#dc2626" },
-  high: { bg: "#fed7aa", color: "#f97316" },
-  medium: { bg: "#fef3c7", color: "#d97706" },
-  low: { bg: "#f1f5f9", color: "#64748b" },
+  urgent: { bg: "rgba(197, 48, 48, 0.08)", color: "#C53030" },
+  high: { bg: "rgba(184, 115, 51, 0.1)", color: "#B87333" },
+  medium: { bg: "rgba(192, 123, 1, 0.08)", color: "#C07B01" },
+  low: { bg: "#F5EDE3", color: "#6B6B6B" },
 };
 
 const FILTER_TABS = [
@@ -64,7 +64,7 @@ export default function TasksPage() {
           <h2 className="page-title">Tasks</h2>
           <p className="page-subtitle">
             {tasks.filter((t) => t.status !== "completed" && t.status !== "cancelled").length} open
-            {overdueCount > 0 && <span style={{ color: "#dc2626", marginLeft: 8 }}>{overdueCount} overdue</span>}
+            {overdueCount > 0 && <span style={{ color: "#C53030", marginLeft: 8 }}>{overdueCount} overdue</span>}
           </p>
         </div>
         <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ Add Task</button>
@@ -80,7 +80,7 @@ export default function TasksPage() {
           >
             {tab.label}
             {tab.key === "overdue" && overdueCount > 0 && (
-              <span style={{ marginLeft: 4, background: "#dc2626", color: "#fff", fontSize: 10, padding: "1px 6px", borderRadius: 10 }}>
+              <span style={{ marginLeft: 4, background: "#C53030", color: "#fff", fontSize: 10, padding: "1px 6px", borderRadius: 10 }}>
                 {overdueCount}
               </span>
             )}
@@ -90,9 +90,9 @@ export default function TasksPage() {
 
       <div className="table-container">
         {filtered.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "40px 20px", color: "#64748b" }}>
+          <div style={{ textAlign: "center", padding: "40px 20px", color: "#6B6B6B" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>{"\u2705"}</div>
-            <p style={{ fontSize: 15, fontWeight: 600, color: "#334155", marginBottom: 4 }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "#2E2E2E", marginBottom: 4 }}>
               {filter === "all" ? "No tasks yet" : `No ${filter} tasks`}
             </p>
             <p style={{ fontSize: 13 }}>
@@ -139,7 +139,7 @@ export default function TasksPage() {
                         </span>
                       ) : "--"}
                     </td>
-                    <td style={{ color: isOverdue ? "#dc2626" : "var(--text)", fontWeight: isOverdue ? 600 : 400 }}>
+                    <td style={{ color: isOverdue ? "#C53030" : "var(--text)", fontWeight: isOverdue ? 600 : 400 }}>
                       {task.dueDate || "--"}
                       {isOverdue && <span style={{ marginLeft: 4, fontSize: 11 }}>(overdue)</span>}
                     </td>

@@ -21,7 +21,7 @@ function TrendBadge({ trend }) {
   if (trend === "Growth Opportunity")
     return <span className="badge badge-yellow">Growth Opportunity</span>;
   return (
-    <span className="badge" style={{ background: "#E5E7EB", color: "#6B7280" }}>
+    <span className="badge" style={{ background: "#E5E0DA", color: "#6B6B6B" }}>
       Consistent
     </span>
   );
@@ -35,13 +35,13 @@ function ConcentrationInsight({ concentration }) {
     <div
       style={{
         padding: 12,
-        background: "#f0f4f8",
+        background: "#F5EDE3",
         borderRadius: 8,
         marginBottom: 16,
-        borderLeft: "4px solid #3498db",
+        borderLeft: "4px solid #8B6A4C",
       }}
     >
-      <h4 style={{ margin: "0 0 8px 0", color: "#2c3e50" }}>
+      <h4 style={{ margin: "0 0 8px 0", color: "#2E2E2E" }}>
         Account Concentration
       </h4>
       <div style={{ fontSize: 14, color: "#555" }}>
@@ -90,7 +90,7 @@ export default function AccountInsights({
         datasets: [
           {
             data: [momentumAccounts, growthAccounts, consistentAccounts],
-            backgroundColor: ["#0D9F6E", "#F8992D", "#E5E7EB"],
+            backgroundColor: ["#1F865A", "#F8992D", "#E5E0DA"],
           },
         ],
       },
@@ -293,7 +293,7 @@ export default function AccountInsights({
                   style={{
                     textAlign: "center",
                     padding: 40,
-                    color: "#64748b",
+                    color: "#6B6B6B",
                   }}
                 >
                   No account data available.
@@ -312,7 +312,7 @@ export default function AccountInsights({
               justifyContent: "space-between",
               padding: "8px 4px",
               fontSize: 12,
-              color: "#64748b",
+              color: "#6B6B6B",
             }}
           >
             <span>

@@ -34,20 +34,20 @@ const STAGE_WEIGHTS = {
 };
 
 const STAGE_COLORS = {
-  Identified: "#94a3b8",
-  "Outreach Sent": "#60a5fa",
-  "Meeting Set": "#a78bfa",
-  "RFP/Proposal": "#f59e0b",
-  Negotiation: "#f97316",
-  "Closed Won": "#10b981",
-  "Closed Lost": "#DC2626",
+  Identified: "#6B6B6B",
+  "Outreach Sent": "#8B6A4C",
+  "Meeting Set": "#8B6A4C",
+  "RFP/Proposal": "#C07B01",
+  Negotiation: "#B87333",
+  "Closed Won": "#1F865A",
+  "Closed Lost": "#C53030",
 };
 
 const TIER_COLORS = {
   Enterprise: "#B87333",
-  "On-Premise Natl": "#DC2626",
-  Regional: "#2563EB",
-  Emerging: "#6B7280",
+  "On-Premise Natl": "#C53030",
+  Regional: "#8B6A4C",
+  Emerging: "#6B6B6B",
 };
 
 function PipelineKpi({ label, value, borderColor, subtext }) {
@@ -60,17 +60,17 @@ function PipelineKpi({ label, value, borderColor, subtext }) {
         borderRadius: 8,
         padding: "12px 16px",
         borderLeft: borderColor ? `3px solid ${borderColor}` : undefined,
-        borderTop: "1px solid #e5e7eb",
-        borderRight: "1px solid #e5e7eb",
-        borderBottom: "1px solid #e5e7eb",
+        borderTop: "1px solid #E5E0DA",
+        borderRight: "1px solid #E5E0DA",
+        borderBottom: "1px solid #E5E0DA",
       }}
     >
-      <div style={{ fontSize: 11, color: "#6B7280" }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 700, color: borderColor || "#0F766E" }}>
+      <div style={{ fontSize: 11, color: "#6B6B6B" }}>{label}</div>
+      <div style={{ fontSize: 22, fontWeight: 700, color: borderColor || "#6B1E1E" }}>
         {value}
       </div>
       {subtext && (
-        <div style={{ fontSize: 10, color: "#9ca3af" }}>{subtext}</div>
+        <div style={{ fontSize: 10, color: "#6B6B6B" }}>{subtext}</div>
       )}
     </div>
   );
@@ -270,9 +270,9 @@ export default function CustomerPipeline({
   // Empty state
   if (!pipelineAccounts || pipelineAccounts.length === 0) {
     return (
-      <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
+      <div style={{ textAlign: "center", padding: "60px 20px", color: "#6B6B6B" }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>&#128200;</div>
-        <div style={{ fontSize: 18, fontWeight: 600, color: "#334155", marginBottom: 8 }}>
+        <div style={{ fontSize: 18, fontWeight: 600, color: "#2E2E2E", marginBottom: 8 }}>
           No Pipeline Accounts
         </div>
         <div style={{ fontSize: 14 }}>
@@ -287,7 +287,7 @@ export default function CustomerPipeline({
 
   const filterSelect = (label, key, options) => (
     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-      <label style={{ fontSize: 12, fontWeight: 600, color: "#6B7280" }}>
+      <label style={{ fontSize: 12, fontWeight: 600, color: "#6B6B6B" }}>
         {label}:
       </label>
       <select
@@ -312,9 +312,9 @@ export default function CustomerPipeline({
   return (
     <div>
       {/* Title */}
-      <div style={{ fontSize: 18, fontWeight: 700, color: "#0F766E", marginBottom: 4 }}>
+      <div style={{ fontSize: 18, fontWeight: 700, color: "#6B1E1E", marginBottom: 4 }}>
         Customer Pipeline{" "}
-        <span style={{ fontSize: 13, fontWeight: 400, color: "#6B7280", marginLeft: 8 }}>
+        <span style={{ fontSize: 13, fontWeight: 400, color: "#6B6B6B", marginLeft: 8 }}>
           National &amp; Regional Account Tracker
         </span>
       </div>
@@ -322,12 +322,12 @@ export default function CustomerPipeline({
       {/* KPIs */}
       <div className="kpi-row" style={{ marginBottom: 16, display: "flex", gap: 12, flexWrap: "wrap" }}>
         <PipelineKpi label="Total Accounts" value={allRows.length} />
-        <PipelineKpi label="Open Pipeline" value={formatCurrency(totalOpen)} borderColor="#2563EB" subtext="unweighted" />
+        <PipelineKpi label="Open Pipeline" value={formatCurrency(totalOpen)} borderColor="#8B6A4C" subtext="unweighted" />
         <PipelineKpi label="Weighted Pipeline" value={formatCurrency(totalWeighted)} borderColor="#B87333" subtext="probability-adjusted" />
-        <PipelineKpi label="Closed Won" value={formatCurrency(totalWon)} borderColor="#10b981" subtext={`${won.length} accounts`} />
-        <PipelineKpi label="RFP+ Active" value={rfpPlus.length} borderColor="#f59e0b" />
+        <PipelineKpi label="Closed Won" value={formatCurrency(totalWon)} borderColor="#1F865A" subtext={`${won.length} accounts`} />
+        <PipelineKpi label="RFP+ Active" value={rfpPlus.length} borderColor="#C07B01" />
         {lost.length > 0 && (
-          <PipelineKpi label="Closed Lost" value={formatCurrency(totalLost)} borderColor="#DC2626" subtext={`${lost.length} accounts`} />
+          <PipelineKpi label="Closed Lost" value={formatCurrency(totalLost)} borderColor="#C53030" subtext={`${lost.length} accounts`} />
         )}
         <PipelineKpi label="Enterprise in Play" value={enterpriseInPlay} />
       </div>
@@ -379,7 +379,7 @@ export default function CustomerPipeline({
             onClick={onAddNew}
             style={{
               padding: "6px 14px",
-              background: "#10b981",
+              background: "#1F865A",
               color: "#fff",
               border: "none",
               borderRadius: 6,
@@ -412,7 +412,7 @@ export default function CustomerPipeline({
           />
         </div>
         {onExportCSV && (
-          <button onClick={onExportCSV} style={{ padding: "6px 14px", background: "#374151", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+          <button onClick={onExportCSV} style={{ padding: "6px 14px", background: "#2E2E2E", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
             Export CSV
           </button>
         )}
@@ -420,14 +420,14 @@ export default function CustomerPipeline({
           <button onClick={() => exportToXlsx(sortedRows, "customer-pipeline", "Pipeline", {
             columns: ["acct", "tier", "stage", "owner", "source", "estValue", "weighted", "nextStep", "dueDate", "notes"],
             headers: { acct: t("account"), tier: "Tier", stage: "Stage", owner: "Owner", source: "Source", estValue: "Est. Value", weighted: "Weighted", nextStep: "Next Step", dueDate: "Due Date", notes: "Notes" },
-          })} style={{ padding: "6px 14px", background: "#1d4ed8", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+          })} style={{ padding: "6px 14px", background: "#8B6A4C", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
             Export Excel
           </button>
         )}
       </div>
 
       {/* Pipeline Table */}
-      <div style={{ maxHeight: 600, overflowY: "auto", border: "1px solid #e5e7eb", borderRadius: 8 }}>
+      <div style={{ maxHeight: 600, overflowY: "auto", border: "1px solid #E5E0DA", borderRadius: 8 }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead style={{ position: "sticky", top: 0, background: "#f8fafc", zIndex: 2 }}>
             <tr>
@@ -450,7 +450,7 @@ export default function CustomerPipeline({
                   style={{
                     padding: "8px 12px",
                     textAlign: col.align,
-                    borderBottom: "2px solid #e2e8f0",
+                    borderBottom: "2px solid #E5E0DA",
                     cursor: col.key ? "pointer" : "default",
                     userSelect: "none",
                   }}
@@ -472,8 +472,8 @@ export default function CustomerPipeline({
                 r.type === "Distributor" ? (
                   <span
                     style={{
-                      background: "#dbeafe",
-                      color: "#1d4ed8",
+                      background: "rgba(139, 106, 76, 0.15)",
+                      color: "#8B6A4C",
                       padding: "1px 6px",
                       borderRadius: 8,
                       fontSize: 9,
@@ -490,15 +490,15 @@ export default function CustomerPipeline({
               const daysSinceStage = Math.floor(
                 (today - stageDate) / 86400000
               );
-              let daysColor = "#059669";
-              if (daysSinceStage > 30) daysColor = "#DC2626";
-              else if (daysSinceStage > 14) daysColor = "#D97706";
+              let daysColor = "#1F865A";
+              if (daysSinceStage > 30) daysColor = "#C53030";
+              else if (daysSinceStage > 14) daysColor = "#C07B01";
 
               return (
                 <tr
                   key={i}
                   style={{
-                    borderBottom: "1px solid #f1f5f9",
+                    borderBottom: "1px solid #E5E0DA",
                     cursor: "pointer",
                   }}
                   onClick={() => onAccountClick?.(r.acct)}
@@ -507,7 +507,7 @@ export default function CustomerPipeline({
                     style={{
                       padding: "8px 12px",
                       fontWeight: 600,
-                      color: "#0F766E",
+                      color: "#6B1E1E",
                     }}
                   >
                     {esc(r.acct)}
@@ -521,7 +521,7 @@ export default function CustomerPipeline({
                         fontSize: 10,
                         fontWeight: 600,
                         color: "#fff",
-                        background: TIER_COLORS[r.tier] || "#6B7280",
+                        background: TIER_COLORS[r.tier] || "#6B6B6B",
                       }}
                     >
                       {esc(r.tier)}
@@ -535,7 +535,7 @@ export default function CustomerPipeline({
                         fontSize: 10,
                         fontWeight: 600,
                         color: "#fff",
-                        background: STAGE_COLORS[r.stage] || "#94a3b8",
+                        background: STAGE_COLORS[r.stage] || "#6B6B6B",
                       }}
                     >
                       {esc(r.stage)}
@@ -555,7 +555,7 @@ export default function CustomerPipeline({
                   <td style={{ padding: 8, fontSize: 12 }}>
                     {esc(r.owner)}
                   </td>
-                  <td style={{ padding: 8, fontSize: 12, color: "#6B7280" }}>
+                  <td style={{ padding: 8, fontSize: 12, color: "#6B6B6B" }}>
                     {esc(r.source || "--")}
                   </td>
                   <td
@@ -569,7 +569,7 @@ export default function CustomerPipeline({
                     {r.hasCustom && (
                       <span
                         style={{
-                          color: "#10b981",
+                          color: "#1F865A",
                           fontSize: 9,
                           marginLeft: 2,
                         }}
@@ -601,7 +601,7 @@ export default function CustomerPipeline({
                       textAlign: "center",
                       fontSize: 11,
                       ...(isOverdue
-                        ? { color: "#DC2626", fontWeight: 700 }
+                        ? { color: "#C53030", fontWeight: 700 }
                         : {}),
                     }}
                   >
@@ -611,8 +611,8 @@ export default function CustomerPipeline({
                     {r.notes ? (
                       <span
                         style={{
-                          background: "#EEF2FF",
-                          color: "#4338CA",
+                          background: "rgba(139, 106, 76, 0.15)",
+                          color: "#8B6A4C",
                           padding: "2px 8px",
                           borderRadius: 10,
                           fontSize: 10,
@@ -635,7 +635,7 @@ export default function CustomerPipeline({
                   style={{
                     textAlign: "center",
                     padding: 40,
-                    color: "#64748b",
+                    color: "#6B6B6B",
                   }}
                 >
                   No accounts match the current filters.
@@ -645,7 +645,7 @@ export default function CustomerPipeline({
           </tbody>
         </table>
       </div>
-      <div style={{ marginTop: 8, fontSize: 12, color: "#6B7280" }}>
+      <div style={{ marginTop: 8, fontSize: 12, color: "#6B6B6B" }}>
         Showing {sortedRows.length} accounts |{" "}
         {formatCurrency(
           sortedRows.reduce((s, r) => s + r.estValue, 0)

@@ -26,7 +26,7 @@ export default function AccountPenetration({
         {
           data: hasData ? [established, building, emerging] : [1],
           backgroundColor: hasData
-            ? ["#27ae60", "#3498db", "#f39c12"]
+            ? ["#1F865A", "#8B6A4C", "#C07B01"]
             : ["#ecf0f1"],
         },
       ],
@@ -66,7 +66,7 @@ export default function AccountPenetration({
               borderRadius: 8,
             }}
           >
-            <div style={{ fontSize: 24, fontWeight: 700, color: "#2c3e50" }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: "#2E2E2E" }}>
               {totalAccounts}
             </div>
             <div style={{ fontSize: 11, color: "#7f8c8d" }}>Total {t("account")}s</div>
@@ -79,7 +79,7 @@ export default function AccountPenetration({
               borderRadius: 8,
             }}
           >
-            <div style={{ fontSize: 24, fontWeight: 700, color: "#2c3e50" }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: "#2E2E2E" }}>
               {avgSkuBreadth}
             </div>
             <div style={{ fontSize: 11, color: "#7f8c8d" }}>
@@ -105,9 +105,9 @@ export default function AccountPenetration({
             fontSize: 12,
           }}
         >
-          <span style={{ color: "#27ae60" }}>+{newAccts} New Wins</span>
-          <span style={{ color: "#e67e22" }}>{lostAccts} Re-Engage Opps</span>
-          <span style={{ fontWeight: 600, color: "#2c3e50" }}>
+          <span style={{ color: "#1F865A" }}>+{newAccts} New Wins</span>
+          <span style={{ color: "#C07B01" }}>{lostAccts} Re-Engage Opps</span>
+          <span style={{ fontWeight: 600, color: "#2E2E2E" }}>
             Net: {newAccts - lostAccts}
           </span>
         </div>

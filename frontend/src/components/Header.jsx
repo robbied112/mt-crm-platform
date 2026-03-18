@@ -9,8 +9,8 @@ import CruFolioLogo from "./CruFolioLogo";
 export default function Header({ companyName, logo, syncStatus }) {
   const statusColors = {
     connected: "#1F865A",
-    syncing: "#facc15",
-    offline: "#f87171",
+    syncing: "#C07B01",
+    offline: "#C53030",
   };
 
   return (

@@ -232,7 +232,7 @@ export default function DistributorHealth({
           style={{
             textAlign: "center",
             padding: "60px 20px",
-            color: "#64748b",
+            color: "#6B6B6B",
           }}
         >
           <div style={{ fontSize: 48, marginBottom: 16 }}>&#128202;</div>
@@ -240,7 +240,7 @@ export default function DistributorHealth({
             style={{
               fontSize: 18,
               fontWeight: 600,
-              color: "#334155",
+              color: "#2E2E2E",
               marginBottom: 8,
             }}
           >
@@ -259,7 +259,7 @@ export default function DistributorHealth({
           style={{
             textAlign: "center",
             padding: "60px 20px",
-            color: "#64748b",
+            color: "#6B6B6B",
           }}
         >
           <div style={{ fontSize: 48, marginBottom: 16 }}>&#128230;</div>
@@ -267,7 +267,7 @@ export default function DistributorHealth({
             style={{
               fontSize: 18,
               fontWeight: 600,
-              color: "#334155",
+              color: "#2E2E2E",
               marginBottom: 8,
             }}
           >

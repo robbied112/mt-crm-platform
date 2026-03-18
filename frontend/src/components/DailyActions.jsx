@@ -9,9 +9,9 @@ import { useAuth } from "../context/AuthContext";
 import { matchesUserTerritory } from "../utils/territory";
 
 const PRIORITY_COLORS = {
-  urgent: "#DC2626",
-  moderate: "#F59E0B",
-  info: "#3B82F6",
+  urgent: "#C53030",
+  moderate: "#C07B01",
+  info: "#8B6A4C",
 };
 
 const PRIORITY_ICONS = {

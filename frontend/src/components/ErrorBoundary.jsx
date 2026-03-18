@@ -19,7 +19,7 @@ export default class ErrorBoundary extends Component {
       return (
         <div className="error-boundary">
           <div className="error-boundary__icon">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="#C53030" strokeWidth="2" strokeLinecap="round">
               <circle cx="24" cy="24" r="20" />
               <path d="M24 14v12M24 32v2" />
             </svg>

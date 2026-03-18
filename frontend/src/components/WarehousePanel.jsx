@@ -85,7 +85,7 @@ export default function WarehousePanel({ warehouseInventory }) {
                     isBold
                       ? {
                           fontWeight: 700,
-                          borderTop: "1px solid #e5e7eb",
+                          borderTop: "1px solid #E5E0DA",
                         }
                       : undefined
                   }
@@ -133,7 +133,7 @@ export default function WarehousePanel({ warehouseInventory }) {
         }}
       >
         {renderLineTable(wh.classic, line1Name, "rgba(184, 115, 51, 0.08)", "#B87333")}
-        {renderLineTable(wh.contemporary, line2Name, "#DBEAFE", "#0F766E")}
+        {renderLineTable(wh.contemporary, line2Name, "rgba(139, 106, 76, 0.15)", "#8B6A4C")}
       </div>
 
       {/* Grand total summary */}
@@ -158,7 +158,7 @@ export default function WarehousePanel({ warehouseInventory }) {
           {line2Name}: {(nt.total || 0).toLocaleString()}
         </span>
         {wh.batch4Est && wh.batch4Est.total > 0 && (
-          <span style={{ color: "#6B7280" }}>
+          <span style={{ color: "#6B6B6B" }}>
             Batch 4 Est: +{wh.batch4Est.total.toLocaleString()}
           </span>
         )}

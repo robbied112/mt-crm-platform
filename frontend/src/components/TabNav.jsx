@@ -58,7 +58,7 @@ export default function TabNav({
                 display: "inline-block",
                 width: 6, height: 6,
                 borderRadius: "50%",
-                background: "#d97706",
+                background: "#C07B01",
                 marginLeft: 5,
                 verticalAlign: "middle",
               }} title="Data required" />
@@ -73,7 +73,7 @@ export default function TabNav({
           border: "none",
           fontSize: 18,
           cursor: "pointer",
-          color: "#6B7280",
+          color: "#6B6B6B",
           padding: "8px 12px",
           marginLeft: "auto",
         }}

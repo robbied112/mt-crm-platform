@@ -100,14 +100,14 @@ const styles = {
   missingLabel: {
     fontSize: 11,
     fontWeight: 600,
-    color: "#6B7280",
+    color: "#6B6B6B",
   },
   missingBadge: {
     fontSize: 11,
     fontWeight: 600,
     padding: "2px 8px",
-    background: "#fef3c7",
-    color: "#92400e",
+    background: "rgba(192, 123, 1, 0.08)",
+    color: "#C07B01",
     borderRadius: 10,
   },
 };

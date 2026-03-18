@@ -51,7 +51,7 @@ export default function Inventory({
         datasets: [
           {
             data: Object.values(counts),
-            backgroundColor: ["#0D9F6E", "#F8992D", "#2563EB", "#6B7280", "#2563EB"],
+            backgroundColor: ["#1F865A", "#F8992D", "#8B6A4C", "#6B6B6B", "#8B6A4C"],
           },
         ],
       },
@@ -73,7 +73,7 @@ export default function Inventory({
           {
             label: t("distributor") + "s",
             data: points,
-            backgroundColor: "#0F766E",
+            backgroundColor: "#6B1E1E",
           },
         ],
       },
@@ -92,9 +92,9 @@ export default function Inventory({
   // --- Empty state ---
   if (!data || data.length === 0) {
     return (
-      <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
+      <div style={{ textAlign: "center", padding: "60px 20px", color: "#6B6B6B" }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>&#128230;</div>
-        <div style={{ fontSize: 18, fontWeight: 600, color: "#334155", marginBottom: 8 }}>
+        <div style={{ fontSize: 18, fontWeight: 600, color: "#2E2E2E", marginBottom: 8 }}>
           No Inventory Data
         </div>
         <div style={{ fontSize: 14 }}>

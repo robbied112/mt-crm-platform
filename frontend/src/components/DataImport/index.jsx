@@ -693,20 +693,20 @@ export default function DataImport() {
           }}
         >
           <div style={{ fontSize: 40, marginBottom: 8 }}>&#128202;</div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: "#374151" }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: "#2E2E2E" }}>
             Drop your data files here, or click to browse
           </div>
-          <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 6 }}>
+          <div style={{ fontSize: 12, color: "#6B6B6B", marginTop: 6 }}>
             Supports .csv, .xlsx, .xls{isBillbackEnabled ? ", .pdf (billbacks)" : ""} &mdash; up to 10MB &mdash; multiple files supported
           </div>
-          <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
+          <div style={{ fontSize: 11, color: "#6B6B6B", marginTop: 4 }}>
             QuickBooks exports, {t("distributor").toLowerCase()} reports, inventory files, pipeline data
           </div>
           <div
             onClick={(e) => e.stopPropagation()}
             style={{ marginTop: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 12 }}
           >
-            <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer", color: useAI ? "#6B1E1E" : "#9CA3AF" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer", color: useAI ? "#6B1E1E" : "#6B6B6B" }}>
               <input
                 type="checkbox"
                 checked={useAI}
@@ -835,10 +835,10 @@ export default function DataImport() {
       {step === "done" && !isBatchMode && (
         <div style={s.doneBox}>
           <div style={{ fontSize: 32, marginBottom: 8 }}>&#9989;</div>
-          <h3 style={{ fontSize: 18, fontWeight: 700, color: "#166534", margin: "0 0 8px" }}>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: "#1F865A", margin: "0 0 8px" }}>
             Import Complete
           </h3>
-          <p style={{ fontSize: 14, color: "#4B5563", marginBottom: 16 }}>{summary}</p>
+          <p style={{ fontSize: 14, color: "#6B6B6B", marginBottom: 16 }}>{summary}</p>
           {unmatchedProducts.length > 0 && (
             <div className="import-unmatched">
               <div className="import-unmatched__header">

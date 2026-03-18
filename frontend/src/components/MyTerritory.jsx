@@ -101,7 +101,7 @@ export default function MyTerritory({
           type: "Overdue Reorder",
           account: r.acct,
           detail: `${r.days - r.cycle} days overdue`,
-          color: "#DC2626",
+          color: "#C53030",
         });
       });
 
@@ -192,9 +192,9 @@ export default function MyTerritory({
   // --- Early-exit renders (after all hooks) ---
   if (!distScorecard || distScorecard.length === 0) {
     return (
-      <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
+      <div style={{ textAlign: "center", padding: "60px 20px", color: "#6B6B6B" }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>&#128202;</div>
-        <div style={{ fontSize: 18, fontWeight: 600, color: "#334155", marginBottom: 8 }}>
+        <div style={{ fontSize: 18, fontWeight: 600, color: "#2E2E2E", marginBottom: 8 }}>
           No Data Yet
         </div>
         <div style={{ fontSize: 14 }}>
@@ -206,9 +206,9 @@ export default function MyTerritory({
 
   if (!user) {
     return (
-      <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
+      <div style={{ textAlign: "center", padding: "60px 20px", color: "#6B6B6B" }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>&#128274;</div>
-        <div style={{ fontSize: 18, fontWeight: 600, color: "#334155", marginBottom: 8 }}>
+        <div style={{ fontSize: 18, fontWeight: 600, color: "#2E2E2E", marginBottom: 8 }}>
           Sign In Required
         </div>
         <div style={{ fontSize: 14 }}>
@@ -223,7 +223,7 @@ export default function MyTerritory({
       {/* Welcome Header */}
       <div
         style={{
-          background: "linear-gradient(135deg, #0F766E 0%, #0D9488 100%)",
+          background: "linear-gradient(135deg, #6B1E1E 0%, #7A2530 100%)",
           color: "#fff",
           padding: "24px 24px",
           borderRadius: 8,
@@ -260,7 +260,7 @@ export default function MyTerritory({
         </div>
         <div className="kpi-card">
           <div className="kpi-label">Overdue Reorders</div>
-          <div className="kpi-value" style={{ color: "#DC2626" }}>
+          <div className="kpi-value" style={{ color: "#C53030" }}>
             {overdueReorders}
           </div>
         </div>
@@ -318,7 +318,7 @@ function TasksWidget() {
 
   if (display.length === 0) return null;
 
-  const priorityColors = { urgent: "#dc2626", high: "#f97316", medium: "#d97706", low: "#64748b" };
+  const priorityColors = { urgent: "#C53030", high: "#B87333", medium: "#C07B01", low: "#6B6B6B" };
 
   return (
     <div className="table-container" style={{ marginTop: 24 }}>
@@ -326,7 +326,7 @@ function TasksWidget() {
         <h3 className="table-title">
           Upcoming Tasks
           {overdue.length > 0 && (
-            <span style={{ marginLeft: 8, fontSize: 12, color: "#dc2626", fontWeight: 600 }}>
+            <span style={{ marginLeft: 8, fontSize: 12, color: "#C53030", fontWeight: 600 }}>
               {overdue.length} overdue
             </span>
           )}
@@ -344,13 +344,13 @@ function TasksWidget() {
           }}>
             <span style={{
               width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
-              background: priorityColors[task.priority] || "#64748b",
+              background: priorityColors[task.priority] || "#6B6B6B",
             }} />
             <span style={{ flex: 1, fontWeight: 500 }}>{task.title}</span>
             {task.accountName && (
               <span style={{ color: "var(--text-dim)", fontSize: 12 }}>{task.accountName}</span>
             )}
-            <span style={{ fontSize: 12, color: isOverdue ? "#dc2626" : "var(--text-dim)", fontWeight: isOverdue ? 600 : 400 }}>
+            <span style={{ fontSize: 12, color: isOverdue ? "#C53030" : "var(--text-dim)", fontWeight: isOverdue ? 600 : 400 }}>
               {task.dueDate || "No date"}
             </span>
           </div>

@@ -31,7 +31,7 @@ function ReorderStatusBadge({ status }) {
 
 function PriorityBar({ priority }) {
   const p = priority || 0;
-  const color = p >= 70 ? "#ef4444" : p >= 40 ? "#f59e0b" : "#10b981";
+  const color = p >= 70 ? "#C53030" : p >= 40 ? "#C07B01" : "#1F865A";
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
       <div
@@ -51,7 +51,7 @@ function PriorityBar({ priority }) {
           }}
         />
       </div>
-      <span style={{ fontSize: 10, color: "#64748b" }}>{p}</span>
+      <span style={{ fontSize: 10, color: "#6B6B6B" }}>{p}</span>
     </div>
   );
 }
@@ -110,7 +110,7 @@ function ReorderRow({ row, index, skuFilter, onAccountClick }) {
         <td>
           {hasSkus && (
             <span
-              style={{ cursor: "pointer", color: "#3498db", fontSize: 12, marginRight: 4 }}
+              style={{ cursor: "pointer", color: "#8B6A4C", fontSize: 12, marginRight: 4 }}
               onClick={() => setExpanded(!expanded)}
               title="Show SKU breakdown"
             >
@@ -230,7 +230,7 @@ export default function ReorderForecast({
         datasets: [
           {
             data: [overdueCount, soonCount, trackCount],
-            backgroundColor: ["#F8992D", "#D97706", "#0D9F6E"],
+            backgroundColor: ["#C53030", "#C07B01", "#1F865A"],
           },
         ],
       },
@@ -320,9 +320,9 @@ export default function ReorderForecast({
   // Empty state
   if (!filteredBase || filteredBase.length === 0) {
     return (
-      <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
+      <div style={{ textAlign: "center", padding: "60px 20px", color: "#6B6B6B" }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>&#128260;</div>
-        <div style={{ fontSize: 18, fontWeight: 600, color: "#334155", marginBottom: 8 }}>
+        <div style={{ fontSize: 18, fontWeight: 600, color: "#2E2E2E", marginBottom: 8 }}>
           No Reorder Data
         </div>
         <div style={{ fontSize: 14 }}>
@@ -436,7 +436,7 @@ export default function ReorderForecast({
             ))}
             {pageData.length === 0 && (
               <tr>
-                <td colSpan={12} style={{ textAlign: "center", padding: 40, color: "#64748b" }}>
+                <td colSpan={12} style={{ textAlign: "center", padding: 40, color: "#6B6B6B" }}>
                   No accounts match the current filters.
                 </td>
               </tr>
@@ -453,7 +453,7 @@ export default function ReorderForecast({
               justifyContent: "space-between",
               padding: "8px 4px",
               fontSize: 12,
-              color: "#64748b",
+              color: "#6B6B6B",
             }}
           >
             <span>
