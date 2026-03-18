@@ -13,9 +13,10 @@ import { useData } from "../context/DataContext";
 import DataImport from "./DataImport";
 import CloudSyncSettings from "./CloudSyncSettings";
 
-function SettingsSection({ title, children, headerRight }) {
+function SettingsSection({ title, children, headerRight, id }) {
   return (
     <div
+      id={id}
       style={{
         background: "#fff",
         borderRadius: 12,
@@ -508,7 +509,7 @@ export default function Settings({
       </SettingsSection>
 
       {/* Billing (placeholder) */}
-      <SettingsSection title="Billing & Subscription">
+      <SettingsSection title="Billing & Subscription" id="settings-billing">
         <p style={{ fontSize: 12, color: "#6B7280", marginBottom: 16 }}>
           Manage your subscription plan and payment details.
         </p>

@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1.0] - 2026-03-17
+
+### Added
+- **Multi-file upload** — drop or select multiple files at once; a queue processes them sequentially with auto-confirm for high-confidence mappings and manual review for low-confidence, PDFs, and product sheets
+- **useFileQueue hook** (`hooks/useFileQueue.js`) — queue state management with file validation (10MB limit, 20-file batch cap), duplicate detection against recent uploads, smart sampling for AI comprehension, and auto-confirm threshold logic
+- **Queue Panel UI** — inline file list with status badges, progress bar, duplicate warnings, review/remove buttons, and batch completion summary
+- **loadRecentUploads** service function — queries last 100 uploads for duplicate detection
+- 18 unit tests covering auto-confirm logic, smart sampling, file validation constants, and status flow contracts
+
+### Changed
+- DataImport refactored to support both single-file (original flow) and multi-file (queue) modes
+- Drop zone updated to accept multiple files with `multiple` attribute
+- Back/cancel buttons in mapping, billback, and product sheet review steps are queue-aware — return to queue instead of resetting in batch mode
+- Confirm functions (spreadsheet, billback, product sheet) detect queue items and mark them done
+
+## [0.3.0.1] - 2026-03-17
+
+### Fixed
+- Wired up 4 broken admin Settings buttons: Change Password (sends Firebase reset email), Reset All Settings (resets tenant config to defaults with confirmation), Manage Subscription (placeholder alert), and Upgrade Plan (scrolls to billing section)
+- Added user feedback when Change Password fails due to missing email
+- Included `userRole` in Reset All Settings so it resets completely
+- Removed redundant route navigation from Upgrade Plan button (already on Settings page)
+
 ## [0.3.0.0] - 2026-03-16
 
 ### Added

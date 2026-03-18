@@ -42,6 +42,9 @@ import useFilters from "./hooks/useFilters";
 import { useAuth } from "./context/AuthContext";
 import { useData } from "./context/DataContext";
 import { clearDemoData } from "./services/demoData";
+import { sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "./config/firebase";
+import TENANT_CONFIG from "./config/tenant";
 
 function App() {
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
@@ -386,12 +389,46 @@ function App() {
                   element={
                     <Settings
                       config={tenantConfig}
-                      onChangePassword={() => console.log("Change password")}
+                      onChangePassword={async () => {
+                        if (!currentUser?.email) {
+                          alert("No email address found for your account.");
+                          return;
+                        }
+                        try {
+                          await sendPasswordResetEmail(auth, currentUser.email);
+                          alert("Password reset email sent to " + currentUser.email);
+                        } catch (err) {
+                          alert("Failed to send reset email: " + err.message);
+                        }
+                      }}
                       onSaveBranding={(b) => updateTenantConfig(b)}
                       onSaveTerminology={(t) => updateTenantConfig({ terminology: t })}
                       onSaveGoals={(g) => updateTenantConfig({ goals: g })}
-                      onResetSettings={() => console.log("Reset settings")}
-                      onManageBilling={() => console.log("Manage billing")}
+                      onResetSettings={async () => {
+                        if (!window.confirm("Are you sure? This will reset all settings to defaults. This cannot be undone.")) return;
+                        try {
+                          await updateTenantConfig({
+                            userRole: TENANT_CONFIG.userRole,
+                            companyName: TENANT_CONFIG.companyName,
+                            logo: TENANT_CONFIG.logo,
+                            primaryColor: TENANT_CONFIG.primaryColor,
+                            accentColor: TENANT_CONFIG.accentColor,
+                            terminology: TENANT_CONFIG.terminology,
+                            goals: {},
+                            pipelineStages: TENANT_CONFIG.pipelineStages,
+                            channels: TENANT_CONFIG.channels,
+                            tags: TENANT_CONFIG.tags,
+                            features: TENANT_CONFIG.features,
+                          });
+                          alert("Settings have been reset to defaults.");
+                          window.location.reload();
+                        } catch (err) {
+                          alert("Failed to reset settings: " + err.message);
+                        }
+                      }}
+                      onManageBilling={() => {
+                        alert("Billing management is not yet available. Contact support for plan changes.");
+                      }}
                     />
                   }
                 />

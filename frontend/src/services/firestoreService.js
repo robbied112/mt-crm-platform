@@ -278,6 +278,30 @@ export async function logUpload(tenantId, metadata) {
   });
 }
 
+/**
+ * Load recent upload records for a tenant.
+ * @param {string} tenantId
+ * @param {number} count - max records to return (default 100)
+ * @returns {Promise<Array<{fileName: string, type: string, createdAt: any}>>}
+ */
+export async function loadRecentUploads(tenantId, count = 100) {
+  try {
+    const q = query(
+      collection(db, "tenants", tenantId, "uploads"),
+      orderBy("createdAt", "desc"),
+      fbLimit(count)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => {
+      const data = d.data();
+      return { fileName: data.fileName, type: data.type, createdAt: data.createdAt };
+    });
+  } catch (err) {
+    console.error("loadRecentUploads failed:", err);
+    return [];
+  }
+}
+
 export async function loadWines(tenantId) {
   const snap = await getDocs(collection(db, "tenants", tenantId, "wines"));
   return snap.docs
