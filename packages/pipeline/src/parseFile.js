@@ -20,8 +20,10 @@ function getXLSX() {
  * Heuristic: the header row is the first row where:
  *   - At least 3 non-empty cells exist, AND
  *   - More than half the cells are non-empty strings (not numbers)
- * Skips title rows, date ranges, blank rows, etc.
+ * Skips title rows, date ranges, blank rows, and pivot period label rows.
  */
+const _periodLabelPattern = /^\d+\s+months?\s+\d{1,2}\/\d{1,2}\/\d{4}\s+thru\s+\d{1,2}\/\d{1,2}\/\d{4}$/i;
+
 function findHeaderRow(rawRows) {
   for (let i = 0; i < Math.min(rawRows.length, 15); i++) {
     const row = rawRows[i];
@@ -29,6 +31,10 @@ function findHeaderRow(rawRows) {
 
     const nonEmpty = row.filter((cell) => cell !== null && cell !== undefined && String(cell).trim() !== "");
     if (nonEmpty.length < 3) continue;
+
+    // Skip rows that are pivot period labels (e.g. "1 Month 12/1/2025 thru 12/31/2025")
+    const periodCells = nonEmpty.filter((cell) => _periodLabelPattern.test(String(cell).trim()));
+    if (periodCells.length >= 2) continue;
 
     const textCells = nonEmpty.filter((cell) => {
       const s = String(cell).trim();
