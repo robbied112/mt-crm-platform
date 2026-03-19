@@ -16,6 +16,9 @@ const normalize = require("./normalize");
 const constants = require("./constants");
 const firestore = require("./firestore");
 const mergeSheetsModule = require("./mergeSheets");
+const distributorFormats = require("./distributorFormats");
+const productNormalize = require("./productNormalize");
+const importDiff = require("./importDiff");
 
 module.exports = {
   // parseFile
@@ -80,4 +83,22 @@ module.exports = {
   readChunked: firestore.readChunked,
   createModularFirestoreAdapter: firestore.createModularFirestoreAdapter,
   createAdminFirestoreAdapter: firestore.createAdminFirestoreAdapter,
+
+  // distributorFormats
+  matchDistributorTemplate: distributorFormats.matchDistributorTemplate,
+  DISTRIBUTOR_TEMPLATES: distributorFormats.DISTRIBUTOR_TEMPLATES,
+
+  // productNormalize
+  normalizeProductName: productNormalize.normalizeProductName,
+  sanitizeProductName: productNormalize.sanitizeProductName,
+  extractVintage: productNormalize.extractVintage,
+  buildNormalizedName: productNormalize.buildNormalizedName,
+  PRODUCT_FIELDS: productNormalize.PRODUCT_FIELDS,
+  clientExactMatch: productNormalize.clientExactMatch,
+  fuzzyMatchProducts: productNormalize.fuzzyMatchProducts,
+  normalizeForMatch: productNormalize.normalizeForMatch,
+  tokenize: productNormalize.tokenize,
+
+  // importDiff
+  computeImportDiff: importDiff.computeImportDiff,
 };
