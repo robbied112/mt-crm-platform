@@ -44,6 +44,28 @@ describe("findHeaderRow", () => {
   it("returns 0 for empty data", () => {
     expect(findHeaderRow([])).toBe(0);
   });
+
+  it("skips pivot period label rows and finds the real header below", () => {
+    const rawRows = [
+      ["VIP 4M Rolling Period Report", "", "", "", "", "", ""],
+      ["", "", "", "1 Month 12/1/2025 thru 12/31/2025", "", "1 Month 1/1/2026 thru 1/31/2026", ""],
+      ["Account", "State", "Product", "Quantity", "Revenue", "Quantity", "Revenue"],
+      ["Acme Wine Bar", "NY", "Pinot Noir", "10", "500", "12", "600"],
+    ];
+    // Row 0: title (only 1 non-empty cell → skipped)
+    // Row 1: period labels → should be skipped by the new guard
+    // Row 2: actual headers → should be selected
+    expect(findHeaderRow(rawRows)).toBe(2);
+  });
+
+  it("does not skip rows with only one period label cell", () => {
+    const rawRows = [
+      ["1 Month 12/1/2025 thru 12/31/2025", "Account", "State", "Qty"],
+      ["Dec 2025", "Acme", "NY", "10"],
+    ];
+    // Only 1 cell matches the period pattern — row should NOT be skipped
+    expect(findHeaderRow(rawRows)).toBe(0);
+  });
 });
 
 describe("cleanHeaders", () => {
@@ -144,6 +166,34 @@ describe("processStandardRows", () => {
     const { rows } = processStandardRows(data, 0);
     expect(rows.length).toBe(1);
     expect(rows[0].Account).toBe("Co A");
+  });
+
+  it("detects pivot periods and disambiguates duplicate headers with period labels", () => {
+    const rawRows = [
+      ["VIP 4M Rolling Period Report", "", "", "", "", "", ""],
+      ["", "", "", "1 Month 12/1/2025 thru 12/31/2025", "", "1 Month 1/1/2026 thru 1/31/2026", ""],
+      ["Account", "State", "Product", "Quantity", "Revenue", "Quantity", "Revenue"],
+      ["Acme Wine Bar", "NY", "Pinot Noir", "10", "500", "12", "600"],
+    ];
+    const headerIdx = findHeaderRow(rawRows);
+    expect(headerIdx).toBe(2);
+
+    const { headers, rows, _pivotMeta } = processStandardRows(rawRows, headerIdx);
+
+    // Duplicate "Quantity" and "Revenue" headers should be disambiguated with period labels
+    expect(headers).toContain("Account");
+    expect(headers).toContain("State");
+    expect(headers).toContain("Quantity");
+    // Second occurrence gets period label suffix
+    expect(headers.some((h) => h.includes("[1M Jan 2026]"))).toBe(true);
+
+    // Pivot metadata should be present
+    expect(_pivotMeta).toBeDefined();
+    expect(_pivotMeta.periods.length).toBe(2);
+
+    // Data should parse correctly
+    expect(rows.length).toBe(1);
+    expect(rows[0].Account).toBe("Acme Wine Bar");
   });
 });
 

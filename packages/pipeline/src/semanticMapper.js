@@ -345,7 +345,9 @@ function autoDetectMapping(headers, rows, userRole) {
 
   // Detect monthly columns by name pattern
   const monthPattern = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[\s\-_]?\d{0,4}$/i;
-  const monthColumns = headers.filter((h) => monthPattern.test(h.trim()));
+  // Also detect pivot period-labeled columns: "Quantity [1M Dec 2025]", "Cases [2M Nov-Dec 2025]"
+  const periodLabelPattern = /\[\d+M\s+[A-Za-z]/;
+  const monthColumns = headers.filter((h) => monthPattern.test(h.trim()) || periodLabelPattern.test(h));
   if (monthColumns.length > 0) {
     mapping._monthColumns = monthColumns;
     confidence._monthColumns = 0.85;
