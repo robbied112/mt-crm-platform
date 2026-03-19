@@ -260,14 +260,16 @@ export async function deleteAllCrmData(tenantId) {
     }
   }
 
-  // Delete notes subcollections for every account first
+  // Delete account subcollections (notes, emails, files) before parent docs
   const accountsSnap = await getDocs(tenantCol(tenantId, "accounts"));
   for (const acctDoc of accountsSnap.docs) {
-    const notesCol = collection(db, "tenants", tenantId, "accounts", acctDoc.id, "notes");
-    let notesSnap = await getDocs(notesCol);
-    while (!notesSnap.empty) {
-      await Promise.all(notesSnap.docs.map((d) => deleteDoc(d.ref)));
-      notesSnap = await getDocs(notesCol);
+    for (const sub of ["notes", "emails", "files"]) {
+      const subCol = collection(db, "tenants", tenantId, "accounts", acctDoc.id, sub);
+      let subSnap = await getDocs(subCol);
+      while (!subSnap.empty) {
+        await Promise.all(subSnap.docs.map((d) => deleteDoc(d.ref)));
+        subSnap = await getDocs(subCol);
+      }
     }
   }
 
@@ -279,6 +281,8 @@ export async function deleteAllCrmData(tenantId) {
     drainCollection("tasks"),
     drainCollection("opportunities"),
     drainCollection("products"),
+    drainCollection("wines"),
+    drainCollection("pipeline"),
   ]);
 }
 

@@ -249,8 +249,8 @@ describe("deleteImport", () => {
 });
 
 describe("deleteAllData", () => {
-  it("deletes all docs in data/, views/, imports/, uploads/ and their row subcollections", async () => {
-    // Seed data across all four collections, some with rows subcollections
+  it("deletes all docs in chunked and flat collections", async () => {
+    // Seed chunked collections (data, views, imports) with rows subcollections
     mockDocs.set("tenants/t1/data/distScorecard", { chunked: true });
     mockDocs.set("tenants/t1/data/distScorecard/rows/0", { idx: 0, items: [{ a: 1 }] });
     mockDocs.set("tenants/t1/views/accountsTop", { chunked: true });
@@ -258,11 +258,15 @@ describe("deleteAllData", () => {
     mockDocs.set("tenants/t1/views/_summary", { text: "summary" });
     mockDocs.set("tenants/t1/imports/imp1", { fileName: "test.csv" });
     mockDocs.set("tenants/t1/imports/imp1/rows/0", { idx: 0, items: [{ c: 3 }] });
+    // Seed flat collections (uploads, uploadAudit, pendingMatches, pendingWineMatches)
     mockDocs.set("tenants/t1/uploads/up1", { fileName: "file.xlsx" });
+    mockDocs.set("tenants/t1/uploadAudit/aud1", { action: "upload" });
+    mockDocs.set("tenants/t1/pendingMatches/pm1", { status: "pending" });
+    mockDocs.set("tenants/t1/pendingWineMatches/pwm1", { status: "pending" });
 
     await deleteAllData("t1");
 
-    // All docs should be gone
+    // Chunked collections and their rows should be gone
     expect(mockDocs.has("tenants/t1/data/distScorecard")).toBe(false);
     expect(mockDocs.has("tenants/t1/data/distScorecard/rows/0")).toBe(false);
     expect(mockDocs.has("tenants/t1/views/accountsTop")).toBe(false);
@@ -270,7 +274,11 @@ describe("deleteAllData", () => {
     expect(mockDocs.has("tenants/t1/views/_summary")).toBe(false);
     expect(mockDocs.has("tenants/t1/imports/imp1")).toBe(false);
     expect(mockDocs.has("tenants/t1/imports/imp1/rows/0")).toBe(false);
+    // Flat collections should be gone
     expect(mockDocs.has("tenants/t1/uploads/up1")).toBe(false);
+    expect(mockDocs.has("tenants/t1/uploadAudit/aud1")).toBe(false);
+    expect(mockDocs.has("tenants/t1/pendingMatches/pm1")).toBe(false);
+    expect(mockDocs.has("tenants/t1/pendingWineMatches/pwm1")).toBe(false);
   });
 
   it("succeeds when collections are already empty", async () => {

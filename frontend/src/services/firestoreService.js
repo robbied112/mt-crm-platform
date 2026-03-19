@@ -215,12 +215,11 @@ export async function deleteImport(tenantId, importId) {
  * — those are handled by the caller via CrmContext.
  */
 export async function deleteAllData(tenantId) {
-  // Helper: delete all docs (and their row subcollections) in a collection
-  async function deleteCollection(collPath) {
+  // Delete all docs and their row subcollections in a chunked collection
+  async function deleteChunkedCollection(collPath) {
     const colRef = collection(db, "tenants", tenantId, collPath);
     const snap = await getDocs(colRef);
     await Promise.all(snap.docs.map(async (d) => {
-      // Delete rows subcollection if it exists
       const rowsRef = collection(db, "tenants", tenantId, collPath, d.id, "rows");
       const rowsSnap = await getDocs(rowsRef);
       await Promise.all(rowsSnap.docs.map((r) => deleteDoc(r.ref)));
@@ -228,11 +227,21 @@ export async function deleteAllData(tenantId) {
     }));
   }
 
+  // Delete all docs in a flat collection (no subcollections)
+  async function deleteFlatCollection(collPath) {
+    const colRef = collection(db, "tenants", tenantId, collPath);
+    const snap = await getDocs(colRef);
+    await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
+  }
+
   await Promise.all([
-    deleteCollection("data"),
-    deleteCollection("views"),
-    deleteCollection("imports"),
-    deleteCollection("uploads"),
+    deleteChunkedCollection("data"),
+    deleteChunkedCollection("views"),
+    deleteChunkedCollection("imports"),
+    deleteFlatCollection("uploads"),
+    deleteFlatCollection("uploadAudit"),
+    deleteFlatCollection("pendingMatches"),
+    deleteFlatCollection("pendingWineMatches"),
   ]);
 }
 
