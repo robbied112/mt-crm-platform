@@ -183,7 +183,8 @@ DataImport
   -> normalizeRows()
   -> DataContext.importDatasets()
   -> saveImport() to imports/
-  -> saveAllViews() or saveAllDatasets()
+  -> rebuildViews() Cloud Function (normalized model) or saveAllDatasets() (legacy)
+  -> refreshData() reloads views from Firestore
 ```
 
 Cloud sync:

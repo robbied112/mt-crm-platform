@@ -185,7 +185,13 @@ function createModularFirestoreAdapter(api, db) {
 function createAdminFirestoreAdapter({ admin, db }) {
   return {
     serverTimestamp: () => admin.firestore.FieldValue.serverTimestamp(),
-    getDoc: (path) => db.doc(path.join("/")).get(),
+    getDoc: async (path) => {
+      const snap = await db.doc(path.join("/")).get();
+      return {
+        exists: () => snap.exists,
+        data: () => snap.data(),
+      };
+    },
     setDoc: (path, data, options) => db.doc(path.join("/")).set(data, options),
     deleteDoc: (path) => db.doc(path.join("/")).delete(),
     async getDocs(path, options) {

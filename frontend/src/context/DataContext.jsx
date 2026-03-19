@@ -12,11 +12,11 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef } f
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { useAuth } from "./AuthContext";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import {
   loadAllData,
   loadAllViews,
   saveAllDatasets,
-  saveAllViews,
   saveImport,
   loadSummary,
   saveSummary,
@@ -167,46 +167,6 @@ export default function DataProvider({ children }) {
     return unsubscribe;
   }, [tenantId]);
 
-  // Save imported datasets + refresh
-  // When useNormalizedModel is true, also saves raw rows to imports/.
-  const importDatasets = useCallback(async (datasets, summaryText, importMeta) => {
-    if (!tenantId) throw new Error("No tenant context");
-    try {
-      const collPath = useNormalized ? "views" : "data";
-      let importId = null;
-
-      // Billback imports always need an import record for downstream extraction.
-      if (importMeta && (useNormalized || importMeta.type === "billback")) {
-        const { normalizedRows, ...meta } = importMeta;
-        importId = await saveImport(tenantId, meta, normalizedRows);
-      }
-
-      // Save pre-computed views/data
-      if (useNormalized) {
-        await saveAllViews(tenantId, datasets);
-      } else {
-        await saveAllDatasets(tenantId, datasets);
-      }
-
-      if (summaryText) {
-        await saveSummary(tenantId, summaryText, collPath);
-        setSummary(summaryText);
-      }
-
-      // Merge new data into state
-      setData((prev) => {
-        const next = { ...prev };
-        for (const [key, val] of Object.entries(datasets)) {
-          if (val !== undefined) next[key] = val;
-        }
-        return next;
-      });
-      return { importId };
-    } catch (err) {
-      throw new Error(`Failed to save data: ${err.message}`);
-    }
-  }, [tenantId, useNormalized]);
-
   // Refresh from Firestore (data, summary, and config)
   const refreshData = useCallback(async () => {
     if (!tenantId) return;
@@ -229,6 +189,55 @@ export default function DataProvider({ children }) {
       setLoading(false);
     }
   }, [tenantId, useNormalized]);
+
+  // Save imported datasets + refresh
+  // When useNormalizedModel is true, saves raw rows to imports/ then calls
+  // rebuildViews Cloud Function (server-authoritative) to aggregate ALL imports.
+  const importDatasets = useCallback(async (datasets, summaryText, importMeta) => {
+    if (!tenantId) throw new Error("No tenant context");
+    try {
+      const collPath = useNormalized ? "views" : "data";
+      let importId = null;
+
+      // Billback imports always need an import record for downstream extraction.
+      if (importMeta && (useNormalized || importMeta.type === "billback")) {
+        const { normalizedRows, ...meta } = importMeta;
+        importId = await saveImport(tenantId, meta, normalizedRows);
+      }
+
+      if (useNormalized) {
+        // Server-authoritative rebuild: rebuildViews reads ALL imports,
+        // runs transformAll across combined data, and writes to views/.
+        const fns = getFunctions();
+        const rebuild = httpsCallable(fns, "rebuildViews");
+        await rebuild({ tenantId });
+
+        // Reload views from Firestore (server is source of truth)
+        await refreshData();
+      } else {
+        // Legacy path: frontend writes directly to data/
+        await saveAllDatasets(tenantId, datasets);
+
+        // Merge new data into state for legacy path
+        setData((prev) => {
+          const next = { ...prev };
+          for (const [key, val] of Object.entries(datasets)) {
+            if (val !== undefined) next[key] = val;
+          }
+          return next;
+        });
+      }
+
+      if (summaryText) {
+        await saveSummary(tenantId, summaryText, collPath);
+        setSummary(summaryText);
+      }
+
+      return { importId };
+    } catch (err) {
+      throw new Error(`Failed to save data: ${err.message}`);
+    }
+  }, [tenantId, useNormalized, refreshData]);
 
   // Save tenant config
   const updateTenantConfig = useCallback(async (patch) => {

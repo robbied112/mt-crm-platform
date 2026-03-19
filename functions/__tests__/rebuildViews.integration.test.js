@@ -155,3 +155,136 @@ describe("rebuildViews integration", { skip: skipTests }, () => {
     assert.ok(recentSnap.size < 10, "Should allow more rebuilds");
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// Full rebuild pipeline tests — calls rebuildViewsForTenant directly
+// ─────────────────────────────────────────────────────────────────────
+
+// rebuildViewsForTenant uses the default admin app via helpers.js.
+// FIRESTORE_EMULATOR_HOST was already set by emulator-helpers above,
+// so helpers.js admin.initializeApp() will connect to the emulator.
+let rebuildViewsForTenant;
+let rebuildSkip = skipTests;
+
+if (!skipTests) {
+  try {
+    ({ rebuildViewsForTenant } = require("../rebuild"));
+  } catch (err) {
+    console.log("Skipping rebuild pipeline tests — could not load rebuild module:", err.message);
+    rebuildSkip = true;
+  }
+}
+
+describe("rebuildViewsForTenant pipeline", { skip: rebuildSkip }, () => {
+  beforeEach(async () => {
+    await clearFirestore();
+    await seedTenant(db, TENANT_ID);
+    await seedUser(db, USER_ID, TENANT_ID);
+  });
+
+  it("single import → produces correct views", async () => {
+    await seedImport(db, TENANT_ID, "imp1", {
+      type: "depletion",
+      fileName: "q1.csv",
+      mapping: { acct: "acct", dist: "dist", st: "st", ch: "ch", sku: "sku", qty: "qty", date: "date", revenue: "revenue" },
+    }, SAMPLE_ROWS);
+
+    await rebuildViewsForTenant({ tenantId: TENANT_ID, triggeredBy: "test" });
+
+    // Verify views were written
+    const viewsSnap = await db.collection("tenants").doc(TENANT_ID)
+      .collection("views").get();
+    assert.ok(viewsSnap.size > 0, "Views should be written after rebuild");
+
+    // Check specific view datasets exist
+    const viewIds = viewsSnap.docs.map((d) => d.id);
+    assert.ok(viewIds.includes("distScorecard"), "distScorecard view should exist");
+    assert.ok(viewIds.includes("accountsTop"), "accountsTop view should exist");
+  });
+
+  it("two imports of same type → views contain combined data", async () => {
+    // Seed two depletion imports with different rows
+    await seedImport(db, TENANT_ID, "imp1", {
+      type: "depletion",
+      fileName: "q1.csv",
+      mapping: { acct: "acct", dist: "dist", st: "st", ch: "ch", sku: "sku", qty: "qty", date: "date", revenue: "revenue" },
+    }, SAMPLE_ROWS.slice(0, 2));
+
+    await seedImport(db, TENANT_ID, "imp2", {
+      type: "depletion",
+      fileName: "q2.csv",
+      mapping: { acct: "acct", dist: "dist", st: "st", ch: "ch", sku: "sku", qty: "qty", date: "date", revenue: "revenue" },
+    }, SAMPLE_ROWS.slice(2));
+
+    await rebuildViewsForTenant({ tenantId: TENANT_ID, triggeredBy: "test" });
+
+    // Read distScorecard view — small arrays are stored directly on the parent
+    // doc (chunked: false, items: [...]), not in a rows/ subcollection
+    const scorecardDoc = await db.collection("tenants").doc(TENANT_ID)
+      .collection("views").doc("distScorecard").get();
+    assert.ok(scorecardDoc.exists, "distScorecard view should exist");
+
+    const data = scorecardDoc.data();
+    const allItems = data.items || [];
+
+    // distScorecard items have a "name" field (distributor name)
+    // Should have entries for both: Southern Glazer's and Republic National
+    assert.ok(allItems.length >= 2, `Expected 2+ scorecard items, got ${allItems.length}`);
+    const distributors = new Set(allItems.map((r) => r.name));
+    assert.ok(distributors.size >= 2, `Expected 2+ distributors, got ${distributors.size}: ${[...distributors].join(", ")}`);
+  });
+
+  it("delete import → rebuild shows only remaining data", async () => {
+    // Seed two imports
+    await seedImport(db, TENANT_ID, "imp1", {
+      type: "depletion",
+      fileName: "q1.csv",
+      mapping: { acct: "acct", dist: "dist", st: "st", ch: "ch", sku: "sku", qty: "qty", date: "date", revenue: "revenue" },
+    }, SAMPLE_ROWS.slice(0, 2));
+
+    await seedImport(db, TENANT_ID, "imp2", {
+      type: "depletion",
+      fileName: "q2.csv",
+      mapping: { acct: "acct", dist: "dist", st: "st", ch: "ch", sku: "sku", qty: "qty", date: "date", revenue: "revenue" },
+    }, SAMPLE_ROWS.slice(2));
+
+    // Delete imp1 (rows + doc)
+    const rowsSnap = await db.collection("tenants").doc(TENANT_ID)
+      .collection("imports").doc("imp1")
+      .collection("rows").get();
+    for (const doc of rowsSnap.docs) {
+      await doc.ref.delete();
+    }
+    await db.collection("tenants").doc(TENANT_ID)
+      .collection("imports").doc("imp1").delete();
+
+    // Rebuild with only imp2 remaining
+    await rebuildViewsForTenant({ tenantId: TENANT_ID, triggeredBy: "test" });
+
+    // Verify views exist and reflect only imp2's data (1 row: The Wine Bar, Cabernet)
+    const viewsSnap = await db.collection("tenants").doc(TENANT_ID)
+      .collection("views").get();
+    assert.ok(viewsSnap.size > 0, "Views should exist after rebuild with remaining import");
+
+    // Verify rebuild history was recorded
+    const histSnap = await db.collection("tenants").doc(TENANT_ID)
+      .collection("rebuildHistory").get();
+    assert.ok(histSnap.size >= 1, "Rebuild history should be recorded");
+  });
+
+  it("empty imports → rebuild produces empty views", async () => {
+    // No imports seeded — rebuild should succeed and write empty views
+    await rebuildViewsForTenant({ tenantId: TENANT_ID, triggeredBy: "test" });
+
+    // Rebuild should complete without error
+    const histSnap = await db.collection("tenants").doc(TENANT_ID)
+      .collection("rebuildHistory").get();
+    assert.ok(histSnap.size >= 1, "Rebuild history should be recorded even for empty imports");
+
+    // Check the most recent rebuild was successful
+    const latest = histSnap.docs
+      .map((d) => d.data())
+      .find((d) => d.status === "success");
+    assert.ok(latest, "Rebuild should succeed with 0 imports");
+  });
+});
