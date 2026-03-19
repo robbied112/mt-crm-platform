@@ -89,7 +89,7 @@ describe("autoDetectMapping", () => {
     expect(mapping.dist).toBeTruthy();
   });
 
-  it("detects pivot period-labeled columns as _monthColumns", () => {
+  it("detects pivot period-labeled qty columns as _monthColumns", () => {
     const headers = [
       "Account", "State", "Product",
       "Quantity", "Revenue",
@@ -101,12 +101,15 @@ describe("autoDetectMapping", () => {
     ];
     const { mapping } = autoDetectMapping(headers, rows);
 
-    // Period-labeled columns should be detected as month columns
+    // Only single-month (1M) qty-aliased columns should be month columns
     expect(mapping._monthColumns).toBeDefined();
-    expect(mapping._monthColumns).toContain("Quantity [1M Jan 2026]");
-    expect(mapping._monthColumns).toContain("Revenue [1M Jan 2026]");
-    expect(mapping._monthColumns).toContain("Quantity [2M Dec-Jan 2026]");
-    expect(mapping._monthColumns).toContain("Revenue [2M Dec-Jan 2026]");
+    expect(mapping._monthColumns).toContain("Quantity");           // first period (qty-mapped, same base)
+    expect(mapping._monthColumns).toContain("Quantity [1M Jan 2026]"); // single month qty
+    // Revenue columns excluded (not a qty alias)
+    expect(mapping._monthColumns).not.toContain("Revenue [1M Jan 2026]");
+    // Multi-month totals excluded
+    expect(mapping._monthColumns).not.toContain("Quantity [2M Dec-Jan 2026]");
+    expect(mapping._monthColumns).not.toContain("Revenue [2M Dec-Jan 2026]");
   });
 
   it("supports all 4 industry roles", () => {

@@ -26,6 +26,14 @@ function normalizeState(v) {
   return s.length === 2 ? s : s.slice(0, 2); // best effort
 }
 
+function normalizeChannel(v) {
+  if (!v) return "Off-Premise";
+  const lower = v.toLowerCase().trim();
+  if (lower === "on" || lower === "on-premise" || lower === "on premise") return "On-Premise";
+  if (lower === "off" || lower === "off-premise" || lower === "off premise") return "Off-Premise";
+  return v;
+}
+
 function normalizeDate(v) {
   if (!v) return "";
   const d = new Date(v);
@@ -62,7 +70,7 @@ function transformDepletion(rows, mapping) {
     acct: str(getMapped(r, mapping, "acct")),
     dist: str(getMapped(r, mapping, "dist")),
     st: normalizeState(getMapped(r, mapping, "st")),
-    ch: str(getMapped(r, mapping, "ch")) || "Off-Premise",
+    ch: normalizeChannel(str(getMapped(r, mapping, "ch"))),
     sku: str(getMapped(r, mapping, "sku")),
     qty: num(getMapped(r, mapping, "qty")),
     date: normalizeDate(getMapped(r, mapping, "date")),
@@ -73,9 +81,14 @@ function transformDepletion(rows, mapping) {
 
   // ── distScorecard: group by distributor+state ──
   const distGroups = groupBy(normalized, (r) => `${r.dist}||${r.st}`);
+  const useMonthSums = monthCols.length > 0;
   const distScorecard = Object.entries(distGroups).map(([key, items]) => {
     const [name, st] = key.split("||");
-    const totalCE = items.reduce((s, r) => s + r.qty, 0);
+    // When month columns exist, sum them for totalCE (more accurate than qty which
+    // may point to just the first month in a pivot-period report).
+    const totalCE = useMonthSums
+      ? items.reduce((s, r) => s + r.months.reduce((ms, m) => ms + m, 0), 0)
+      : items.reduce((s, r) => s + r.qty, 0);
 
     // Build weekly array from data
     let weekly = [];
@@ -119,7 +132,9 @@ function transformDepletion(rows, mapping) {
   const accountsTop = Object.entries(acctGroups)
     .map(([key, items], idx) => {
       const [acct, dist, st] = key.split("||");
-      const totalCE = items.reduce((s, r) => s + r.qty, 0);
+      const totalCE = useMonthSums
+        ? items.reduce((s, r) => s + r.months.reduce((ms, m) => ms + m, 0), 0)
+        : items.reduce((s, r) => s + r.qty, 0);
       const ch = items[0]?.ch || "Off-Premise";
 
       // Monthly breakdown from month columns if available
@@ -136,7 +151,9 @@ function transformDepletion(rows, mapping) {
 
       const total = nov + dec + jan + feb;
       const w4Items = items.slice(-Math.ceil(items.length / 3));
-      const w4 = w4Items.reduce((s, r) => s + r.qty, 0);
+      const w4 = useMonthSums
+        ? w4Items.reduce((s, r) => s + r.months.reduce((ms, m) => ms + m, 0), 0)
+        : w4Items.reduce((s, r) => s + r.qty, 0);
       const earlyTotal = nov + dec || 1;
       const lateTotal = jan + feb;
       const growth = ((lateTotal - earlyTotal) / earlyTotal) * 100;
@@ -193,11 +210,9 @@ function transformDepletion(rows, mapping) {
   const skuGroups = groupBy(normalized, (r) => r.sku || "Unknown Product");
   const skuBreakdown = Object.entries(skuGroups)
     .map(([sku, items]) => {
-      const totalQty = items.reduce((s, r) => s + r.qty, 0);
-      const totalMonths = monthCols.length > 0
+      const ce = useMonthSums
         ? items.reduce((s, r) => s + r.months.reduce((ms, m) => ms + m, 0), 0)
-        : 0;
-      const ce = totalQty > 0 ? totalQty : totalMonths;
+        : items.reduce((s, r) => s + r.qty, 0);
       return { sku, ce: Math.round(ce) };
     })
     .filter((s) => s.ce > 0)
@@ -233,7 +248,7 @@ function transformPurchases(rows, mapping) {
     acct: str(getMapped(r, mapping, "acct")),
     dist: str(getMapped(r, mapping, "dist")),
     st: normalizeState(getMapped(r, mapping, "st")),
-    ch: str(getMapped(r, mapping, "ch")) || "Off-Premise",
+    ch: normalizeChannel(str(getMapped(r, mapping, "ch"))),
     qty: num(getMapped(r, mapping, "qty")),
     date: normalizeDate(getMapped(r, mapping, "date")),
     sku: str(getMapped(r, mapping, "sku")),
