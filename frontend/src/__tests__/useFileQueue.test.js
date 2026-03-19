@@ -21,22 +21,33 @@ describe("useFileQueue — canAutoConfirm contract", () => {
   // Replicate the auto-confirm logic for testing
   const AUTO_CONFIRM_THRESHOLD = 0.8;
   const MIN_MAPPED_FIELDS = 3;
+  const TYPE_REQUIRED_FIELDS = {
+    depletion: ["qty"],
+    sales: ["qty"],
+    purchases: ["acct", "qty"],
+    inventory: ["oh"],
+  };
 
   function canAutoConfirm(mapping, confidence, typeObj, file) {
     if (file && /\.pdf$/i.test(file.name)) return false;
     if (typeObj?.type === "product_sheet") return false;
+    if (typeObj?.type === "unknown") return false;
     const mappedKeys = Object.keys(mapping).filter(
       (k) => !k.startsWith("_") && mapping[k]
     );
     if (mappedKeys.length < MIN_MAPPED_FIELDS) return false;
-    return mappedKeys.every(
+    const allHighConfidence = mappedKeys.every(
       (k) => (confidence[k] ?? 0) >= AUTO_CONFIRM_THRESHOLD
     );
+    if (!allHighConfidence) return false;
+    const required = TYPE_REQUIRED_FIELDS[typeObj?.type] || [];
+    if (required.some((f) => !mapping[f])) return false;
+    return true;
   }
 
-  it("returns true when all mapped fields >= 0.8 and >= 3 fields", () => {
-    const mapping = { account: "Account", amount: "Amount", date: "Date" };
-    const confidence = { account: 0.95, amount: 0.9, date: 0.85 };
+  it("returns true when all mapped fields >= 0.8, >= 3 fields, and required fields present", () => {
+    const mapping = { account: "Account", qty: "Cases", date: "Date" };
+    const confidence = { account: 0.95, qty: 0.9, date: 0.85 };
     expect(canAutoConfirm(mapping, confidence, { type: "depletion" }, { name: "a.csv" })).toBe(true);
   });
 
@@ -65,8 +76,8 @@ describe("useFileQueue — canAutoConfirm contract", () => {
   });
 
   it("ignores internal fields starting with _", () => {
-    const mapping = { account: "Account", amount: "Amount", date: "Date", _monthColumns: ["Jan", "Feb"] };
-    const confidence = { account: 0.95, amount: 0.9, date: 0.85, _monthColumns: 0.9 };
+    const mapping = { account: "Account", qty: "Cases", date: "Date", _monthColumns: ["Jan", "Feb"] };
+    const confidence = { account: 0.95, qty: 0.9, date: 0.85, _monthColumns: 0.9 };
     expect(canAutoConfirm(mapping, confidence, { type: "depletion" }, { name: "a.csv" })).toBe(true);
   });
 
@@ -77,10 +88,28 @@ describe("useFileQueue — canAutoConfirm contract", () => {
   });
 
   it("handles null/undefined mapping values (unmapped fields)", () => {
-    const mapping = { account: "Account", amount: "Amount", date: "Date", region: null };
-    const confidence = { account: 0.95, amount: 0.9, date: 0.85 };
+    const mapping = { account: "Account", qty: "Cases", date: "Date", region: null };
+    const confidence = { account: 0.95, qty: 0.9, date: 0.85 };
     // region is null so not counted — still 3 mapped fields
     expect(canAutoConfirm(mapping, confidence, { type: "depletion" }, { name: "a.csv" })).toBe(true);
+  });
+
+  it("returns false for unknown type", () => {
+    const mapping = { account: "Account", qty: "Cases", date: "Date" };
+    const confidence = { account: 0.95, qty: 0.9, date: 0.85 };
+    expect(canAutoConfirm(mapping, confidence, { type: "unknown" }, { name: "a.csv" })).toBe(false);
+  });
+
+  it("returns false for depletion without qty mapped", () => {
+    const mapping = { account: "Account", dist: "Distributor", date: "Date" };
+    const confidence = { account: 0.95, dist: 0.9, date: 0.85 };
+    expect(canAutoConfirm(mapping, confidence, { type: "depletion" }, { name: "a.csv" })).toBe(false);
+  });
+
+  it("returns false for purchases without acct mapped", () => {
+    const mapping = { qty: "Cases", date: "Date", dist: "Dist" };
+    const confidence = { qty: 0.9, date: 0.85, dist: 0.9 };
+    expect(canAutoConfirm(mapping, confidence, { type: "purchases" }, { name: "a.csv" })).toBe(false);
   });
 });
 
