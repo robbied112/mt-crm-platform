@@ -218,27 +218,20 @@ describe("rebuildViewsForTenant pipeline", { skip: rebuildSkip }, () => {
 
     await rebuildViewsForTenant({ tenantId: TENANT_ID, triggeredBy: "test" });
 
-    // Read the distScorecard view and verify it reflects ALL 3 rows
+    // Read distScorecard view — small arrays are stored directly on the parent
+    // doc (chunked: false, items: [...]), not in a rows/ subcollection
     const scorecardDoc = await db.collection("tenants").doc(TENANT_ID)
       .collection("views").doc("distScorecard").get();
+    assert.ok(scorecardDoc.exists, "distScorecard view should exist");
 
-    // distScorecard should have data from both distributors
-    // (Southern Glazer's from rows 0,2 and Republic National from row 1)
-    if (scorecardDoc.exists) {
-      // View exists as a direct doc — check for rows subcollection too
-      const rowsSnap = await db.collection("tenants").doc(TENANT_ID)
-        .collection("views").doc("distScorecard")
-        .collection("rows").get();
+    const data = scorecardDoc.data();
+    const allItems = data.items || [];
 
-      const allItems = rowsSnap.docs
-        .map((d) => ({ idx: d.data().idx, items: d.data().items }))
-        .sort((a, b) => a.idx - b.idx)
-        .flatMap((c) => c.items);
-
-      // Should have entries for both distributors
-      const distributors = new Set(allItems.map((r) => r.dist || r.distributor || r.name));
-      assert.ok(distributors.size >= 2, `Expected 2+ distributors, got ${distributors.size}: ${[...distributors].join(", ")}`);
-    }
+    // distScorecard items have a "name" field (distributor name)
+    // Should have entries for both: Southern Glazer's and Republic National
+    assert.ok(allItems.length >= 2, `Expected 2+ scorecard items, got ${allItems.length}`);
+    const distributors = new Set(allItems.map((r) => r.name));
+    assert.ok(distributors.size >= 2, `Expected 2+ distributors, got ${distributors.size}: ${[...distributors].join(", ")}`);
   });
 
   it("delete import → rebuild shows only remaining data", async () => {
