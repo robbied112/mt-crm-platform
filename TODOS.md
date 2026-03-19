@@ -1,6 +1,10 @@
 # TODOS — CruFolio (MT CRM Platform)
 
-> Updated from CEO Product Direction Review on 2026-03-18.
+> **This file is the archive.** Strategic memory, dependency map, decision history, parking lot.
+> **See NOW.md for active work.** Maximum 3 items. If it's not in NOW.md, it's not happening.
+>
+> Updated from Eng Execution Reset on 2026-03-18.
+> Previous: CEO Product Direction Review on 2026-03-18.
 > Previous: CEO Team Account Model Review on 2026-03-18.
 > Previous: Subscription Gating implementation on 2026-03-18.
 > Previous: CEO Ease-of-Use & AI-First UX Review on 2026-03-17.
@@ -137,11 +141,11 @@
 
 ---
 
-## CRITICAL PATH: Learning + Proactive + Connected (CEO Direction Review 2026-03-18)
+## Archived: CRITICAL PATH (CEO Direction Review 2026-03-18, superseded by NOW.md)
 
-> These are the highest-priority unfinished items. Ship these before touching anything else.
-> Core loop: Upload → AI Insight → Action → Come Back.
-> Three PRs, sequenced: PR 1 (Learning) → PR 2 (Proactive) → PR 3 (Connected).
+> Superseded by NOW.md execution model (Eng Execution Reset, 2026-03-18).
+> These items remain valid priorities but are no longer the active working list.
+> Active work lives in NOW.md (max 3 items). Items below move to NOW.md when capacity opens.
 
 ### PR 1: Learning Layer
 
