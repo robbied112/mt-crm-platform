@@ -119,7 +119,7 @@ function transformRevenueDateless(rows, warnings) {
     channelCount: revenueByChannel.length,
     skuCount: revenueByProduct.length,
     dateless: true,
-    warnings: warnings.length > 0 ? warnings.slice(0, 10) : undefined,
+    ...(warnings.length > 0 ? { warnings: warnings.slice(0, 10) } : {}),
   };
 
   return { revenueByChannel, revenueByProduct, revenueSummary };
@@ -267,7 +267,7 @@ function transformRevenue(rows, mapping) {
     monthKeys,
     channelCount: revenueByChannel.length,
     skuCount: revenueByProduct.length,
-    warnings: warnings.length > 0 ? warnings.slice(0, 10) : undefined,
+    ...(warnings.length > 0 ? { warnings: warnings.slice(0, 10) } : {}),
   };
 
   return {
