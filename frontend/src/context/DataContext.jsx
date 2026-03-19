@@ -47,6 +47,7 @@ const EMPTY = {
   placementSummary: [],
   qbDistOrders: {},
   acctConcentration: {},
+  skuBreakdown: [],
   spendByWine: [],
   spendByDistributor: [],
   billbackSummary: {},
