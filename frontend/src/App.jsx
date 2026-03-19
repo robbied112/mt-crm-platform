@@ -75,6 +75,7 @@ function App() {
     placementSummary,
     qbDistOrders,
     acctConcentration,
+    skuBreakdown,
     spendByWine,
     spendByDistributor,
     billbackSummary,
@@ -285,6 +286,7 @@ function App() {
                   <DataGate dataKey="depletions" tabLabel="Depletions">
                     <Depletions
                       distScorecard={distScorecard}
+                      skuBreakdown={skuBreakdown}
                       filters={filters}
                       user={currentUser}
                       onDrillIn={(distName) => navigate("/distributors")}

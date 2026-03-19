@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.4.3.0] - 2026-03-19
+
+### Fixed
+- Fix depletion mapping for VIP/iDig distributor reports — "SUPPLIER NAME" now correctly maps to distributor instead of account
+- Add VIP/iDig-specific aliases for SKU ("prod cd", "corp item cd") and quantity ("case equivs", "depl cases") fields
+- Prevent auto-confirm when critical fields are missing (qty for depletions/sales, acct+qty for purchases, oh for inventory)
+- Block auto-confirm for unknown upload types
+- Fix unmapped columns warning including internal month/week column arrays
+
+### Added
+- SKU Mix chart now uses real depletion data (aggregated by product SKU) instead of static product catalog
+- Critical field warnings in MappingStep — shows required/recommended fields with impact descriptions
+- SKU Mix chart label indicates "(all data)" when dashboard filters are active
+- Cap skuBreakdown to top 25 SKUs to bound Firestore writes
+
 ## [0.4.2.2] - 2026-03-19
 
 ### Fixed

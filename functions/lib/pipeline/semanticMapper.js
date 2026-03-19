@@ -28,8 +28,8 @@ const PIPELINE_STAGES = new Set([
  * Use getFieldDefs(userRole) for role-aware labels and aliases.
  */
 
-const ACCT_ALIASES_COMMON = ["account", "account name", "customer", "outlet", "retailer", "location", "store", "buyer", "customer name", "name", "customer:job", "ship to name", "bill to name", "sold to", "customer full name", "customer company"];
-const DIST_ALIASES_COMMON = ["distributor", "wholesaler", "dist", "dist name", "supplier", "vendor", "distributor name", "wholesale"];
+const ACCT_ALIASES_COMMON = ["account", "account name", "customer", "outlet", "retailer", "location", "store", "buyer", "customer name", "name", "customer:job", "ship to name", "bill to name", "sold to", "customer full name", "customer company", "acct name", "account number", "acct"];
+const DIST_ALIASES_COMMON = ["distributor", "wholesaler", "dist", "dist name", "supplier", "vendor", "distributor name", "wholesale", "supplier name", "wholesaler name"];
 
 /**
  * Role-specific field overrides.
@@ -122,13 +122,13 @@ function buildFieldDefs(overrides) {
   {
     field: "sku",
     label: "Product / SKU",
-    headerAliases: ["product", "sku", "item", "item name", "brand", "product name", "description", "item description", "upc", "product/service full name", "product/service", "memo/description"],
+    headerAliases: ["product", "sku", "item", "item name", "brand", "product name", "description", "item description", "upc", "product/service full name", "product/service", "memo/description", "prod cd", "product code", "prod desc", "product description", "item code", "item number", "item nbr", "item #", "corp item cd", "corp item"],
     testValues: () => 0,
   },
   {
     field: "qty",
     label: "Quantity / Volume",
-    headerAliases: ["qty", "quantity", "cases", "volume", "ce", "units", "amount sold", "total cases", "case equiv", "9le", "9l equiv", "units sold", "physical cases", "shipped qty", "ordered qty"],
+    headerAliases: ["qty", "quantity", "cases", "volume", "ce", "units", "amount sold", "total cases", "case equiv", "case equivs", "case equivalents", "unit cases", "9le", "9l equiv", "9l cases", "units sold", "physical cases", "shipped qty", "ordered qty", "depletion qty", "depl cases", "depl cs", "cases depleted", "cases sold", "cases shipped", "net units"],
     testValues: (vals) => {
       const nums = vals.filter((v) => !isNaN(parseFloat(v)) && parseFloat(v) > 0);
       return nums.length >= 4 ? 0.5 : 0;

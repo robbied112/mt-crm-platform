@@ -19,22 +19,25 @@ const MAX_BATCH_SIZE = 20;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 /**
- * Determine whether a mapping qualifies for auto-confirm.
- * Returns true when every mapped field has confidence >= 0.8,
- * at least 3 non-internal fields are mapped, the detected type is
- * not "product_sheet", and the source file is not a PDF.
- *
- * @param {object} mapping — field → column mapping
- * @param {object} confidence — field → confidence score (0-1)
- * @param {object|null} typeObj — result of detectUploadType, e.g. {type: "quickbooks"}
- * @param {File} file — the File object (checked for .pdf extension)
+ * Critical fields that MUST be mapped for auto-confirm, per upload type.
+ * If any are missing, the file goes to needs-review so the user can fix it.
  */
+const TYPE_REQUIRED_FIELDS = {
+  depletion: ["qty"],
+  sales: ["qty"],
+  purchases: ["acct", "qty"],
+  inventory: ["oh"],
+};
+
 function canAutoConfirm(mapping, confidence, typeObj, file) {
   // PDFs (billback reports) always need manual review
   if (file && /\.pdf$/i.test(file.name)) return false;
 
   // Product sheets always need manual review
   if (typeObj?.type === "product_sheet") return false;
+
+  // Unknown type always needs review
+  if (typeObj?.type === "unknown") return false;
 
   // Count mapped, non-internal fields and check confidence floor
   const mappedKeys = Object.keys(mapping).filter(
@@ -43,9 +46,16 @@ function canAutoConfirm(mapping, confidence, typeObj, file) {
   if (mappedKeys.length < MIN_MAPPED_FIELDS) return false;
 
   // Every mapped field must meet the threshold
-  return mappedKeys.every(
+  const allHighConfidence = mappedKeys.every(
     (k) => (confidence[k] ?? 0) >= AUTO_CONFIRM_THRESHOLD
   );
+  if (!allHighConfidence) return false;
+
+  // Type-specific required fields must be mapped
+  const required = TYPE_REQUIRED_FIELDS[typeObj?.type] || [];
+  if (required.some((f) => !mapping[f])) return false;
+
+  return true;
 }
 
 // ─── Hook ───────────────────────────────────────────────────────

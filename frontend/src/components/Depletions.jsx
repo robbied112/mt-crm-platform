@@ -17,6 +17,7 @@ const CHART_COLORS = ["#6B1E1E", "#8B6A4C", "#F8992D", "#1F865A", "#B87333", "#C
 
 export default function Depletions({
   distScorecard = [],
+  skuBreakdown = [],
   filters,
   user,
   onDrillIn,
@@ -65,28 +66,48 @@ export default function Depletions({
     };
   }, [data]);
 
-  // --- SKU mix doughnut chart config ---
+  // Are any filters active? SKU breakdown is pre-aggregated (not filterable).
+  const hasActiveFilters = filters && Object.values(filters).some((v) => v && v !== "all");
+
+  // --- SKU mix doughnut chart config (from actual depletion data) ---
   const skuMixConfig = useMemo(() => {
-    const catalog = (TENANT_CONFIG.productCatalog || []).filter(
-      (p) => p.status !== "Discontinued"
-    );
-    const skus =
-      catalog.length > 0
+    // Use real SKU breakdown data; fall back to static catalog only if no data
+    const topSkus = skuBreakdown.length > 0
+      ? skuBreakdown.slice(0, 8)
+      : [];
+
+    if (topSkus.length === 0) {
+      // Fallback: try product catalog
+      const catalog = (TENANT_CONFIG.productCatalog || []).filter(
+        (p) => p.status !== "Discontinued"
+      );
+      const skus = catalog.length > 0
         ? catalog.map((p) => p.name || p.sku)
-        : ["No products configured"];
-    const distribution =
-      catalog.length > 0
+        : ["No SKU data"];
+      const distribution = catalog.length > 0
         ? catalog.map(() => Math.round(100 / catalog.length))
         : [100];
+      return {
+        type: "doughnut",
+        data: {
+          labels: skus,
+          datasets: [{ data: distribution, backgroundColor: CHART_COLORS.slice(0, skus.length) }],
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } },
+      };
+    }
+
+    const labels = topSkus.map((s) => (s.sku || "Unknown").substring(0, 25));
+    const values = topSkus.map((s) => s.ce);
 
     return {
       type: "doughnut",
       data: {
-        labels: skus,
+        labels,
         datasets: [
           {
-            data: distribution,
-            backgroundColor: CHART_COLORS.slice(0, skus.length),
+            data: values,
+            backgroundColor: CHART_COLORS.slice(0, labels.length),
           },
         ],
       },
@@ -96,7 +117,7 @@ export default function Depletions({
         plugins: { legend: { position: "bottom" } },
       },
     };
-  }, []);
+  }, [skuBreakdown]);
 
   return (
     <div>
@@ -120,7 +141,10 @@ export default function Depletions({
           title={`Weekly ${t("volume")} by Top ${t("distributor")}s`}
           chartConfig={weeklyCEConfig}
         />
-        <ChartPanel title="SKU Mix" chartConfig={skuMixConfig} />
+        <ChartPanel
+          title={hasActiveFilters ? "SKU Mix (all data)" : "SKU Mix"}
+          chartConfig={skuMixConfig}
+        />
       </div>
 
       {/* Distributor Scorecard Table */}
