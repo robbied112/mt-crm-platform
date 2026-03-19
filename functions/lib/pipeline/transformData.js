@@ -189,6 +189,21 @@ function transformDepletion(rows, mapping) {
     };
   });
 
+  // ── skuBreakdown: aggregate by SKU across all data ──
+  const skuGroups = groupBy(normalized, (r) => r.sku || "Unknown Product");
+  const skuBreakdown = Object.entries(skuGroups)
+    .map(([sku, items]) => {
+      const totalQty = items.reduce((s, r) => s + r.qty, 0);
+      const totalMonths = monthCols.length > 0
+        ? items.reduce((s, r) => s + r.months.reduce((ms, m) => ms + m, 0), 0)
+        : 0;
+      const ce = totalQty > 0 ? totalQty : totalMonths;
+      return { sku, ce: Math.round(ce) };
+    })
+    .filter((s) => s.ce > 0)
+    .sort((a, b) => b.ce - a.ce)
+    .slice(0, 25);
+
   // ── acctConcentration ──
   const ceValues = accountsTop.map((a) => a.total).sort((a, b) => b - a);
   const totalVol = ceValues.reduce((s, v) => s + v, 0);
@@ -207,6 +222,7 @@ function transformDepletion(rows, mapping) {
     placementSummary,
     reEngagementData,
     acctConcentration,
+    skuBreakdown,
   };
 }
 

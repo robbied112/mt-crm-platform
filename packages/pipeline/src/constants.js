@@ -13,6 +13,7 @@ const DATASETS = [
   "placementSummary",
   "qbDistOrders",
   "acctConcentration",
+  "skuBreakdown",
   "spendByWine",
   "spendByDistributor",
   "billbackSummary",
