@@ -172,7 +172,7 @@ export const DISTRIBUTOR_SYSTEMS = {
       ["PROD CD", "ACCT NAME", "DEPL CS"],
       ["ITEM CODE", "NET UNITS", "ACCOUNT"],
     ],
-    filenamePatterns: [/rndc/i, /republic.*national/i],
+    filenamePatterns: [/rndc/i, /republic.*national/i, /rndc.*depletion/i],
     reports: {
       depletion: {
         title: "Depletion Report",
@@ -278,36 +278,88 @@ export const DISTRIBUTOR_SYSTEMS = {
     },
   },
 
-  idig: {
-    name: "iDig",
-    shortName: "iDig",
-    sourceName: "RNDC iDIG Portal",
+  vip: {
+    name: "VIP (Verified Industry Program)",
+    shortName: "VIP",
+    sourceName: "VIP / iDig Platform",
     category: "industry",
-    cadence: "weekly",
+    cadence: "monthly",
     headerSignatures: [
-      ["PRODUCT CODE", "PRODUCT DESCRIPTION", "CASES DEPLETED"],
-      ["PROD CD", "ACCT NAME", "DEPL CS"],
+      // 4M Rolling Period format
+      ["SUPPLIER NAME", "PROD CD", "PROD DESC", "CASE EQUIVS"],
+      ["SUPPLIER NAME", "PRODUCT CODE", "CASE EQUIVALENTS"],
+      // Velocity report
+      ["SUPPLIER NAME", "PROD DESC", "VELOCITY", "NUMERIC DIST"],
+      // General iDig/VIP patterns
+      ["PROD CD", "PROD DESC", "UNIT CASES"],
+      ["SUPPLIER NAME", "BRAND", "CASE EQUIVS"],
     ],
-    filenamePatterns: [/idig/i, /i-dig/i],
+    filenamePatterns: [/vip/i, /idig/i, /i-dig/i, /4m.*rolling/i, /rolling.*period/i, /MT_4M/i],
     reports: {
       depletion: {
-        title: "iDig Depletion Report",
-        description: "Depletion data from the iDig portal — RNDC's industry reporting system showing cases sold to retail accounts.",
+        title: "4M Rolling Period Report",
+        description: "Multi-period depletion data showing case equivalents across 4 monthly rolling periods. The most comprehensive depletion view from VIP.",
         steps: [
-          "Log in to iDig (idig.rndc.com)",
-          "Navigate to Reports > Depletion",
-          "Choose 'Depletion Detail' for account-level data",
-          "Set your date range (13 weeks for trend data)",
-          "Select your supplier code / brand family",
+          "Log in to VIP (vip.unlimitedtechnology.com) or iDig portal",
+          "Navigate to Reports > Rolling Period",
+          "Select '4 Month Rolling' report type",
+          "Select your supplier/brand",
+          "Choose all markets/states",
           "Export to Excel format",
           "Upload the downloaded file here",
         ],
         tips: [
-          "iDig is RNDC's reporting portal — if you're an RNDC supplier, this is where your data lives",
-          "Uses 'PRODUCT CODE' for SKU identification — the system maps this automatically",
-          "RNDC reports may split by division — combine into one file or upload separately",
+          "The 4M Rolling report has multiple monthly periods side-by-side — CruFolio handles this automatically",
+          "Period labels in Row 1 tell the system which date range each column block covers",
+          "Case Equivalents is the standard volume metric — it normalizes different pack sizes",
+          "If you see 'SUPPLIER NAME' and 'PROD CD' columns, you have the right report",
         ],
-        expectedColumns: ["PRODUCT CODE", "PRODUCT DESCRIPTION", "CASES DEPLETED", "ACCT NAME", "STATE"],
+        expectedColumns: ["SUPPLIER NAME", "PROD CD", "PROD DESC", "CASE EQUIVS", "UNIT CASES", "DOLLARS"],
+      },
+      velocity: {
+        title: "Velocity Report",
+        description: "Shows how fast products are moving at the account level — velocity and numeric distribution metrics.",
+        steps: [
+          "In VIP, navigate to Reports > Velocity",
+          "Select your supplier and date range",
+          "Export to Excel",
+          "Upload here",
+        ],
+        tips: [
+          "Velocity data helps identify which accounts are selling fastest",
+          "Numeric distribution shows breadth of placement",
+        ],
+        expectedColumns: ["SUPPLIER NAME", "PROD DESC", "VELOCITY", "NUMERIC DIST", "ACCOUNT"],
+      },
+      newPlacements: {
+        title: "New Placements Report",
+        description: "Accounts that started carrying your product in a given period — new wins.",
+        steps: [
+          "In VIP, navigate to Reports > New Placements",
+          "Select date range and supplier",
+          "Export to Excel",
+          "Upload here",
+        ],
+        tips: [
+          "New placements data powers the New Wins section of the dashboard",
+          "Cross-reference with depletion data to see if new placements are reordering",
+        ],
+        expectedColumns: ["SUPPLIER NAME", "PROD DESC", "ACCOUNT", "FIRST ORDER DATE"],
+      },
+      lostPlacements: {
+        title: "Lost Placements Report",
+        description: "Accounts that stopped ordering — re-engagement opportunities.",
+        steps: [
+          "In VIP, navigate to Reports > Lost Placements",
+          "Select date range and supplier",
+          "Export to Excel",
+          "Upload here",
+        ],
+        tips: [
+          "Lost placements feed the Re-Engagement section",
+          "Compare with prior depletion volume to prioritize which accounts to win back",
+        ],
+        expectedColumns: ["SUPPLIER NAME", "PROD DESC", "ACCOUNT", "LAST ORDER DATE"],
       },
     },
   },
@@ -409,20 +461,22 @@ export const ROLE_RECOMMENDATIONS = {
     primary: "depletion",
     primaryLabel: "Distributor Depletion Report",
     primaryWhy: "See how your wines are selling across all your distributors and markets",
-    secondary: ["inventory", "pipeline"],
+    secondary: ["inventory", "pipeline", "industry"],
     secondaryLabels: {
       inventory: "Upload distributor inventory to unlock reorder forecasting",
       pipeline: "Add your prospect pipeline to track new placements",
+      industry: "Upload VIP/iDig reports for multi-distributor depletion data",
     },
   },
   Importer: {
     primary: "depletion",
     primaryLabel: "Distributor Depletion Report",
     primaryWhy: "Track sell-through across your portfolio of producers and distributors",
-    secondary: ["inventory"],
+    secondary: ["inventory", "industry"],
     // billback deferred — add back when billback DATA_TYPE entry exists in DataHealthCard
     secondaryLabels: {
       inventory: "Upload inventory for stock visibility across warehouses",
+      industry: "Upload VIP/iDig reports for multi-distributor depletion data",
     },
   },
   Distributor: {

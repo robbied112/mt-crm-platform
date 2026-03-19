@@ -24,7 +24,7 @@ describe("DISTRIBUTOR_SYSTEMS config validation", () => {
     expect(systemIds).toContain("generic");
     expect(systemIds).toContain("genericAccounting");
     expect(systemIds).toContain("quickbooks");
-    expect(systemIds).toContain("idig");
+    expect(systemIds).toContain("vip");
   });
 
   it.each(systemIds)("%s has all required fields", (id) => {
@@ -187,12 +187,10 @@ describe("matchDistributorByHeaders", () => {
     expect(result.systemId).toBe("quickbooks");
   });
 
-  it("matches iDig by PRODUCT CODE + CASES DEPLETED (returns rndc due to insertion order)", () => {
-    // iDig shares header signatures with RNDC. RNDC comes first in object order,
-    // so matchDistributorByHeaders returns rndc. This is correct for DataImport.
-    const result = matchDistributorByHeaders(["PRODUCT CODE", "PRODUCT DESCRIPTION", "CASES DEPLETED"]);
+  it("matches VIP by SUPPLIER NAME + PROD CD + CASE EQUIVS", () => {
+    const result = matchDistributorByHeaders(["SUPPLIER NAME", "PROD CD", "PROD DESC", "CASE EQUIVS"]);
     expect(result).not.toBeNull();
-    expect(result.systemId).toBe("rndc");
+    expect(result.systemId).toBe("vip");
   });
 
   it("is case-insensitive for header matching", () => {
@@ -243,9 +241,10 @@ describe("matchDistributorByFilename", () => {
     expect(matchDistributorByFilename("RNDC_Report.csv")?.systemId).toBe("rndc");
   });
 
-  it("matches iDig filename", () => {
-    expect(matchDistributorByFilename("iDIG_Depletion_Detail.xlsx")?.systemId).toBe("idig");
-    expect(matchDistributorByFilename("i-dig_report.xlsx")?.systemId).toBe("idig");
+  it("matches VIP/iDig filename", () => {
+    expect(matchDistributorByFilename("iDIG_Depletion_Detail.xlsx")?.systemId).toBe("vip");
+    expect(matchDistributorByFilename("i-dig_report.xlsx")?.systemId).toBe("vip");
+    expect(matchDistributorByFilename("MT_4M_RollingPeriod.xlsx")?.systemId).toBe("vip");
   });
 
   it("matches QuickBooks filename", () => {
@@ -283,10 +282,10 @@ describe("getReportGuide", () => {
     expect(report.title).toContain("Accounts Receivable");
   });
 
-  it("returns iDig depletion guide", () => {
-    const { system, report } = getReportGuide("idig", "depletion");
-    expect(system.shortName).toBe("iDig");
-    expect(report.title).toContain("iDig");
+  it("returns VIP depletion guide (4M Rolling)", () => {
+    const { system, report } = getReportGuide("vip", "depletion");
+    expect(system.shortName).toBe("VIP");
+    expect(report.title).toContain("Rolling");
   });
 
   it("falls back to generic for unknown system", () => {
@@ -317,7 +316,7 @@ describe("getDistributorSystemIds", () => {
     expect(ids).toContain("rndc");
     expect(ids).toContain("youngs");
     expect(ids).toContain("quickbooks");
-    expect(ids).toContain("idig");
+    expect(ids).toContain("vip");
   });
 });
 
@@ -328,7 +327,7 @@ describe("getAllSourceIds", () => {
     expect(ids).not.toContain("genericAccounting");
     expect(ids).toContain("sgws");
     expect(ids).toContain("quickbooks");
-    expect(ids).toContain("idig");
+    expect(ids).toContain("vip");
   });
 
   it("has the same result as getDistributorSystemIds", () => {
@@ -345,7 +344,7 @@ describe("getSystemsByCategory", () => {
     expect(grouped.distributor).toContain("rndc");
     expect(grouped.distributor).toContain("youngs");
     expect(grouped.accounting).toContain("quickbooks");
-    expect(grouped.industry).toContain("idig");
+    expect(grouped.industry).toContain("vip");
   });
 
   it("excludes generic entries", () => {

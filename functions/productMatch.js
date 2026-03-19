@@ -6,28 +6,28 @@
  * in billback.js) to run AI fuzzy matching against the tenant's product
  * catalog, then updates matched product docs and returns results.
  */
-const { functions, admin, db, anthropicApiKey, verifyTenantMembership } = require("./helpers");
+const { onCall, HttpsError, admin, db, anthropicApiKey, verifyTenantMembership } = require("./helpers");
 const { deduplicateEntities } = require("./entityDedup");
 const { buildNormalizedName, sanitizeProductName } = require("./lib/pipeline/productNormalize");
 
 // ─── matchProductsFromImport ────────────────────────────────────
 
-exports.matchProductsFromImport = functions
-  .runWith({ secrets: [anthropicApiKey], timeoutSeconds: 120, memory: "1GB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+exports.matchProductsFromImport = onCall(
+  { secrets: [anthropicApiKey], timeoutSeconds: 120, memory: "1GiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { tenantId, importId, unmatchedNames } = data;
+    const { tenantId, importId, unmatchedNames } = req.data;
     if (!tenantId || !importId || !Array.isArray(unmatchedNames) || unmatchedNames.length === 0) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "invalid-argument",
         "tenantId, importId, and unmatchedNames[] required"
       );
     }
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
 
     // Load existing products
     const productsSnap = await db

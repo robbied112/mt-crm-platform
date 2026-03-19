@@ -10,16 +10,16 @@
  * Auth + tenant membership verified on every call.
  */
 const {
-  functions,
+  onCall,
+  HttpsError,
   admin,
   db,
   stripeSecretKey,
   verifyTenantMembership,
 } = require("./helpers");
 
-// ─── Price IDs (configured via Firebase env/secrets) ──────────────
-// Set via: firebase functions:config:set stripe.starter_price_id="price_xxx" stripe.growth_price_id="price_yyy"
-// Or via Secret Manager for production.
+// ─── Price IDs (configured via functions/.env) ──────────────────
+// Set STRIPE_PRICE_ID_STARTER and STRIPE_PRICE_ID_GROWTH in functions/.env
 
 // -------------------------------------------------------------------
 // createCheckoutSession
@@ -30,36 +30,35 @@ const {
 // Input:  { tenantId, planId, successUrl, cancelUrl }
 // Output: { url: "https://checkout.stripe.com/..." }
 // -------------------------------------------------------------------
-const createCheckoutSession = functions
-  .runWith({ secrets: [stripeSecretKey], memory: "256MB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+const createCheckoutSession = onCall(
+  { secrets: [stripeSecretKey], memory: "256MiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { tenantId, planId, successUrl, cancelUrl } = data;
+    const { tenantId, planId, successUrl, cancelUrl, origin } = req.data;
     if (!tenantId || !planId) {
-      throw new functions.https.HttpsError("invalid-argument", "tenantId and planId are required");
+      throw new HttpsError("invalid-argument", "tenantId and planId are required");
     }
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
 
     const secretKey = stripeSecretKey.value();
     if (!secretKey) {
       console.error("STRIPE_SECRET_KEY not configured");
-      throw new functions.https.HttpsError("failed-precondition", "Billing not configured. Contact support.");
+      throw new HttpsError("failed-precondition", "Billing not configured. Contact support.");
     }
 
-    // Map planId to Stripe Price ID from functions config
-    const config = functions.config();
+    // Map planId to Stripe Price ID from environment variables
     const priceIdMap = {
-      starter: config.stripe?.starter_price_id,
-      growth: config.stripe?.growth_price_id,
+      starter: process.env.STRIPE_PRICE_ID_STARTER,
+      growth: process.env.STRIPE_PRICE_ID_GROWTH,
     };
 
     const priceId = priceIdMap[planId];
     if (!priceId) {
-      throw new functions.https.HttpsError("invalid-argument", `Unknown plan: ${planId}. Contact support.`);
+      throw new HttpsError("invalid-argument", `Unknown plan: ${planId}. Contact support.`);
     }
 
     const stripe = require("stripe")(secretKey);
@@ -73,8 +72,8 @@ const createCheckoutSession = functions
         mode: "subscription",
         payment_method_types: ["card"],
         line_items: [{ price: priceId, quantity: 1 }],
-        success_url: successUrl || `${data.origin || "https://app.crufolio.com"}/?upgraded=true`,
-        cancel_url: cancelUrl || `${data.origin || "https://app.crufolio.com"}/settings`,
+        success_url: successUrl || `${origin || "https://app.crufolio.com"}/?upgraded=true`,
+        cancel_url: cancelUrl || `${origin || "https://app.crufolio.com"}/settings`,
         client_reference_id: tenantId,
         metadata: { plan: planId },
       };
@@ -83,7 +82,7 @@ const createCheckoutSession = functions
       if (existingCustomerId) {
         sessionParams.customer = existingCustomerId;
       } else {
-        sessionParams.customer_email = context.auth.token.email;
+        sessionParams.customer_email = req.auth.token.email;
       }
 
       const session = await stripe.checkout.sessions.create(sessionParams);
@@ -92,7 +91,7 @@ const createCheckoutSession = functions
       return { url: session.url, sessionId: session.id };
     } catch (err) {
       console.error("Stripe checkout session creation failed:", err.message, { tenantId, planId });
-      throw new functions.https.HttpsError("internal", "Unable to create checkout session. Please try again.");
+      throw new HttpsError("internal", "Unable to create checkout session. Please try again.");
     }
   });
 
@@ -105,23 +104,23 @@ const createCheckoutSession = functions
 // Input:  { tenantId, sessionId }
 // Output: { status: "active", plan: "growth" }
 // -------------------------------------------------------------------
-const verifyCheckoutSession = functions
-  .runWith({ secrets: [stripeSecretKey], memory: "256MB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+const verifyCheckoutSession = onCall(
+  { secrets: [stripeSecretKey], memory: "256MiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { tenantId, sessionId } = data;
+    const { tenantId, sessionId } = req.data;
     if (!tenantId || !sessionId) {
-      throw new functions.https.HttpsError("invalid-argument", "tenantId and sessionId are required");
+      throw new HttpsError("invalid-argument", "tenantId and sessionId are required");
     }
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
 
     const secretKey = stripeSecretKey.value();
     if (!secretKey) {
-      throw new functions.https.HttpsError("failed-precondition", "Billing not configured");
+      throw new HttpsError("failed-precondition", "Billing not configured");
     }
 
     const stripe = require("stripe")(secretKey);
@@ -131,7 +130,7 @@ const verifyCheckoutSession = functions
 
       // Verify session belongs to this tenant
       if (session.client_reference_id !== tenantId) {
-        throw new functions.https.HttpsError("permission-denied", "Session does not belong to this tenant");
+        throw new HttpsError("permission-denied", "Session does not belong to this tenant");
       }
 
       if (session.payment_status !== "paid") {
@@ -141,7 +140,7 @@ const verifyCheckoutSession = functions
       const plan = session.metadata?.plan;
       if (!plan) {
         console.error("Checkout session missing plan metadata", { sessionId, tenantId });
-        throw new functions.https.HttpsError("internal", "Payment verified but plan info missing. Please contact support.");
+        throw new HttpsError("internal", "Payment verified but plan info missing. Please contact support.");
       }
 
       // Update tenant subscription immediately
@@ -159,9 +158,9 @@ const verifyCheckoutSession = functions
       console.log(`Tenant ${tenantId} verified and activated on ${plan} plan`);
       return { status: "active", plan };
     } catch (err) {
-      if (err instanceof functions.https.HttpsError) throw err;
+      if (err instanceof HttpsError) throw err;
       console.error("Stripe session verification failed:", err.message, { tenantId, sessionId });
-      throw new functions.https.HttpsError("internal", "Unable to verify payment. Contact support.");
+      throw new HttpsError("internal", "Unable to verify payment. Contact support.");
     }
   });
 
@@ -174,26 +173,26 @@ const verifyCheckoutSession = functions
 // Input:  { tenantId, returnUrl }
 // Output: { url: "https://billing.stripe.com/..." }
 // -------------------------------------------------------------------
-const createBillingPortalSession = functions
-  .runWith({ secrets: [stripeSecretKey], memory: "256MB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+const createBillingPortalSession = onCall(
+  { secrets: [stripeSecretKey], memory: "256MiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { tenantId, returnUrl } = data;
+    const { tenantId, returnUrl, origin } = req.data;
     if (!tenantId) {
-      throw new functions.https.HttpsError("invalid-argument", "tenantId is required");
+      throw new HttpsError("invalid-argument", "tenantId is required");
     }
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
 
     // Get customer ID from tenant doc
     const tenantSnap = await db.collection("tenants").doc(tenantId).get();
     const customerId = tenantSnap.data()?.subscription?.customerId;
 
     if (!customerId) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "failed-precondition",
         "No billing account found. Please upgrade first."
       );
@@ -201,7 +200,7 @@ const createBillingPortalSession = functions
 
     const secretKey = stripeSecretKey.value();
     if (!secretKey) {
-      throw new functions.https.HttpsError("failed-precondition", "Billing not configured");
+      throw new HttpsError("failed-precondition", "Billing not configured");
     }
 
     const stripe = require("stripe")(secretKey);
@@ -209,14 +208,14 @@ const createBillingPortalSession = functions
     try {
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: customerId,
-        return_url: returnUrl || `${data.origin || "https://app.crufolio.com"}/settings`,
+        return_url: returnUrl || `${origin || "https://app.crufolio.com"}/settings`,
       });
 
       console.log(`Billing portal session created for tenant ${tenantId}`);
       return { url: portalSession.url };
     } catch (err) {
       console.error("Stripe billing portal creation failed:", err.message, { tenantId, customerId });
-      throw new functions.https.HttpsError("internal", "Unable to open billing portal. Please try again.");
+      throw new HttpsError("internal", "Unable to open billing portal. Please try again.");
     }
   });
 

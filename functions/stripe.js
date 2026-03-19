@@ -6,6 +6,7 @@ const {
   stripeSecretKey,
   findTenantByCustomerId,
 } = require("./helpers");
+// Note: stripe.js already uses v2 onRequest — no migration needed
 
 // -------------------------------------------------------------------
 // Stripe Webhook Handler  (v2 Cloud Function with Secret Manager)

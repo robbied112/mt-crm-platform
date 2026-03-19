@@ -1,5 +1,6 @@
 const {
-  functions,
+  onCall,
+  HttpsError,
   admin,
   db,
   anthropicApiKey,
@@ -20,21 +21,21 @@ const {
 //   const result = await aiMap({ headers, sampleRows, tenantId });
 // -------------------------------------------------------------------
 
-const aiMapper = functions
-  .runWith({ secrets: [anthropicApiKey], timeoutSeconds: 60, memory: "512MB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+const aiMapper = onCall(
+  { secrets: [anthropicApiKey], timeoutSeconds: 60, memory: "512MiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { headers, sampleRows, userRole = "supplier" } = data;
+    const { headers, sampleRows, userRole = "supplier" } = req.data;
     if (!headers || !sampleRows) {
-      throw new functions.https.HttpsError("invalid-argument", "headers and sampleRows required");
+      throw new HttpsError("invalid-argument", "headers and sampleRows required");
     }
 
     const apiKey = anthropicApiKey.value();
     if (!apiKey) {
-      throw new functions.https.HttpsError("failed-precondition", "ANTHROPIC_API_KEY not configured");
+      throw new HttpsError("failed-precondition", "ANTHROPIC_API_KEY not configured");
     }
 
     const Anthropic = require("@anthropic-ai/sdk");
@@ -57,19 +58,19 @@ const aiMapper = functions
 // For use from admin tools or CLI.
 // -------------------------------------------------------------------
 
-const aiIngest = functions
-  .runWith({ secrets: [anthropicApiKey], timeoutSeconds: 120, memory: "1GB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+const aiIngest = onCall(
+  { secrets: [anthropicApiKey], timeoutSeconds: 120, memory: "1GiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { headers, rows, tenantId = "default", userRole = "supplier" } = data;
+    const { headers, rows, tenantId = "default", userRole = "supplier", datasets } = req.data;
     if (!headers || !rows) {
-      throw new functions.https.HttpsError("invalid-argument", "headers and rows required");
+      throw new HttpsError("invalid-argument", "headers and rows required");
     }
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
 
     // Step 1: AI mapping
     const apiKey = anthropicApiKey.value();
@@ -88,7 +89,7 @@ const aiIngest = functions
 
     // Step 2: Save datasets to Firestore
     const batch = db.batch();
-    for (const [name, items] of Object.entries(data.datasets || {})) {
+    for (const [name, items] of Object.entries(datasets || {})) {
       if (!DATASETS.includes(name)) continue;
       const ref = db.collection("tenants").doc(tenantId).collection("data").doc(name);
       batch.set(ref, {
@@ -101,4 +102,61 @@ const aiIngest = functions
     return { success: true, mapping, uploadType: mapJson.uploadType };
   });
 
-module.exports = { aiMapper, aiIngest };
+// -------------------------------------------------------------------
+// Generate Import Narration — callable Cloud Function
+// -------------------------------------------------------------------
+// Accepts import stats and data type, returns a natural-language
+// insight summary powered by Claude.
+//
+// Call from frontend:
+//   const generateNarration = httpsCallable(functions, 'generateImportNarration');
+//   const { data } = await generateNarration({ tenantId, dataType, stats });
+// -------------------------------------------------------------------
+
+function buildNarrationPrompt(dataType, stats) {
+  return `You are a wine & spirits business analyst. Write a 2-3 sentence insight summary for a data import.
+
+Data type: ${dataType}
+Stats: ${JSON.stringify(stats, null, 2)}
+
+Rules:
+- Be specific with numbers — cite exact figures from the stats
+- Focus on what's actionable: trends, outliers, opportunities
+- Use business language a wine/spirits sales team would use
+- Keep it under 60 words
+- Do NOT use emojis or markdown
+- Start with the most important insight`;
+}
+
+const generateImportNarration = onCall(
+  { secrets: [anthropicApiKey], timeoutSeconds: 30, memory: "256MiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
+    }
+
+    const { tenantId, dataType, stats } = req.data;
+    if (!tenantId || !stats) {
+      throw new HttpsError("invalid-argument", "Missing tenantId or stats");
+    }
+
+    const apiKey = anthropicApiKey.value();
+    if (!apiKey) {
+      throw new HttpsError("failed-precondition", "ANTHROPIC_API_KEY not configured");
+    }
+
+    const Anthropic = require("@anthropic-ai/sdk");
+    const client = new Anthropic({ apiKey });
+
+    const prompt = buildNarrationPrompt(dataType, stats);
+    const response = await client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 500,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const narration = response.content?.[0]?.text || "";
+    return { narration };
+  });
+
+module.exports = { aiMapper, aiIngest, generateImportNarration };

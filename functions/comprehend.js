@@ -1,5 +1,6 @@
 const {
-  functions,
+  onCall,
+  HttpsError,
   admin,
   db,
   anthropicApiKey,
@@ -42,7 +43,7 @@ async function checkRateLimit(tenantId) {
     }
 
     if (count >= RATE_LIMIT_MAX) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "resource-exhausted",
         `Rate limit exceeded: max ${RATE_LIMIT_MAX} comprehension calls per hour per tenant`
       );
@@ -480,11 +481,11 @@ function validateExtractionSpec(spec, headerCount) {
 
 // ─── comprehendReport ────────────────────────────────────────────────────────
 
-const comprehendReport = functions
-  .runWith({ secrets: [anthropicApiKey], timeoutSeconds: 60, memory: "512MB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+const comprehendReport = onCall(
+  { secrets: [anthropicApiKey], timeoutSeconds: 60, memory: "512MiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
     const {
@@ -496,21 +497,21 @@ const comprehendReport = functions
       selectedSheet,
       sheetSummaries,
       allSheets,
-    } = data;
+    } = req.data;
 
     if (!tenantId || !headers || !sampleRows || !fileName) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "invalid-argument",
         "tenantId, headers, sampleRows, and fileName are required"
       );
     }
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
     await checkRateLimit(tenantId);
 
     const apiKey = anthropicApiKey.value();
     if (!apiKey) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "failed-precondition",
         "ANTHROPIC_API_KEY not configured"
       );
@@ -672,28 +673,28 @@ const comprehendReport = functions
 
 // ─── generateIntegrationPlan ─────────────────────────────────────────────────
 
-const generateIntegrationPlan = functions
-  .runWith({ secrets: [anthropicApiKey], timeoutSeconds: 60, memory: "512MB" })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError("unauthenticated", "Must be signed in");
+const generateIntegrationPlan = onCall(
+  { secrets: [anthropicApiKey], timeoutSeconds: 60, memory: "512MiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
     }
 
-    const { tenantId, analyses } = data;
+    const { tenantId, analyses } = req.data;
 
     if (!tenantId || !Array.isArray(analyses) || analyses.length === 0) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "invalid-argument",
         "tenantId and a non-empty analyses array are required"
       );
     }
 
-    await verifyTenantMembership(context.auth.uid, tenantId);
+    await verifyTenantMembership(req.auth.uid, tenantId);
     await checkRateLimit(tenantId);
 
     const apiKey = anthropicApiKey.value();
     if (!apiKey) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "failed-precondition",
         "ANTHROPIC_API_KEY not configured"
       );
