@@ -1,6 +1,7 @@
 # TODOS — CruFolio (MT CRM Platform)
 
-> Updated from CEO Team Account Model Review on 2026-03-18.
+> Updated from CEO Product Direction Review on 2026-03-18.
+> Previous: CEO Team Account Model Review on 2026-03-18.
 > Previous: Subscription Gating implementation on 2026-03-18.
 > Previous: CEO Ease-of-Use & AI-First UX Review on 2026-03-17.
 > Previous: CEO Smart Import Intelligence Engine Review on 2026-03-17.
@@ -11,6 +12,18 @@
 > Previous: Cathedral Vision Review + Eng Review on 2026-03-15.
 > CEO review: SCOPE EXPANSION mode. Eng review: BIG CHANGE mode (full Phase 1).
 > Key eng review correction: full rebuild only (not incremental) — momentum/consistency need ALL rows.
+>
+> **PRODUCT DIRECTION (CEO Review 2026-03-18, HOLD SCOPE):**
+> CruFolio is a **vertical AI operating system for wine & spirits teams** — not a horizontal AI data analyst. The moat is domain knowledge (wine entity dedup, distributor fingerprinting, 8-market pricing), not AI capabilities. AI is the invisible engine, not the brand.
+>
+> **Critical Path:** Ship the "learning + proactive + connected" layer before any new feature domains. The core loop is: **Upload → AI Insight → Action → Come Back.** Items that don't contribute to this loop are deferred.
+>
+> **Three PRs:**
+> - PR 1: Learning Layer (import config memory + learned mappings + AI tests)
+> - PR 2: Proactive Intelligence (AI narration + what-changed diff + weekly digest email)
+> - PR 3: Connected Experience (upload-first homepage + error recovery + account-level metrics + manager dashboard)
+>
+> **Core problem identified:** The product has 3 layers (Import/Dashboard, CRM/Operations, Team) that are disconnected. Each works independently but doesn't create a unified operating system. The core loop ends at "see dashboard" — no daily pull-back, no "something changed overnight." This review re-prioritizes everything around fixing that.
 >
 > **TODO Audit (2026-03-18):** Marked 25+ shipped items as DONE. Renumbered duplicate TODOs to 300-series to resolve numbering conflicts from overlapping CEO reviews. See renumbering map below.
 > Renumbering: 032→300, 033→301, 034→302, 035→303, 036→304, 037→305, 038→306, 039→310, 040→311, 041→312, 042→313, 061→320, 062→321, 125→330, 130→331, 131→332/333 (all in CEO Disruption/Delight/CRM sections only; original pricing/billback numbers unchanged).
@@ -121,6 +134,106 @@
 
 ### ~~TODO-026: Firebase Emulator + integration tests~~ DONE
 - Implemented in commit `763da9f`. Firebase Local Emulator Suite configured. Integration test harness with Vitest. Tests for import → rebuild → verify views, account extraction + dedup, rate limiting.
+
+---
+
+## CRITICAL PATH: Learning + Proactive + Connected (CEO Direction Review 2026-03-18)
+
+> These are the highest-priority unfinished items. Ship these before touching anything else.
+> Core loop: Upload → AI Insight → Action → Come Back.
+> Three PRs, sequenced: PR 1 (Learning) → PR 2 (Proactive) → PR 3 (Connected).
+
+### PR 1: Learning Layer
+
+### TODO-095: Import Configuration Memory ← PROMOTED TO CRITICAL (was P2)
+- **What:** Cache AI report analysis in Firestore at `tenants/{tenantId}/importConfigs/{hash}`. Cache key = hash of (column headers array + first 3 data rows structure). On repeat upload, skip Claude API call entirely — show "Using saved configuration for SGWS 13-week velocity report" with a "Re-analyze" button to override. Config includes full Report Analysis + extraction spec. Invalidated when hash doesn't match (file structure changed).
+- **Why (direction review):** Without this, every upload feels like a fresh start. The system doesn't learn. This is the #1 defense against "I could just paste this into ChatGPT." Compounding value = switching cost.
+- **Effort:** M (human: ~1 week / CC: ~30 min)
+- **Priority:** P1 CRITICAL
+- **Files:** `frontend/src/components/DataImport/index.jsx`, `frontend/src/services/firestoreService.js`
+- **Depends on:** TODO-090 (done)
+
+### TODO-117: Zero-Config Auto-Confirm + Learned Mappings ← CRITICAL
+- **What:** Three changes: (1) Lower auto-confirm threshold to 70% for known report types. (2) Tenant-level learned mappings: user corrections stored in `tenants/{id}/config/learnedMappings`, applied on future uploads. Capped at 200 entries with LRU eviction. (3) Graceful auto-fix: if only 1-2 columns below threshold, auto-assign best guess + show dismissible toast instead of blocking.
+- **Why (direction review):** Every file needing manual review is a user thinking "I could've done this in Excel." Target: 95%+ auto-confirm rate. This is the learning loop that makes the system smarter per tenant.
+- **Effort:** M (human: ~1 week / CC: ~30 min)
+- **Priority:** P1 CRITICAL
+- **Files:** `frontend/src/hooks/useFileQueue.js`, `frontend/src/context/UploadContext.jsx`, `frontend/src/services/firestoreService.js`
+- **Depends on:** TODO-110 (done)
+
+### TODO-122: AI Function Test Infrastructure ← CRITICAL (ships with PR 1)
+- **What:** Test harness for `comprehend.js` and `ai.js` with mocked Claude responses. Cover: valid mapping, malformed JSON, empty response, timeout, refusal. Include narration and learned mapping codepaths.
+- **Why (direction review):** The learning layer adds 3 new Claude codepaths. Flying blind without tests is reckless. Tests are non-negotiable.
+- **Effort:** M (human: ~1 week / CC: ~20 min)
+- **Priority:** P1 CRITICAL
+- **Files:** New `functions/__tests__/comprehend.unit.test.js`, new `functions/__tests__/ai.unit.test.js`
+- **Depends on:** Nothing
+
+### TODO-123: Learned Mappings LRU Eviction Tests ← CRITICAL (part of TODO-117)
+- **What:** Implement and thoroughly test LRU eviction logic for the 200-entry learned mappings cap.
+- **Effort:** S (CC: ~10 min)
+- **Priority:** P1 CRITICAL (ships with TODO-117)
+- **Depends on:** Part of TODO-117
+
+### PR 2: Proactive Intelligence
+
+### TODO-113: AI Insight Narration ← PROMOTED TO CRITICAL (was P1 Ease-of-Use)
+- **What:** New Cloud Function `generateInsightNarration` in comprehend.js. After import + rebuild, Claude Sonnet generates 2-3 sentence natural language summary. Stored in `tenants/{tenantId}/views/_narration`. Displayed as prominent card on dashboard.
+- **Why (direction review):** This is the "come back and see what changed" moment. The #1 habit creator. Turns a dashboard into an analyst. Without this, CruFolio is a static reporting tool.
+- **Effort:** M (human: ~1 week / CC: ~30 min)
+- **Priority:** P1 CRITICAL
+- **Files:** `functions/comprehend.js`, new `frontend/src/components/AIInsightCard.jsx`
+- **Depends on:** Nothing
+
+### TODO-014: Import Comparison Summary ("What Changed" Diff) ← PROMOTED TO CRITICAL (was P3)
+- **What:** After importing new data, show diff summary vs. previous import of the same type: "+12 new accounts, volume up 8%, 3 accounts went inactive, Distributor X added."
+- **Why (direction review):** Turns mundane data upload into an insightful moment. This is the bridge between "I uploaded a file" and "I learned something."
+- **Effort:** S (CC: ~15 min — compare views before/after rebuild)
+- **Priority:** P1 CRITICAL
+- **Files:** `frontend/src/components/DataImport/index.jsx`
+- **Depends on:** TODO-021 (done)
+
+### TODO-017: AI-Generated Weekly Digest Email ← PROMOTED TO CRITICAL (was P3)
+- **What:** Scheduled Cloud Function that generates a weekly summary email using Claude: top movers, overdue reorders, pipeline status. Send via Resend (already integrated in functions/email.js).
+- **Why (direction review):** The retention email. Brings users back. Without proactive outreach, users upload once and forget. Monthly upload cadence = monthly churn risk.
+- **Effort:** L (human: ~1 week / CC: ~30 min)
+- **Priority:** P1 CRITICAL
+- **Files:** New Cloud Function in `functions/digest.js`, `functions/email.js` (reuse Resend)
+- **Depends on:** TODO-021 (done), Resend setup (done)
+
+### PR 3: Connected Experience
+
+### TODO-111: Upload-First Homepage ← CRITICAL
+- **What:** When hasAnyData=false, the homepage IS the upload experience. Large drop zone. Uses shared UploadFlow component. Transitions to dashboard once data exists.
+- **Why (direction review):** Upload IS the product. Removing the #1 friction point. Currently buried in Settings.
+- **Effort:** M (CC: ~30 min)
+- **Priority:** P1 CRITICAL
+- **Files:** `frontend/src/App.jsx`, new `frontend/src/components/UploadHomepage.jsx`
+- **Depends on:** TODO-110 (done)
+
+### TODO-120: Conversational Error Recovery ← CRITICAL
+- **What:** When AI comprehension fails or returns low confidence, show conversational recovery: "I'm not sure about this file. Can you help?" Top 3 uncertain columns with dropdown overrides. After correction: "Got it! I'll remember that for next time" (feeds learned mappings).
+- **Why (direction review):** Silent failures destroy trust. Asking for help builds it. The 30% failure case becomes a relationship-building moment.
+- **Effort:** M (CC: ~30 min)
+- **Priority:** P1 CRITICAL
+- **Files:** New `frontend/src/components/ConversationalRecovery.jsx`, `frontend/src/hooks/useFileQueue.js`
+- **Depends on:** TODO-110 (done), TODO-117
+
+### TODO-400: Account-Level Dashboard Metrics on CRM Pages (NEW)
+- **What:** On AccountDetailPage, show import-derived metrics: volume trend (MoM%), last order date, reorder status, distributor health score. Pulls from existing views/ data keyed by account name. Small card above existing tabs. Clickable metric cards link to relevant dashboard tab.
+- **Why (direction review):** This is the missing bridge between dashboard and CRM layers. A rep clicks an account and sees "Volume: 240 cases (▲12% MoM), Last order: 18 days ago, Distributor: SGWS (Health: 82/100)." Without this, CRM and dashboard are two separate products living in one app.
+- **Effort:** S (human: ~3 days / CC: ~45 min)
+- **Priority:** P1 CRITICAL
+- **Files:** `frontend/src/components/AccountDetailPage.jsx`, `frontend/src/context/DataContext.jsx` (helper to lookup by account name)
+- **Depends on:** Nothing (data exists in views/, accounts exist in CRM)
+
+### TODO-401: Manager Intelligence Dashboard (NEW)
+- **What:** When a manager or admin logs in, MyTerritory shows team-level rollup: per-rep territory metrics (volume, active accounts, pipeline value), team activity feed (who logged what), territory comparison (which territories are growing/declining). Reads from existing views/ data filtered by territory + CrmContext activity stream.
+- **Why (direction review):** Team model shipped but only provides access control, not intelligence. A sales manager can invite 5 reps but can't see "Sarah's territory is down 8% and she hasn't logged an activity in 5 days." Without this, the team model is infrastructure with no user value for the buyer persona (the manager).
+- **Effort:** M (human: ~1 week / CC: ~45 min)
+- **Priority:** P1 CRITICAL
+- **Files:** `frontend/src/components/MyTerritory.jsx` (extend with manager view), new `frontend/src/components/TeamRollup.jsx`
+- **Depends on:** Team model (done), territory filtering (done), views/ data (done)
 
 ---
 
@@ -1603,3 +1716,45 @@ Compliance:
 - **TODO-303 (was 035): Minimum viable compliance** — Delete All Data + privacy page. Shipped PR #40. **Marked DONE:** 2026-03-18 audit
 - **TODO-304 (was 036): Firebase staging + CI** — Staging project + GitHub Actions. Shipped PR #30. **Marked DONE:** 2026-03-18 audit
 - **TODO-306 (was 038): Create CLAUDE.md** — Architecture docs at project root. **Marked DONE:** 2026-03-18 audit
+
+---
+
+## DEFERRED — Post Core Loop (CEO Direction Review 2026-03-18)
+
+> These items are valuable but do NOT contribute to the core loop (Upload → AI Insight → Action → Come Back).
+> Ship the CRITICAL PATH section first. Revisit these after the learning + proactive + connected layer is live.
+> Items are not deleted — they are explicitly "not now" with reasoning.
+
+| TODO | What | Why Deferred |
+|------|------|-------------|
+| 121 | Ask CruFolio Chat Interface | XL effort (~3-4h CC). Ship after learning layer proves the pattern. The chat interface is dramatically more valuable when narrations, learned mappings, and cross-domain context already exist. Phase 2. |
+| 112 | Instant Dashboard Preview | Wow moment but doesn't create daily habit. Upload-first homepage (TODO-111) captures the same first-impression value at lower cost. |
+| 044 | Billback Agreement Reconciliation | Needs 6+ months of billback history to be meaningful. Niche value for importers only. Phase 2+. |
+| 045 | Producer Allocation Dashboard | Needs billback data history. Same deferral as 044. |
+| 046 | Predictive Spend Budgeting | Needs 6+ months of data for predictions. Misleading with sparse data. |
+| 065 | Portfolio What-If Stress Testing | Power feature for importers but doesn't create daily habit for the broader user base. |
+| 034 | Portfolio Persistence in Firestore | Pricing Studio works as a calculator without persistence. Defer until portfolio is the primary use case. |
+| 062 | Portfolio-first /pricing Layout | Polish on an already-functional feature. Not habit-creating. |
+| 060 | Mobile-first Pipeline Cards | Important for field reps but doesn't create the core loop. Ship after core loop is working on desktop. |
+| 330 | Usage Tracking & Limit Enforcement | Operational need, not user value. Plan limits defined but unenforced is fine for now — enforce when scale demands it. |
+| 333 | QuickBooks Online API Connector | L effort. Manual upload works. The connector is more valuable AFTER import config memory (TODO-095) makes repeat manual uploads fast. |
+| 115 | Auto-Infer Role & Distributors | Nice polish but users can select in Setup Assistant. Not blocking. |
+| 116 | "What Should I Upload Next?" Nudges | Valuable but Data Health Card already covers this. Defer. |
+| 118 | Curated Demo Scenario | Demo data exists. Story-driven version is polish, not structural. |
+| 119 | Speed Badge | Tiny effort but deferred because it's delight on a feature that isn't the bottleneck. |
+| 097 | Cross-File Product Matching at Import | Marginal improvement over existing AI product matching. |
+| 098 | Dashboard Preview Before Import | Superseded by TODO-112 which is itself deferred. |
+
+### Deferred Vision/Delight Items (30+)
+
+All vision items and delight opportunities across all sections (Pricing, Billback, CRM Pipeline, Portfolio, Financial, Ease-of-Use, Smart Import, Onboarding) are deferred. These are individually small but collectively they dilute focus. Ship them as polish passes after the core loop works.
+
+Specific categories deferred:
+- Pricing: Quick Price Cmd+K, margin health badges, copy-as-table, suggested tier, history sparkline, FX alert
+- Billback: Smart summary toast, spend-per-case overlay, producer report export, duplicate detection, email forwarding
+- CRM Pipeline: Stage auto-advance, wines-in-play badge, type quick stats, last-visited indicator, won celebration
+- Portfolio: Quick add wine, wine count badge, auto-detect producer, copy wine info, vintage timeline, unmatched badge, producer grouping
+- Financial: Budget pace indicator, AR aging color bands, channel sparklines, executive PDF export, revenue health score
+- Ease-of-Use: File-to-insight timer, welcome video, smart notification, drag-and-drop anywhere
+- Onboarding: Data report card, animated dashboard unlock, contextual tips, share with team, landing page social proof
+- Smart Import: Import history intelligence, one-click re-import, learning from corrections, universal adapter, batch animation
