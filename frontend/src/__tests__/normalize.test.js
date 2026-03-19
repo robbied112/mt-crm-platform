@@ -183,4 +183,22 @@ describe("normalizeRows", () => {
   it("handles empty input", () => {
     expect(normalizeRows([], mapping)).toEqual([]);
   });
+
+  it("derives revenue from debit/credit when revenue is unmapped", () => {
+    const debitCreditMapping = {
+      acct: "Name",
+      date: "Date",
+      credit: "Credit",
+      debit: "Debit",
+    };
+    const debitCreditRows = [
+      { Name: "Wine Bar", Date: "10/15/2025", Credit: "150.00", Debit: "" },
+      { Name: "Wine Bar", Date: "11/20/2025", Credit: "", Debit: "25.00" },
+      { Name: "Harbor", Date: "10/22/2025", Credit: "200.00", Debit: "10.00" },
+    ];
+    const result = normalizeRows(debitCreditRows, debitCreditMapping);
+    expect(result[0].revenue).toBe(150);
+    expect(result[1].revenue).toBe(-25);
+    expect(result[2].revenue).toBe(190);
+  });
 });

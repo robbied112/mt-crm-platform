@@ -196,6 +196,64 @@ describe("transformQuickBooks", () => {
     const zero = result.accountsTop.find((a) => a.acct === "Zero Co");
     expect(zero).toBeUndefined();
   });
+
+  // ── Revenue view output ──
+
+  it("produces revenueByChannel from QB data", () => {
+    const result = transformQuickBooks(qbRows, mapping);
+    expect(result.revenueByChannel).toBeDefined();
+    expect(result.revenueByChannel.length).toBeGreaterThan(0);
+    const totalRevenue = result.revenueByChannel.reduce((s, ch) => s + ch.total, 0);
+    expect(totalRevenue).toBeCloseTo(1245, 0);
+  });
+
+  it("produces revenueByProduct from QB data", () => {
+    const result = transformQuickBooks(qbRows, mapping);
+    expect(result.revenueByProduct).toBeDefined();
+    expect(result.revenueByProduct.length).toBe(3);
+    const pinot = result.revenueByProduct.find((p) => p.sku.includes("Pinot"));
+    expect(pinot).toBeDefined();
+    expect(pinot.total).toBeCloseTo(630, 0);
+  });
+
+  it("produces revenueSummary from QB data", () => {
+    const result = transformQuickBooks(qbRows, mapping);
+    expect(result.revenueSummary).toBeDefined();
+    expect(result.revenueSummary.topSku).toContain("Pinot");
+    expect(result.revenueSummary.channelCount).toBeGreaterThan(0);
+    expect(result.revenueSummary.monthKeys.length).toBeGreaterThan(0);
+  });
+
+  it("finds revenue from 'Total' column when no 'Amount' column exists", () => {
+    const totalColRows = [
+      { Customer: "Coastal Wine Bar", Date: "10/15/2025", "Product/Service": "Pinot Noir", Quantity: "5", Total: "150.00" },
+      { Customer: "Harbor Group", Date: "11/20/2025", "Product/Service": "Chardonnay", Quantity: "3", Total: "75.00" },
+    ];
+    const result = transformQuickBooks(totalColRows, {});
+    expect(result.accountsTop.length).toBe(2);
+    expect(result.accountsTop[0].total).toBe(150);
+    expect(result.revenueByChannel.length).toBeGreaterThan(0);
+  });
+
+  it("derives revenue from Debit/Credit columns in transaction detail format", () => {
+    const debitCreditRows = [
+      { Name: "Coastal Wine Bar", Date: "10/15/2025", "Memo/Description": "Pinot Noir", Debit: "", Credit: "150.00" },
+      { Name: "Coastal Wine Bar", Date: "11/20/2025", "Memo/Description": "Chardonnay", Debit: "25.00", Credit: "" },
+      { Name: "Harbor Group", Date: "10/22/2025", "Memo/Description": "Sauvignon Blanc", Debit: "", Credit: "200.00" },
+    ];
+    const result = transformQuickBooks(debitCreditRows, {});
+
+    const coastal = result.accountsTop.find((a) => a.acct === "Coastal Wine Bar");
+    expect(coastal).toBeDefined();
+    expect(coastal.total).toBe(125); // 150 credit - 25 debit
+
+    const harbor = result.accountsTop.find((a) => a.acct === "Harbor Group");
+    expect(harbor.total).toBe(200);
+
+    expect(result.revenueByChannel.length).toBeGreaterThan(0);
+    const totalRev = result.revenueByChannel.reduce((s, ch) => s + ch.total, 0);
+    expect(totalRev).toBeCloseTo(325, 0);
+  });
 });
 
 // ─── Purchase Transform ──────────────────────────────────────
