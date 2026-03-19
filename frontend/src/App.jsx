@@ -245,10 +245,13 @@ function App() {
               regions={Object.values(tenantConfig.regionMap || {}).filter(
                 (v, i, a) => a.indexOf(v) === i
               )}
-              states={Object.keys(tenantConfig.stateNames || {})}
+              states={[...new Set(distScorecard.map((d) => d.st).filter((s) => s && s !== "--"))].sort()}
               reps={[]}
-              products={tenantConfig.productLines || []}
-              distributors={[...new Set(distScorecard.map((d) => d.name))]}
+              products={skuBreakdown.length > 0
+                ? skuBreakdown.map((s) => s.sku).filter(Boolean)
+                : (tenantConfig.productLines || [])
+              }
+              distributors={[...new Set(distScorecard.map((d) => d.name).filter(Boolean))]}
             />
           </div>
 

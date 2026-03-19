@@ -28,7 +28,7 @@ const PIPELINE_STAGES = new Set([
  * Use getFieldDefs(userRole) for role-aware labels and aliases.
  */
 
-const ACCT_ALIASES_COMMON = ["account", "account name", "customer", "outlet", "retailer", "location", "store", "buyer", "customer name", "name", "customer:job", "ship to name", "bill to name", "sold to", "customer full name", "customer company", "acct name", "account number", "acct"];
+const ACCT_ALIASES_COMMON = ["account", "account name", "customer", "outlet", "retailer", "location", "store", "buyer", "customer name", "name", "customer:job", "ship to name", "bill to name", "sold to", "customer full name", "customer company", "acct name", "account number", "acct", "retail accounts", "retail account"];
 const DIST_ALIASES_COMMON = ["distributor", "wholesaler", "dist", "dist name", "supplier", "vendor", "distributor name", "wholesale", "supplier name", "wholesaler name"];
 
 /**
@@ -113,7 +113,7 @@ function buildFieldDefs(overrides) {
   {
     field: "ch",
     label: "Channel",
-    headerAliases: ["channel", "trade channel", "premise", "segment", "class of trade", "class", "customer type", "type"],
+    headerAliases: ["channel", "trade channel", "premise", "segment", "class of trade", "class", "customer type", "type", "onoff premises", "on/off premise", "on off premise", "premise type"],
     testValues: (vals) => {
       const matches = vals.filter((v) => CHANNEL_VALUES.has(String(v).toLowerCase().trim()));
       return matches.length >= 2 ? 0.9 : 0;
@@ -122,7 +122,7 @@ function buildFieldDefs(overrides) {
   {
     field: "sku",
     label: "Product / SKU",
-    headerAliases: ["product", "sku", "item", "item name", "brand", "product name", "description", "item description", "upc", "product/service full name", "product/service", "memo/description", "prod cd", "product code", "prod desc", "product description", "item code", "item number", "item nbr", "item #", "corp item cd", "corp item"],
+    headerAliases: ["product", "sku", "item", "item name", "item names", "brand", "product name", "description", "item description", "upc", "product/service full name", "product/service", "memo/description", "prod cd", "product code", "prod desc", "product description", "item code", "item number", "item nbr", "item #", "corp item cd", "corp item"],
     testValues: () => 0,
   },
   {
@@ -345,9 +345,26 @@ function autoDetectMapping(headers, rows, userRole) {
 
   // Detect monthly columns by name pattern
   const monthPattern = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[\s\-_]?\d{0,4}$/i;
-  // Also detect pivot period-labeled columns: "Quantity [1M Dec 2025]", "Cases [2M Nov-Dec 2025]"
-  const periodLabelPattern = /\[\d+M\s+[A-Za-z]/;
-  const monthColumns = headers.filter((h) => monthPattern.test(h.trim()) || periodLabelPattern.test(h));
+  // Pivot period-labeled columns: only single-month periods like "Case Equivs [1M Dec 2025]"
+  // Exclude multi-month totals (4M, 12M) and non-quantity metrics (Net Price, Placements, etc.)
+  const singleMonthPeriodPattern = /\[1M\s+[A-Za-z]/;
+  const qtyDef = fieldDefs.find((d) => d.field === "qty");
+  const qtyAliases = qtyDef ? qtyDef.headerAliases : [];
+  const monthColumns = headers.filter((h) => {
+    if (monthPattern.test(h.trim())) return true;
+    if (!singleMonthPeriodPattern.test(h)) return false;
+    // Only include if the base column name (before [1M...]) matches a qty alias
+    const baseName = h.replace(/\s*\[.*$/, "").trim().toLowerCase();
+    return qtyAliases.includes(baseName);
+  });
+  // Also include the qty-mapped column if it's a period-0 duplicate of the monthly series
+  if (monthColumns.length > 0 && mapping.qty && !monthColumns.includes(mapping.qty)) {
+    const qtyBase = mapping.qty.replace(/\s*\[.*$/, "").trim().toLowerCase();
+    const monthBase = monthColumns[0].replace(/\s*\[.*$/, "").trim().toLowerCase();
+    if (qtyBase === monthBase) {
+      monthColumns.unshift(mapping.qty);
+    }
+  }
   if (monthColumns.length > 0) {
     mapping._monthColumns = monthColumns;
     confidence._monthColumns = 0.85;
