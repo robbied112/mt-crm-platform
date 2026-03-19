@@ -204,6 +204,37 @@ const PRODUCT_FIELDS = [
 ];
 
 // ---------------------------------------------------------------------------
+// Fuzzy matching helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Normalize a name for fuzzy comparison.
+ * Removes punctuation, bottle sizes, and pack references; lowercases and trims.
+ *
+ * @param {string} name
+ * @returns {string}
+ */
+function normalizeForMatch(name) {
+  return (name || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")  // Remove punctuation
+    .replace(/\b(750ml|375ml|1\.5l|1l|3l|ml|liter|litre)\b/gi, "")  // Remove bottle sizes
+    .replace(/\b(cs|case|cases|btl|bottle|bottles|pk|pack)\b/gi, "")  // Remove pack refs
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Split a name into meaningful tokens (length > 1).
+ *
+ * @param {string} name
+ * @returns {string[]}
+ */
+function tokenize(name) {
+  return normalizeForMatch(name).split(" ").filter(t => t.length > 1);
+}
+
+// ---------------------------------------------------------------------------
 // Client-side exact matching
 // ---------------------------------------------------------------------------
 
@@ -280,6 +311,75 @@ function clientExactMatch(productNames, existingProducts) {
   return { matched, unmatched };
 }
 
+/**
+ * Fuzzy match product names from imports against existing products.
+ * Handles common variations: "Cabernet Sauvignon" vs "Cab Sauv",
+ * "750ml" vs "750ML", "Missing Thorn Red Blend" vs "Missing Thorn - Red Blend".
+ *
+ * Match scoring:
+ *   1.0  — exact normalized match
+ *   0.6+ — token overlap score (with optional contains bonus) treated as a match
+ *   <0.6 — no match, name goes to unmatched[]
+ *
+ * @param {string[]} importNames - Product names from the new import
+ * @param {object[]} existingProducts - Products from the portfolio (with .name field)
+ * @returns {{ matched: Array<{importName, product, score}>, unmatched: string[] }}
+ */
+function fuzzyMatchProducts(importNames, existingProducts) {
+  if (!importNames?.length || !existingProducts?.length) {
+    return { matched: [], unmatched: importNames || [] };
+  }
+
+  const normalizedExisting = existingProducts.map(p => ({
+    product: p,
+    normalized: normalizeForMatch(p.name),
+    tokens: tokenize(p.name),
+  }));
+
+  const matched = [];
+  const unmatched = [];
+
+  for (const name of importNames) {
+    const normName = normalizeForMatch(name);
+    const nameTokens = tokenize(name);
+
+    let bestMatch = null;
+    let bestScore = 0;
+
+    for (const existing of normalizedExisting) {
+      // Exact normalized match
+      if (normName === existing.normalized) {
+        bestMatch = existing;
+        bestScore = 1.0;
+        break;
+      }
+
+      // Token overlap score
+      const overlap = nameTokens.filter(t => existing.tokens.includes(t)).length;
+      const maxLen = Math.max(nameTokens.length, existing.tokens.length);
+      const score = maxLen > 0 ? overlap / maxLen : 0;
+
+      // Contains check (one name contains the other)
+      const containsBonus = (normName.includes(existing.normalized) || existing.normalized.includes(normName)) ? 0.2 : 0;
+
+      const totalScore = Math.min(1.0, score + containsBonus);
+
+      if (totalScore > bestScore) {
+        bestScore = totalScore;
+        bestMatch = existing;
+      }
+    }
+
+    if (bestScore >= 0.6 && bestMatch) {
+      matched.push({ importName: name, product: bestMatch.product, score: bestScore });
+    } else {
+      unmatched.push(name);
+    }
+  }
+
+  return { matched, unmatched };
+}
+
 // ---------------------------------------------------------------------------
 // Exports
 // ---------------------------------------------------------------------------
@@ -291,4 +391,7 @@ module.exports = {
   buildNormalizedName,
   PRODUCT_FIELDS,
   clientExactMatch,
+  fuzzyMatchProducts,
+  normalizeForMatch,
+  tokenize,
 };

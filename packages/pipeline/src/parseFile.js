@@ -44,8 +44,10 @@ function findHeaderRow(rawRows) {
 
 /**
  * Clean up header names — deduplicate and replace empties.
+ * When periodLabels is provided (array of strings, one per column index),
+ * duplicate headers get the period label appended instead of a numeric suffix.
  */
-function cleanHeaders(headers) {
+function cleanHeaders(headers, periodLabels) {
   const seen = {};
   return headers.map((h, i) => {
     let name = h == null ? "" : String(h).trim();
@@ -54,12 +56,161 @@ function cleanHeaders(headers) {
     }
     if (seen[name]) {
       seen[name]++;
-      name = `${name}_${seen[name]}`;
+      // If we have a period label for this column, use it for disambiguation
+      const periodLabel = periodLabels && periodLabels[i] ? periodLabels[i] : null;
+      if (periodLabel) {
+        name = `${name} [${periodLabel}]`;
+      } else {
+        name = `${name}_${seen[name]}`;
+      }
     } else {
       seen[name] = 1;
     }
     return name;
   });
+}
+
+/**
+ * Filter out subtotal and total rows from a dataset.
+ * Conservative — only removes obviously aggregated rows.
+ *
+ * @param {object[]} rows - Array of row objects
+ * @param {string[]} headers - Array of header names
+ * @returns {object[]} Filtered rows
+ */
+function filterSubtotalRows(rows, headers) {
+  if (!rows || rows.length === 0) return rows;
+
+  const firstHeader = headers && headers[0];
+
+  return rows.filter((row) => {
+    const firstVal = firstHeader != null ? String(row[firstHeader] || "").trim() : "";
+
+    // "BRAND TOTAL", "SUPPLIER TOTAL", "TOTAL", "GRAND TOTAL", etc.
+    if (/\bTOTAL\b/i.test(firstVal)) return false;
+
+    // "Total for X" pattern (QB-style grouped reports)
+    if (/^Total for /i.test(firstVal)) return false;
+
+    // Row with only 1–2 non-empty cells is likely a summary row
+    const nonEmptyCount = headers.filter((h) => {
+      const v = String(row[h] || "").trim();
+      return v !== "";
+    }).length;
+    if (nonEmptyCount <= 2 && nonEmptyCount > 0) {
+      // Only filter if the first cell is also empty (pure trailing summary)
+      if (!firstVal) return false;
+    }
+
+    return true;
+  });
+}
+
+/**
+ * Detect multi-period pivot column structure (e.g. VIP 4M Rolling Period reports).
+ *
+ * Looks at rows above headerIdx for period label patterns such as:
+ *   "1 Month 12/1/2025 thru 12/31/2025"
+ *   "2 Month 11/1/2025 thru 12/31/2025"
+ *
+ * @param {Array[]} rawRows - Full 2D array of raw rows
+ * @param {number} headerIdx - Index of the detected header row
+ * @returns {{ periods: Array<{ label: string, shortLabel: string, startCol: number, endCol: number }>, metricsPerPeriod: string[] } | null}
+ */
+function detectPivotPeriods(rawRows, headerIdx) {
+  if (headerIdx < 1) return null;
+
+  // Scan rows above the header for period label patterns
+  // Pattern: "N Month M/D/YYYY thru M/D/YYYY" or "N Months ..."
+  const periodPattern = /^\d+\s+months?\s+\d{1,2}\/\d{1,2}\/\d{4}\s+thru\s+\d{1,2}\/\d{1,2}\/\d{4}$/i;
+
+  let periodRow = null;
+  let periodRowIdx = -1;
+
+  for (let i = 0; i < headerIdx; i++) {
+    const row = rawRows[i];
+    if (!row) continue;
+    const matches = row.filter((cell) => cell != null && periodPattern.test(String(cell).trim()));
+    if (matches.length >= 2) {
+      periodRow = row;
+      periodRowIdx = i;
+      break;
+    }
+  }
+
+  if (!periodRow) return null;
+
+  // Collect period blocks from the period label row
+  const periods = [];
+  let currentPeriod = null;
+
+  for (let col = 0; col < periodRow.length; col++) {
+    const cell = String(periodRow[col] || "").trim();
+    if (periodPattern.test(cell)) {
+      if (currentPeriod) {
+        currentPeriod.endCol = col - 1;
+        periods.push(currentPeriod);
+      }
+      currentPeriod = { label: cell, shortLabel: _shortenPeriodLabel(cell), startCol: col, endCol: col };
+    }
+  }
+  if (currentPeriod) {
+    // Last period extends to end of header row
+    const headerRow = rawRows[headerIdx];
+    currentPeriod.endCol = headerRow ? headerRow.length - 1 : currentPeriod.startCol;
+    periods.push(currentPeriod);
+  }
+
+  if (periods.length < 2) return null;
+
+  // Derive metric column names from the header row within the first period block
+  const headerRow = rawRows[headerIdx];
+  const firstPeriod = periods[0];
+  const metricsPerPeriod = [];
+  for (let col = firstPeriod.startCol; col <= firstPeriod.endCol && col < headerRow.length; col++) {
+    const cell = String(headerRow[col] || "").trim();
+    if (cell) metricsPerPeriod.push(cell);
+  }
+
+  return { periods, metricsPerPeriod };
+}
+
+/**
+ * Convert a verbose period label into a compact display label.
+ * "1 Month 12/1/2025 thru 12/31/2025" → "1M Dec 2025"
+ * "2 Month 11/1/2025 thru 12/31/2025" → "2M Nov-Dec 2025"
+ */
+function _shortenPeriodLabel(label) {
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  // Extract: N Month(s) startDate thru endDate
+  const m = label.match(/^(\d+)\s+months?\s+(\d{1,2})\/(\d{1,2})\/(\d{4})\s+thru\s+(\d{1,2})\/(\d{1,2})\/(\d{4})$/i);
+  if (!m) return label;
+
+  const [, n, startMo, , startYr, endMo, , endYr] = m;
+  const startMonth = MONTHS[parseInt(startMo, 10) - 1] || startMo;
+  const endMonth = MONTHS[parseInt(endMo, 10) - 1] || endMo;
+
+  if (startMonth === endMonth && startYr === endYr) {
+    return `${n}M ${endMonth} ${endYr}`;
+  }
+  const startPart = startYr === endYr ? startMonth : `${startMonth} ${startYr}`;
+  return `${n}M ${startPart}-${endMonth} ${endYr}`;
+}
+
+/**
+ * Build a per-column period label array for use with cleanHeaders().
+ * For each column index, returns the shortLabel of whichever period block
+ * that column belongs to, or null if the column is before all periods.
+ */
+function _buildPeriodLabelsArray(periodInfo, totalCols) {
+  const labels = new Array(totalCols).fill(null);
+  for (const period of periodInfo.periods) {
+    for (let col = period.startCol; col <= Math.min(period.endCol, totalCols - 1); col++) {
+      labels[col] = period.shortLabel;
+    }
+  }
+  return labels;
 }
 
 /**
@@ -147,11 +298,28 @@ function processGroupedRows(rawRows, headerIdx) {
 
 /**
  * Standard (non-grouped) row processing.
+ * Handles pivot period detection for VIP/iDig-style multi-period reports.
  */
 function processStandardRows(rawRows, headerIdx) {
-  const headerRow = cleanHeaders(rawRows[headerIdx].map((c) => (c == null ? "" : String(c))));
+  // Detect pivot period structure before building headers
+  const pivotInfo = detectPivotPeriods(rawRows, headerIdx);
 
-  const dataRows = rawRows.slice(headerIdx + 1)
+  let headerRow;
+  let pivotMeta = undefined;
+
+  if (pivotInfo) {
+    const rawHeader = rawRows[headerIdx].map((c) => (c == null ? "" : String(c)));
+    const periodLabels = _buildPeriodLabelsArray(pivotInfo, rawHeader.length);
+    headerRow = cleanHeaders(rawHeader, periodLabels);
+    pivotMeta = {
+      periods: pivotInfo.periods,
+      metricsPerPeriod: pivotInfo.metricsPerPeriod,
+    };
+  } else {
+    headerRow = cleanHeaders(rawRows[headerIdx].map((c) => (c == null ? "" : String(c))));
+  }
+
+  let dataRows = rawRows.slice(headerIdx + 1)
     .filter((r) => r.some((cell) => cell !== null && cell !== undefined && String(cell).trim() !== ""))
     .map((r) => {
       const obj = {};
@@ -163,7 +331,14 @@ function processStandardRows(rawRows, headerIdx) {
       return firstVal !== "total" && firstVal !== "grand total" && firstVal !== "";
     });
 
-  return { headers: headerRow, rows: dataRows };
+  // Filter subtotal/total rows for pivot reports and standard reports alike
+  dataRows = filterSubtotalRows(dataRows, headerRow);
+
+  const result = { headers: headerRow, rows: dataRows };
+  if (pivotMeta) {
+    result._pivotMeta = pivotMeta;
+  }
+  return result;
 }
 
 /**
@@ -256,6 +431,8 @@ module.exports = {
   detectGroupedFormat,
   processGroupedRows,
   processStandardRows,
+  filterSubtotalRows,
+  detectPivotPeriods,
   parseFileBuffer,
   parseRawRows,
   getSheetNames,

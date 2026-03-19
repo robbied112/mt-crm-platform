@@ -411,6 +411,36 @@ function transformQuickBooks(rows, mapping, qbFormat) {
     accountMap[name].items[itemName].revenue += amount;
   }
 
+  // Build synthetic revenue rows for revenue transform
+  const syntheticRows = productRows.map(r => {
+    const obj = {};
+    obj[amountCol || 'Amount'] = r[amountCol];
+    obj[dateCol || 'Date'] = r[dateCol];
+    obj[itemCol || 'Product'] = r[itemCol];
+    obj[channelCol || 'Channel'] = r[channelCol];
+    obj[nameCol || 'Customer'] = r[nameCol];
+    obj['_sourceType'] = 'quickbooks';
+    return obj;
+  });
+
+  const revMapping = {
+    revenue: amountCol || 'Amount',
+    date: dateCol || 'Date',
+    sku: itemCol || 'Product',
+    ch: channelCol || 'Channel',
+    acct: nameCol || 'Customer',
+    _sourceType: '_sourceType',
+  };
+
+  const revenueResult = transformRevenue(syntheticRows, revMapping);
+
+  // Extract unique product names for portfolio auto-creation
+  const productNames = [...new Set(
+    productRows
+      .map(r => str(r[itemCol]))
+      .filter(name => name && name.toLowerCase() !== 'other')
+  )];
+
   // Calculate date range for monthly distribution
   const allDates = Object.values(accountMap).flatMap((a) => [a.firstDate, a.lastDate]).filter(Boolean).sort();
   const dateSpanMonths = Math.max(1, allDates.length >= 2
@@ -519,6 +549,10 @@ function transformQuickBooks(rows, mapping, qbFormat) {
     qbDistOrders,
     acctConcentration,
     reorderData,
+    // Revenue views derived from QB data
+    ...revenueResult,
+    // Product names for portfolio auto-creation
+    productNames,
   };
 }
 
@@ -539,6 +573,9 @@ function generateSummary(dataType, datasets, userRole) {
     parts.push(`I've processed your QuickBooks data: ${acctCount} ${acctName}s with $${totalRev.toLocaleString()} in total revenue.`);
     parts.push(`Your top ${acctName} is "${topAcct}".`);
     parts.push(`Inventory and Reorder data is not available from QuickBooks — upload a ${entityName} ${dataLabel} report to unlock those tabs.`);
+    if (datasets.revenueSummary?.ytdTotal) {
+      parts.push(`Revenue data is ready — $${datasets.revenueSummary.ytdTotal.toLocaleString()} YTD across ${datasets.revenueSummary.channelCount || 1} channel(s).`);
+    }
   } else if (dataType === "depletion") {
     const distCount = datasets.distScorecard?.length || 0;
     const acctCount = datasets.accountsTop?.length || 0;

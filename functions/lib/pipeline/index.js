@@ -27,6 +27,8 @@ module.exports = {
   parseFileBuffer: parseFile.parseFileBuffer,
   parseRawRows: parseFile.parseRawRows,
   getSheetNames: parseFile.getSheetNames,
+  filterSubtotalRows: parseFile.filterSubtotalRows,
+  detectPivotPeriods: parseFile.detectPivotPeriods,
 
   // transformData
   transformDepletion: transformData.transformDepletion,

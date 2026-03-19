@@ -17,6 +17,8 @@ import DataImport from "./DataImport";
 import CloudSyncSettings from "./CloudSyncSettings";
 import TeamSettings from "./TeamSettings";
 import TeamSetupWizard from "./TeamSetupWizard";
+import DataSourcesSettings from "./DataSourcesSettings";
+import ImportHealthDashboard from "./ImportHealthDashboard";
 
 function SettingsSection({ title, children, headerRight, id }) {
   return (
@@ -528,12 +530,22 @@ export default function Settings({
         </div>
       </SettingsSection>
 
+      {/* Data Sources — categorized upload zones */}
+      <SettingsSection title="Data Sources">
+        <DataSourcesSettings />
+      </SettingsSection>
+
       {/* Data Upload */}
       <SettingsSection title="Data Upload">
         <p style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 16 }}>
           {t("uploadHint")}
         </p>
         <DataImport />
+      </SettingsSection>
+
+      {/* Import Health */}
+      <SettingsSection title="Import Health">
+        <ImportHealthDashboard />
       </SettingsSection>
 
       {/* Cloud Sync (Premium) */}

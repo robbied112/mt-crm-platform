@@ -36,7 +36,7 @@ import {
   doc, getDoc, setDoc, deleteDoc,
   collection, addDoc, getDocs,
   query, orderBy, limit as fbLimit, where,
-  serverTimestamp,
+  serverTimestamp, increment,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import {
@@ -331,6 +331,24 @@ export async function loadRecentUploads(tenantId, count = 100) {
   }
 }
 
+/**
+ * Get the most recent import of a given type for comparison.
+ * Returns the import metadata and row count, or null if no prior import.
+ */
+export async function getPreviousImport(tenantId, uploadType) {
+  if (!tenantId || !uploadType) return null;
+  const q = query(
+    collection(db, `tenants/${tenantId}/uploads`),
+    where("type", "==", uploadType),
+    orderBy("createdAt", "desc"),
+    fbLimit(2) // Get 2 — the current one being saved + the previous
+  );
+  const snap = await getDocs(q);
+  const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  // Return the second one (the previous import, not the one just created)
+  return docs.length >= 2 ? docs[1] : null;
+}
+
 export async function loadWines(tenantId) {
   const snap = await getDocs(collection(db, "tenants", tenantId, "wines"));
   return snap.docs
@@ -385,4 +403,48 @@ export async function loadSyncHistory(tenantId, count = 10) {
   } catch {
     return [];
   }
+}
+
+// ─── Learned Column Mappings ──────────────────────────────────
+
+function hashCode(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return 'lm_' + Math.abs(hash).toString(36);
+}
+
+/**
+ * Save a learned column mapping for a tenant.
+ * Key: hash of sorted header names → mapping object.
+ */
+export async function saveLearnedMapping(tenantId, headers, mapping, uploadType) {
+  if (!tenantId || !headers?.length) return;
+  const key = headers.slice().sort().join("|").toLowerCase();
+  const docRef = doc(db, `tenants/${tenantId}/learnedMappings`, hashCode(key));
+  await setDoc(docRef, {
+    headerSignature: key,
+    headers: headers.slice(0, 100), // Store first 100 headers for reference
+    mapping,
+    uploadType: uploadType?.type || uploadType || null,
+    updatedAt: serverTimestamp(),
+    useCount: increment(1),
+  }, { merge: true });
+}
+
+/**
+ * Look up a learned mapping by header signature.
+ * Returns { mapping, uploadType } or null if no match.
+ */
+export async function getLearnedMapping(tenantId, headers) {
+  if (!tenantId || !headers?.length) return null;
+  const key = headers.slice().sort().join("|").toLowerCase();
+  const docRef = doc(db, `tenants/${tenantId}/learnedMappings`, hashCode(key));
+  const snap = await getDoc(docRef);
+  if (!snap.exists()) return null;
+  const data = snap.data();
+  return { mapping: data.mapping, uploadType: data.uploadType };
 }
