@@ -167,4 +167,99 @@ describe("transformRevenue", () => {
     const result = transformRevenue(rows, MAPPING);
     expect(result.revenueByProduct.map((p) => p.sku)).toEqual(["Large", "Medium", "Small"]);
   });
+
+  // ── Dateless Fallback ─────────────────────────────────────────
+
+  describe("dateless fallback (>80% rows missing dates)", () => {
+    it("activates fallback when all rows lack dates", () => {
+      const rows = [
+        makeRow({ amount: 1000, date: "", channel: "Distributors", sku: "Wine A" }),
+        makeRow({ amount: 500, date: "", channel: "Website / DTC", sku: "Wine B" }),
+        makeRow({ amount: 750, date: "", channel: "Distributors", sku: "Wine A" }),
+      ];
+      const result = transformRevenue(rows, MAPPING);
+
+      expect(result.revenueByChannel.length).toBeGreaterThan(0);
+      expect(result.revenueSummary.dateless).toBe(true);
+      expect(result.revenueSummary.monthKeys).toEqual(["all-time"]);
+    });
+
+    it("aggregates by channel correctly in dateless mode", () => {
+      const rows = [
+        makeRow({ amount: 1000, date: "", channel: "Distributors", sku: "Wine A" }),
+        makeRow({ amount: 500, date: "", channel: "Website / DTC", sku: "Wine B" }),
+        makeRow({ amount: 750, date: "", channel: "Distributors", sku: "Wine C" }),
+      ];
+      const result = transformRevenue(rows, MAPPING);
+
+      const dist = result.revenueByChannel.find((c) => c.channel === "Distributors");
+      expect(dist.total).toBe(1750);
+      expect(dist.months["all-time"]).toBe(1750);
+
+      const dtc = result.revenueByChannel.find((c) => c.channel === "Website / DTC");
+      expect(dtc.total).toBe(500);
+    });
+
+    it("aggregates by product correctly in dateless mode", () => {
+      const rows = [
+        makeRow({ amount: 1000, date: "", sku: "Wine A" }),
+        makeRow({ amount: 500, date: "", sku: "Wine B" }),
+        makeRow({ amount: 250, date: "", sku: "Wine A" }),
+      ];
+      const result = transformRevenue(rows, MAPPING);
+
+      expect(result.revenueByProduct[0].sku).toBe("Wine A");
+      expect(result.revenueByProduct[0].total).toBe(1250);
+      expect(result.revenueByProduct[1].sku).toBe("Wine B");
+    });
+
+    it("computes summary correctly in dateless mode", () => {
+      const rows = [
+        makeRow({ amount: 1000, date: "", channel: "Distributors", sku: "Pinot" }),
+        makeRow({ amount: 200, date: "", channel: "Website / DTC", sku: "Cab" }),
+      ];
+      const result = transformRevenue(rows, MAPPING);
+
+      expect(result.revenueSummary.ytdTotal).toBe(1200);
+      expect(result.revenueSummary.annualRunRate).toBe(0);
+      expect(result.revenueSummary.topChannel).toBe("Distributors");
+      expect(result.revenueSummary.topSku).toBe("Pinot");
+      expect(result.revenueSummary.channelCount).toBe(2);
+    });
+
+    it("does NOT activate fallback when <80% rows lack dates", () => {
+      const rows = [
+        makeRow({ amount: 1000, date: "2026-01-01", channel: "Distributors" }),
+        makeRow({ amount: 500, date: "2026-02-01", channel: "Distributors" }),
+        makeRow({ amount: 750, date: "2026-03-01", channel: "Distributors" }),
+        makeRow({ amount: 100, date: "", channel: "Distributors" }), // 25% dateless
+      ];
+      const result = transformRevenue(rows, MAPPING);
+
+      // Should use normal monthly mode, not dateless
+      expect(result.revenueSummary.dateless).toBeUndefined();
+      expect(result.revenueSummary.monthKeys).not.toContain("all-time");
+    });
+
+    it("filters out $0 channels in dateless mode", () => {
+      const rows = [
+        makeRow({ amount: 0, date: "", channel: "Distributors" }),
+        makeRow({ amount: 500, date: "", channel: "Website / DTC" }),
+      ];
+      const result = transformRevenue(rows, MAPPING);
+
+      expect(result.revenueByChannel.length).toBe(1);
+      expect(result.revenueByChannel[0].channel).toBe("Website / DTC");
+    });
+
+    it("uses source-based channel inference in dateless mode", () => {
+      const rows = [
+        { revenue: 1000, date: "", ch: "", sku: "Wine A", acct: "Acct 1", _sourceType: "quickbooks" },
+      ];
+      const mappingWithSource = { ...MAPPING, _sourceType: "_sourceType" };
+      const result = transformRevenue(rows, mappingWithSource);
+
+      expect(result.revenueByChannel[0].channel).toBe("Distributors");
+    });
+  });
 });

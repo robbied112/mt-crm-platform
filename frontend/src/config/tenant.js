@@ -119,7 +119,7 @@ const TENANT_CONFIG = {
       defaultValue: 2000,
     },
   ],
-  useNormalizedModel: false, // Feature flag: imports/ + views/ schema (TODO-021)
+  useNormalizedModel: true, // imports/ + views/ schema — server-authoritative rebuild
   features: {
     fileAttachments: true,
     emailLogging: true,

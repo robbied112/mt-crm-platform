@@ -71,6 +71,60 @@ function parseMonth(dateStr) {
   return { year, month, key: `${year}-${String(month + 1).padStart(2, "0")}` };
 }
 
+/**
+ * Dateless fallback: aggregate revenue by channel and product without
+ * monthly breakdown. Used when >80% of rows have no valid date (e.g.,
+ * QB Customer Balance Summary, A/R Aging exports).
+ */
+function transformRevenueDateless(rows, warnings) {
+  const channelTotals = {};
+  const skuTotals = {};
+  let grandTotal = 0;
+
+  for (const row of rows) {
+    const ch = row.channel;
+    channelTotals[ch] = (channelTotals[ch] || 0) + row.amount;
+    skuTotals[row.sku] = (skuTotals[row.sku] || 0) + row.amount;
+    grandTotal += row.amount;
+  }
+
+  const revenueByChannel = Object.entries(channelTotals)
+    .map(([channel, total]) => ({
+      channel,
+      months: { "all-time": Math.round(total * 100) / 100 },
+      total: Math.round(total * 100) / 100,
+    }))
+    .filter((ch) => ch.total !== 0)
+    .sort((a, b) => b.total - a.total);
+
+  const revenueByProduct = Object.entries(skuTotals)
+    .map(([sku, total]) => ({
+      sku,
+      months: { "all-time": Math.round(total * 100) / 100 },
+      total: Math.round(total * 100) / 100,
+    }))
+    .filter((p) => p.total !== 0)
+    .sort((a, b) => b.total - a.total);
+
+  const topChannel = revenueByChannel[0]?.channel || "";
+  const topSku = revenueByProduct[0]?.sku || "";
+
+  const revenueSummary = {
+    ytdTotal: Math.round(grandTotal * 100) / 100,
+    annualRunRate: 0,
+    topChannel,
+    topSku,
+    monthlyTotals: { "all-time": Math.round(grandTotal * 100) / 100 },
+    monthKeys: ["all-time"],
+    channelCount: revenueByChannel.length,
+    skuCount: revenueByProduct.length,
+    dateless: true,
+    warnings: warnings.length > 0 ? warnings.slice(0, 10) : undefined,
+  };
+
+  return { revenueByChannel, revenueByProduct, revenueSummary };
+}
+
 function transformRevenue(rows, mapping) {
   if (!rows || rows.length === 0) {
     return {
@@ -82,27 +136,41 @@ function transformRevenue(rows, mapping) {
 
   const warnings = [];
   const validRows = [];
+  const datelessRows = [];
 
   for (const row of rows) {
     const amount = num(getMapped(row, mapping, "revenue"));
     const dateRaw = getMapped(row, mapping, "date");
     const parsed = parseMonth(dateRaw);
 
-    if (!parsed) {
-      warnings.push(`Skipped row: invalid date "${dateRaw}"`);
-      continue;
-    }
-
-    validRows.push({
+    const common = {
       amount,
-      date: parsed,
       channel: resolveChannel(
         getMapped(row, mapping, "ch"),
         getMapped(row, mapping, "_sourceType")
       ),
       sku: str(getMapped(row, mapping, "sku")) || "Uncategorized",
       acct: str(getMapped(row, mapping, "acct")),
-    });
+    };
+
+    if (parsed) {
+      validRows.push({ ...common, date: parsed });
+    } else {
+      datelessRows.push(common);
+    }
+  }
+
+  // Dateless fallback: if >80% of rows lack valid dates, aggregate all
+  // revenue into a single "all-time" period instead of monthly breakdown.
+  const totalParsed = validRows.length + datelessRows.length;
+  const useDatelessFallback = totalParsed > 0 && datelessRows.length > totalParsed * 0.8;
+
+  if (useDatelessFallback) {
+    return transformRevenueDateless([...validRows, ...datelessRows], warnings);
+  }
+
+  if (datelessRows.length > 0) {
+    warnings.push(`${datelessRows.length} row(s) skipped: missing or invalid date`);
   }
 
   // Collect all months

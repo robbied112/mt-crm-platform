@@ -11,50 +11,33 @@
 
 ---
 
-### 1. Fix multi-import pipeline (server-authoritative rebuild)
+### 1. Fix upload-to-dashboard loop (live smoke test failing)
 
-**Problem:** Uploading a second file of the same type overwrites the first file's dashboard views. The frontend calls `saveAllViews()` with only the new import's transformed data, clobbering the previous import. The `rebuildViews` Cloud Function (which aggregates ALL imports) is never called from the manual upload path.
+**Status:** DIAGNOSED + FIX IMPLEMENTED — pending deploy and live verification.
 
-**Fix:** Change `importDatasets()` in `DataContext.jsx` so that when `useNormalizedModel=true`, the frontend ONLY saves the raw import to `imports/`. Then call `rebuildViews` Cloud Function, which reads ALL imports, runs `transformAll()` across the combined data, and writes to `views/`. Remove the frontend `saveAllViews()` call for normalized model.
+**Root causes found (2026-03-19 eng review):**
+1. `useNormalizedModel` defaults to `false` in tenant.js and no code ever sets it to `true` → PR 58's rebuild path was dead code in production
+2. `transformRevenue` silently returns empty arrays when QB rows have no valid dates → dashboard locked even though accounts populated
 
-**Files:**
-- `frontend/src/context/DataContext.jsx` — remove `saveAllViews()` call, add `rebuildViews` callable
-- `functions/rebuild.js` — verify it handles being called from frontend (already a callable)
-- `frontend/src/components/DataImport/index.jsx` — may need loading state for rebuild
+**Fixes applied:**
+- `tenant.js`: `useNormalizedModel` default changed to `true` (activates rebuild path)
+- `transformRevenue.js`: added dateless fallback — when >80% rows lack dates, aggregates by channel/product into "all-time" period
+- 7 new unit tests for dateless fallback (883 total pass)
+- 2 new integration tests: QB rebuild + dateless QB rebuild
 
 **DONE when:**
-- [ ] Upload file A → dashboard shows A's data
-- [ ] Upload file B (same type) → dashboard shows A+B combined data
-- [ ] Delete import B → dashboard shows only A's data (rebuild after delete)
-- [ ] Integration test covers the multi-import aggregation path
-- [ ] Frontend test covers the importDatasets → rebuild → refresh flow
+- [ ] Upload a QuickBooks file → Revenue & Sales dashboard populates (not empty/locked)
+- [ ] Data Intelligence banner + dashboard both show data from the same upload
+- [ ] Verified on live site, not just emulator tests
 
 ---
 
-### 2. End-to-end smoke test for upload → dashboard
+### 2. [empty]
 
-**Problem:** No test verifies the complete path: file parsed → AI comprehend → transform → save to Firestore → views rebuilt → dashboard data loads. Individual pieces are tested (866 unit tests pass) but the integration is untested.
-
-**Fix:** Write an integration test using the Firebase emulator that:
-1. Calls `saveImport()` with realistic normalized rows
-2. Calls `rebuildViews()`
-3. Reads from `views/` and verifies correct aggregated data
-4. Verifies that a second import produces correct combined views
-
-**Files:**
-- `functions/__tests__/rebuildViews.integration.test.js` — extend existing test file
-
-**DONE when:**
-- [ ] Test passes with 1 import → correct views
-- [ ] Test passes with 2 imports (same type) → correct combined views
-- [ ] Test passes with import delete → views update correctly
-- [ ] Runs in CI (`npm run test:integration` in functions/)
-
----
-
-### 3. [empty — ship 1 and 2 first]
+### 3. [empty]
 
 ---
 
 ## Recently shipped
 <!-- Move items here when done. One line. Date + PR#. -->
+- 2026-03-19 — PR #58 merged: server-authoritative rebuild for multi-import pipeline (code + 4 integration tests). Live smoke test FAILED — dashboard still empty after upload.
