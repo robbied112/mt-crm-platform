@@ -30,6 +30,24 @@ firebase functions:secrets:set STRIPE_SECRET_KEY
 
 When prompted, paste your Stripe secret key (starts with `sk_live_` or `sk_test_`).
 
+## Step 2b: Set Stripe Price IDs
+
+These go in `functions/.env` (not Secret Manager — they're product identifiers, not secrets).
+
+1. Go to **Stripe Dashboard > Products**
+2. Click on your **Starter** product, then click the price row — copy the ID starting with `price_`
+3. Click on your **Growth** product, do the same
+4. Edit `functions/.env`:
+
+```
+STRIPE_PRICE_ID_STARTER=price_xxxxxxxxxxxxxxxx
+STRIPE_PRICE_ID_GROWTH=price_xxxxxxxxxxxxxxxx
+```
+
+> If you haven't created these products yet, go to Stripe Dashboard > Products > Add Product.
+> Create one for "Starter" ($49/mo recurring) and one for "Growth" ($99/mo recurring).
+> The price ID is shown under the price details after creation.
+
 ## Step 3: Deploy Cloud Functions (Stripe Webhook)
 
 ```bash
