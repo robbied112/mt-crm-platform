@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.4.2.2] - 2026-03-19
+
+### Fixed
+- Fix "Delete All Data" failing with "Missing or insufficient permissions" — `deleteAllData` was querying a non-existent `rows` subcollection under `uploads/` which has no Firestore rule
+- Split delete helper into `deleteChunkedCollection` (data/views/imports with rows) and `deleteFlatCollection` (uploads without rows)
+- Add missing collections to delete: `uploadAudit`, `pendingMatches`, `pendingWineMatches` in dashboard data; `wines`, `pipeline` in CRM data
+- Clean up account `emails` and `files` subcollections (not just `notes`) during CRM delete
+
 ## [0.4.2.1] - 2026-03-19
 
 ### Changed
