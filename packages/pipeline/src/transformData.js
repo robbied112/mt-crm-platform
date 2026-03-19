@@ -58,6 +58,19 @@ function groupBy(arr, keyFn) {
   return map;
 }
 
+/**
+ * Detect summary/total rows that should not be treated as real accounts.
+ * These rows aggregate data across accounts within a distributor report
+ * and inflate account counts when left in.
+ */
+const _summaryPattern = /^(total|grand total|brand total|supplier total|territory total|all accounts?)$/i;
+
+function isSummaryRow(row) {
+  if (_summaryPattern.test(row.acct)) return true;
+  if (_summaryPattern.test(row.dist)) return true;
+  return false;
+}
+
 // ─── Depletion Transform ────────────────────────────────────────
 
 function transformDepletion(rows, mapping) {
@@ -65,7 +78,7 @@ function transformDepletion(rows, mapping) {
   const weekCols = mapping._weekColumns || [];
   const hasTimeSeries = monthCols.length > 0 || weekCols.length > 0;
 
-  // Build per-row normalized data
+  // Build per-row normalized data, filtering out summary/total rows
   const normalized = rows.map((r) => ({
     acct: str(getMapped(r, mapping, "acct")),
     dist: str(getMapped(r, mapping, "dist")),
@@ -77,7 +90,7 @@ function transformDepletion(rows, mapping) {
     revenue: num(getMapped(r, mapping, "revenue")),
     months: monthCols.map((c) => num(r[c])),
     weeks: weekCols.map((c) => num(r[c])),
-  }));
+  })).filter((r) => !isSummaryRow(r));
 
   // ── distScorecard: group by distributor+state ──
   const distGroups = groupBy(normalized, (r) => `${r.dist}||${r.st}`);
@@ -252,7 +265,7 @@ function transformPurchases(rows, mapping) {
     qty: num(getMapped(r, mapping, "qty")),
     date: normalizeDate(getMapped(r, mapping, "date")),
     sku: str(getMapped(r, mapping, "sku")),
-  }));
+  })).filter((r) => !isSummaryRow(r));
 
   const acctGroups = groupBy(normalized, (r) => `${r.acct}||${r.dist}||${r.st}`);
   const now = Date.now();
@@ -312,12 +325,13 @@ function transformPurchases(rows, mapping) {
 
 function transformInventory(rows, mapping) {
   const normalized = rows.map((r) => ({
+    acct: str(getMapped(r, mapping, "acct")),
     st: normalizeState(getMapped(r, mapping, "st")),
     dist: str(getMapped(r, mapping, "dist")),
     oh: num(getMapped(r, mapping, "oh")),
     doh: num(getMapped(r, mapping, "doh")),
     sku: str(getMapped(r, mapping, "sku")),
-  }));
+  })).filter((r) => !isSummaryRow(r));
 
   // Group by state for inventoryData
   const stateGroups = groupBy(normalized, (r) => r.st);
@@ -426,7 +440,7 @@ function transformQuickBooks(rows, mapping, qbFormat) {
 
   for (const r of productRows) {
     const name = str(r[nameCol]) || str(r[headers[0]]) || str(r["Customer"]);
-    if (!name || name.toLowerCase() === "total") continue;
+    if (!name || _summaryPattern.test(name)) continue;
 
     const amount = getAmount(r);
     const qty = num(r[qtyCol]);

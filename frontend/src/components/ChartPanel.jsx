@@ -5,16 +5,14 @@
  */
 
 import { useRef, useEffect } from "react";
+import Chart from "chart.js/auto";
 
 export default function ChartPanel({ title, chartConfig, className = "" }) {
   const canvasRef = useRef(null);
   const chartRef = useRef(null);
 
   useEffect(() => {
-    // Chart.js must be loaded globally (via CDN) for now.
-    // During full migration this will switch to: import Chart from 'chart.js/auto';
-    const Chart = window.Chart;
-    if (!Chart || !canvasRef.current || !chartConfig) return;
+    if (!canvasRef.current || !chartConfig) return;
 
     // Destroy previous instance
     if (chartRef.current) {
