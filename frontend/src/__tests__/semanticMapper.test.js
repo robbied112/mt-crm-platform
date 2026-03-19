@@ -89,6 +89,26 @@ describe("autoDetectMapping", () => {
     expect(mapping.dist).toBeTruthy();
   });
 
+  it("detects pivot period-labeled columns as _monthColumns", () => {
+    const headers = [
+      "Account", "State", "Product",
+      "Quantity", "Revenue",
+      "Quantity [1M Jan 2026]", "Revenue [1M Jan 2026]",
+      "Quantity [2M Dec-Jan 2026]", "Revenue [2M Dec-Jan 2026]",
+    ];
+    const rows = [
+      { "Account": "Wine Bar", "State": "NY", "Product": "Pinot", "Quantity": "10", "Revenue": "500", "Quantity [1M Jan 2026]": "12", "Revenue [1M Jan 2026]": "600", "Quantity [2M Dec-Jan 2026]": "22", "Revenue [2M Dec-Jan 2026]": "1100" },
+    ];
+    const { mapping } = autoDetectMapping(headers, rows);
+
+    // Period-labeled columns should be detected as month columns
+    expect(mapping._monthColumns).toBeDefined();
+    expect(mapping._monthColumns).toContain("Quantity [1M Jan 2026]");
+    expect(mapping._monthColumns).toContain("Revenue [1M Jan 2026]");
+    expect(mapping._monthColumns).toContain("Quantity [2M Dec-Jan 2026]");
+    expect(mapping._monthColumns).toContain("Revenue [2M Dec-Jan 2026]");
+  });
+
   it("supports all 4 industry roles", () => {
     for (const role of ["winery", "importer", "distributor", "retailer"]) {
       const { mapping } = autoDetectMapping(DEPLETION_HEADERS, DEPLETION_ROWS, role);
