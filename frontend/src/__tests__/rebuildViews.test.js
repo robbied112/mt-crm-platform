@@ -194,5 +194,11 @@ describe("snapshot comparison: normalizeRows → prepareNormalized → transform
     expect(rebuildResult.type).toBe(directResult.type);
     expect(rebuildResult.accountsTop).toEqual(directResult.accountsTop);
     expect(rebuildResult.pipelineAccounts).toEqual(directResult.pipelineAccounts);
+
+    // Revenue views must survive the normalize → rebuild round-trip
+    expect(rebuildResult.revenueByChannel).toEqual(directResult.revenueByChannel);
+    expect(rebuildResult.revenueByProduct).toEqual(directResult.revenueByProduct);
+    expect(rebuildResult.revenueSummary.topSku).toEqual(directResult.revenueSummary.topSku);
+    expect(rebuildResult.revenueSummary.monthKeys).toEqual(directResult.revenueSummary.monthKeys);
   });
 });

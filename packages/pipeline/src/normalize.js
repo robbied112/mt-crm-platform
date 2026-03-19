@@ -56,7 +56,7 @@ function normalizeRows(rows, mapping) {
       sku: str(get("sku")),
       qty: num(get("qty")),
       date: normalizeDate(get("date")),
-      revenue: num(get("revenue")),
+      revenue: num(get("revenue")) || (num(get("credit")) - num(get("debit"))) || 0,
       stage: str(get("stage")),
       owner: str(get("owner")),
       estValue: num(get("estValue")),
