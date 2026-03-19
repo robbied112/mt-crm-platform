@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.4.2.1] - 2026-03-19
+
+### Changed
+- Update NOW.md: mark upload-to-dashboard fix as shipped (PRs #58–#60)
+- Add barrel exports for distributorFormats, productNormalize, and importDiff to Cloud Functions pipeline index
+
 ## [0.4.2.0] - 2026-03-18
 
 ### Changed
