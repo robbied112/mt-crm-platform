@@ -1,6 +1,6 @@
 /**
  * Tests for crmService.deleteAllCrmData — verifies that all CRM
- * collections (including notes subcollections) are fully drained.
+ * collections (including account subcollections) are fully drained.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
@@ -83,6 +83,8 @@ describe("deleteAllCrmData", () => {
     mockDocs.set("tenants/t1/tasks/tk1", { title: "Follow up" });
     mockDocs.set("tenants/t1/opportunities/opp1", { title: "Deal" });
     mockDocs.set("tenants/t1/products/p1", { name: "Wine A" });
+    mockDocs.set("tenants/t1/wines/w1", { name: "Pinot Noir" });
+    mockDocs.set("tenants/t1/pipeline/pl1", { stage: "prospecting" });
 
     await deleteAllCrmData("t1");
 
@@ -93,12 +95,16 @@ describe("deleteAllCrmData", () => {
     expect(mockDocs.has("tenants/t1/tasks/tk1")).toBe(false);
     expect(mockDocs.has("tenants/t1/opportunities/opp1")).toBe(false);
     expect(mockDocs.has("tenants/t1/products/p1")).toBe(false);
+    expect(mockDocs.has("tenants/t1/wines/w1")).toBe(false);
+    expect(mockDocs.has("tenants/t1/pipeline/pl1")).toBe(false);
   });
 
-  it("deletes notes subcollections before deleting accounts", async () => {
+  it("deletes account subcollections (notes, emails, files) before deleting accounts", async () => {
     mockDocs.set("tenants/t1/accounts/a1", { name: "Acme" });
     mockDocs.set("tenants/t1/accounts/a1/notes/n1", { text: "Note 1" });
     mockDocs.set("tenants/t1/accounts/a1/notes/n2", { text: "Note 2" });
+    mockDocs.set("tenants/t1/accounts/a1/emails/e1", { subject: "Hello" });
+    mockDocs.set("tenants/t1/accounts/a1/files/f1", { name: "doc.pdf" });
     mockDocs.set("tenants/t1/accounts/a2", { name: "Beta" });
     mockDocs.set("tenants/t1/accounts/a2/notes/n3", { text: "Note 3" });
 
@@ -106,6 +112,8 @@ describe("deleteAllCrmData", () => {
 
     expect(mockDocs.has("tenants/t1/accounts/a1/notes/n1")).toBe(false);
     expect(mockDocs.has("tenants/t1/accounts/a1/notes/n2")).toBe(false);
+    expect(mockDocs.has("tenants/t1/accounts/a1/emails/e1")).toBe(false);
+    expect(mockDocs.has("tenants/t1/accounts/a1/files/f1")).toBe(false);
     expect(mockDocs.has("tenants/t1/accounts/a2/notes/n3")).toBe(false);
     expect(mockDocs.has("tenants/t1/accounts/a1")).toBe(false);
     expect(mockDocs.has("tenants/t1/accounts/a2")).toBe(false);
