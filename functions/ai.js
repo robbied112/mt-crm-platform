@@ -102,4 +102,61 @@ const aiIngest = onCall(
     return { success: true, mapping, uploadType: mapJson.uploadType };
   });
 
-module.exports = { aiMapper, aiIngest };
+// -------------------------------------------------------------------
+// Generate Import Narration — callable Cloud Function
+// -------------------------------------------------------------------
+// Accepts import stats and data type, returns a natural-language
+// insight summary powered by Claude.
+//
+// Call from frontend:
+//   const generateNarration = httpsCallable(functions, 'generateImportNarration');
+//   const { data } = await generateNarration({ tenantId, dataType, stats });
+// -------------------------------------------------------------------
+
+function buildNarrationPrompt(dataType, stats) {
+  return `You are a wine & spirits business analyst. Write a 2-3 sentence insight summary for a data import.
+
+Data type: ${dataType}
+Stats: ${JSON.stringify(stats, null, 2)}
+
+Rules:
+- Be specific with numbers — cite exact figures from the stats
+- Focus on what's actionable: trends, outliers, opportunities
+- Use business language a wine/spirits sales team would use
+- Keep it under 60 words
+- Do NOT use emojis or markdown
+- Start with the most important insight`;
+}
+
+const generateImportNarration = onCall(
+  { secrets: [anthropicApiKey], timeoutSeconds: 30, memory: "256MiB" },
+  async (req) => {
+    if (!req.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
+    }
+
+    const { tenantId, dataType, stats } = req.data;
+    if (!tenantId || !stats) {
+      throw new HttpsError("invalid-argument", "Missing tenantId or stats");
+    }
+
+    const apiKey = anthropicApiKey.value();
+    if (!apiKey) {
+      throw new HttpsError("failed-precondition", "ANTHROPIC_API_KEY not configured");
+    }
+
+    const Anthropic = require("@anthropic-ai/sdk");
+    const client = new Anthropic({ apiKey });
+
+    const prompt = buildNarrationPrompt(dataType, stats);
+    const response = await client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 500,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const narration = response.content?.[0]?.text || "";
+    return { narration };
+  });
+
+module.exports = { aiMapper, aiIngest, generateImportNarration };

@@ -71,3 +71,5 @@ export { default as JoinPage } from "./JoinPage";
 export { default as TeamSettings } from "./TeamSettings";
 export { default as TeamSetupWizard } from "./TeamSetupWizard";
 export { default as TerritoryMap } from "./TerritoryMap";
+export { default as DataSourcesSettings } from "./DataSourcesSettings";
+export { default as ImportHealthDashboard } from "./ImportHealthDashboard";

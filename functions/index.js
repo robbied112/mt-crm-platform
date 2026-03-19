@@ -1,6 +1,6 @@
 // Barrel re-exporter — all Cloud Functions for Firebase deploy
 const { stripeWebhook } = require("./stripe");
-const { aiMapper, aiIngest } = require("./ai");
+const { aiMapper, aiIngest, generateImportNarration } = require("./ai");
 const { rebuildViews } = require("./rebuild");
 const { extractAccounts } = require("./accounts");
 const {
@@ -25,6 +25,7 @@ const { sendInviteEmail } = require("./email");
 exports.stripeWebhook = stripeWebhook;
 exports.aiMapper = aiMapper;
 exports.aiIngest = aiIngest;
+exports.generateImportNarration = generateImportNarration;
 exports.rebuildViews = rebuildViews;
 exports.extractAccounts = extractAccounts;
 exports.cloudSyncOAuthCallback = cloudSyncOAuthCallback;

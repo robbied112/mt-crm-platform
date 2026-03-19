@@ -8,5 +8,6 @@ export {
   extractVintage,
   buildNormalizedName,
   clientExactMatch,
+  fuzzyMatchProducts,
   PRODUCT_FIELDS,
 } from "../../../packages/pipeline/src/productNormalize.js";

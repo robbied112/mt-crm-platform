@@ -18,8 +18,9 @@ import { runComprehend } from "../../utils/runComprehend";
 import { transformAll, generateSummary } from "../../utils/transformData";
 import { transformBillback } from "../../utils/transformBillback";
 import { normalizeRows } from "../../utils/normalize.js";
-import { clientExactMatch } from "../../utils/productNormalize";
-import { logUpload } from "../../services/firestoreService";
+import { clientExactMatch, fuzzyMatchProducts } from "../../utils/productNormalize";
+import { matchDistributorByHeaders, matchDistributorByFilename } from "../../config/reportGuides";
+import { logUpload, saveLearnedMapping, getLearnedMapping } from "../../services/firestoreService";
 import { useAuth } from "../../context/AuthContext";
 import { useTeam } from "../../context/TeamContext";
 import { getFunctions, httpsCallable } from "firebase/functions";
@@ -52,6 +53,7 @@ const initialState = {
   billbackItems: null,
   billbackMeta: null,
   unmatchedProducts: [],
+  autoCreatedProducts: [],
   // Smart import state
   analyses: new Map(),
   analysis: null,
@@ -91,6 +93,8 @@ function reducer(state, action) {
       return { ...state, billbackItems: action.payload.items, billbackMeta: action.payload.meta };
     case "SET_UNMATCHED":
       return { ...state, unmatchedProducts: action.payload };
+    case "SET_AUTO_CREATED":
+      return { ...state, autoCreatedProducts: action.payload };
     case "SET_ANALYSIS":
       return { ...state, analysis: action.payload };
     case "SET_ANALYSES": {
@@ -117,7 +121,7 @@ function reducer(state, action) {
 
 // ─── Component ──────────────────────────────────────────────────
 
-export default function DataImport() {
+export default function DataImport({ dataTypeHint } = {}) {
   const { importDatasets, userRole, tenantId, useNormalized, tenantConfig, updateTenantConfig, refreshData } = useData();
   const { products, createProduct } = useCrm();
   const { currentUser, isAdmin } = useAuth();
@@ -137,7 +141,7 @@ export default function DataImport() {
   const {
     step, file, parsed, mapping, confidence, uploadType,
     preview, summary, error, saving, dragOver, useAI, aiLoading,
-    billbackItems, billbackMeta, unmatchedProducts,
+    billbackItems, billbackMeta, unmatchedProducts, autoCreatedProducts,
     analysis, analyses, sheetInfo,
   } = state;
 
@@ -146,8 +150,30 @@ export default function DataImport() {
   // ── Shared mapping helper (DRY across all import paths) ──
   // Tries AI mapper → falls back to rule-based → dispatches mapping + type.
 
-  const runMapping = useCallback(async (headers, rows) => {
+  const runMapping = useCallback(async (headers, rows, fileName) => {
     let autoMap, conf;
+
+    // Layer 0: Learned mapping lookup (instant)
+    if (tenantId) {
+      try {
+        const learned = await getLearnedMapping(tenantId, headers);
+        if (learned) {
+          autoMap = learned.mapping;
+          conf = { _learned: true };
+          const type = learned.uploadType ? { type: learned.uploadType } : detectUploadType(headers, rows, autoMap);
+          dispatch({ type: "SET_MAPPING", payload: autoMap });
+          dispatch({ type: "SET_CONFIDENCE", payload: conf });
+          dispatch({ type: "SET_UPLOAD_TYPE", payload: type });
+          return { mapping: autoMap, confidence: conf, type };
+        }
+      } catch (err) {
+        console.warn("[DataImport] Learned mapping lookup failed:", err.message);
+      }
+    }
+
+    // Layer 1: Report guide signature matching (instant, 0ms)
+    const guidMatch = matchDistributorByHeaders(headers) || matchDistributorByFilename(fileName);
+
     if (useAI) {
       dispatch({ type: "SET_AI_LOADING", payload: true });
       try {
@@ -166,12 +192,19 @@ export default function DataImport() {
       autoMap = ruleResult.mapping;
       conf = ruleResult.confidence;
     }
+
+    // Enrich confidence with guide match info
+    if (guidMatch) {
+      conf._detectedSystem = guidMatch;
+    }
+
     dispatch({ type: "SET_MAPPING", payload: autoMap });
     dispatch({ type: "SET_CONFIDENCE", payload: conf });
-    const type = detectUploadType(headers, rows, autoMap);
+    const detectedType = detectUploadType(headers, rows, autoMap);
+    const type = dataTypeHint ? { type: dataTypeHint, ...(detectedType || {}) } : detectedType;
     dispatch({ type: "SET_UPLOAD_TYPE", payload: type });
     return { mapping: autoMap, confidence: conf, type };
-  }, [useAI, userRole]);
+  }, [useAI, userRole, dataTypeHint, tenantId]);
 
   // ── Multi-file queue (from shared UploadContext) ──
 
@@ -373,7 +406,7 @@ export default function DataImport() {
             dispatch({ type: "SET_UPLOAD_TYPE", payload: type });
             dispatch({ type: "SET_STEP", payload: type?.type === "product_sheet" ? "product-sheet-review" : "mapping" });
           } else {
-            const { type } = await runMapping(result.headers, result.rows);
+            const { type } = await runMapping(result.headers, result.rows, f.name);
             dispatch({ type: "SET_STEP", payload: type?.type === "product_sheet" ? "product-sheet-review" : "mapping" });
           }
         } catch (err) {
@@ -385,7 +418,7 @@ export default function DataImport() {
           dispatch({ type: "SET_ANALYSIS", payload: errorAnalysis });
           dispatch({ type: "SET_ANALYSES", payload: { fileName: f.name, analysis: errorAnalysis } });
           // Fallback to standard mapping
-          const { type } = await runMapping(result.headers, result.rows);
+          const { type } = await runMapping(result.headers, result.rows, f.name);
           dispatch({ type: "SET_STEP", payload: type?.type === "product_sheet" ? "product-sheet-review" : "mapping" });
         } finally {
           dispatch({ type: "SET_AI_LOADING", payload: false });
@@ -394,7 +427,7 @@ export default function DataImport() {
       }
 
       // Standard path
-      const { type } = await runMapping(result.headers, result.rows);
+      const { type } = await runMapping(result.headers, result.rows, f.name);
       dispatch({ type: "SET_STEP", payload: type?.type === "product_sheet" ? "product-sheet-review" : "mapping" });
     } catch (err) {
       dispatch({ type: "SET_ERROR", payload: err.message });
@@ -490,29 +523,53 @@ export default function DataImport() {
         });
       }
 
-      // Product matching
+      // Save confirmed mapping for future recognition
+      if (tenantId && parsed?.headers?.length > 0) {
+        saveLearnedMapping(tenantId, parsed.headers, mapping, uploadType).catch(err =>
+          console.warn("[DataImport] Failed to save learned mapping:", err.message)
+        );
+      }
+
+      // Product auto-creation: create new products from import
       if (mapping.sku && parsed?.rows?.length > 0) {
         const skuCol = mapping.sku;
         const rawProductNames = [...new Set(
           parsed.rows.map((r) => (r[skuCol] || "").trim()).filter(Boolean)
         )];
 
-        if (rawProductNames.length > 0) {
-          const { unmatched: clientUnmatched } = clientExactMatch(rawProductNames, products);
+        // Also include productNames from QB transform if available
+        const qbProductNames = preview?.productNames || [];
+        const allProductNames = [...new Set([...rawProductNames, ...qbProductNames])];
 
-          if (clientUnmatched.length > 0 && importId && tenantId) {
-            try {
-              const fns = getFunctions();
-              const matchProducts = httpsCallable(fns, "matchProductsFromImport");
-              const { data: matchResult } = await matchProducts({
-                tenantId,
-                importId,
-                unmatchedNames: clientUnmatched,
-              });
-              dispatch({ type: "SET_UNMATCHED", payload: matchResult.unmatched || [] });
-            } catch (err) {
-              console.error("[DataImport] Product matching failed:", err.message);
-              dispatch({ type: "SET_UNMATCHED", payload: clientUnmatched });
+        if (allProductNames.length > 0) {
+          const { unmatched: clientUnmatched } = clientExactMatch(allProductNames, products);
+
+          if (clientUnmatched.length > 0) {
+            // Try fuzzy matching before auto-creating — prevents duplicates from name variations
+            const { matched: fuzzyMatched, unmatched: trulyUnmatched } = fuzzyMatchProducts(clientUnmatched, products);
+
+            // Auto-create only truly unmatched products
+            const created = [];
+            for (const name of trulyUnmatched) {
+              try {
+                await createProduct({
+                  name,
+                  type: "wine",
+                  status: "active",
+                  source: "import",
+                  importedFrom: file.name,
+                });
+                created.push(name);
+              } catch (err) {
+                console.error(`[DataImport] Failed to create product "${name}":`, err.message);
+              }
+            }
+
+            if (created.length > 0 || fuzzyMatched.length > 0) {
+              dispatch({ type: "SET_AUTO_CREATED", payload: created });
+              dispatch({ type: "SET_UNMATCHED", payload: trulyUnmatched.filter(n => !created.includes(n)) });
+            } else {
+              dispatch({ type: "SET_UNMATCHED", payload: trulyUnmatched });
             }
           }
         }
@@ -524,6 +581,45 @@ export default function DataImport() {
         fq.markDone(reviewingItem.id, { rowCount: parsed.rows.length, type: uploadType.type });
         dispatch({ type: "SET_STEP", payload: "upload" });
         return;
+      }
+
+      // Generate AI narration (fire and forget — don't block the done step)
+      if (tenantId) {
+        try {
+          const fns = getFunctions();
+          const generateNarration = httpsCallable(fns, "generateImportNarration");
+          const narrationStats = {
+            rowCount: parsed.rows.length,
+            type: uploadType?.type,
+            fileName: file.name,
+            // Include key metrics from the transform result
+            ...(preview?.revenueSummary ? {
+              ytdTotal: preview.revenueSummary.ytdTotal,
+              topChannel: preview.revenueSummary.topChannel,
+              topSku: preview.revenueSummary.topSku,
+              channelCount: preview.revenueSummary.channelCount,
+            } : {}),
+            ...(preview?.accountsTop ? {
+              accountCount: preview.accountsTop.length,
+              topAccount: preview.accountsTop[0]?.acct,
+              totalRevenue: preview.accountsTop.reduce((s, a) => s + (a.total || 0), 0),
+            } : {}),
+            ...(preview?.distScorecard ? {
+              distributorCount: preview.distScorecard.length,
+              totalCE: preview.distScorecard.reduce((s, d) => s + (d.ce || 0), 0),
+            } : {}),
+          };
+
+          generateNarration({ tenantId, dataType: uploadType?.type, stats: narrationStats })
+            .then(({ data }) => {
+              if (data?.narration) {
+                dispatch({ type: "SET_SUMMARY", payload: data.narration });
+              }
+            })
+            .catch(err => console.warn("[DataImport] Narration failed:", err.message));
+        } catch (err) {
+          console.warn("[DataImport] Narration setup failed:", err.message);
+        }
       }
 
       dispatch({ type: "SET_STEP", payload: "done" });
@@ -674,7 +770,7 @@ export default function DataImport() {
       dispatch({ type: "SET_PARSED", payload: result });
 
       // Re-run mapping on the new sheet
-      await runMapping(result.headers, result.rows);
+      await runMapping(result.headers, result.rows, file.name);
     } catch (err) {
       dispatch({ type: "SET_ERROR", payload: err.message });
     } finally {
@@ -875,11 +971,30 @@ export default function DataImport() {
             Import Complete
           </h3>
           <p style={{ fontSize: 14, color: "#6B6B6B", marginBottom: 16 }}>{summary}</p>
+          {autoCreatedProducts.length > 0 && (
+            <div className="import-unmatched" style={{ borderColor: "#1F865A", background: "rgba(31, 134, 90, 0.04)" }}>
+              <div className="import-unmatched__header" style={{ color: "#1F865A" }}>
+                <span className="import-unmatched__icon">&#10003;</span>
+                <span>{autoCreatedProducts.length} new product{autoCreatedProducts.length !== 1 ? "s" : ""} added to your portfolio</span>
+              </div>
+              <div className="import-unmatched__list">
+                {autoCreatedProducts.slice(0, 10).map((name) => (
+                  <div key={name} className="import-unmatched__item">{name}</div>
+                ))}
+                {autoCreatedProducts.length > 10 && (
+                  <div className="import-unmatched__more">+{autoCreatedProducts.length - 10} more</div>
+                )}
+              </div>
+              <button className="btn btn-secondary" onClick={() => navigate("/portfolio")}>
+                View Portfolio &rarr;
+              </button>
+            </div>
+          )}
           {unmatchedProducts.length > 0 && (
             <div className="import-unmatched">
               <div className="import-unmatched__header">
                 <span className="import-unmatched__icon">&#128203;</span>
-                <span>{unmatchedProducts.length} products not in your catalog</span>
+                <span>{unmatchedProducts.length} products could not be added to your catalog</span>
               </div>
               <div className="import-unmatched__list">
                 {unmatchedProducts.slice(0, 10).map((name) => (
