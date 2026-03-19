@@ -273,17 +273,18 @@ export async function deleteAllCrmData(tenantId) {
     }
   }
 
-  // Drain all top-level CRM collections in parallel
-  await Promise.all([
-    drainCollection("accounts"),
-    drainCollection("contacts"),
-    drainCollection("activityLog"),
-    drainCollection("tasks"),
-    drainCollection("opportunities"),
-    drainCollection("products"),
-    drainCollection("wines"),
-    drainCollection("pipeline"),
-  ]);
+  const crmCollections = [
+    "accounts", "contacts", "activityLog", "tasks",
+    "opportunities", "products", "wines", "pipeline",
+  ];
+
+  const results = await Promise.allSettled(crmCollections.map((c) => drainCollection(c)));
+  const failures = results
+    .map((r, i) => (r.status === "rejected" ? crmCollections[i] : null))
+    .filter(Boolean);
+  if (failures.length) {
+    throw new Error(`Failed to delete CRM: ${failures.join(", ")}. Other collections were deleted successfully.`);
+  }
 }
 
 // ─── Real-time Listeners ──────────────────────────────────────

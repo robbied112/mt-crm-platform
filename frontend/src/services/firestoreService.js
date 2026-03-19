@@ -234,15 +234,23 @@ export async function deleteAllData(tenantId) {
     await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
   }
 
-  await Promise.all([
-    deleteChunkedCollection("data"),
-    deleteChunkedCollection("views"),
-    deleteChunkedCollection("imports"),
-    deleteFlatCollection("uploads"),
-    deleteFlatCollection("uploadAudit"),
-    deleteFlatCollection("pendingMatches"),
-    deleteFlatCollection("pendingWineMatches"),
-  ]);
+  const collections = [
+    { fn: deleteChunkedCollection, name: "data" },
+    { fn: deleteChunkedCollection, name: "views" },
+    { fn: deleteChunkedCollection, name: "imports" },
+    { fn: deleteFlatCollection, name: "uploads" },
+    { fn: deleteFlatCollection, name: "uploadAudit" },
+    { fn: deleteFlatCollection, name: "pendingMatches" },
+    { fn: deleteFlatCollection, name: "pendingWineMatches" },
+  ];
+
+  const results = await Promise.allSettled(collections.map((c) => c.fn(c.name)));
+  const failures = results
+    .map((r, i) => (r.status === "rejected" ? collections[i].name : null))
+    .filter(Boolean);
+  if (failures.length) {
+    throw new Error(`Failed to delete: ${failures.join(", ")}. Other collections were deleted successfully.`);
+  }
 }
 
 // ─── Tenant Config ───────────────────────────────────────────
