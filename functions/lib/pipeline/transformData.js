@@ -363,11 +363,21 @@ function transformQuickBooks(rows, mapping, qbFormat) {
   };
 
   const nameCol = findCol("acct", ["customer full name", "customer", "name"]);
-  const amountCol = findCol("revenue", ["amount"]);
+  const amountCol = findCol("revenue", ["amount", "total", "net amount", "ext price", "extended price", "sales price", "line total", "sales amount", "gross amount"]);
   const dateCol = findCol("date", ["transaction date", "date"]);
   const itemCol = findCol("sku", ["product/service", "item", "memo/description", "description"]);
   const qtyCol = findCol("qty", ["quantity"]);
   const channelCol = findCol("ch", ["customer type", "type"]);
+
+  // Debit/Credit handling for QB Transaction Detail format
+  const debitCol = !amountCol && headers.find((h) => h.toLowerCase().includes("debit"));
+  const creditCol = !amountCol && headers.find((h) => h.toLowerCase().includes("credit"));
+  const useDebitCredit = !amountCol && !!debitCol && !!creditCol;
+
+  const getAmount = (r) => {
+    if (useDebitCredit) return num(r[creditCol]) - num(r[debitCol]);
+    return num(r[amountCol]);
+  };
 
   // Filter out tax line items and non-product rows
   const isProductRow = (r) => {
@@ -387,7 +397,7 @@ function transformQuickBooks(rows, mapping, qbFormat) {
     const name = str(r[nameCol]) || str(r[headers[0]]) || str(r["Customer"]);
     if (!name || name.toLowerCase() === "total") continue;
 
-    const amount = num(r[amountCol]);
+    const amount = getAmount(r);
     const qty = num(r[qtyCol]);
     const date = normalizeDate(r[dateCol]);
     const channel = str(r[channelCol]);
@@ -414,7 +424,7 @@ function transformQuickBooks(rows, mapping, qbFormat) {
   // Build synthetic revenue rows for revenue transform
   const syntheticRows = productRows.map(r => {
     const obj = {};
-    obj[amountCol || 'Amount'] = r[amountCol];
+    obj['_amount'] = getAmount(r);
     obj[dateCol || 'Date'] = r[dateCol];
     obj[itemCol || 'Product'] = r[itemCol];
     obj[channelCol || 'Channel'] = r[channelCol];
@@ -424,7 +434,7 @@ function transformQuickBooks(rows, mapping, qbFormat) {
   });
 
   const revMapping = {
-    revenue: amountCol || 'Amount',
+    revenue: '_amount',
     date: dateCol || 'Date',
     sku: itemCol || 'Product',
     ch: channelCol || 'Channel',
