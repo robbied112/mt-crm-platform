@@ -272,6 +272,66 @@ describe("rebuildViewsForTenant pipeline", { skip: rebuildSkip }, () => {
     assert.ok(histSnap.size >= 1, "Rebuild history should be recorded");
   });
 
+  it("quickbooks import → produces revenue views", async () => {
+    const qbRows = [
+      { acct: "Restaurant A", dist: "", st: "CA", ch: "", sku: "Pinot Noir", qty: 10, date: "2024-06-15", revenue: 500 },
+      { acct: "Wine Shop B", dist: "", st: "NY", ch: "retail", sku: "Chardonnay", qty: 20, date: "2024-07-01", revenue: 1200 },
+      { acct: "Restaurant A", dist: "", st: "CA", ch: "", sku: "Cabernet", qty: 5, date: "2024-07-10", revenue: 300 },
+    ];
+
+    await seedImport(db, TENANT_ID, "qb1", {
+      type: "quickbooks",
+      fileName: "sales-by-customer.csv",
+    }, qbRows);
+
+    await rebuildViewsForTenant({ tenantId: TENANT_ID, triggeredBy: "test" });
+
+    // Verify revenue views were written
+    const revenueDoc = await db.collection("tenants").doc(TENANT_ID)
+      .collection("views").doc("revenueByChannel").get();
+    assert.ok(revenueDoc.exists, "revenueByChannel view should exist");
+
+    const data = revenueDoc.data();
+    const items = data.items || [];
+    assert.ok(items.length > 0, `revenueByChannel should have entries, got ${items.length}`);
+
+    // Verify accountsTop was also written
+    const accountsDoc = await db.collection("tenants").doc(TENANT_ID)
+      .collection("views").doc("accountsTop").get();
+    assert.ok(accountsDoc.exists, "accountsTop view should exist");
+    const acctData = accountsDoc.data();
+    const acctItems = acctData.items || [];
+    assert.ok(acctItems.length >= 2, `accountsTop should have 2+ accounts, got ${acctItems.length}`);
+  });
+
+  it("quickbooks import without dates → dateless revenue fallback", async () => {
+    const datelessRows = [
+      { acct: "Restaurant A", dist: "", st: "CA", ch: "", sku: "Pinot Noir", qty: 10, date: "", revenue: 500 },
+      { acct: "Wine Shop B", dist: "", st: "NY", ch: "retail", sku: "Chardonnay", qty: 20, date: "", revenue: 1200 },
+    ];
+
+    await seedImport(db, TENANT_ID, "qb-dateless", {
+      type: "quickbooks",
+      fileName: "customer-balance.csv",
+    }, datelessRows);
+
+    await rebuildViewsForTenant({ tenantId: TENANT_ID, triggeredBy: "test" });
+
+    // Revenue views should still exist (dateless fallback)
+    const revenueDoc = await db.collection("tenants").doc(TENANT_ID)
+      .collection("views").doc("revenueByChannel").get();
+    assert.ok(revenueDoc.exists, "revenueByChannel should exist even without dates");
+
+    const data = revenueDoc.data();
+    const items = data.items || [];
+    assert.ok(items.length > 0, `dateless fallback should produce revenueByChannel entries, got ${items.length}`);
+
+    // Verify summary marks dateless
+    const summaryDoc = await db.collection("tenants").doc(TENANT_ID)
+      .collection("views").doc("_summary").get();
+    assert.ok(summaryDoc.exists, "summary should exist");
+  });
+
   it("empty imports → rebuild produces empty views", async () => {
     // No imports seeded — rebuild should succeed and write empty views
     await rebuildViewsForTenant({ tenantId: TENANT_ID, triggeredBy: "test" });
