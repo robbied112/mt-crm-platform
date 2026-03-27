@@ -9,6 +9,7 @@ const db = admin.firestore();
 
 // ─── Secrets ─────────────────────────────────────────────────────
 const anthropicApiKey = defineSecret("ANTHROPIC_API_KEY");
+const geminiApiKey = defineSecret("GEMINI_API_KEY");
 const stripeWebhookSecret = defineSecret("STRIPE_WEBHOOK_SECRET");
 const stripeSecretKey = defineSecret("STRIPE_SECRET_KEY");
 const googleClientId = defineSecret("GOOGLE_CLIENT_ID");
@@ -149,6 +150,7 @@ module.exports = {
   db,
   defineSecret,
   anthropicApiKey,
+  geminiApiKey,
   stripeWebhookSecret,
   stripeSecretKey,
   googleClientId,

@@ -1,61 +1,55 @@
 /**
  * generateBriefingForTenant — called inline from rebuildViewsForTenant.
  * NOT a Cloud Function export. Generates AI briefing from views data.
+ * Uses Gemini 2.5 Flash for narrative generation (cost: ~$0.05/briefing).
  */
 
-const { callClaude, extractToolResult } = require("./lib/claude");
+const { callGemini } = require("./lib/claude");
 const { computeChanges } = require("./computeChanges");
 
-// --- Tool Schema for Claude ---
+// --- Tool Schema for Gemini (function calling) ---
+// Gemini uses a different schema format than Claude's tool_use.
+// No oneOf support, nullable strings instead.
 
-const BRIEFING_NARRATIVE_TOOL = {
-  name: "briefing_narrative",
-  description:
-    "Write a concise AI briefing narrative for a wine/spirits supplier, " +
-    "including inline sparkline placement markers and suggested follow-up questions.",
-  input_schema: {
-    type: "object",
-    properties: {
-      narrativeSegments: {
-        type: "array",
-        description: "Ordered array of text and sparkline segments that form the narrative",
-        items: {
-          type: "object",
-          properties: {
-            type: { type: "string", enum: ["text", "sparkline"] },
-            content: { type: "string", description: "Text content (for type=text)" },
-            metric: { type: "string", description: "Metric name (for type=sparkline)" },
-            dataset: { type: "string", description: "Source dataset key (for type=sparkline)" },
-            field: { type: "string", description: "Field name in dataset (for type=sparkline)" },
-            label: { type: "string", description: "Human-readable label (for type=sparkline)" },
-          },
-          required: ["type"],
+const BRIEFING_SCHEMA = {
+  type: "object",
+  properties: {
+    narrativeSegments: {
+      type: "array",
+      description: "Ordered array of text and sparkline segments that form the narrative",
+      items: {
+        type: "object",
+        properties: {
+          type: { type: "string", description: "Segment type: 'text' or 'sparkline'" },
+          content: { type: "string", description: "Text content (for type=text)" },
+          metric: { type: "string", description: "Metric name (for type=sparkline)" },
+          dataset: { type: "string", description: "Source dataset key (for type=sparkline)" },
+          field: { type: "string", description: "Field name in dataset (for type=sparkline)" },
+          label: { type: "string", description: "Human-readable label (for type=sparkline)" },
         },
-      },
-      suggestedQuestions: {
-        type: "array",
-        items: { type: "string" },
-        description: "3 follow-up questions the user might want to ask about their data",
-      },
-      actions: {
-        type: "array",
-        description: "Recommended actions based on the findings",
-        items: {
-          type: "object",
-          properties: {
-            text: { type: "string" },
-            priority: { type: "integer" },
-            relatedAccount: {
-              description: "Account name if action is account-specific, null otherwise",
-              oneOf: [{ type: "string" }, { type: "null" }],
-            },
-          },
-          required: ["text", "priority"],
-        },
+        required: ["type"],
       },
     },
-    required: ["narrativeSegments", "suggestedQuestions", "actions"],
+    suggestedQuestions: {
+      type: "array",
+      items: { type: "string" },
+      description: "3 follow-up questions the user might want to ask about their data",
+    },
+    actions: {
+      type: "array",
+      description: "Recommended actions based on the findings",
+      items: {
+        type: "object",
+        properties: {
+          text: { type: "string" },
+          priority: { type: "integer" },
+          relatedAccount: { type: "string", description: "Account name if action is account-specific, empty string otherwise" },
+        },
+        required: ["text", "priority"],
+      },
+    },
   },
+  required: ["narrativeSegments", "suggestedQuestions", "actions"],
 };
 
 // --- System Prompt ---
@@ -90,6 +84,7 @@ function verifyCitations(segments, views) {
 
 /**
  * Generate a briefing for a tenant. Called inline from rebuild.js.
+ * @param {{ tenantId, views, db, admin, apiKey }} opts - apiKey is now the Gemini API key
  * @returns {object|null} The briefing data, or null on failure.
  */
 async function generateBriefingForTenant({ tenantId, views, db, admin, apiKey }) {
@@ -120,8 +115,8 @@ async function generateBriefingForTenant({ tenantId, views, db, admin, apiKey })
     // 2. Compute changes deterministically
     const computed = computeChanges(views, previousAnalysis);
 
-    // 3. Call Claude for narrative
-    const userMessage = JSON.stringify({
+    // 3. Call Gemini for narrative
+    const prompt = JSON.stringify({
       isFirstBriefing: computed.isFirstBriefing,
       changes: computed.changes,
       risks: computed.risks,
@@ -131,30 +126,32 @@ async function generateBriefingForTenant({ tenantId, views, db, admin, apiKey })
         accountsTop: (views.accountsTop || []).length,
         inventoryData: (views.inventoryData || []).length,
         reorderData: (views.reorderData || []).length,
-        revenueSummary: (views.revenueSummary || []).length,
+        revenueSummary: views.revenueSummary ? 1 : 0,
       },
     });
 
-    const response = await callClaude({
+    const result = await callGemini({
       apiKey,
       system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userMessage }],
-      tools: [BRIEFING_NARRATIVE_TOOL],
-      toolChoice: { type: "tool", name: "briefing_narrative" },
+      prompt,
+      toolName: "briefing_narrative",
+      toolSchema: BRIEFING_SCHEMA,
     });
 
     let narrativeSegments = [];
     let suggestedQuestions = [];
     let actions = [];
 
-    const result = extractToolResult(response);
     if (!result.error) {
       narrativeSegments = verifyCitations(result.narrativeSegments || [], views);
       suggestedQuestions = result.suggestedQuestions || [];
-      actions = result.actions || [];
+      actions = (result.actions || []).map((a) => ({
+        ...a,
+        relatedAccount: a.relatedAccount || null,
+      }));
     } else {
       // Fallback: no narrative, just structured data
-      console.warn(`[generateBriefing] Claude failed (${result.errorType}), using deterministic fallback`);
+      console.warn(`[generateBriefing] Gemini failed (${result.errorType}), using deterministic fallback`);
       narrativeSegments = [
         { type: "text", content: computed.isFirstBriefing
           ? "Here's what stands out in your data."
@@ -192,6 +189,7 @@ async function generateBriefingForTenant({ tenantId, views, db, admin, apiKey })
       isFirstBriefing: computed.isFirstBriefing,
       citationScore,
       feedback: null,
+      model: "gemini-2.5-flash",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 

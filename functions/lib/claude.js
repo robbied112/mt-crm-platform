@@ -1,11 +1,13 @@
 /**
- * Shared Claude API helpers — used by generateBriefing, askAboutData, and comprehend.
+ * Shared AI API helpers — Claude (comprehend) + Gemini (briefing/chat).
  * Takes admin/db as parameters (not imported) so this stays a pure utility.
  */
 
 const Anthropic = require("@anthropic-ai/sdk");
+const { GoogleGenerativeAI, SchemaType } = require("@google/generative-ai");
 
 const DEFAULT_MODEL = "claude-sonnet-4-5-20241022";
+const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash-preview-05-20";
 const DEFAULT_MAX_TOKENS = 4096;
 
 /**
@@ -45,6 +47,48 @@ function extractToolResult(response) {
   }
 
   return toolUseBlock.input;
+}
+
+/**
+ * Call Gemini with structured output (function calling).
+ * @param {{ apiKey, model, system, prompt, toolName, toolSchema, maxTokens }} opts
+ * @returns {object} The parsed tool result, or { error: true, errorType: "..." }
+ */
+async function callGemini({ apiKey, model, system, prompt, toolName, toolSchema, maxTokens }) {
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const genModel = genAI.getGenerativeModel({
+      model: model || DEFAULT_GEMINI_MODEL,
+      systemInstruction: system,
+      tools: [{
+        functionDeclarations: [{
+          name: toolName,
+          description: toolSchema.description || `Generate ${toolName}`,
+          parameters: toolSchema,
+        }],
+      }],
+      toolConfig: {
+        functionCallingConfig: { mode: "ANY", allowedFunctionNames: [toolName] },
+      },
+      generationConfig: {
+        maxOutputTokens: maxTokens || DEFAULT_MAX_TOKENS,
+      },
+    });
+
+    const result = await genModel.generateContent(prompt);
+    const response = result.response;
+    const calls = response.functionCalls();
+
+    if (!calls || calls.length === 0) {
+      console.error("[gemini] No function call in response");
+      return { error: true, errorType: "no_tool_use" };
+    }
+
+    return calls[0].args;
+  } catch (err) {
+    console.error("[gemini] API error:", err.message);
+    return { error: true, errorType: "api_failure", message: err.message };
+  }
 }
 
 /**
@@ -92,4 +136,4 @@ async function checkUserRateLimit({ db, admin, tenantId, userId, limitKey, maxCa
   }
 }
 
-module.exports = { callClaude, extractToolResult, checkUserRateLimit };
+module.exports = { callClaude, extractToolResult, callGemini, checkUserRateLimit };

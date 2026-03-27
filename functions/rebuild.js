@@ -4,6 +4,7 @@ const {
   admin,
   db,
   anthropicApiKey,
+  geminiApiKey,
   verifyTenantMembership,
   DATASETS,
 } = require("./helpers");
@@ -279,7 +280,7 @@ async function rebuildViewsForTenant({ tenantId, triggeredBy = "system" }) {
       const subscription = tenantSnap.data()?.subscription || {};
       const aiAllowed = subscription.aiCalls !== false;
       if (aiBriefingEnabled && aiAllowed && totalRows >= 10) {
-        const apiKey = anthropicApiKey.value();
+        const apiKey = geminiApiKey.value();
         if (apiKey) {
           await generateBriefingForTenant({ tenantId, views: nextViews, db, admin, apiKey });
           console.log(`[rebuildViews] Briefing generated for tenant ${tenantId}`);
@@ -327,7 +328,7 @@ async function rebuildViewsForTenant({ tenantId, triggeredBy = "system" }) {
 }
 
 const rebuildViews = onCall(
-  { secrets: [anthropicApiKey], timeoutSeconds: 540, memory: "2GiB" },
+  { secrets: [anthropicApiKey, geminiApiKey], timeoutSeconds: 540, memory: "2GiB" },
   async (req) => {
     if (!req.auth) {
       throw new HttpsError("unauthenticated", "Must be signed in");
