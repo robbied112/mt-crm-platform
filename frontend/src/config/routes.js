@@ -5,12 +5,12 @@
 
 export const ROUTES = [
   {
-    key: "performance",
+    key: "briefing",
     path: "/",
-    label: "My Territory",
-    icon: "territory",
+    label: "Briefing",
+    icon: "briefing",
     dataKey: null,
-    description: "Territory overview, KPIs, and action items",
+    description: "AI-generated weekly briefing with changes, risks, and actions",
   },
   {
     key: "depletions",
@@ -90,6 +90,16 @@ export const ROUTES = [
     accent: true,
     dataKey: null,
     description: "Opportunities pipeline — track deals by type and stage",
+  },
+  // Territory drill-down (secondary, moved from homepage)
+  {
+    key: "territory",
+    path: "/territory",
+    label: "My Territory",
+    icon: "territory",
+    dataKey: null,
+    hidden: true,
+    description: "Territory overview, KPIs, and action items",
   },
   // Tools
   {

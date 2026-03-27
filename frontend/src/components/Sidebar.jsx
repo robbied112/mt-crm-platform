@@ -16,6 +16,13 @@ import { TrialBadge } from "./SubscriptionBanner";
 import { ONBOARDING_STEPS } from "../config/reportGuides";
 
 const ICONS = {
+  briefing: (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4h12a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+      <path d="M7 8h6M7 11h4" />
+      <circle cx="14" cy="5" r="2.5" fill="currentColor" strokeWidth="0" />
+    </svg>
+  ),
   territory: (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="3" width="14" height="14" rx="2" />
