@@ -4,6 +4,7 @@ import "./styles/Global.css";
 import {
   FilterBar,
   Footer,
+  AIBriefing,
   MyTerritory,
   Depletions,
   DistributorHealth,
@@ -45,6 +46,7 @@ import useFilters from "./hooks/useFilters";
 import useSubscription from "./hooks/useSubscription";
 import { useAuth } from "./context/AuthContext";
 import { useData } from "./context/DataContext";
+import { BriefingProvider } from "./context/BriefingContext";
 import { clearDemoData } from "./services/demoData";
 import { deleteAllData } from "./services/firestoreService";
 import { deleteAllCrmData } from "./services/crmService";
@@ -261,6 +263,15 @@ function App() {
             <Routes>
               <Route
                 path="/"
+                element={
+                  <BriefingProvider>
+                    <AIBriefing />
+                  </BriefingProvider>
+                }
+              />
+
+              <Route
+                path="/territory"
                 element={
                   !availability.hasAnyData ? (
                     <WelcomeState />

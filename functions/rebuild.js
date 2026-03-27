@@ -3,9 +3,12 @@ const {
   HttpsError,
   admin,
   db,
+  anthropicApiKey,
   verifyTenantMembership,
   DATASETS,
 } = require("./helpers");
+
+const { generateBriefingForTenant } = require("./generateBriefing");
 
 const {
   transformAll,
@@ -267,6 +270,26 @@ async function rebuildViewsForTenant({ tenantId, triggeredBy = "system" }) {
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
+    // Generate AI briefing (inline, guarded — failure does not break rebuild)
+    try {
+      const configData2 = (await configRef.get()).data() || {};
+      const aiBriefingEnabled = configData2.features?.aiBriefing !== false;
+      // Check subscription: skip AI for starter tier (aiCalls: false)
+      const tenantSnap = await db.collection("tenants").doc(tenantId).get();
+      const subscription = tenantSnap.data()?.subscription || {};
+      const aiAllowed = subscription.aiCalls !== false;
+      if (aiBriefingEnabled && aiAllowed && totalRows >= 10) {
+        const apiKey = anthropicApiKey.value();
+        if (apiKey) {
+          await generateBriefingForTenant({ tenantId, views: nextViews, db, admin, apiKey });
+          console.log(`[rebuildViews] Briefing generated for tenant ${tenantId}`);
+        }
+      }
+    } catch (briefingErr) {
+      console.error(`[rebuildViews] Briefing generation failed for tenant ${tenantId}:`, briefingErr.message);
+      // Non-blocking: rebuild still succeeds
+    }
+
     await rebuildRef.update({
       status: "success",
       completedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -304,7 +327,7 @@ async function rebuildViewsForTenant({ tenantId, triggeredBy = "system" }) {
 }
 
 const rebuildViews = onCall(
-  { timeoutSeconds: 540, memory: "2GiB" },
+  { secrets: [anthropicApiKey], timeoutSeconds: 540, memory: "2GiB" },
   async (req) => {
     if (!req.auth) {
       throw new HttpsError("unauthenticated", "Must be signed in");

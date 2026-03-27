@@ -2,6 +2,7 @@
  * Barrel export for all components
  */
 
+export { default as AIBriefing } from "./AIBriefing";
 export { default as CruFolioLogo } from "./CruFolioLogo";
 export { default as Header } from "./Header";
 export { default as FilterBar } from "./FilterBar";

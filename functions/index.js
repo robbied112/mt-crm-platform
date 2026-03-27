@@ -2,6 +2,7 @@
 const { stripeWebhook } = require("./stripe");
 const { aiMapper, aiIngest, generateImportNarration } = require("./ai");
 const { rebuildViews } = require("./rebuild");
+// generateBriefing is called inline from rebuild.js, not exported as a Cloud Function
 const { extractAccounts } = require("./accounts");
 const {
   cloudSyncOAuthCallback,

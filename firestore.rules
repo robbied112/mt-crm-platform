@@ -130,6 +130,33 @@ service cloud.firestore {
         allow write: if isTenantAdmin(tenantId);
       }
 
+      // AI Briefings — readable by tenant members, server writes via Admin SDK
+      // Members can update the feedback field only (thumbs up/down)
+      match /briefings/{briefingId} {
+        allow read: if isTenantMember(tenantId);
+        allow create: if false;
+        allow delete: if false;
+        allow update: if isTenantMember(tenantId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['feedback', 'feedbackAt']);
+
+        // Actions — members can read, non-viewers can write (check/dismiss)
+        match /actions/{actionId} {
+          allow read: if isTenantMember(tenantId);
+          allow write: if canWriteCrm(tenantId);
+        }
+
+        // Territory-scoped briefings — readable by members, writable by server only
+        match /territories/{territoryName} {
+          allow read: if isTenantMember(tenantId);
+          allow write: if false;
+        }
+      }
+
+      // Rate limits — server-managed
+      match /rateLimits/{doc} {
+        allow read, write: if false;
+      }
+
       // Rebuild history — readable by tenant, writable by server only
       match /rebuildHistory/{doc} {
         allow read: if isTenantMember(tenantId);
