@@ -69,6 +69,7 @@ function normalizeRows(rows, mapping) {
     // Time series columns (if present)
     if (monthCols.length > 0) {
       normalized._months = monthCols.map((c) => num(r[c]));
+      normalized._monthLabels = monthCols;
     }
     if (weekCols.length > 0) {
       normalized._weeks = weekCols.map((c) => num(r[c]));

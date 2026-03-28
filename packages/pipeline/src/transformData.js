@@ -150,25 +150,30 @@ function transformDepletion(rows, mapping) {
         : items.reduce((s, r) => s + r.qty, 0);
       const ch = items[0]?.ch || "Off-Premise";
 
-      // Monthly breakdown from month columns if available
-      let nov = 0, dec = 0, jan = 0, feb = 0;
-      if (monthCols.length >= 4) {
-        nov = items.reduce((s, r) => s + (r.months[0] || 0), 0);
-        dec = items.reduce((s, r) => s + (r.months[1] || 0), 0);
-        jan = items.reduce((s, r) => s + (r.months[2] || 0), 0);
-        feb = items.reduce((s, r) => s + (r.months[3] || 0), 0);
+      // Monthly breakdown from month columns — positional (m0, m1, m2, ...)
+      // Actual month names come from monthAxis metadata, not field names.
+      const monthValues = {};
+      if (monthCols.length > 0) {
+        for (let mi = 0; mi < Math.min(monthCols.length, 12); mi++) {
+          monthValues[`m${mi}`] = items.reduce((s, r) => s + (r.months[mi] || 0), 0);
+        }
       } else {
+        // No month columns — distribute total evenly across 4 slots
         const quarter = totalCE / 4;
-        nov = quarter; dec = quarter; jan = quarter; feb = quarter;
+        for (let mi = 0; mi < 4; mi++) {
+          monthValues[`m${mi}`] = quarter;
+        }
       }
 
-      const total = nov + dec + jan + feb;
+      const total = Object.values(monthValues).reduce((s, v) => s + v, 0);
       const w4Items = items.slice(-Math.ceil(items.length / 3));
       const w4 = useMonthSums
         ? w4Items.reduce((s, r) => s + r.months.reduce((ms, m) => ms + m, 0), 0)
         : w4Items.reduce((s, r) => s + r.qty, 0);
-      const earlyTotal = nov + dec || 1;
-      const lateTotal = jan + feb;
+      const mvKeys = Object.keys(monthValues);
+      const halfIdx = Math.floor(mvKeys.length / 2);
+      const earlyTotal = mvKeys.slice(0, halfIdx).reduce((s, k) => s + monthValues[k], 0) || 1;
+      const lateTotal = mvKeys.slice(halfIdx).reduce((s, k) => s + monthValues[k], 0);
       const growth = ((lateTotal - earlyTotal) / earlyTotal) * 100;
       const trend = growth > 10 ? "Momentum" : growth < -10 ? "Growth Opportunity" : "Consistent";
 
@@ -176,8 +181,7 @@ function transformDepletion(rows, mapping) {
         acct, dist, st, ch,
         ce: Math.round(totalCE),
         w4: Math.round(w4),
-        nov: Math.round(nov), dec: Math.round(dec),
-        jan: Math.round(jan), feb: Math.round(feb),
+        ...Object.fromEntries(Object.entries(monthValues).map(([k, v]) => [k, Math.round(v)])),
         total: Math.round(total),
         trend,
         growthPotential: Math.max(0, Math.round(totalCE * 0.2)),

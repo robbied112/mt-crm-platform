@@ -19,6 +19,7 @@ const mergeSheetsModule = require("./mergeSheets");
 const distributorFormats = require("./distributorFormats");
 const productNormalize = require("./productNormalize");
 const importDiff = require("./importDiff");
+const alignMonths = require("./alignMonths");
 
 module.exports = {
   // parseFile
@@ -101,4 +102,8 @@ module.exports = {
 
   // importDiff
   computeImportDiff: importDiff.computeImportDiff,
+
+  // alignMonths
+  parseMonthLabel: alignMonths.parseMonthLabel,
+  buildUnifiedAxis: alignMonths.buildUnifiedAxis,
 };
