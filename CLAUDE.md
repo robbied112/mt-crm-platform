@@ -14,6 +14,7 @@ Browser (React + Vite)
   +-- DataContext
   |     -> firestoreService.js
   |     -> tenants/{tenantId}/data|imports|views|config
+  |     -> exposes monthAxis from views/_summary
   |
   +-- CrmContext
   |     -> crmService.js
@@ -32,6 +33,7 @@ Shared Pipeline Package
     -> semanticMapper
     -> normalize
     -> transformData
+    -> alignMonths
     -> constants
     -> firestore
 
@@ -262,6 +264,8 @@ tenants/{tenantId}/views/{dataset}
 
 tenants/{tenantId}/views/_summary
   text
+  monthAxis           (array of month label strings, e.g. ["Nov 2025", "Dec 2025"])
+  updatedAt
 
 tenants/{tenantId}/invites/{inviteId}
   code              (UUID, globally unique)
@@ -302,6 +306,9 @@ tenants/{tenantId}/secrets/{doc}  (server-only)
 - Shared chunked Firestore behavior now lives in `packages/pipeline/src/firestore.js`.
 - `processTenantSync()` writes normalized imports and triggers rebuilds; it no longer writes legacy `data/`.
 - `CloudSyncSettings` manual sync calls `cloudSyncSyncNow`.
+- `alignMonths.js` provides `parseMonthLabel` / `buildUnifiedAxis` for temporal alignment of month columns across imports covering different time periods.
+- `rebuild.js` uses `VIEW_OWNERS` map to prevent lower-priority types from overwriting higher-priority views, and `TYPE_ORDER` for deterministic processing. Type aliases merge "sales" into "depletion" before transform.
+- `loadSummary()` returns `{ text, monthAxis }` instead of a plain string; `DataContext` exposes `monthAxis` for components rendering dynamic month columns (`m0`-`m11` with `monthAxis` labels).
 
 ## Design System
 Always read DESIGN.md before making any visual or UI decisions.
