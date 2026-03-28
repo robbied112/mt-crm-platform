@@ -305,15 +305,15 @@ export default function DataImport({ dataTypeHint } = {}) {
     const files = Array.from(fileList);
     if (files.length === 0) return;
 
-    // Single file: use existing single-file flow (preserves billback/product-sheet review UX)
-    if (files.length === 1 && fq.queue.length === 0) {
+    // Single PDF billback: use legacy flow (needs specialized extraction UI)
+    if (files.length === 1 && fq.queue.length === 0 && /\.pdf$/i.test(files[0].name) && isBillbackEnabled) {
       handleSingleFile(files[0]);
       return;
     }
 
-    // Multi-file: add to queue
+    // All files (single or multiple) go through the queue
     await fq.addFiles(files);
-  }, [fq]);
+  }, [fq, isBillbackEnabled]);
 
   // ── Single file flow (original behavior) ──
 
