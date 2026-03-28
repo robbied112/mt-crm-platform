@@ -122,6 +122,57 @@ describe("transformDepletion", () => {
     expect(result.distScorecard).toEqual([]);
     expect(result.accountsTop).toEqual([]);
   });
+
+  it("outputs positional m0/m1/m2/m3 fields instead of nov/dec/jan/feb", () => {
+    const result = transformDepletion(DEPLETION_ROWS, mapping);
+
+    // accountsTop rows should have m0-m3, not nov/dec/jan/feb
+    const first = result.accountsTop[0];
+    expect(first).toBeDefined();
+    expect(first.m0).toBeDefined();
+    expect(first.m1).toBeDefined();
+    expect(first.m2).toBeDefined();
+    expect(first.m3).toBeDefined();
+    expect(first.nov).toBeUndefined();
+    expect(first.dec).toBeUndefined();
+    expect(first.jan).toBeUndefined();
+    expect(first.feb).toBeUndefined();
+
+    // distScorecard uses ce/momentum/con, not month fields
+    const dist = result.distScorecard[0];
+    expect(dist.ce).toBeDefined();
+    expect(dist.nov).toBeUndefined();
+  });
+
+  it("supports variable month column count (6 months)", () => {
+    const mapping6 = {
+      acct: "Account Name",
+      dist: "Distributor",
+      st: "State",
+      ch: "Channel",
+      sku: "Product",
+      _monthColumns: ["M1", "M2", "M3", "M4", "M5", "M6"],
+    };
+
+    const rows6 = DEPLETION_ROWS.map((r) => ({
+      ...r,
+      M1: r.Nov || 0,
+      M2: r.Dec || 0,
+      M3: r.Jan || 0,
+      M4: r.Feb || 0,
+      M5: "5",
+      M6: "10",
+    }));
+
+    const result = transformDepletion(rows6, mapping6);
+    const first = result.accountsTop[0];
+    expect(first.m0).toBeDefined();
+    expect(first.m4).toBeDefined();
+    expect(first.m5).toBeDefined();
+    // Total should include all 6 months
+    const monthSum = first.m0 + first.m1 + first.m2 + first.m3 + first.m4 + first.m5;
+    expect(first.total).toBe(monthSum);
+  });
 });
 
 // ─── QuickBooks Transform ────────────────────────────────────

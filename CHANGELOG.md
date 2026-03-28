@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.4.4.0] - 2026-03-28
+
+### Fixed
+- Fix multiple depletion files overwriting each other — "sales" type imports now merged with "depletion" before transformation
+- Fix month columns being positional instead of temporal — files covering different time periods now aligned chronologically via `buildUnifiedAxis`
+- Fix hardcoded "Nov/Dec/Jan/Feb" month labels — replaced with positional `m0/m1/m2/m3` fields plus `monthAxis` metadata for actual month names
+- Fix summary type selection picking arbitrary first type — now uses deterministic priority order
+
+### Added
+- Per-view ownership map (`VIEW_OWNERS`) prevents lower-priority import types from overwriting higher-priority dashboard views
+- New `alignMonths.js` module: `parseMonthLabel` parses date headers ("Nov 2025", "Case Equivs [1M Dec 2025]", etc.), `buildUnifiedAxis` aligns rows across imports with per-import fallback for unparseable labels
+- `_monthLabels` stored alongside `_months` during normalization for downstream temporal alignment
+- `monthAxis` exposed from views `_summary` doc through `DataContext` to frontend components
+- Dynamic month columns in AccountInsights and DistributorHealth — adapts to actual data period instead of hardcoded 4 months
+- 15 new tests: alignMonths (7), normalize (1), transformData (2), firestoreService (3), plus 2 updated
+
 ## [0.4.3.0] - 2026-03-19
 
 ### Fixed

@@ -1686,6 +1686,34 @@ Compliance:
 
 ---
 
+### TODO-333: Cross-File Row Deduplication for Same-Distributor Imports
+**Priority:** P3 — Nice to have
+**Phase:** Data Pipeline
+**Status:** Not started
+**Added:** 2026-03-28 (deferred from multi-depletion merge fix, v0.4.4.0)
+
+- **What:** When two depletion files from the same distributor are uploaded, the same account may appear in both files. Currently both rows are kept (double-counted). Detect and merge duplicate account rows within the same distributor across imports.
+- **Why:** Users uploading updated reports or overlapping date ranges from the same distributor get inflated totals. Not critical yet because most users upload one file per distributor, but will matter as usage grows.
+- **How:** In `rebuild.js` after type aliasing merges depletion rows, group by distributor + account key. If duplicates found, merge month values (prefer later import's data for overlapping months, sum for non-overlapping).
+- **Risk:** Merge logic is domain-specific. "Same account" matching across files may need fuzzy matching (already have entityDedup.js pattern from TODO-047).
+- **Depends on:** v0.4.4.0 multi-depletion merge (this PR). TODO-041 (wine entity dedup) shares similar patterns.
+
+---
+
+### TODO-334: Week Column Temporal Alignment
+**Priority:** P4 — Future
+**Phase:** Data Pipeline
+**Status:** Not started
+**Added:** 2026-03-28 (deferred from multi-depletion merge fix, v0.4.4.0)
+
+- **What:** Extend `buildUnifiedAxis` temporal alignment to `_weeks` / `_weekLabels`, the same way it now works for `_months` / `_monthLabels`.
+- **Why:** Week-based reports (e.g., weekly depletion summaries) have the same positional alignment problem that months had. Two files with different week ranges would misalign. Rare today but the pattern is proven and extensible.
+- **How:** Reuse `parseMonthLabel` pattern for week parsing (e.g., "Week of 11/3/25", "W45 2025"). Add `buildUnifiedWeekAxis` or generalize `buildUnifiedAxis` to accept a parse function.
+- **Risk:** Low. Week label formats are less standardized than month labels, may need more parser variants.
+- **Depends on:** v0.4.4.0 month alignment (this PR).
+
+---
+
 ## Completed
 
 - **TODO-048: Report Guide Content System** — Static config (`config/reportGuides.js`) with unified schema for 5 distributor systems + role-aware recommendations. **Completed:** v0.3.0.0 (2026-03-16)

@@ -378,7 +378,9 @@ export async function loadWines(tenantId) {
 export async function loadSummary(tenantId, collPath = "data") {
   try {
     const snap = await getDoc(doc(db, "tenants", tenantId, collPath, "_summary"));
-    return snap.exists() ? snap.data().text : null;
+    if (!snap.exists()) return null;
+    const data = snap.data();
+    return { text: data.text || null, monthAxis: data.monthAxis || null };
   } catch {
     return null;
   }

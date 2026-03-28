@@ -86,6 +86,7 @@ function App() {
     revenueSummary,
     arAgingSummary,
     apAgingSummary,
+    monthAxis,
     budget,
     tenantConfig,
     tenantId,
@@ -319,6 +320,7 @@ function App() {
                       distScorecard={distScorecard}
                       user={currentUser}
                       filters={filters}
+                      monthAxis={monthAxis}
                     />
                   </DataGate>
                 }
@@ -350,6 +352,7 @@ function App() {
                       user={currentUser}
                       onAccountClick={(name) => console.log("Open account panel:", name)}
                       onExport={() => console.log("Export accounts")}
+                      monthAxis={monthAxis}
                     />
                   </DataGate>
                 }

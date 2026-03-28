@@ -17,6 +17,7 @@ const {
   readChunked,
   writeChunked,
   createAdminFirestoreAdapter,
+  buildUnifiedAxis,
 } = require("./lib/pipeline/index");
 
 const firestoreAdapter = createAdminFirestoreAdapter({ admin, db });
@@ -37,9 +38,12 @@ const firestoreAdapter = createAdminFirestoreAdapter({ admin, db });
  * back into indexed columns that the transform layer expects.
  */
 function prepareNormalizedForTransform(normalizedRows) {
+  // Temporally align _months arrays across imports with different time periods
+  const { axis: monthAxis, rows: alignedRows } = buildUnifiedAxis(normalizedRows);
+
   let monthCount = 0;
   let weekCount = 0;
-  for (const row of normalizedRows) {
+  for (const row of alignedRows) {
     if (row._months) monthCount = Math.max(monthCount, row._months.length);
     if (row._weeks) weekCount = Math.max(weekCount, row._weeks.length);
   }
@@ -48,7 +52,7 @@ function prepareNormalizedForTransform(normalizedRows) {
   const weekCols = Array.from({ length: weekCount }, (_, i) => `_w${i}`);
 
   // Expand _months/_weeks arrays into indexed columns on each row
-  const expanded = normalizedRows.map((row) => {
+  const expanded = alignedRows.map((row) => {
     const out = { ...row };
     if (row._months) {
       row._months.forEach((v, i) => { out[`_m${i}`] = v; });
@@ -69,7 +73,7 @@ function prepareNormalizedForTransform(normalizedRows) {
   if (monthCols.length) mapping._monthColumns = monthCols;
   if (weekCols.length) mapping._weekColumns = weekCols;
 
-  return { rows: expanded, mapping };
+  return { rows: expanded, mapping, monthAxis };
 }
 
 // -------------------------------------------------------------------
@@ -220,10 +224,54 @@ async function rebuildViewsForTenant({ tenantId, triggeredBy = "system" }) {
       totalRows += rows.length;
     }
 
-    const mergedViews = {};
+    // Step 1: Merge type aliases — "sales" is depletion without a dist column
+    const DEPLETION_ALIASES = ["depletion", "sales"];
+    const depletionRows = [];
+    for (const alias of DEPLETION_ALIASES) {
+      if (rowsByType[alias]) {
+        depletionRows.push(...rowsByType[alias]);
+        delete rowsByType[alias];
+      }
+    }
+    if (depletionRows.length > 0) {
+      rowsByType["depletion"] = depletionRows;
+    }
 
-    for (const [type, rows] of Object.entries(rowsByType)) {
-      if (rows.length === 0) continue;
+    // Step 2: Per-view ownership — which type owns which dashboard view
+    const VIEW_OWNERS = {
+      distScorecard: "depletion",
+      accountsTop: "depletion",
+      skuBreakdown: "depletion",
+      placementSummary: "depletion",
+      reEngagementData: "depletion",
+      newWins: "depletion",
+      acctConcentration: "depletion",
+      reorderData: "purchases",
+      inventoryData: "inventory",
+      distHealth: "inventory",
+      revenueByChannel: "quickbooks",
+      revenueByProduct: "quickbooks",
+      revenueSummary: "quickbooks",
+      revenueMonthly: "quickbooks",
+      qbDistOrders: "quickbooks",
+      pipelineAccounts: "pipeline",
+      pipelineMeta: "pipeline",
+    };
+    const TYPE_ORDER = ["depletion", "purchases", "inventory", "pipeline", "quickbooks", "revenue", "ar_aging", "ap_aging"];
+
+    const mergedViews = {};
+    let combinedMonthAxis = [];
+
+    // Process types in defined order for deterministic priority
+    const sortedTypes = Object.keys(rowsByType).sort((a, b) => {
+      const ai = TYPE_ORDER.indexOf(a);
+      const bi = TYPE_ORDER.indexOf(b);
+      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+    });
+
+    for (const type of sortedTypes) {
+      const rows = rowsByType[type];
+      if (!rows || rows.length === 0) continue;
 
       const missingAcct = rows.filter((r) => !r.acct).length;
       const missingQty = rows.filter((r) => !r.qty && r.qty !== 0).length;
@@ -235,12 +283,20 @@ async function rebuildViewsForTenant({ tenantId, triggeredBy = "system" }) {
       }
 
       try {
-        const { rows: expanded, mapping } = prepareNormalizedForTransform(rows);
+        const { rows: expanded, mapping, monthAxis } = prepareNormalizedForTransform(rows);
         const { type: resolvedType, ...datasets } = transformAll(expanded, mapping, type);
         void resolvedType;
 
+        // Keep the longest monthAxis across types
+        if (monthAxis && monthAxis.length > combinedMonthAxis.length) {
+          combinedMonthAxis = monthAxis;
+        }
+
         for (const [name, items] of Object.entries(datasets)) {
-          if (items !== undefined && DATASETS.includes(name)) {
+          if (items === undefined || !DATASETS.includes(name)) continue;
+          const owner = VIEW_OWNERS[name];
+          // Write if: view is empty, current type is the owner, or no owner defined
+          if (!mergedViews[name] || owner === type || !owner) {
             mergedViews[name] = items;
           }
         }
@@ -263,12 +319,17 @@ async function rebuildViewsForTenant({ tenantId, triggeredBy = "system" }) {
     validateViews(nextViews, tenantId);
     await writeViews(tenantId, nextViews);
 
-    const primaryType = Object.keys(rowsByType)[0] || "depletion";
+    // Pick primary type: highest-priority type that has rows
+    const primaryType = TYPE_ORDER.find((t) => rowsByType[t]?.length > 0) || Object.keys(rowsByType)[0] || "depletion";
     const summary = generateSummary(primaryType, nextViews);
-    await db.collection("tenants").doc(tenantId).collection("views").doc("_summary").set({
+    const summaryDoc = {
       text: summary,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    };
+    if (combinedMonthAxis.length > 0) {
+      summaryDoc.monthAxis = combinedMonthAxis;
+    }
+    await db.collection("tenants").doc(tenantId).collection("views").doc("_summary").set(summaryDoc);
 
     // Generate AI briefing (inline, guarded — failure does not break rebuild)
     try {

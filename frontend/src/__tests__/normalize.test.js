@@ -162,6 +162,19 @@ describe("normalizeRows", () => {
     expect(result[0]._months).toEqual([10, 15, 20]);
   });
 
+  it("stores _monthLabels alongside _months for temporal alignment", () => {
+    const mappingWithMonths = {
+      ...mapping,
+      _monthColumns: ["Nov 2025", "Dec 2025", "Jan 2026"],
+    };
+    const rowsWithMonths = [
+      { ...rows[0], "Nov 2025": "10", "Dec 2025": "15", "Jan 2026": "20" },
+    ];
+    const result = normalizeRows(rowsWithMonths, mappingWithMonths);
+    expect(result[0]._months).toEqual([10, 15, 20]);
+    expect(result[0]._monthLabels).toEqual(["Nov 2025", "Dec 2025", "Jan 2026"]);
+  });
+
   it("includes week columns when present in mapping", () => {
     const mappingWithWeeks = {
       ...mapping,

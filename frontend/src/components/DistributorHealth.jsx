@@ -19,6 +19,7 @@ export default function DistributorHealth({
   user,
   filters,
   initialDistributor = "",
+  monthAxis,
 }) {
   const [selectedDist, setSelectedDist] = useState(initialDistributor);
 
@@ -92,20 +93,33 @@ export default function DistributorHealth({
 
   const monthlyChartConfig = useMemo(() => {
     if (!h) return null;
+    // Detect how many month columns exist (m0, m1, m2, ...)
+    const monthKeys = [];
+    for (let i = 0; i < 12; i++) {
+      if (h[`m${i}`] !== undefined) monthKeys.push(`m${i}`);
+      else break;
+    }
+    if (monthKeys.length === 0) monthKeys.push("m0", "m1", "m2", "m3");
+    const labels = monthKeys.map((k, i) =>
+      monthAxis && monthAxis[i] ? monthAxis[i] : `M${i + 1}`
+    );
+    const chartColors = [
+      "rgba(155,89,182,0.7)", "rgba(52,152,219,0.7)",
+      "rgba(46,204,113,0.7)", "rgba(241,196,15,0.7)",
+      "rgba(231,76,60,0.7)", "rgba(26,188,156,0.7)",
+      "rgba(52,73,94,0.7)", "rgba(243,156,18,0.7)",
+      "rgba(142,68,173,0.7)", "rgba(22,160,133,0.7)",
+      "rgba(192,57,43,0.7)", "rgba(44,62,80,0.7)",
+    ];
     return {
       type: "bar",
       data: {
-        labels: ["Nov", "Dec", "Jan", "Feb"],
+        labels,
         datasets: [
           {
             label: `${t("purchaseLabel")} (CE)`,
-            data: [h.nov || 0, h.dec || 0, h.jan || 0, h.feb || 0],
-            backgroundColor: [
-              "rgba(155,89,182,0.7)",
-              "rgba(52,152,219,0.7)",
-              "rgba(46,204,113,0.7)",
-              "rgba(241,196,15,0.7)",
-            ],
+            data: monthKeys.map((k) => h[k] || 0),
+            backgroundColor: chartColors.slice(0, monthKeys.length),
             borderRadius: 4,
           },
         ],
@@ -119,7 +133,7 @@ export default function DistributorHealth({
         },
       },
     };
-  }, [h]);
+  }, [h, monthAxis]);
 
   const totalOH = h ? h.skus.reduce((sum, s) => sum + (s.oh || 0), 0) : 0;
 
