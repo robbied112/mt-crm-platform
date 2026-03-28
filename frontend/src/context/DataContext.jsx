@@ -62,6 +62,7 @@ export default function DataProvider({ children }) {
   const { currentUser, tenantId } = useAuth();
   const [data, setData] = useState(EMPTY);
   const [summary, setSummary] = useState(null);
+  const [monthAxis, setMonthAxis] = useState(null);
   const [tenantConfig, setTenantConfig] = useState(TENANT_CONFIG);
   const [budget, setBudget] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -104,7 +105,7 @@ export default function DataProvider({ children }) {
       setError(null);
       try {
         const collPath = useNormalized ? "views" : "data";
-        const [allData, summaryText, config, budgetData] = await Promise.all([
+        const [allData, summaryResult, config, budgetData] = await Promise.all([
           useNormalized ? loadAllViews(tenantId) : loadAllData(tenantId),
           loadSummary(tenantId, collPath),
           loadTenantConfig(tenantId),
@@ -112,7 +113,8 @@ export default function DataProvider({ children }) {
         ]);
         if (cancelled) return;
         setData({ ...EMPTY, ...allData });
-        setSummary(summaryText);
+        setSummary(summaryResult?.text ?? summaryResult);
+        setMonthAxis(summaryResult?.monthAxis ?? null);
         if (config) setTenantConfig((prev) => ({ ...prev, ...config }));
         if (budgetData) setBudget(budgetData);
       } catch (err) {
@@ -174,14 +176,15 @@ export default function DataProvider({ children }) {
     setLoading(true);
     try {
       const collPath = useNormalized ? "views" : "data";
-      const [allData, summaryText, config, budgetData] = await Promise.all([
+      const [allData, summaryResult, config, budgetData] = await Promise.all([
         useNormalized ? loadAllViews(tenantId) : loadAllData(tenantId),
         loadSummary(tenantId, collPath),
         loadTenantConfig(tenantId),
         loadBudget(tenantId),
       ]);
       setData({ ...EMPTY, ...allData });
-      setSummary(summaryText);
+      setSummary(summaryResult?.text ?? summaryResult);
+      setMonthAxis(summaryResult?.monthAxis ?? null);
       if (config) setTenantConfig((prev) => ({ ...prev, ...config }));
       if (budgetData) setBudget(budgetData);
     } catch (err) {
@@ -270,6 +273,7 @@ export default function DataProvider({ children }) {
   const value = {
     ...data,
     summary,
+    monthAxis,
     budget,
     tenantId,
     tenantConfig,

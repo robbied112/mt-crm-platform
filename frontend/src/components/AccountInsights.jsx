@@ -60,6 +60,7 @@ export default function AccountInsights({
   user,
   onAccountClick,
   onExport,
+  monthAxis,
 }) {
   const [viewMode, setViewMode] = useState("top");
   const [search, setSearch] = useState("");
@@ -149,17 +150,36 @@ export default function AccountInsights({
     [sortCol]
   );
 
+  // Detect month columns from first data row
+  const monthColumns = useMemo(() => {
+    const cols = [];
+    const sample = data[0] || {};
+    for (let i = 0; i < 12; i++) {
+      if (sample[`m${i}`] !== undefined) {
+        const label = monthAxis && monthAxis[i] ? monthAxis[i] : `M${i + 1}`;
+        cols.push({ key: `m${i}`, label });
+      }
+    }
+    if (cols.length === 0) {
+      // Fallback for legacy data with no m0-m11 fields
+      cols.push({ key: "m0", label: monthAxis?.[0] || "M1" });
+      cols.push({ key: "m1", label: monthAxis?.[1] || "M2" });
+      cols.push({ key: "m2", label: monthAxis?.[2] || "M3" });
+      cols.push({ key: "m3", label: monthAxis?.[3] || "M4" });
+    }
+    return cols;
+  }, [data, monthAxis]);
+
+  const totalLabel = monthColumns.length > 0 ? `${monthColumns.length}M CE` : "4M CE";
+
   const columns = [
     { key: "rank", label: "#" },
     { key: "acct", label: t("account") },
     { key: "dist", label: t("distributor") },
     { key: "st", label: "State" },
     { key: "ch", label: "Channel" },
-    { key: "nov", label: "Nov" },
-    { key: "dec", label: "Dec" },
-    { key: "jan", label: "Jan" },
-    { key: "feb", label: "Feb" },
-    { key: "total", label: "4M CE" },
+    ...monthColumns,
+    { key: "total", label: totalLabel },
     { key: "trend", label: "Trend" },
     { key: "growthPotential", label: "Growth Potential" },
   ];
@@ -223,10 +243,14 @@ export default function AccountInsights({
             {onExport && (
               <button
                 className="btn btn-secondary btn-small"
-                onClick={() => exportToXlsx(tableData, "account-insights", "Accounts", {
-                  columns: ["rank", "acct", "dist", "st", "ch", "nov", "dec", "jan", "feb", "total", "trend", "growthPotential"],
-                  headers: { rank: "#", acct: t("account"), dist: t("distributor"), st: "State", ch: "Channel", nov: "Nov", dec: "Dec", jan: "Jan", feb: "Feb", total: "4M CE", trend: "Trend", growthPotential: "Growth Potential" },
-                })}
+                onClick={() => {
+                  const mCols = monthColumns.map((c) => c.key);
+                  const mHeaders = Object.fromEntries(monthColumns.map((c) => [c.key, c.label]));
+                  exportToXlsx(tableData, "account-insights", "Accounts", {
+                    columns: ["rank", "acct", "dist", "st", "ch", ...mCols, "total", "trend", "growthPotential"],
+                    headers: { rank: "#", acct: t("account"), dist: t("distributor"), st: "State", ch: "Channel", ...mHeaders, total: totalLabel, trend: "Trend", growthPotential: "Growth Potential" },
+                  });
+                }}
               >
                 Export to Excel
               </button>
@@ -271,10 +295,9 @@ export default function AccountInsights({
                 <td>{esc(a.dist)}</td>
                 <td>{esc(a.st)}</td>
                 <td>{esc(a.ch)}</td>
-                <td>{a.nov ? (a.nov).toFixed(1) : "-"}</td>
-                <td>{a.dec ? (a.dec).toFixed(1) : "-"}</td>
-                <td>{a.jan ? (a.jan).toFixed(1) : "-"}</td>
-                <td>{a.feb ? (a.feb).toFixed(1) : "-"}</td>
+                {monthColumns.map((col) => (
+                  <td key={col.key}>{a[col.key] ? a[col.key].toFixed(1) : "-"}</td>
+                ))}
                 <td>{(a.total || 0).toFixed(1)}</td>
                 <td>
                   <TrendBadge trend={a.trend} />

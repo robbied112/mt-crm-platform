@@ -320,8 +320,8 @@ describe("dual-path routing (useNormalizedModel toggle)", () => {
     await saveSummary("t1", "Legacy summary");
     await saveSummary("t1", "Normalized summary", "views");
 
-    expect(await loadSummary("t1")).toBe("Legacy summary");
-    expect(await loadSummary("t1", "views")).toBe("Normalized summary");
+    expect((await loadSummary("t1")).text).toBe("Legacy summary");
+    expect((await loadSummary("t1", "views")).text).toBe("Normalized summary");
   });
 });
 
@@ -329,13 +329,14 @@ describe("loadSummary / saveSummary", () => {
   it("defaults to data/ path for legacy", async () => {
     mockDocs.set("tenants/t1/data/_summary", { text: "Legacy summary" });
     const result = await loadSummary("t1");
-    expect(result).toBe("Legacy summary");
+    expect(result.text).toBe("Legacy summary");
+    expect(result.monthAxis).toBeNull();
   });
 
   it("reads from views/ path when specified", async () => {
     mockDocs.set("tenants/t1/views/_summary", { text: "Views summary" });
     const result = await loadSummary("t1", "views");
-    expect(result).toBe("Views summary");
+    expect(result.text).toBe("Views summary");
   });
 
   it("saves to the specified path", async () => {
