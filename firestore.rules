@@ -130,6 +130,22 @@ service cloud.firestore {
         allow write: if isTenantAdmin(tenantId);
       }
 
+      // AI Report Blueprints — readable by tenant members, server writes via Admin SDK
+      match /reportBlueprints/{blueprintId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if false;
+
+        match /computedData/{tabId} {
+          allow read: if isTenantMember(tenantId);
+          allow write: if false;
+
+          match /rows/{chunkId} {
+            allow read: if isTenantMember(tenantId);
+            allow write: if false;
+          }
+        }
+      }
+
       // AI Briefings — readable by tenant members, server writes via Admin SDK
       // Members can update the feedback field only (thumbs up/down)
       match /briefings/{briefingId} {

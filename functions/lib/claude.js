@@ -5,7 +5,7 @@
 
 const Anthropic = require("@anthropic-ai/sdk");
 
-const DEFAULT_MODEL = "claude-sonnet-4-5-20241022";
+const DEFAULT_MODEL = "claude-sonnet-4-20250514";
 const DEFAULT_MAX_TOKENS = 4096;
 
 /**

@@ -616,7 +616,7 @@ const comprehendReport = onCall(
     let response;
     try {
       response = await client.messages.create({
-        model: "claude-sonnet-4-5-20241022",
+        model: "claude-sonnet-4-20250514",
         max_tokens: hasAllSheets ? 8192 : 4096,
         system: buildComprehendSystemPrompt(),
         tools: [REPORT_ANALYSIS_TOOL],
@@ -744,7 +744,7 @@ const generateIntegrationPlan = onCall(
     let response;
     try {
       response = await client.messages.create({
-        model: "claude-sonnet-4-5-20241022",
+        model: "claude-sonnet-4-20250514",
         max_tokens: 2048,
         system: systemPrompt,
         tools: [INTEGRATION_PLAN_TOOL],

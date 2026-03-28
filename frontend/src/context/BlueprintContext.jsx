@@ -36,41 +36,49 @@ export function BlueprintProvider({ children }) {
 
     const activeRef = doc(db, "tenants", tenantId, "reportBlueprints", "active");
 
-    const unsub = onSnapshot(activeRef, async (snap) => {
-      const data = snap.data();
-      if (!data?.blueprintId) {
-        setBlueprint(null);
-        setLoading(false);
-        return;
-      }
+    const unsub = onSnapshot(
+      activeRef,
+      async (snap) => {
+        const data = snap.data();
+        if (!data?.blueprintId) {
+          setBlueprint(null);
+          setLoading(false);
+          return;
+        }
 
-      // Only reload if blueprint ID changed
-      if (data.blueprintId === blueprintIdRef.current) return;
-      blueprintIdRef.current = data.blueprintId;
-      loadedTabsRef.current = new Set();
-      setComputedData({});
+        // Only reload if blueprint ID changed
+        if (data.blueprintId === blueprintIdRef.current) return;
+        blueprintIdRef.current = data.blueprintId;
+        loadedTabsRef.current = new Set();
+        setComputedData({});
 
-      try {
-        const bpRef = doc(db, "tenants", tenantId, "reportBlueprints", data.blueprintId);
-        const bpSnap = await getDoc(bpRef);
+        try {
+          const bpRef = doc(db, "tenants", tenantId, "reportBlueprints", data.blueprintId);
+          const bpSnap = await getDoc(bpRef);
 
-        if (bpSnap.exists()) {
-          const bpData = bpSnap.data();
-          setBlueprint(bpData);
-          // Set first tab as active if none selected
-          if (bpData.tabs?.length > 0) {
-            setActiveTab((prev) => prev || bpData.tabs[0].id);
+          if (bpSnap.exists()) {
+            const bpData = bpSnap.data();
+            setBlueprint(bpData);
+            // Set first tab as active if none selected
+            if (bpData.tabs?.length > 0) {
+              setActiveTab((prev) => prev || bpData.tabs[0].id);
+            }
+          } else {
+            setBlueprint(null);
           }
-        } else {
+        } catch (err) {
+          console.error("[BlueprintContext] Failed to load blueprint:", err.message);
           setBlueprint(null);
         }
-      } catch (err) {
-        console.error("[BlueprintContext] Failed to load blueprint:", err.message);
-        setBlueprint(null);
-      }
 
-      setLoading(false);
-    });
+        setLoading(false);
+      },
+      (err) => {
+        console.error("[BlueprintContext] Listener error:", err.message);
+        setBlueprint(null);
+        setLoading(false);
+      }
+    );
 
     return () => unsub();
   }, [tenantId]);

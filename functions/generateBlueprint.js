@@ -277,7 +277,7 @@ async function generateBlueprintForTenant({ tenantId, rawImports, db, admin, api
     // 4. Call Claude
     const response = await callClaude({
       apiKey,
-      model: "claude-sonnet-4-5-20241022",
+      model: "claude-sonnet-4-20250514",
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userMessage }],
       tools: [BLUEPRINT_TOOL],
