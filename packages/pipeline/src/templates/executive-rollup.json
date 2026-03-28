@@ -1,0 +1,56 @@
+{
+  "templateId": "executive-rollup",
+  "name": "Executive Dashboard",
+  "description": "Cross-dataset executive overview combining depletions, inventory, revenue, and accounts",
+  "requiredSemantics": [],
+  "optionalSemantics": ["entity.account", "entity.distributor", "measure.quantity", "measure.revenue", "measure.inventory_oh"],
+  "applicableFileTypes": ["__any__"],
+  "tabs": [
+    {
+      "id": "tab_executive",
+      "label": "Executive Overview",
+      "sections": [
+        {
+          "id": "sec_exec_kpis",
+          "type": "kpiRow",
+          "items": [
+            { "label": "Total Volume", "aggregation": { "fn": "sum", "field": "qty", "source": "depletion" }, "format": "number" },
+            { "label": "Revenue", "aggregation": { "fn": "sum", "field": "revenue", "source": "revenue" }, "format": "currency" },
+            { "label": "Active Accounts", "aggregation": { "fn": "countDistinct", "field": "acct", "source": "depletion" }, "format": "number" },
+            { "label": "Inventory On Hand", "aggregation": { "fn": "sum", "field": "oh", "source": "inventory" }, "format": "number" }
+          ]
+        },
+        {
+          "id": "sec_exec_dist_chart",
+          "type": "chart",
+          "chartType": "bar",
+          "title": "Volume by Distributor",
+          "dataSource": {
+            "source": "depletion",
+            "groupBy": ["dist"],
+            "aggregation": [{ "fn": "sum", "field": "qty", "as": "totalCE" }],
+            "sort": { "field": "totalCE", "dir": "desc" },
+            "limit": 10
+          },
+          "xAxis": { "field": "dist", "label": "Distributor" },
+          "yAxis": { "field": "totalCE", "label": "Case Equivalents" }
+        },
+        {
+          "id": "sec_exec_state_chart",
+          "type": "chart",
+          "chartType": "bar",
+          "title": "Volume by State",
+          "dataSource": {
+            "source": "depletion",
+            "groupBy": ["st"],
+            "aggregation": [{ "fn": "sum", "field": "qty", "as": "totalCE" }],
+            "sort": { "field": "totalCE", "dir": "desc" },
+            "limit": 15
+          },
+          "xAxis": { "field": "st", "label": "State" },
+          "yAxis": { "field": "totalCE", "label": "Case Equivalents" }
+        }
+      ]
+    }
+  ]
+}

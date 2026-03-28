@@ -9,6 +9,7 @@ const {
 } = require("./helpers");
 
 const { generateBriefingForTenant } = require("./generateBriefing");
+const { generateBlueprintForTenant } = require("./generateBlueprint");
 
 const {
   transformAll,
@@ -332,13 +333,13 @@ async function rebuildViewsForTenant({ tenantId, triggeredBy = "system" }) {
     await db.collection("tenants").doc(tenantId).collection("views").doc("_summary").set(summaryDoc);
 
     // Generate AI briefing (inline, guarded — failure does not break rebuild)
+    const tenantSnap = await db.collection("tenants").doc(tenantId).get();
+    const subscription = tenantSnap.data()?.subscription || {};
+    const aiAllowed = subscription.aiCalls !== false;
+
     try {
       const configData2 = (await configRef.get()).data() || {};
       const aiBriefingEnabled = configData2.features?.aiBriefing !== false;
-      // Check subscription: skip AI for starter tier (aiCalls: false)
-      const tenantSnap = await db.collection("tenants").doc(tenantId).get();
-      const subscription = tenantSnap.data()?.subscription || {};
-      const aiAllowed = subscription.aiCalls !== false;
       if (aiBriefingEnabled && aiAllowed && totalRows >= 10) {
         const apiKey = anthropicApiKey.value();
         if (apiKey) {
@@ -348,6 +349,43 @@ async function rebuildViewsForTenant({ tenantId, triggeredBy = "system" }) {
       }
     } catch (briefingErr) {
       console.error(`[rebuildViews] Briefing generation failed for tenant ${tenantId}:`, briefingErr.message);
+      // Non-blocking: rebuild still succeeds
+    }
+
+    // Generate AI-powered dashboard blueprint (inline, guarded)
+    try {
+      const configData3 = (await configRef.get()).data() || {};
+      const aiReportsEnabled = configData3.features?.aiReports !== false;
+      if (aiReportsEnabled && aiAllowed && totalRows >= 5) {
+        const apiKey = anthropicApiKey.value();
+        if (apiKey) {
+          // Build rawImports from importResults with metadata
+          const rawImports = await Promise.all(
+            importsSnap.docs.map(async (importDoc) => {
+              const meta = importDoc.data();
+              const rows = await readChunked(db, ["tenants", tenantId, "imports", importDoc.id], {
+                adapter: firestoreAdapter,
+                emptyValue: [],
+                preferRows: true,
+              });
+              return {
+                fileName: meta.fileName || importDoc.id,
+                fileType: meta.type || "unknown",
+                type: meta.type || "unknown",
+                headers: meta.mapping ? Object.values(meta.mapping).filter((v) => typeof v === "string") : [],
+                columnTypes: meta.columnTypes || {},
+                rows,
+                rowCount: rows.length,
+              };
+            })
+          );
+
+          await generateBlueprintForTenant({ tenantId, rawImports, db, admin, apiKey });
+          console.log(`[rebuildViews] Blueprint generated for tenant ${tenantId}`);
+        }
+      }
+    } catch (blueprintErr) {
+      console.error(`[rebuildViews] Blueprint generation failed for tenant ${tenantId}:`, blueprintErr.message);
       // Non-blocking: rebuild still succeeds
     }
 

@@ -47,6 +47,8 @@ import useSubscription from "./hooks/useSubscription";
 import { useAuth } from "./context/AuthContext";
 import { useData } from "./context/DataContext";
 import { BriefingProvider } from "./context/BriefingContext";
+import { BlueprintProvider } from "./context/BlueprintContext";
+import BlueprintRenderer from "./components/reports/BlueprintRenderer";
 import { clearDemoData } from "./services/demoData";
 import { deleteAllData } from "./services/firestoreService";
 import { deleteAllCrmData } from "./services/crmService";
@@ -421,6 +423,16 @@ function App() {
               <Route
                 path="/pipeline"
                 element={<PipelineKanban />}
+              />
+
+              {/* AI Reports */}
+              <Route
+                path="/reports"
+                element={
+                  <BlueprintProvider>
+                    <BlueprintRenderer />
+                  </BlueprintProvider>
+                }
               />
 
               {/* Portfolio routes */}

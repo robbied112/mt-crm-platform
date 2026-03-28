@@ -1,0 +1,60 @@
+{
+  "templateId": "revenue-overview",
+  "name": "Revenue & Sales",
+  "description": "Revenue analysis by channel, product, customer with trend tracking",
+  "requiredSemantics": ["measure.revenue"],
+  "optionalSemantics": ["entity.account", "attribute.channel", "attribute.product", "dimension.geography"],
+  "applicableFileTypes": ["quickbooks_revenue", "sales_report"],
+  "tabs": [
+    {
+      "id": "tab_revenue",
+      "label": "Revenue & Sales",
+      "sections": [
+        {
+          "id": "sec_rev_kpis",
+          "type": "kpiRow",
+          "items": [
+            { "label": "Total Revenue", "aggregation": { "fn": "sum", "field": "revenue", "source": "revenue" }, "format": "currency" },
+            { "label": "Customers", "aggregation": { "fn": "countDistinct", "field": "acct", "source": "revenue" }, "format": "number" },
+            { "label": "Avg Order Value", "aggregation": { "fn": "avg", "field": "revenue", "source": "revenue" }, "format": "currency" }
+          ]
+        },
+        {
+          "id": "sec_rev_by_channel",
+          "type": "chart",
+          "chartType": "doughnut",
+          "title": "Revenue by Channel",
+          "dataSource": {
+            "source": "revenue",
+            "groupBy": ["ch"],
+            "aggregation": [{ "fn": "sum", "field": "revenue", "as": "total" }],
+            "sort": { "field": "total", "dir": "desc" }
+          },
+          "xAxis": { "field": "ch" },
+          "yAxis": { "field": "total" }
+        },
+        {
+          "id": "sec_rev_by_product",
+          "type": "table",
+          "title": "Revenue by Product",
+          "dataSource": {
+            "source": "revenue",
+            "groupBy": ["sku"],
+            "aggregation": [
+              { "fn": "sum", "field": "revenue", "as": "totalRevenue" },
+              { "fn": "sum", "field": "qty", "as": "unitsSold" }
+            ],
+            "sort": { "field": "totalRevenue", "dir": "desc" },
+            "limit": 25
+          },
+          "columns": [
+            { "field": "sku", "label": "Product", "sortable": true },
+            { "field": "totalRevenue", "label": "Revenue", "format": "currency", "sortable": true },
+            { "field": "unitsSold", "label": "Units", "format": "number", "sortable": true }
+          ],
+          "exportable": true
+        }
+      ]
+    }
+  ]
+}

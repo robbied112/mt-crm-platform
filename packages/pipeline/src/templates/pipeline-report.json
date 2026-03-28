@@ -1,0 +1,59 @@
+{
+  "templateId": "pipeline-report",
+  "name": "Sales Pipeline",
+  "description": "Deal pipeline by stage, weighted values, owner tracking",
+  "requiredSemantics": ["attribute.stage"],
+  "optionalSemantics": ["entity.account", "measure.deal_value", "attribute.owner", "dimension.geography"],
+  "applicableFileTypes": ["pipeline"],
+  "tabs": [
+    {
+      "id": "tab_pipeline",
+      "label": "Pipeline",
+      "sections": [
+        {
+          "id": "sec_pipe_kpis",
+          "type": "kpiRow",
+          "items": [
+            { "label": "Total Pipeline Value", "aggregation": { "fn": "sum", "field": "estValue", "source": "pipeline" }, "format": "currency" },
+            { "label": "Active Deals", "aggregation": { "fn": "countDistinct", "field": "acct", "source": "pipeline" }, "format": "number" },
+            { "label": "Stages", "aggregation": { "fn": "countDistinct", "field": "stage", "source": "pipeline" }, "format": "number" }
+          ]
+        },
+        {
+          "id": "sec_pipe_by_stage",
+          "type": "chart",
+          "chartType": "bar",
+          "title": "Pipeline by Stage",
+          "dataSource": {
+            "source": "pipeline",
+            "groupBy": ["stage"],
+            "aggregation": [
+              { "fn": "sum", "field": "estValue", "as": "value" },
+              { "fn": "count", "field": "acct", "as": "dealCount" }
+            ],
+            "sort": { "field": "value", "dir": "desc" }
+          },
+          "xAxis": { "field": "stage", "label": "Stage" },
+          "yAxis": { "field": "value", "label": "Value" }
+        },
+        {
+          "id": "sec_pipe_deals",
+          "type": "table",
+          "title": "All Deals",
+          "dataSource": {
+            "source": "pipeline",
+            "sort": { "field": "estValue", "dir": "desc" }
+          },
+          "columns": [
+            { "field": "acct", "label": "Account", "sortable": true },
+            { "field": "stage", "label": "Stage", "sortable": true },
+            { "field": "estValue", "label": "Est. Value", "format": "currency", "sortable": true },
+            { "field": "owner", "label": "Owner", "sortable": true },
+            { "field": "st", "label": "State", "sortable": true }
+          ],
+          "exportable": true
+        }
+      ]
+    }
+  ]
+}

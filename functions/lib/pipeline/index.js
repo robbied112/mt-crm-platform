@@ -20,6 +20,8 @@ const distributorFormats = require("./distributorFormats");
 const productNormalize = require("./productNormalize");
 const importDiff = require("./importDiff");
 const alignMonths = require("./alignMonths");
+const aggregationEngine = require("./aggregationEngine");
+const templates = require("./templates");
 
 module.exports = {
   // parseFile
@@ -64,6 +66,7 @@ module.exports = {
 
   // normalize
   normalizeRows: normalize.normalizeRows,
+  preserveRawRows: normalize.preserveRawRows,
 
   // constants
   CHUNK_SIZE: constants.CHUNK_SIZE,
@@ -106,4 +109,18 @@ module.exports = {
   // alignMonths
   parseMonthLabel: alignMonths.parseMonthLabel,
   buildUnifiedAxis: alignMonths.buildUnifiedAxis,
+
+  // aggregationEngine
+  computeSection: aggregationEngine.computeSection,
+  computeBlueprint: aggregationEngine.computeBlueprint,
+  buildDataProfile: aggregationEngine.buildDataProfile,
+  groupByFields: aggregationEngine.groupByFields,
+  applyFilters: aggregationEngine.applyFilters,
+  extractFilterValues: aggregationEngine.extractFilterValues,
+  AGG_FNS: aggregationEngine.AGG_FNS,
+
+  // templates
+  ALL_TEMPLATES: templates.ALL_TEMPLATES,
+  matchTemplates: templates.matchTemplates,
+  getTemplate: templates.getTemplate,
 };
