@@ -179,6 +179,16 @@ export const ROUTES = [
     deprecated: true,
     description: "Wine catalog extracted from billback imports",
   },
+  // AI Reports
+  {
+    key: "ai-reports",
+    path: "/reports",
+    label: "AI Reports",
+    icon: "executive",
+    section: "reports",
+    dataKey: null,
+    description: "AI-generated dashboard with dynamic charts, tables, and insights",
+  },
   // Setup / Onboarding
   {
     key: "setup",

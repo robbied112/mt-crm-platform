@@ -1,0 +1,62 @@
+{
+  "templateId": "inventory-health",
+  "name": "Inventory Health",
+  "description": "Stock levels, days on hand, reorder alerts, dead stock identification",
+  "requiredSemantics": ["measure.inventory_oh"],
+  "optionalSemantics": ["entity.account", "entity.distributor", "attribute.product", "measure.inventory_doh", "dimension.geography"],
+  "applicableFileTypes": ["inventory_health", "inventory_snapshot"],
+  "tabs": [
+    {
+      "id": "tab_inventory",
+      "label": "Inventory Overview",
+      "sections": [
+        {
+          "id": "sec_inv_kpis",
+          "type": "kpiRow",
+          "items": [
+            { "label": "Total On Hand", "aggregation": { "fn": "sum", "field": "oh", "source": "inventory" }, "format": "number" },
+            { "label": "Avg Days on Hand", "aggregation": { "fn": "avg", "field": "doh", "source": "inventory" }, "format": "decimal" },
+            { "label": "SKUs Tracked", "aggregation": { "fn": "countDistinct", "field": "sku", "source": "inventory" }, "format": "number" },
+            { "label": "Locations", "aggregation": { "fn": "countDistinct", "field": "dist", "source": "inventory" }, "format": "number" }
+          ]
+        },
+        {
+          "id": "sec_inv_by_dist",
+          "type": "table",
+          "title": "Inventory by Distributor",
+          "dataSource": {
+            "source": "inventory",
+            "groupBy": ["dist", "st"],
+            "aggregation": [
+              { "fn": "sum", "field": "oh", "as": "totalOH" },
+              { "fn": "avg", "field": "doh", "as": "avgDOH" },
+              { "fn": "countDistinct", "field": "sku", "as": "skuCount" }
+            ],
+            "sort": { "field": "totalOH", "dir": "desc" }
+          },
+          "columns": [
+            { "field": "dist", "label": "Distributor", "sortable": true },
+            { "field": "st", "label": "State", "sortable": true },
+            { "field": "totalOH", "label": "On Hand", "format": "number", "sortable": true },
+            { "field": "avgDOH", "label": "Avg DOH", "format": "decimal", "sortable": true },
+            { "field": "skuCount", "label": "SKUs", "format": "number", "sortable": true }
+          ],
+          "exportable": true
+        },
+        {
+          "id": "sec_inv_status_chart",
+          "type": "chart",
+          "chartType": "doughnut",
+          "title": "Inventory Health Distribution",
+          "dataSource": {
+            "source": "inventory",
+            "groupBy": ["_inventoryStatus"],
+            "aggregation": [{ "fn": "count", "field": "sku", "as": "count" }]
+          },
+          "xAxis": { "field": "_inventoryStatus" },
+          "yAxis": { "field": "count" }
+        }
+      ]
+    }
+  ]
+}

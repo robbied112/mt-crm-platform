@@ -1,0 +1,102 @@
+{
+  "templateId": "depletion-velocity",
+  "name": "Depletion Velocity",
+  "description": "Volume trends, weekly velocity, momentum tracking for distributor depletion data",
+  "requiredSemantics": ["entity.account", "measure.quantity"],
+  "optionalSemantics": ["entity.distributor", "dimension.geography", "attribute.channel", "attribute.product"],
+  "applicableFileTypes": ["distributor_velocity", "depletion_report"],
+  "tabs": [
+    {
+      "id": "tab_depletion_overview",
+      "label": "Depletion Overview",
+      "sections": [
+        {
+          "id": "sec_depl_kpis",
+          "type": "kpiRow",
+          "items": [
+            { "label": "Total Case Equivalents", "aggregation": { "fn": "sum", "field": "qty", "source": "depletion" }, "format": "number" },
+            { "label": "Active Accounts", "aggregation": { "fn": "countDistinct", "field": "acct", "source": "depletion" }, "format": "number" },
+            { "label": "Active Distributors", "aggregation": { "fn": "countDistinct", "field": "dist", "source": "depletion" }, "format": "number" },
+            { "label": "Markets", "aggregation": { "fn": "countDistinct", "field": "st", "source": "depletion" }, "format": "number" }
+          ]
+        },
+        {
+          "id": "sec_depl_by_dist",
+          "type": "table",
+          "title": "Distributor Scorecard",
+          "dataSource": {
+            "source": "depletion",
+            "groupBy": ["dist", "st"],
+            "aggregation": [
+              { "fn": "sum", "field": "qty", "as": "totalCE" },
+              { "fn": "countDistinct", "field": "acct", "as": "accounts" },
+              { "fn": "countDistinct", "field": "sku", "as": "skuCount" }
+            ],
+            "sort": { "field": "totalCE", "dir": "desc" }
+          },
+          "columns": [
+            { "field": "dist", "label": "Distributor", "sortable": true },
+            { "field": "st", "label": "State", "sortable": true },
+            { "field": "totalCE", "label": "Total CE", "format": "number", "sortable": true },
+            { "field": "accounts", "label": "Accounts", "format": "number", "sortable": true },
+            { "field": "skuCount", "label": "SKUs", "format": "number", "sortable": true }
+          ],
+          "exportable": true
+        },
+        {
+          "id": "sec_depl_by_sku",
+          "type": "chart",
+          "chartType": "bar",
+          "title": "Top SKUs by Volume",
+          "dataSource": {
+            "source": "depletion",
+            "groupBy": ["sku"],
+            "aggregation": [{ "fn": "sum", "field": "qty", "as": "totalCE" }],
+            "sort": { "field": "totalCE", "dir": "desc" },
+            "limit": 15
+          },
+          "xAxis": { "field": "sku", "label": "Product" },
+          "yAxis": { "field": "totalCE", "label": "Case Equivalents" }
+        }
+      ]
+    },
+    {
+      "id": "tab_account_insights",
+      "label": "Account Insights",
+      "sections": [
+        {
+          "id": "sec_acct_kpis",
+          "type": "kpiRow",
+          "items": [
+            { "label": "Total Accounts", "aggregation": { "fn": "countDistinct", "field": "acct", "source": "depletion" }, "format": "number" },
+            { "label": "Avg CE per Account", "aggregation": { "fn": "avg", "field": "qty", "source": "depletion" }, "format": "decimal" }
+          ]
+        },
+        {
+          "id": "sec_top_accounts",
+          "type": "table",
+          "title": "Top Accounts by Volume",
+          "dataSource": {
+            "source": "depletion",
+            "groupBy": ["acct", "dist", "st", "ch"],
+            "aggregation": [
+              { "fn": "sum", "field": "qty", "as": "totalCE" },
+              { "fn": "countDistinct", "field": "sku", "as": "breadth" }
+            ],
+            "sort": { "field": "totalCE", "dir": "desc" },
+            "limit": 100
+          },
+          "columns": [
+            { "field": "acct", "label": "Account", "sortable": true },
+            { "field": "dist", "label": "Distributor", "sortable": true },
+            { "field": "st", "label": "State", "sortable": true },
+            { "field": "ch", "label": "Channel", "sortable": true },
+            { "field": "totalCE", "label": "Total CE", "format": "number", "sortable": true },
+            { "field": "breadth", "label": "SKU Breadth", "format": "number", "sortable": true }
+          ],
+          "exportable": true
+        }
+      ]
+    }
+  ]
+}

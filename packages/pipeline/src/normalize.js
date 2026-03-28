@@ -31,6 +31,25 @@ function normalizeDate(v) {
 }
 
 /**
+ * Preserve raw rows with all original columns intact.
+ * Used by the AI report engine to store rich data alongside normalized rows.
+ *
+ * @param {object[]} rows - Raw parsed rows with original column names
+ * @returns {object[]} Rows with all original columns preserved
+ */
+function preserveRawRows(rows) {
+  return rows.map((r) => {
+    const raw = {};
+    for (const [key, value] of Object.entries(r)) {
+      if (value != null && value !== "") {
+        raw[key] = typeof value === "number" ? value : String(value).trim();
+      }
+    }
+    return raw;
+  });
+}
+
+/**
  * Normalize raw rows using a column mapping.
  * Produces rows with internal field names, ready for storage in imports/.
  *
@@ -81,6 +100,7 @@ function normalizeRows(rows, mapping) {
 
 module.exports = {
   normalizeRows,
+  preserveRawRows,
   // Export helpers for testing
   num,
   str,

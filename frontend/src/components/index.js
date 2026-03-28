@@ -74,3 +74,4 @@ export { default as TeamSetupWizard } from "./TeamSetupWizard";
 export { default as TerritoryMap } from "./TerritoryMap";
 export { default as DataSourcesSettings } from "./DataSourcesSettings";
 export { default as ImportHealthDashboard } from "./ImportHealthDashboard";
+export { default as BlueprintRenderer } from "./reports/BlueprintRenderer";
