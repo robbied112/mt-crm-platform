@@ -11,12 +11,14 @@
 
 import { useState, useCallback, useRef } from "react";
 import { runComprehend } from "../utils/runComprehend";
+import { clearWorkbookCache } from "../utils/parseFile";
 
 // ─── Constants ──────────────────────────────────────────────────
 const AUTO_CONFIRM_THRESHOLD = 0.8;
 const MIN_MAPPED_FIELDS = 3;
 const MAX_BATCH_SIZE = 20;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const COMPREHEND_TIMEOUT_MS = 45_000; // 45s safety timeout per file
 
 /**
  * Critical fields that MUST be mapped for auto-confirm, per upload type.
@@ -220,12 +222,17 @@ export default function useFileQueue(config = {}) {
 
       if (smartImportEnabled && comprehendReport) {
         try {
-          const comprehendOut = await runComprehend({
-            file,
-            parsed,
-            comprehendCallable: comprehendReport,
-            tenantId,
-          });
+          const comprehendOut = await Promise.race([
+            runComprehend({
+              file,
+              parsed,
+              comprehendCallable: comprehendReport,
+              tenantId,
+            }),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error("Comprehend timed out")), COMPREHEND_TIMEOUT_MS)
+            ),
+          ]);
 
           analysis = comprehendOut.analysis;
           updateItem(id, { analysis });
@@ -282,8 +289,15 @@ export default function useFileQueue(config = {}) {
       const status = auto ? "auto-confirmed" : "needs-review";
 
       updateItem(id, { mapping, confidence, type: typeObj, status });
+
+      // Release cached XLSX workbook — the file is fully processed and the
+      // heavy workbook object is no longer needed.  Prevents accumulating
+      // 6+ workbooks in memory when processing a large batch.
+      clearWorkbookCache();
+
       return id;
     } catch (err) {
+      clearWorkbookCache();
       updateItem(id, { status: "error", error: err.message || String(err) });
       return id;
     }
@@ -336,7 +350,10 @@ export default function useFileQueue(config = {}) {
   );
 
   const markDone = useCallback(
-    (id, result) => updateItem(id, { status: "done", result }),
+    (id, result) =>
+      // Clear heavy payload (parsed rows, analysis) to free memory once
+      // the file is done — only the lightweight result summary is kept.
+      updateItem(id, { status: "done", result, parsed: null, analysis: null }),
     [updateItem]
   );
 
@@ -345,6 +362,9 @@ export default function useFileQueue(config = {}) {
       updateItem(id, {
         status: "error",
         error: typeof error === "string" ? error : error?.message || String(error),
+        // Free memory on error too
+        parsed: null,
+        analysis: null,
       }),
     [updateItem]
   );

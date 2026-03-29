@@ -197,7 +197,9 @@ export default function DataProvider({ children }) {
   // Save imported datasets + refresh
   // When useNormalizedModel is true, saves raw rows to imports/ then calls
   // rebuildViews Cloud Function (server-authoritative) to aggregate ALL imports.
-  const importDatasets = useCallback(async (datasets, summaryText, importMeta) => {
+  // Pass { skipRebuild: true } during batch imports to defer the rebuild until
+  // all files are saved, then call rebuildAndRefresh() once at the end.
+  const importDatasets = useCallback(async (datasets, summaryText, importMeta, { skipRebuild = false } = {}) => {
     if (!tenantId) throw new Error("No tenant context");
     try {
       const collPath = useNormalized ? "views" : "data";
@@ -210,14 +212,18 @@ export default function DataProvider({ children }) {
       }
 
       if (useNormalized) {
-        // Server-authoritative rebuild: rebuildViews reads ALL imports,
-        // runs transformAll across combined data, and writes to views/.
-        const fns = getFunctions();
-        const rebuild = httpsCallable(fns, "rebuildViews");
-        await rebuild({ tenantId });
+        if (!skipRebuild) {
+          // Server-authoritative rebuild: rebuildViews reads ALL imports,
+          // runs transformAll across combined data, and writes to views/.
+          const fns = getFunctions();
+          const rebuild = httpsCallable(fns, "rebuildViews");
+          await rebuild({ tenantId });
 
-        // Reload views from Firestore (server is source of truth)
-        await refreshData();
+          // Reload views from Firestore (server is source of truth)
+          await refreshData();
+        }
+        // When skipRebuild is true, only the import record is saved.
+        // Caller is responsible for triggering rebuild after the batch.
       } else {
         // Legacy path: frontend writes directly to data/
         await saveAllDatasets(tenantId, datasets);
@@ -232,7 +238,7 @@ export default function DataProvider({ children }) {
         });
       }
 
-      if (summaryText) {
+      if (summaryText && !skipRebuild) {
         await saveSummary(tenantId, summaryText, collPath);
         setSummary(summaryText);
       }
@@ -242,6 +248,15 @@ export default function DataProvider({ children }) {
       throw new Error(`Failed to save data: ${err.message}`);
     }
   }, [tenantId, useNormalized, refreshData]);
+
+  // Trigger a single rebuild + refresh — used after batch imports.
+  const rebuildAndRefresh = useCallback(async () => {
+    if (!tenantId) return;
+    const fns = getFunctions();
+    const rebuild = httpsCallable(fns, "rebuildViews");
+    await rebuild({ tenantId });
+    await refreshData();
+  }, [tenantId, refreshData]);
 
   // Save tenant config
   const updateTenantConfig = useCallback(async (patch) => {
@@ -283,6 +298,7 @@ export default function DataProvider({ children }) {
     loading,
     error,
     importDatasets,
+    rebuildAndRefresh,
     refreshData,
     updateTenantConfig,
     updateBudget,
