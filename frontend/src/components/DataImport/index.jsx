@@ -122,7 +122,7 @@ function reducer(state, action) {
 // ─── Component ──────────────────────────────────────────────────
 
 export default function DataImport({ dataTypeHint } = {}) {
-  const { importDatasets, userRole, tenantId, useNormalized, tenantConfig, updateTenantConfig, refreshData } = useData();
+  const { importDatasets, rebuildAndRefresh, userRole, tenantId, useNormalized, tenantConfig, updateTenantConfig, refreshData } = useData();
   const { products, createProduct } = useCrm();
   const { currentUser, isAdmin } = useAuth();
   const { memberCount } = useTeam();
@@ -245,6 +245,7 @@ export default function DataImport({ dataTypeHint } = {}) {
         return;
       }
 
+      const rowCount = itemParsed.rows.length;
       const result = transformAll(itemParsed.rows, itemMapping, itemType, userRole);
       const summaryText = generateSummary(result.type || itemType?.type, result, userRole);
       const { type: _t, ...datasets } = result;
@@ -261,7 +262,8 @@ export default function DataImport({ dataTypeHint } = {}) {
         };
       }
 
-      await importDatasets(datasets, summaryText, importMeta);
+      // Skip rebuild during batch — one rebuild happens after all files finish
+      await importDatasets(datasets, summaryText, importMeta, { skipRebuild: true });
 
       if (tenantConfig?.demoData) {
         await updateTenantConfig({ demoData: false });
@@ -270,13 +272,13 @@ export default function DataImport({ dataTypeHint } = {}) {
       if (tenantId) {
         await logUpload(tenantId, {
           fileName: itemFile.name,
-          rowCount: itemParsed.rows.length,
+          rowCount,
           type: itemType?.type,
           uploadedBy: currentUser?.email || "unknown",
         });
       }
 
-      fq.markDone(item.id, { rowCount: itemParsed.rows.length, type: itemType?.type });
+      fq.markDone(item.id, { rowCount, type: itemType?.type });
     } catch (err) {
       fq.markError(item.id, err.message || String(err));
     }
@@ -297,6 +299,20 @@ export default function DataImport({ dataTypeHint } = {}) {
     if (!item) return;
     importQueueFile(item);
   }, [fq.queue, fq.claimNextImport, importQueueFile]);
+
+  // ── Batch complete: single rebuild after all files are imported ──
+  // Once every queue item has a terminal status, trigger one rebuild
+  // (instead of N rebuilds — one per file) and refresh the data.
+
+  useEffect(() => {
+    if (!fq.batchDone || fq.queue.length === 0) return;
+    const hasDone = fq.queue.some((i) => i.status === "done");
+    if (!hasDone || !useNormalized) return;
+
+    rebuildAndRefresh().catch((err) =>
+      console.error("[DataImport] Post-batch rebuild failed:", err)
+    );
+  }, [fq.batchDone, fq.queue, useNormalized, rebuildAndRefresh]);
 
   // ── Handle files dropped or selected ──
 
