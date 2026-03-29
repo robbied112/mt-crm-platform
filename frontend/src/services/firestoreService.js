@@ -216,10 +216,12 @@ export async function deleteImport(tenantId, importId) {
   const rowsRef = collection(db, "tenants", tenantId, "imports", importId, "rows");
   const rowsSnap = await getDocs(rowsRef);
   await Promise.all(rowsSnap.docs.map((d) => deleteDoc(d.ref)));
-  // Also clean up rawRows subcollection if it exists
-  const rawRowsRef = collection(db, "tenants", tenantId, "imports", importId, "rawRows");
-  const rawRowsSnap = await getDocs(rawRowsRef);
-  await Promise.all(rawRowsSnap.docs.map((d) => deleteDoc(d.ref)));
+  // Also clean up rawRows subcollection if it exists (best-effort)
+  try {
+    const rawRowsRef = collection(db, "tenants", tenantId, "imports", importId, "rawRows");
+    const rawRowsSnap = await getDocs(rawRowsRef);
+    await Promise.all(rawRowsSnap.docs.map((d) => deleteDoc(d.ref)));
+  } catch { /* rawRows may not exist for older imports */ }
   await deleteDoc(doc(db, "tenants", tenantId, "imports", importId));
 }
 
@@ -239,10 +241,12 @@ export async function deleteAllData(tenantId) {
       const rowsRef = collection(db, "tenants", tenantId, collPath, d.id, "rows");
       const rowsSnap = await getDocs(rowsRef);
       await Promise.all(rowsSnap.docs.map((r) => deleteDoc(r.ref)));
-      // Also clean up rawRows subcollection
-      const rawRowsRef = collection(db, "tenants", tenantId, collPath, d.id, "rawRows");
-      const rawRowsSnap = await getDocs(rawRowsRef);
-      await Promise.all(rawRowsSnap.docs.map((r) => deleteDoc(r.ref)));
+      // Also clean up rawRows subcollection (best-effort — may not exist)
+      try {
+        const rawRowsRef = collection(db, "tenants", tenantId, collPath, d.id, "rawRows");
+        const rawRowsSnap = await getDocs(rawRowsRef);
+        await Promise.all(rawRowsSnap.docs.map((r) => deleteDoc(r.ref)));
+      } catch { /* rawRows subcollection may not exist for older imports */ }
       await deleteDoc(d.ref);
     }));
   }
@@ -263,6 +267,14 @@ export async function deleteAllData(tenantId) {
     deleteFlatCollection("pendingMatches"),
     deleteFlatCollection("pendingWineMatches"),
   ]);
+
+  // Clear rebuildLock so uploads aren't blocked after a delete
+  try {
+    await setDoc(doc(db, "tenants", tenantId, "config", "main"), {
+      rebuildLock: null,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  } catch { /* best-effort lock clear */ }
 }
 
 // ─── Tenant Config ───────────────────────────────────────────
