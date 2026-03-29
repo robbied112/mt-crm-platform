@@ -4,6 +4,7 @@
 import { describe, it, expect } from "vitest";
 import {
   normalizeRows,
+  preserveRawRows,
   num,
   str,
   normalizeState,
@@ -196,6 +197,71 @@ describe("normalizeRows", () => {
   it("handles empty input", () => {
     expect(normalizeRows([], mapping)).toEqual([]);
   });
+});
+
+describe("preserveRawRows", () => {
+  it("preserves all original columns", () => {
+    const rows = [
+      { "Account Name": "Total Wine", "Cases 9L": 100, "Margin %": 0.35 },
+      { "Account Name": "BevMo", "Cases 9L": 50, "Margin %": 0.28 },
+    ];
+    const result = preserveRawRows(rows);
+    expect(result).toHaveLength(2);
+    expect(result[0]["Account Name"]).toBe("Total Wine");
+    expect(result[0]["Cases 9L"]).toBe(100);
+    expect(result[0]["Margin %"]).toBe(0.35);
+  });
+
+  it("strips null/undefined/empty values", () => {
+    const rows = [
+      { a: "hello", b: null, c: undefined, d: "", e: 0 },
+    ];
+    const result = preserveRawRows(rows);
+    expect(result[0].a).toBe("hello");
+    expect(result[0].b).toBeUndefined();
+    expect(result[0].c).toBeUndefined();
+    expect(result[0].d).toBeUndefined();
+    expect(result[0].e).toBe(0); // 0 is kept
+  });
+
+  it("trims string values", () => {
+    const rows = [{ name: "  Total Wine  ", city: " LA " }];
+    const result = preserveRawRows(rows);
+    expect(result[0].name).toBe("Total Wine");
+    expect(result[0].city).toBe("LA");
+  });
+
+  it("returns empty array for empty input", () => {
+    expect(preserveRawRows([])).toEqual([]);
+  });
+
+  it("produces rows with varying keys (sparse data)", () => {
+    const rows = [
+      { a: "x", b: "y" },
+      { a: "z", c: "w" }, // different columns per row
+    ];
+    const result = preserveRawRows(rows);
+    expect(result[0].a).toBe("x");
+    expect(result[0].b).toBe("y");
+    expect(result[1].a).toBe("z");
+    expect(result[1].c).toBe("w");
+    // b is not present in row 2, c is not present in row 1
+    expect(result[0].c).toBeUndefined();
+    expect(result[1].b).toBeUndefined();
+  });
+});
+
+describe("normalizeRows (continued)", () => {
+  const mapping = {
+    acct: "Account Name",
+    dist: "Distributor",
+    st: "State",
+    ch: "Channel",
+    sku: "Product",
+    qty: "Cases",
+    date: "Date",
+    revenue: "Amount",
+  };
 
   it("derives revenue from debit/credit when revenue is unmapped", () => {
     const debitCreditMapping = {

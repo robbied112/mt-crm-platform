@@ -4,6 +4,7 @@
  */
 export {
   normalizeRows,
+  preserveRawRows,
   num,
   str,
   normalizeState,

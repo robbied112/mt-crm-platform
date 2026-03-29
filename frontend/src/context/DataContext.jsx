@@ -205,8 +205,8 @@ export default function DataProvider({ children }) {
 
       // Billback imports always need an import record for downstream extraction.
       if (importMeta && (useNormalized || importMeta.type === "billback")) {
-        const { normalizedRows, ...meta } = importMeta;
-        importId = await saveImport(tenantId, meta, normalizedRows);
+        const { normalizedRows, rawRows, ...meta } = importMeta;
+        importId = await saveImport(tenantId, meta, normalizedRows, rawRows);
       }
 
       if (useNormalized) {

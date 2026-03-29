@@ -17,6 +17,7 @@ const { getAuthedDriveClient, listFolderFiles, downloadFile, listFolders } = req
 const {
   parseFileBuffer,
   normalizeRows,
+  preserveRawRows,
   writeChunked,
   createAdminFirestoreAdapter,
   getSheetNames,
@@ -409,6 +410,8 @@ async function processTenantSync(tenantId, config, clientId, clientSecret, apiKe
       if (mapJson.weekColumns?.length) mapping._weekColumns = mapJson.weekColumns;
       const uploadType = mapJson.uploadType || "quickbooks";
       const normalizedRows = normalizeRows(rows, mapping);
+      const rawRows = preserveRawRows(rows);
+      const rawHeaders = headers || [...new Set(rows.flatMap((r) => Object.keys(r)))];
       const importRef = db.collection("tenants").doc(tenantId).collection("imports").doc();
 
       await writeChunked(db, ["tenants", tenantId, "imports", importRef.id], normalizedRows, {
@@ -421,6 +424,7 @@ async function processTenantSync(tenantId, config, clientId, clientSecret, apiKe
           fileName: file.name,
           type: uploadType,
           mapping,
+          rawHeaders,
           uploadedBy: triggeredBy,
           rowCount: normalizedRows.length,
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -433,6 +437,17 @@ async function processTenantSync(tenantId, config, clientId, clientSecret, apiKe
           },
         },
       });
+
+      // Store raw rows for AI blueprint generation
+      if (rawRows.length > 0) {
+        await writeChunked(db, ["tenants", tenantId, "imports", importRef.id, "rawRows"], rawRows, {
+          adapter: firestoreAdapter,
+          forceChunked: true,
+          version: 1,
+          cleanupStaleChunks: false,
+          updatedAtField: null,
+        });
+      }
 
       fileNames.push(file.name);
       dataTypes.push(uploadType);

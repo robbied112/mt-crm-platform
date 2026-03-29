@@ -9,7 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import parseFile from "../utils/parseFile";
 import { autoDetectMapping } from "../utils/semanticMapper";
 import { transformAll, generateSummary } from "../utils/transformData";
-import { normalizeRows } from "../utils/normalize.js";
+import { normalizeRows, preserveRawRows } from "../utils/normalize.js";
 import { logUpload } from "../services/firestoreService";
 
 const DATA_TYPES = [
@@ -78,6 +78,8 @@ export default function DataSourcesSettings() {
         const normalized = normalizeRows(result.rows, mapping);
         importMeta = {
           normalizedRows: normalized,
+          rawRows: preserveRawRows(result.rows),
+          rawHeaders: result.headers || Object.keys(result.rows[0] || {}),
           fileName: file.name,
           type: dataType,
           mapping,

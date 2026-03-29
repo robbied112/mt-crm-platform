@@ -147,10 +147,11 @@ export async function saveAllViews(tenantId, datasets) {
 //  tenants/{tenantId}/imports/{importId}/rows/  ← chunked normalized rows
 
 /**
- * Save a new import: metadata + chunked normalized rows.
+ * Save a new import: metadata + chunked normalized rows + optional raw rows.
+ * Raw rows preserve all original columns for AI blueprint generation.
  * @returns {string} The generated import ID.
  */
-export async function saveImport(tenantId, meta, normalizedRows) {
+export async function saveImport(tenantId, meta, normalizedRows, rawRows = null) {
   const importsRef = collection(db, "tenants", tenantId, "imports");
   const importRef = doc(importsRef);
   const importId = importRef.id;
@@ -166,6 +167,17 @@ export async function saveImport(tenantId, meta, normalizedRows) {
       createdAt: serverTimestamp(),
     },
   });
+
+  // Store raw rows (all original columns) for AI blueprint generation
+  if (rawRows && rawRows.length > 0) {
+    await writeChunked(db, ["tenants", tenantId, "imports", importId, "rawRows"], rawRows, {
+      adapter: firestoreAdapter,
+      forceChunked: true,
+      version: 1,
+      cleanupStaleChunks: false,
+      updatedAtField: null,
+    });
+  }
 
   return importId;
 }
@@ -204,6 +216,10 @@ export async function deleteImport(tenantId, importId) {
   const rowsRef = collection(db, "tenants", tenantId, "imports", importId, "rows");
   const rowsSnap = await getDocs(rowsRef);
   await Promise.all(rowsSnap.docs.map((d) => deleteDoc(d.ref)));
+  // Also clean up rawRows subcollection if it exists
+  const rawRowsRef = collection(db, "tenants", tenantId, "imports", importId, "rawRows");
+  const rawRowsSnap = await getDocs(rawRowsRef);
+  await Promise.all(rawRowsSnap.docs.map((d) => deleteDoc(d.ref)));
   await deleteDoc(doc(db, "tenants", tenantId, "imports", importId));
 }
 
@@ -223,6 +239,10 @@ export async function deleteAllData(tenantId) {
       const rowsRef = collection(db, "tenants", tenantId, collPath, d.id, "rows");
       const rowsSnap = await getDocs(rowsRef);
       await Promise.all(rowsSnap.docs.map((r) => deleteDoc(r.ref)));
+      // Also clean up rawRows subcollection
+      const rawRowsRef = collection(db, "tenants", tenantId, collPath, d.id, "rawRows");
+      const rawRowsSnap = await getDocs(rawRowsRef);
+      await Promise.all(rawRowsSnap.docs.map((r) => deleteDoc(r.ref)));
       await deleteDoc(d.ref);
     }));
   }

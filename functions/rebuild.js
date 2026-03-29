@@ -359,20 +359,37 @@ async function rebuildViewsForTenant({ tenantId, triggeredBy = "system" }) {
       if (aiReportsEnabled && aiAllowed && totalRows >= 5) {
         const apiKey = anthropicApiKey.value();
         if (apiKey) {
-          // Build rawImports from importResults with metadata
+          // Build rawImports — prefer rawRows (all original columns) over normalized rows
           const rawImports = await Promise.all(
             importsSnap.docs.map(async (importDoc) => {
               const meta = importDoc.data();
-              const rows = await readChunked(db, ["tenants", tenantId, "imports", importDoc.id], {
+
+              // Try rawRows first (new format with all original columns)
+              let rows = await readChunked(db, ["tenants", tenantId, "imports", importDoc.id, "rawRows"], {
                 adapter: firestoreAdapter,
                 emptyValue: [],
                 preferRows: true,
               });
+
+              let headers;
+              if (rows.length > 0) {
+                // Raw rows available — use stored rawHeaders or derive from all rows
+                headers = meta.rawHeaders || [...new Set(rows.flatMap((r) => Object.keys(r)))];
+              } else {
+                // Fallback for old imports: use normalized rows, headers from row keys
+                rows = await readChunked(db, ["tenants", tenantId, "imports", importDoc.id], {
+                  adapter: firestoreAdapter,
+                  emptyValue: [],
+                  preferRows: true,
+                });
+                headers = Object.keys(rows[0] || {}).filter((k) => !k.startsWith("_"));
+              }
+
               return {
                 fileName: meta.fileName || importDoc.id,
                 fileType: meta.type || "unknown",
                 type: meta.type || "unknown",
-                headers: meta.mapping ? Object.values(meta.mapping).filter((v) => typeof v === "string") : [],
+                headers,
                 columnTypes: meta.columnTypes || {},
                 rows,
                 rowCount: rows.length,

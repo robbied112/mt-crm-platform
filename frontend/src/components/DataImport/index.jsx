@@ -17,7 +17,7 @@ import { aiAutoDetectMapping } from "../../utils/aiMapper";
 import { runComprehend } from "../../utils/runComprehend";
 import { transformAll, generateSummary } from "../../utils/transformData";
 import { transformBillback } from "../../utils/transformBillback";
-import { normalizeRows } from "../../utils/normalize.js";
+import { normalizeRows, preserveRawRows } from "../../utils/normalize.js";
 import { clientExactMatch, fuzzyMatchProducts } from "../../utils/productNormalize";
 import { matchDistributorByHeaders, matchDistributorByFilename } from "../../config/reportGuides";
 import { logUpload, saveLearnedMapping, getLearnedMapping } from "../../services/firestoreService";
@@ -254,6 +254,8 @@ export default function DataImport({ dataTypeHint } = {}) {
         const normalized = normalizeRows(itemParsed.rows, itemMapping);
         importMeta = {
           normalizedRows: normalized,
+          rawRows: preserveRawRows(itemParsed.rows),
+          rawHeaders: itemParsed.headers || Object.keys(itemParsed.rows[0] || {}),
           fileName: itemFile.name,
           type: itemType?.type,
           mapping: itemMapping,
@@ -501,6 +503,8 @@ export default function DataImport({ dataTypeHint } = {}) {
         const normalized = normalizeRows(parsed.rows, mapping);
         importMeta = {
           normalizedRows: normalized,
+          rawRows: preserveRawRows(parsed.rows),
+          rawHeaders: parsed.headers || Object.keys(parsed.rows[0] || {}),
           fileName: file.name,
           type: uploadType.type,
           mapping,

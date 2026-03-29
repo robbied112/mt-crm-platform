@@ -308,3 +308,70 @@ describe("extractFilterValues", () => {
     expect(values).toEqual(["CA", "FL", "TX"]);
   });
 });
+
+// ─── buildDataProfile with raw rows ────────────────────────────────────────
+
+describe("buildDataProfile — raw rows (original column names)", () => {
+  it("produces non-empty column stats when headers match row keys", () => {
+    const rawRows = [
+      { "Account Name": "Total Wine", "Cases 9L Eq": 100, State: "CA", Distributor: "SGW" },
+      { "Account Name": "BevMo", "Cases 9L Eq": 75, State: "CA", Distributor: "SGW" },
+      { "Account Name": "Fig & Olive", "Cases 9L Eq": 30, State: "TX", Distributor: "RNDC" },
+    ];
+    const profile = buildDataProfile([{
+      fileName: "4M_Rolling_Depletion.csv",
+      fileType: "depletion",
+      headers: ["Account Name", "Cases 9L Eq", "State", "Distributor"],
+      rows: rawRows,
+    }]);
+
+    const cols = profile.imports[0].columns;
+    expect(cols["Cases 9L Eq"].nonNullCount).toBe(3);
+    expect(cols["Cases 9L Eq"].min).toBe(30);
+    expect(cols["Cases 9L Eq"].max).toBe(100);
+    expect(cols["Account Name"].cardinality).toBe(3);
+  });
+
+  it("regression: headers as mapping values with normalized rows produces empty stats", () => {
+    // This documents the old bug — mapping values as headers don't match normalized row keys
+    const normalizedRows = [
+      { acct: "Total Wine", qty: 100, st: "CA", dist: "SGW" },
+      { acct: "BevMo", qty: 75, st: "CA", dist: "SGW" },
+    ];
+    const profile = buildDataProfile([{
+      fileName: "test.csv",
+      fileType: "depletion",
+      headers: ["Account Name", "Cases", "State", "Distributor"], // mapping values, not row keys
+      rows: normalizedRows,
+    }]);
+
+    // These headers don't exist in the rows, so stats are empty
+    const cols = profile.imports[0].columns;
+    expect(cols["Account Name"].nonNullCount).toBe(0);
+    expect(cols["Cases"].nonNullCount).toBe(0);
+  });
+});
+
+// ─── buildDataProfile — union headers ──────────────────────────────────────
+
+describe("buildDataProfile — sparse rows (union headers)", () => {
+  it("profiles columns present in some but not all rows", () => {
+    const rows = [
+      { a: "x", b: 10 },
+      { a: "y", c: 20 },       // b missing, c present
+      { a: "z", b: 30, c: 40 },
+    ];
+    const allKeys = [...new Set(rows.flatMap((r) => Object.keys(r)))];
+    const profile = buildDataProfile([{
+      fileName: "sparse.csv",
+      fileType: "unknown",
+      headers: allKeys,
+      rows,
+    }]);
+
+    const cols = profile.imports[0].columns;
+    expect(cols.a.nonNullCount).toBe(3);
+    expect(cols.b.nonNullCount).toBe(2); // present in 2 of 3 rows
+    expect(cols.c.nonNullCount).toBe(2);
+  });
+});

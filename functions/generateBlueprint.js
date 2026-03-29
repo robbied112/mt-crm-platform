@@ -181,15 +181,22 @@ const BLUEPRINT_TOOL = {
 
 const SYSTEM_PROMPT = `You are CruFolio's Dashboard Blueprint Generator for wine and spirits supplier teams.
 
-Given a data profile describing all uploaded files (column statistics, cardinality, types, cross-file joins) and matching industry templates, generate a comprehensive dashboard blueprint.
+Given a data profile describing all uploaded files (column statistics, cardinality, types, cross-file joins), generate a comprehensive, data-driven dashboard blueprint.
+
+DATA SOURCES — DUAL-KEY SYSTEM:
+You have two types of source keys to reference in dataSource.source:
+1. File-level keys (prefixed "file_"): reference a specific uploaded file. Example: "file_4m_rolling_depletion" for the file "4M_Rolling_Depletion.csv". Use these when a tab should show data from one specific file.
+2. Type-level keys: aggregate all files of the same type. Example: "depletion" combines all depletion files. Use these for cross-file summaries.
+
+The available source keys are provided in the "availableSources" field. ONLY reference keys that appear in that list.
 
 RULES:
-- Create tabs that make sense for the data available. If the user has depletion data, create depletion tabs. If they have inventory data, create inventory tabs. If they have both, create cross-reference tabs.
-- Each tab should have 3-6 sections mixing KPIs, charts, and tables.
+- Analyze the ACTUAL data columns and statistics. Build tabs, KPIs, charts, and tables based on what the data contains, not generic templates.
+- If multiple files of the same type exist (e.g. 4M, 13W, 4W depletion reports), create comparison tabs showing how metrics differ across time windows.
 - Start with an Executive Overview tab that summarizes the most important metrics across all data sources.
 - Use specific field names from the data profile — reference actual column names the user uploaded.
-- For "source" in dataSource, use the file type category (e.g. "depletion", "inventory", "revenue", "pipeline", "purchases").
 - Create meaningful global filters based on high-cardinality dimension columns (state, distributor, channel, etc).
+- Each tab should have 3-6 sections mixing KPIs, charts, and tables.
 - Include at least one chart per tab (bar, line, doughnut are most useful).
 - Tables should be the primary detail view — always include sortable columns and exportable flag.
 - KPI rows should lead each tab with 3-5 headline metrics.
@@ -242,7 +249,15 @@ async function generateBlueprintForTenant({ tenantId, rawImports, db, admin, api
       tabs: m.template.tabs,
     }));
 
-    // 3. Build the AI prompt
+    // 3. Build raw data by source (needed for availableSources list)
+    const rawDataBySource = buildRawDataBySource(rawImports);
+    const availableSources = Object.keys(rawDataBySource);
+
+    // 4. Build the AI prompt
+    const hasRichProfile = dataProfile.imports.some((imp) =>
+      Object.values(imp.columns).some((col) => col.nonNullCount > 0)
+    );
+
     const userMessage = JSON.stringify({
       dataProfile: {
         imports: dataProfile.imports.map((imp) => ({
@@ -265,16 +280,18 @@ async function generateBlueprintForTenant({ tenantId, rawImports, db, admin, api
         })),
         crossFileJoins: dataProfile.crossFileJoins,
       },
-      matchedTemplates,
+      availableSources,
+      // Only include templates when data profile is sparse (fallback guidance)
+      ...(hasRichProfile ? {} : { matchedTemplates }),
       instructions:
         "Generate a dashboard blueprint based on the data profile above. " +
-        "Use the matched templates as inspiration but customize tabs and sections " +
-        "based on the actual data available. Add cross-file analysis tabs when " +
-        "data from multiple sources can be joined. " +
+        "Use the availableSources list for dataSource.source values — use file-level keys (file_*) " +
+        "for file-specific tabs and type-level keys for cross-file aggregation. " +
+        "When multiple files of the same type exist, create comparison tabs. " +
         "Reference actual column names from the data profile in your aggregation specs.",
     });
 
-    // 4. Call Claude
+    // 5. Call Claude
     const response = await callClaude({
       apiKey,
       model: "claude-sonnet-4-20250514",
@@ -292,17 +309,16 @@ async function generateBlueprintForTenant({ tenantId, rawImports, db, admin, api
       return await generateFallbackBlueprint({ tenantId, rawImports, templateMatches, db, admin, firestoreAdapter });
     }
 
-    // 5. Compute data for all sections
-    const rawDataBySource = buildRawDataBySource(rawImports);
+    // 6. Compute data for all sections
     const computedData = computeBlueprint(result, rawDataBySource);
 
-    // 6. Extract filter values
+    // 7. Extract filter values
     const filterValues = {};
     for (const filter of result.globalFilters || []) {
       filterValues[filter.id] = extractFilterValues(filter, rawDataBySource);
     }
 
-    // 7. Write blueprint to Firestore
+    // 8. Write blueprint to Firestore
     const blueprintId = `bp_${Date.now()}`;
     const blueprintDoc = {
       name: result.name || "Dashboard",
@@ -420,19 +436,38 @@ async function generateFallbackBlueprint({ tenantId, rawImports, templateMatches
 }
 
 /**
- * Build rawDataBySource from import rows, grouping by file type.
- * Keys are source types (depletion, inventory, etc).
+ * Build rawDataBySource from import rows with dual-key strategy:
+ *   - Per-file keys (file_<sanitized_name>) for file-specific analysis
+ *   - Per-type keys (depletion, inventory, etc.) for cross-file aggregation
+ *
+ * This preserves individual file identity while still allowing type-level queries.
  */
 function buildRawDataBySource(rawImports) {
   const bySource = {};
   for (const imp of rawImports) {
-    const source = normalizeSourceType(imp.fileType || imp.type || "unknown");
-    if (!bySource[source]) bySource[source] = [];
-    if (imp.rows) {
-      bySource[source].push(...imp.rows);
+    // Per-file key for file-specific analysis
+    const fileKey = sanitizeSourceKey(imp.fileName);
+    if (fileKey) {
+      if (!bySource[fileKey]) bySource[fileKey] = [];
+      if (imp.rows) bySource[fileKey].push(...imp.rows);
     }
+
+    // Per-type key for cross-file aggregation
+    const typeKey = normalizeSourceType(imp.fileType || imp.type || "unknown");
+    if (!bySource[typeKey]) bySource[typeKey] = [];
+    if (imp.rows) bySource[typeKey].push(...imp.rows);
   }
   return bySource;
+}
+
+/**
+ * Sanitize a filename into a source key. Prefixed with "file_" to avoid
+ * collision with type keys (e.g. "depletion.csv" → "file_depletion").
+ */
+function sanitizeSourceKey(fileName) {
+  if (!fileName) return null;
+  const base = fileName.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "_").toLowerCase().slice(0, 50);
+  return `file_${base}`;
 }
 
 /**
@@ -456,4 +491,4 @@ function normalizeSourceType(fileType) {
   return aliases[fileType] || fileType;
 }
 
-module.exports = { generateBlueprintForTenant, buildRawDataBySource, normalizeSourceType };
+module.exports = { generateBlueprintForTenant, buildRawDataBySource, normalizeSourceType, sanitizeSourceKey };
