@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.5.0.1] - 2026-03-30
+
+### Fixed
+- AI analyst uploads saved with type "unknown" instead of detecting file type, causing all chart data to route to wrong source bucket and show "No data available"
+
 ## [0.5.0.0] - 2026-03-30
 
 ### Added
