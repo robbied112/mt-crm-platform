@@ -438,12 +438,15 @@ export async function saveLearnedMapping(tenantId, headers, mapping, uploadType)
   const docRef = doc(db, `tenants/${tenantId}/learnedMappings`, hashCode(key));
   await setDoc(docRef, {
     headerSignature: key,
-    headers: headers.slice(0, 100), // Store first 100 headers for reference
+    headers: headers.slice(0, 100),
     mapping,
     uploadType: uploadType?.type || uploadType || null,
     updatedAt: serverTimestamp(),
     useCount: increment(1),
   }, { merge: true });
+
+  // LRU eviction (fire-and-forget)
+  evictLearnedMappings(tenantId).catch(() => {});
 }
 
 /**
@@ -457,5 +460,94 @@ export async function getLearnedMapping(tenantId, headers) {
   const snap = await getDoc(docRef);
   if (!snap.exists()) return null;
   const data = snap.data();
+
+  // Touch updatedAt for LRU (fire-and-forget)
+  setDoc(docRef, { updatedAt: serverTimestamp(), useCount: increment(1) }, { merge: true })
+    .catch(() => {});
+
   return { mapping: data.mapping, uploadType: data.uploadType };
+}
+
+// ─── Learned Mappings LRU Eviction ──────────────────────────────
+
+export const MAX_LEARNED_MAPPINGS = 200;
+
+/**
+ * Evict least-recently-used learned mappings if count exceeds MAX_LEARNED_MAPPINGS.
+ */
+export async function evictLearnedMappings(tenantId) {
+  const colRef = collection(db, `tenants/${tenantId}/learnedMappings`);
+  const snap = await getDocs(colRef);
+  if (snap.size <= MAX_LEARNED_MAPPINGS) return 0;
+
+  const sorted = snap.docs
+    .map(d => ({
+      id: d.id,
+      ref: d.ref,
+      updatedAt: d.data().updatedAt?.toMillis?.() || d.data().updatedAt || 0,
+    }))
+    .sort((a, b) => a.updatedAt - b.updatedAt);
+
+  const toDelete = sorted.slice(0, sorted.length - MAX_LEARNED_MAPPINGS);
+  await Promise.all(toDelete.map(d => deleteDoc(d.ref)));
+  return toDelete.length;
+}
+
+// ─── Import Configuration Memory ────────────────────────────────
+
+/**
+ * Generate a hash key for import config cache.
+ * Based on sorted column headers + first 3 data rows structure.
+ */
+function importConfigHash(headers, sampleRows) {
+  const headerKey = headers.slice().sort().join("|").toLowerCase();
+  const structureKey = (sampleRows || []).slice(0, 3).map(row => {
+    return headers.map(h => {
+      const v = row[h];
+      if (v == null || v === "") return "e";
+      if (typeof v === "number" || /^-?\d+\.?\d*$/.test(String(v).trim())) return "n";
+      return "s";
+    }).join("");
+  }).join("|");
+  return hashCode(headerKey + ":" + structureKey);
+}
+
+/**
+ * Save a cached import configuration (AI analysis result).
+ * Path: tenants/{tenantId}/importConfigs/{hash}
+ */
+export async function saveImportConfig(tenantId, headers, sampleRows, config) {
+  if (!tenantId || !headers?.length || !config) return;
+  const key = importConfigHash(headers, sampleRows);
+  const docRef = doc(db, `tenants/${tenantId}/importConfigs`, key);
+  await setDoc(docRef, {
+    analysis: config.analysis || null,
+    mapping: config.mapping || null,
+    uploadType: config.uploadType || null,
+    reportType: config.analysis?.reportType || null,
+    humanSummary: config.analysis?.humanSummary || null,
+    headerCount: headers.length,
+    savedAt: serverTimestamp(),
+    useCount: increment(1),
+  }, { merge: true });
+}
+
+/**
+ * Look up a cached import configuration by file structure.
+ * Returns { analysis, mapping, uploadType } or null if no cache hit.
+ */
+export async function getImportConfig(tenantId, headers, sampleRows) {
+  if (!tenantId || !headers?.length) return null;
+  const key = importConfigHash(headers, sampleRows);
+  const docRef = doc(db, `tenants/${tenantId}/importConfigs`, key);
+  const snap = await getDoc(docRef);
+  if (!snap.exists()) return null;
+  const data = snap.data();
+  return {
+    analysis: data.analysis || null,
+    mapping: data.mapping || null,
+    uploadType: data.uploadType || null,
+    reportType: data.reportType || null,
+    humanSummary: data.humanSummary || null,
+  };
 }

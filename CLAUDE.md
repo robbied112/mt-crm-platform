@@ -285,6 +285,8 @@ tenants/{tenantId}/tasks/{taskId}
 tenants/{tenantId}/activityLog/{logId}
 tenants/{tenantId}/uploads/{uploadId}
 tenants/{tenantId}/pendingMatches/{matchId}
+tenants/{tenantId}/learnedMappings/{hash}
+tenants/{tenantId}/importConfigs/{hash}
 tenants/{tenantId}/syncState/{doc}
 tenants/{tenantId}/syncHistory/{doc}
 tenants/{tenantId}/rebuildHistory/{doc}

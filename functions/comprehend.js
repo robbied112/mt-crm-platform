@@ -775,4 +775,11 @@ const generateIntegrationPlan = onCall(
 
 // ─── Exports ─────────────────────────────────────────────────────────────────
 
-module.exports = { comprehendReport, generateIntegrationPlan };
+module.exports = {
+  comprehendReport,
+  generateIntegrationPlan,
+  // Exported for testing
+  _validateExtractionSpec: validateExtractionSpec,
+  _sanitizeForPrompt: sanitizeForPrompt,
+  _buildMarkdownTable: buildMarkdownTable,
+};

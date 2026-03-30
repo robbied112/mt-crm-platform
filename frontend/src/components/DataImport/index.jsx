@@ -20,7 +20,7 @@ import { transformBillback } from "../../utils/transformBillback";
 import { normalizeRows } from "../../utils/normalize.js";
 import { clientExactMatch, fuzzyMatchProducts } from "../../utils/productNormalize";
 import { matchDistributorByHeaders, matchDistributorByFilename } from "../../config/reportGuides";
-import { logUpload, saveLearnedMapping, getLearnedMapping } from "../../services/firestoreService";
+import { logUpload, saveLearnedMapping, getLearnedMapping, saveImportConfig } from "../../services/firestoreService";
 import { useAuth } from "../../context/AuthContext";
 import { useTeam } from "../../context/TeamContext";
 import { getFunctions, httpsCallable } from "firebase/functions";
@@ -279,6 +279,19 @@ export default function DataImport({ dataTypeHint } = {}) {
       }
 
       fq.markDone(item.id, { rowCount, type: itemType?.type });
+
+      // Save learned mapping + import config for future auto-confirm (fire-and-forget)
+      if (tenantId && itemParsed?.headers?.length > 0) {
+        saveLearnedMapping(tenantId, itemParsed.headers, itemMapping, itemType)
+          .catch(err => console.warn("[DataImport] Failed to save learned mapping:", err.message));
+        if (item.analysis && !item.analysis.error) {
+          saveImportConfig(tenantId, itemParsed.headers, itemParsed.rows, {
+            analysis: item.analysis,
+            mapping: itemMapping,
+            uploadType: itemType?.type,
+          }).catch(err => console.warn("[DataImport] Failed to cache import config:", err.message));
+        }
+      }
     } catch (err) {
       fq.markError(item.id, err.message || String(err));
     }
@@ -539,11 +552,18 @@ export default function DataImport({ dataTypeHint } = {}) {
         });
       }
 
-      // Save confirmed mapping for future recognition
+      // Save confirmed mapping + import config for future recognition
       if (tenantId && parsed?.headers?.length > 0) {
         saveLearnedMapping(tenantId, parsed.headers, mapping, uploadType).catch(err =>
           console.warn("[DataImport] Failed to save learned mapping:", err.message)
         );
+        if (analysis && !analysis.error) {
+          saveImportConfig(tenantId, parsed.headers, parsed.rows, {
+            analysis,
+            mapping,
+            uploadType: uploadType?.type,
+          }).catch(err => console.warn("[DataImport] Failed to cache import config:", err.message));
+        }
       }
 
       // Product auto-creation: create new products from import

@@ -179,6 +179,18 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // Learned column mappings (import config cache, non-viewers can write)
+      match /learnedMappings/{mappingId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if canWriteCrm(tenantId);
+      }
+
+      // Import configuration cache (AI analysis cache, non-viewers can write)
+      match /importConfigs/{configId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if canWriteCrm(tenantId);
+      }
+
       // Upload logs
       match /uploads/{uploadId} {
         allow read: if isTenantMember(tenantId);
