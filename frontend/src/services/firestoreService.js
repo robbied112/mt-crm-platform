@@ -207,6 +207,13 @@ export async function deleteImport(tenantId, importId) {
   await deleteDoc(doc(db, "tenants", tenantId, "imports", importId));
 }
 
+/**
+ * Delete an upload log entry.
+ */
+export async function deleteUploadLog(tenantId, uploadId) {
+  await deleteDoc(doc(db, "tenants", tenantId, "uploads", uploadId));
+}
+
 // ─── Delete All Data ─────────────────────────────────────────
 
 /**

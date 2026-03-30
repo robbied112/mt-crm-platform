@@ -5879,6 +5879,47 @@ input:focus-visible,
   white-space: nowrap;
 }
 
+.import-health__recent-delete {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+
+.import-health__recent-item:hover .import-health__recent-delete {
+  opacity: 1;
+}
+
+.import-health__recent-delete:hover {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.import-health__recent-delete:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.import-health__show-all {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 8px 0 0;
+  text-decoration: underline;
+}
+
+.import-health__show-all:hover {
+  opacity: 0.8;
+}
+
 /* ============================================================
    AI Reports — Blueprint Renderer
    ============================================================ */

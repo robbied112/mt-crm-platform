@@ -18,6 +18,8 @@ import {
   loadAllViews,
   saveAllDatasets,
   saveImport,
+  deleteImport,
+  deleteUploadLog,
   loadSummary,
   saveSummary,
   loadTenantConfig,
@@ -258,6 +260,21 @@ export default function DataProvider({ children }) {
     await refreshData();
   }, [tenantId, refreshData]);
 
+  // Delete an import (and its upload log entry), then rebuild views.
+  const removeImport = useCallback(async (importId, uploadId) => {
+    if (!tenantId) throw new Error("No tenant context");
+    await deleteImport(tenantId, importId);
+    if (uploadId) {
+      await deleteUploadLog(tenantId, uploadId);
+    }
+    if (useNormalized) {
+      const fns = getFunctions();
+      const rebuild = httpsCallable(fns, "rebuildViews");
+      await rebuild({ tenantId });
+    }
+    await refreshData();
+  }, [tenantId, useNormalized, refreshData]);
+
   // Save tenant config
   const updateTenantConfig = useCallback(async (patch) => {
     if (!tenantId) throw new Error("No tenant context");
@@ -298,6 +315,7 @@ export default function DataProvider({ children }) {
     loading,
     error,
     importDatasets,
+    removeImport,
     rebuildAndRefresh,
     refreshData,
     updateTenantConfig,
