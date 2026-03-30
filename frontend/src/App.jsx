@@ -49,6 +49,7 @@ import { useData } from "./context/DataContext";
 import { BriefingProvider } from "./context/BriefingContext";
 import { BlueprintProvider } from "./context/BlueprintContext";
 import BlueprintRenderer from "./components/reports/BlueprintRenderer";
+import AnalysisViewer from "./components/AnalysisViewer";
 import { clearDemoData } from "./services/demoData";
 import { deleteAllData } from "./services/firestoreService";
 import { deleteAllCrmData } from "./services/crmService";
@@ -267,9 +268,15 @@ function App() {
               <Route
                 path="/"
                 element={
-                  <BriefingProvider>
-                    <AIBriefing />
-                  </BriefingProvider>
+                  tenantConfig?.features?.aiAnalyst ? (
+                    <BlueprintProvider>
+                      <AnalysisViewer />
+                    </BlueprintProvider>
+                  ) : (
+                    <BriefingProvider>
+                      <AIBriefing />
+                    </BriefingProvider>
+                  )
                 }
               />
 

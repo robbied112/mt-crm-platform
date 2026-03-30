@@ -128,6 +128,7 @@ const TENANT_CONFIG = {
     distributorHealth: true,
     reorderForecast: true,
     billbacks: false,
+    aiAnalyst: true,
   },
 };
 

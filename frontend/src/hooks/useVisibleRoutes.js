@@ -53,7 +53,14 @@ export default function useVisibleRoutes(routes, { isAdmin, userRole, availabili
   return useMemo(() => {
     const progressive = !!tenantConfig?.features?.progressiveSidebar;
     const billbacksEnabled = !!tenantConfig?.features?.billbacks;
+    const aiAnalyst = !!tenantConfig?.features?.aiAnalyst;
     const hiddenHints = [];
+
+    // AI Analyst mode: hide static analytics routes (replaced by AnalysisViewer homepage)
+    const AI_ANALYST_HIDDEN_KEYS = new Set([
+      "depletions", "distributors", "inventory", "account-insights",
+      "opportunities", "reorder", "revenue", "executive", "territory", "reports",
+    ]);
 
     // Classify each route into a section bucket
     const analytics = [];
@@ -69,6 +76,9 @@ export default function useVisibleRoutes(routes, { isAdmin, userRole, availabili
 
       // Skip deprecated routes
       if (route.deprecated) continue;
+
+      // AI Analyst mode: hide static analytics routes
+      if (aiAnalyst && AI_ANALYST_HIDDEN_KEYS.has(route.key)) continue;
 
       // Skip setup route (handled separately by setup card)
       if (route.section === "setup") continue;

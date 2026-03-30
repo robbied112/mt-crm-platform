@@ -22,6 +22,7 @@ const {
 } = require("./billing");
 const { validateInvite, joinTeam } = require("./team");
 const { sendInviteEmail } = require("./email");
+const { analyzeUpload } = require("./analyzeUpload");
 
 exports.stripeWebhook = stripeWebhook;
 exports.aiMapper = aiMapper;
@@ -46,3 +47,4 @@ exports.createBillingPortalSession = createBillingPortalSession;
 exports.validateInvite = validateInvite;
 exports.joinTeam = joinTeam;
 exports.sendInviteEmail = sendInviteEmail;
+exports.analyzeUpload = analyzeUpload;
