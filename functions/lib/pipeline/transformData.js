@@ -337,13 +337,32 @@ function transformInventory(rows, mapping) {
     sku: str(getMapped(r, mapping, "sku")),
   })).filter((r) => !isSummaryRow(r));
 
-  // Group by state for inventoryData
-  const stateGroups = groupBy(normalized, (r) => r.st);
-  const inventoryData = Object.entries(stateGroups).map(([st, items]) => {
+  // Group by distributor for inventoryData (table expects distributor-level rows)
+  const invDistGroups = groupBy(normalized, (r) => r.dist || "Unknown");
+  const inventoryData = Object.entries(invDistGroups).map(([dist, items]) => {
     const oh = items.reduce((s, r) => s + r.oh, 0);
     const doh = items.length > 0 ? Math.round(items.reduce((s, r) => s + r.doh, 0) / items.length) : 0;
+    const rate = doh > 0 ? oh / doh : 0;
+    const dep90 = rate * 90;
+    const proj = Math.max(0, dep90 - oh);
     const status = doh > 90 ? "Overstocked" : doh > 60 ? "Review Needed" : doh < 14 ? "Reorder Opportunity" : doh === 0 ? "Dead Stock" : "Healthy";
-    return { st, oh: Math.round(oh), doh, status };
+    // Pick most common state for the distributor
+    const stCounts = {};
+    items.forEach((r) => { if (r.st) stCounts[r.st] = (stCounts[r.st] || 0) + 1; });
+    const st = Object.entries(stCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "";
+    // Build SKU breakdown
+    const skuGroups = groupBy(items, (r) => r.sku || "All");
+    const skus = Object.entries(skuGroups).map(([w, skuItems]) => {
+      const skuOh = skuItems.reduce((s, r) => s + r.oh, 0);
+      const skuDoh = skuItems.length > 0 ? Math.round(skuItems.reduce((s, r) => s + r.doh, 0) / skuItems.length) : 0;
+      const skuRate = skuDoh > 0 ? skuOh / skuDoh : 0;
+      const skuStatus = skuDoh > 90 ? "Overstocked" : skuDoh > 60 ? "Review Needed" : skuDoh < 14 ? "Reorder Opportunity" : skuDoh === 0 ? "Dead Stock" : "Healthy";
+      return { w, oh: Math.round(skuOh), doh: skuDoh, rate: Math.round(skuRate * 100) / 100, status: skuStatus };
+    });
+    return {
+      name: dist, st, oh: Math.round(oh), rate: Math.round(rate * 100) / 100,
+      doh, dep90: Math.round(dep90), proj: Math.round(proj), status, skus,
+    };
   });
 
   // Group by distributor for distHealth
