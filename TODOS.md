@@ -149,35 +149,17 @@
 
 ### PR 1: Learning Layer
 
-### TODO-095: Import Configuration Memory ← PROMOTED TO CRITICAL (was P2)
-- **What:** Cache AI report analysis in Firestore at `tenants/{tenantId}/importConfigs/{hash}`. Cache key = hash of (column headers array + first 3 data rows structure). On repeat upload, skip Claude API call entirely — show "Using saved configuration for SGWS 13-week velocity report" with a "Re-analyze" button to override. Config includes full Report Analysis + extraction spec. Invalidated when hash doesn't match (file structure changed).
-- **Why (direction review):** Without this, every upload feels like a fresh start. The system doesn't learn. This is the #1 defense against "I could just paste this into ChatGPT." Compounding value = switching cost.
-- **Effort:** M (human: ~1 week / CC: ~30 min)
-- **Priority:** P1 CRITICAL
-- **Files:** `frontend/src/components/DataImport/index.jsx`, `frontend/src/services/firestoreService.js`
-- **Depends on:** TODO-090 (done)
+### TODO-095: Import Configuration Memory ← DONE v0.4.5.0
+- **Completed:** v0.4.5.0 (2026-03-29)
 
-### TODO-117: Zero-Config Auto-Confirm + Learned Mappings ← CRITICAL
-- **What:** Three changes: (1) Lower auto-confirm threshold to 70% for known report types. (2) Tenant-level learned mappings: user corrections stored in `tenants/{id}/config/learnedMappings`, applied on future uploads. Capped at 200 entries with LRU eviction. (3) Graceful auto-fix: if only 1-2 columns below threshold, auto-assign best guess + show dismissible toast instead of blocking.
-- **Why (direction review):** Every file needing manual review is a user thinking "I could've done this in Excel." Target: 95%+ auto-confirm rate. This is the learning loop that makes the system smarter per tenant.
-- **Effort:** M (human: ~1 week / CC: ~30 min)
-- **Priority:** P1 CRITICAL
-- **Files:** `frontend/src/hooks/useFileQueue.js`, `frontend/src/context/UploadContext.jsx`, `frontend/src/services/firestoreService.js`
-- **Depends on:** TODO-110 (done)
+### TODO-117: Zero-Config Auto-Confirm + Learned Mappings ← DONE v0.4.5.0
+- **Completed:** v0.4.5.0 (2026-03-29)
 
-### TODO-122: AI Function Test Infrastructure ← CRITICAL (ships with PR 1)
-- **What:** Test harness for `comprehend.js` and `ai.js` with mocked Claude responses. Cover: valid mapping, malformed JSON, empty response, timeout, refusal. Include narration and learned mapping codepaths.
-- **Why (direction review):** The learning layer adds 3 new Claude codepaths. Flying blind without tests is reckless. Tests are non-negotiable.
-- **Effort:** M (human: ~1 week / CC: ~20 min)
-- **Priority:** P1 CRITICAL
-- **Files:** New `functions/__tests__/comprehend.unit.test.js`, new `functions/__tests__/ai.unit.test.js`
-- **Depends on:** Nothing
+### TODO-122: AI Function Test Infrastructure ← DONE v0.4.5.0
+- **Completed:** v0.4.5.0 (2026-03-29)
 
-### TODO-123: Learned Mappings LRU Eviction Tests ← CRITICAL (part of TODO-117)
-- **What:** Implement and thoroughly test LRU eviction logic for the 200-entry learned mappings cap.
-- **Effort:** S (CC: ~10 min)
-- **Priority:** P1 CRITICAL (ships with TODO-117)
-- **Depends on:** Part of TODO-117
+### TODO-123: Learned Mappings LRU Eviction Tests ← DONE v0.4.5.0
+- **Completed:** v0.4.5.0 (2026-03-29)
 
 ### PR 2: Proactive Intelligence
 

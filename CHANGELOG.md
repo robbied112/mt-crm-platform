@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.4.5.0] - 2026-03-29
+
+### Added
+- Import configuration memory — caches AI analysis results by file structure hash, skipping Claude API calls on repeat uploads of similar reports
+- Learned mappings LRU eviction — caps `learnedMappings` collection at 200 entries, evicts least-recently-used on overflow
+- Lower auto-confirm thresholds for learned/cached mappings (0.5 vs 0.7) with tolerance for up to 2 low-confidence fields
+- Import config cache lookup in multi-file queue — checks Firestore cache before calling comprehendReport, uses cached mapping with 0.95 confidence
+- Firestore rules for `learnedMappings` and `importConfigs` collections
+- Test exports for comprehend.js internals (`validateExtractionSpec`, `sanitizeForPrompt`, `buildMarkdownTable`)
+- 29 new comprehend unit tests, 19 AI mapping helper tests, 18 new firestoreService/useFileQueue tests
+
+### Fixed
+- Import config cache gated behind `smartImportEnabled` flag to respect feature toggle
+- Removed pre-confirmation cache write in single-file flow — configs now cached only after user confirms import
+
 ## [0.4.4.0] - 2026-03-28
 
 ### Fixed
