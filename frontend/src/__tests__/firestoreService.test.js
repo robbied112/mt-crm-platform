@@ -92,6 +92,7 @@ vi.mock("firebase/firestore", () => ({
   orderBy: () => ({ _type: "orderBy" }),
   limit: () => ({ _type: "limit" }),
   serverTimestamp: () => "SERVER_TS",
+  increment: (n) => ({ _type: "increment", _value: n }),
 }));
 
 vi.mock("../config/firebase", () => ({
@@ -113,6 +114,12 @@ const {
   deleteAllData,
   loadSummary,
   saveSummary,
+  saveLearnedMapping,
+  getLearnedMapping,
+  evictLearnedMappings,
+  MAX_LEARNED_MAPPINGS,
+  saveImportConfig,
+  getImportConfig,
 } = await import("../services/firestoreService.js");
 
 // ─── Tests ──────────────────────────────────────────────────
@@ -343,5 +350,115 @@ describe("loadSummary / saveSummary", () => {
     await saveSummary("t1", "New summary", "views");
     expect(mockDocs.has("tenants/t1/views/_summary")).toBe(true);
     expect(mockDocs.get("tenants/t1/views/_summary").text).toBe("New summary");
+  });
+});
+
+// ─── Learned Mappings LRU ──────────────────────────────────
+
+describe("saveLearnedMapping", () => {
+  it("writes mapping to learnedMappings collection", async () => {
+    await saveLearnedMapping("t1", ["Account", "Qty"], { acct: "Account" }, { type: "depletion" });
+    const keys = [...mockDocs.keys()].filter(k => k.startsWith("tenants/t1/learnedMappings/"));
+    expect(keys.length).toBe(1);
+    const data = mockDocs.get(keys[0]);
+    expect(data.mapping).toEqual({ acct: "Account" });
+    expect(data.uploadType).toBe("depletion");
+  });
+});
+
+describe("getLearnedMapping", () => {
+  it("returns null when no mapping exists", async () => {
+    const result = await getLearnedMapping("t1", ["Account", "Qty"]);
+    expect(result).toBeNull();
+  });
+
+  it("returns mapping when it exists", async () => {
+    // Save first, then read back
+    await saveLearnedMapping("t1", ["Account", "Qty"], { acct: "Account" }, "depletion");
+    const result = await getLearnedMapping("t1", ["Account", "Qty"]);
+    expect(result).not.toBeNull();
+    expect(result.mapping).toEqual({ acct: "Account" });
+  });
+});
+
+describe("evictLearnedMappings", () => {
+  it("returns 0 when under MAX_LEARNED_MAPPINGS", async () => {
+    // Only 1 mapping — no eviction needed
+    await saveLearnedMapping("t1", ["A"], { acct: "A" }, "depletion");
+    const deleted = await evictLearnedMappings("t1");
+    expect(deleted).toBe(0);
+  });
+
+  it("MAX_LEARNED_MAPPINGS is 200", () => {
+    expect(MAX_LEARNED_MAPPINGS).toBe(200);
+  });
+});
+
+// ─── Import Config Memory ──────────────────────────────────
+
+describe("saveImportConfig", () => {
+  it("writes config to importConfigs collection", async () => {
+    const config = {
+      analysis: { reportType: "depletion", humanSummary: "Test" },
+      mapping: { acct: "Account" },
+      uploadType: "depletion",
+    };
+    await saveImportConfig("t1", ["Account", "Qty"], [{ Account: "A", Qty: 1 }], config);
+    const keys = [...mockDocs.keys()].filter(k => k.startsWith("tenants/t1/importConfigs/"));
+    expect(keys.length).toBe(1);
+    const data = mockDocs.get(keys[0]);
+    expect(data.mapping).toEqual({ acct: "Account" });
+    expect(data.reportType).toBe("depletion");
+    expect(data.humanSummary).toBe("Test");
+  });
+
+  it("skips when tenantId is missing", async () => {
+    await saveImportConfig(null, ["A"], [{}], { analysis: {} });
+    const keys = [...mockDocs.keys()].filter(k => k.includes("importConfigs"));
+    expect(keys.length).toBe(0);
+  });
+
+  it("skips when headers is empty", async () => {
+    await saveImportConfig("t1", [], [{}], { analysis: {} });
+    const keys = [...mockDocs.keys()].filter(k => k.includes("importConfigs"));
+    expect(keys.length).toBe(0);
+  });
+
+  it("skips when config is missing", async () => {
+    await saveImportConfig("t1", ["A"], [{}], null);
+    const keys = [...mockDocs.keys()].filter(k => k.includes("importConfigs"));
+    expect(keys.length).toBe(0);
+  });
+});
+
+describe("getImportConfig", () => {
+  it("returns null when no cached config exists", async () => {
+    const result = await getImportConfig("t1", ["Account", "Qty"], []);
+    expect(result).toBeNull();
+  });
+
+  it("returns cached config when it exists", async () => {
+    const config = {
+      analysis: { reportType: "depletion", humanSummary: "Depletion report" },
+      mapping: { acct: "Account", qty: "Qty" },
+      uploadType: "depletion",
+    };
+    const rows = [{ Account: "A", Qty: 1 }];
+    await saveImportConfig("t1", ["Account", "Qty"], rows, config);
+    const result = await getImportConfig("t1", ["Account", "Qty"], rows);
+    expect(result).not.toBeNull();
+    expect(result.mapping).toEqual({ acct: "Account", qty: "Qty" });
+    expect(result.reportType).toBe("depletion");
+    expect(result.humanSummary).toBe("Depletion report");
+  });
+
+  it("returns null when tenantId is missing", async () => {
+    const result = await getImportConfig(null, ["A"], []);
+    expect(result).toBeNull();
+  });
+
+  it("returns null when headers is empty", async () => {
+    const result = await getImportConfig("t1", [], []);
+    expect(result).toBeNull();
   });
 });
