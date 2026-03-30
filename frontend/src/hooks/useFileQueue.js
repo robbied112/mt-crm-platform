@@ -14,8 +14,10 @@ import { runComprehend } from "../utils/runComprehend";
 import { clearWorkbookCache } from "../utils/parseFile";
 
 // ─── Constants ──────────────────────────────────────────────────
-const AUTO_CONFIRM_THRESHOLD = 0.8;
+const AUTO_CONFIRM_THRESHOLD = 0.7;
+const AUTO_CONFIRM_THRESHOLD_LEARNED = 0.5;
 const MIN_MAPPED_FIELDS = 3;
+const MAX_LOW_CONFIDENCE_FIELDS = 2;
 const MAX_BATCH_SIZE = 20;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 const COMPREHEND_TIMEOUT_MS = 45_000; // 45s safety timeout per file
@@ -47,11 +49,15 @@ function canAutoConfirm(mapping, confidence, typeObj, file) {
   );
   if (mappedKeys.length < MIN_MAPPED_FIELDS) return false;
 
-  // Every mapped field must meet the threshold
-  const allHighConfidence = mappedKeys.every(
-    (k) => (confidence[k] ?? 0) >= AUTO_CONFIRM_THRESHOLD
+  // Lower threshold for learned/cached mappings
+  const isLearned = confidence?._learned || confidence?._cached;
+  const threshold = isLearned ? AUTO_CONFIRM_THRESHOLD_LEARNED : AUTO_CONFIRM_THRESHOLD;
+
+  // Graceful auto-fix: tolerate up to MAX_LOW_CONFIDENCE_FIELDS below threshold
+  const lowConfidenceFields = mappedKeys.filter(
+    (k) => (confidence[k] ?? 0) < threshold
   );
-  if (!allHighConfidence) return false;
+  if (lowConfidenceFields.length > MAX_LOW_CONFIDENCE_FIELDS) return false;
 
   // Type-specific required fields must be mapped
   const required = TYPE_REQUIRED_FIELDS[typeObj?.type] || [];
@@ -70,6 +76,7 @@ export default function useFileQueue(config = {}) {
     detectUploadType,
     comprehendReport,
     loadRecentUploads,
+    getImportConfig,
     useAI = false,
     smartImportEnabled = false,
     userRole,
@@ -171,6 +178,7 @@ export default function useFileQueue(config = {}) {
             error: null,
             dupWarning,
             analysis: null,
+            configCached: false,
           });
         }
 
@@ -215,12 +223,30 @@ export default function useFileQueue(config = {}) {
       }
       updateItem(id, { parsed, sheetInfo: parsed.sheetInfo || null });
 
-      // 2. Smart import path: call comprehendReport via shared helper
+      // 2. Import config cache check (instant — no API call)
       let analysis = null;
       let smartMapping = null;
       let smartConfidence = null;
 
-      if (smartImportEnabled && comprehendReport) {
+      if (smartImportEnabled && getImportConfig && tenantId) {
+        try {
+          const cachedConfig = await getImportConfig(tenantId, parsed.headers, parsed.rows);
+          if (cachedConfig?.analysis && cachedConfig?.mapping) {
+            analysis = cachedConfig.analysis;
+            updateItem(id, { analysis, configCached: true });
+            smartMapping = cachedConfig.mapping;
+            smartConfidence = { _cached: true };
+            Object.keys(smartMapping).forEach(k => {
+              if (smartMapping[k]) smartConfidence[k] = 0.95;
+            });
+          }
+        } catch (err) {
+          console.warn("Import config cache lookup failed:", err.message);
+        }
+      }
+
+      // 3. Smart import path: call comprehendReport via shared helper (skip if cache hit)
+      if (!smartMapping && smartImportEnabled && comprehendReport) {
         try {
           const comprehendOut = await Promise.race([
             runComprehend({
@@ -307,6 +333,7 @@ export default function useFileQueue(config = {}) {
     aiAutoDetectMapping,
     detectUploadType,
     comprehendReport,
+    getImportConfig,
     useAI,
     smartImportEnabled,
     userRole,

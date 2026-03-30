@@ -20,7 +20,7 @@ import useFileQueue from "../hooks/useFileQueue";
 import parseFile from "../utils/parseFile";
 import { autoDetectMapping, detectUploadType } from "../utils/semanticMapper";
 import { aiAutoDetectMapping } from "../utils/aiMapper";
-import { loadRecentUploads } from "../services/firestoreService";
+import { loadRecentUploads, getImportConfig } from "../services/firestoreService";
 import { getFunctions, httpsCallable } from "firebase/functions";
 
 const UploadContext = createContext(null);
@@ -73,6 +73,7 @@ export default function UploadProvider({ children }) {
     detectUploadType,
     comprehendReport: smartImportEnabled ? comprehendCallable : null,
     loadRecentUploads,
+    getImportConfig,
     useAI: true,
     smartImportEnabled,
     userRole,
