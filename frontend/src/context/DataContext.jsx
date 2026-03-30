@@ -201,16 +201,22 @@ export default function DataProvider({ children }) {
   // rebuildViews Cloud Function (server-authoritative) to aggregate ALL imports.
   // Pass { skipRebuild: true } during batch imports to defer the rebuild until
   // all files are saved, then call rebuildAndRefresh() once at the end.
-  const importDatasets = useCallback(async (datasets, summaryText, importMeta, { skipRebuild = false } = {}) => {
+  // When aiAnalyst is true, pass { skipAnalysis: true, rawRows } to save raw
+  // parsed rows (not normalized). Call analyzeAndRefresh() after batch.
+  const importDatasets = useCallback(async (datasets, summaryText, importMeta, { skipRebuild = false, skipAnalysis = false, rawRows = null } = {}) => {
     if (!tenantId) throw new Error("No tenant context");
     try {
       const collPath = useNormalized ? "views" : "data";
       let importId = null;
 
       // Billback imports always need an import record for downstream extraction.
+      // AI analyst mode passes rawRows (unparsed column names) instead of normalizedRows.
       if (importMeta && (useNormalized || importMeta.type === "billback")) {
         const { normalizedRows, ...meta } = importMeta;
-        importId = await saveImport(tenantId, meta, normalizedRows);
+        const rowsToSave = rawRows || normalizedRows;
+        if (rowsToSave) {
+          importId = await saveImport(tenantId, meta, rowsToSave);
+        }
       }
 
       if (useNormalized) {
@@ -275,6 +281,15 @@ export default function DataProvider({ children }) {
     await refreshData();
   }, [tenantId, useNormalized, refreshData]);
 
+  // Trigger AI analysis — used after batch imports when aiAnalyst is true.
+  // BlueprintContext picks up results via real-time listener (no manual refresh needed).
+  const analyzeAndRefresh = useCallback(async () => {
+    if (!tenantId) return;
+    const fns = getFunctions();
+    const analyze = httpsCallable(fns, "analyzeUpload");
+    await analyze({ tenantId });
+  }, [tenantId]);
+
   // Save tenant config
   const updateTenantConfig = useCallback(async (patch) => {
     if (!tenantId) throw new Error("No tenant context");
@@ -317,6 +332,7 @@ export default function DataProvider({ children }) {
     importDatasets,
     removeImport,
     rebuildAndRefresh,
+    analyzeAndRefresh,
     refreshData,
     updateTenantConfig,
     updateBudget,
