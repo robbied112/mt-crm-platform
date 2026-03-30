@@ -191,6 +191,22 @@ service cloud.firestore {
         allow write: if canWriteCrm(tenantId);
       }
 
+      // AI Report Blueprints — readable by tenant members, server writes via Admin SDK
+      match /reportBlueprints/{blueprintId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if false;
+
+        match /tabs/{tabId} {
+          allow read: if isTenantMember(tenantId);
+          allow write: if false;
+
+          match /rows/{chunkId} {
+            allow read: if isTenantMember(tenantId);
+            allow write: if false;
+          }
+        }
+      }
+
       // Upload logs
       match /uploads/{uploadId} {
         allow read: if isTenantMember(tenantId);
