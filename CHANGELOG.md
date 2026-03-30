@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.4.5.1] - 2026-03-30
+
+### Fixed
+- Inventory view showing all zeros for On Hand, Daily Rate, 90D Depletion, and Projected Orders — data was grouped by state instead of distributor, missing the fields the table expects
+- Inventory table now shows computed daily depletion rate, 90-day projections, reorder signals, and per-SKU breakdown for each distributor
+
 ## [0.4.5.0] - 2026-03-29
 
 ### Added
