@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.5.0.0] - 2026-03-30
+
+### Added
+- AI Wine Analyst homepage — upload distributor reports and get AI-generated dashboards with narrative analysis, suggested questions, and recommended actions
+- `analyzeUpload` Cloud Function — single Claude Sonnet call generates both dashboard blueprint (tabs, charts, KPIs, tables) and narrative briefing from raw uploaded data
+- Wine industry system prompt (~3K tokens) — three-tier system, depletion metrics, distributor formats, seasonal patterns, pricing terminology, account types
+- `AnalysisViewer` component — upload zone + narrative section + existing BlueprintRenderer dashboard, no new context providers needed
+- `aiAnalyst` feature flag — when enabled, homepage shows AI analysis instead of static briefing, sidebar hides static analytics routes
+- Template-based fallback — if Claude API fails, generates dashboard from matched industry templates with generic narrative
+- Rate limiting — 10 analyses per hour per tenant
+- 27 new tests across 5 test files (analyzeUpload unit + integration, AnalysisViewer, useVisibleRoutes, importDatasets)
+
+### Changed
+- `DataContext.importDatasets()` accepts `rawRows` parameter for storing unparsed column names (enables AI analysis of original data)
+- `DataContext` exposes `analyzeAndRefresh()` for batch upload completion in AI analyst mode
+- Import metadata now stores `originalHeaders` for richer AI context in future chat features
+
+### Fixed
+- Firestore rules: `reportBlueprints` subcollection path corrected from `tabs/` to `computedData/` matching actual code paths
+
 ## [0.4.5.1] - 2026-03-30
 
 ### Fixed
