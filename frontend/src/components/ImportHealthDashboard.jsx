@@ -2,10 +2,12 @@
  * ImportHealthDashboard — shows import history, data freshness,
  * and health indicators for each data type.
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useData } from "../context/DataContext";
 import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "../config/firebase";
+import { loadImports } from "../services/firestoreService";
+import usePermissions from "../hooks/usePermissions";
 
 const DATA_TYPE_META = {
   depletion: { label: "Depletion", icon: "📊", recommended: "weekly" },
@@ -44,29 +46,69 @@ function formatDate(dateVal) {
 }
 
 export default function ImportHealthDashboard() {
-  const { tenantId } = useData();
+  const { tenantId, removeImport } = useData();
+  const { canDeleteData } = usePermissions();
   const [uploads, setUploads] = useState([]);
+  const [imports, setImports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(null);
+  const [showAll, setShowAll] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    if (!tenantId) return;
+    try {
+      const [uploadsSnap, importsList] = await Promise.all([
+        getDocs(
+          query(
+            collection(db, `tenants/${tenantId}/uploads`),
+            orderBy("createdAt", "desc"),
+            limit(50)
+          )
+        ),
+        loadImports(tenantId),
+      ]);
+      setUploads(uploadsSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      setImports(importsList);
+    } catch (err) {
+      console.error("[ImportHealth] Failed to load:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [tenantId]);
 
   useEffect(() => {
-    if (!tenantId) return;
-    const fetchUploads = async () => {
-      try {
-        const q = query(
-          collection(db, `tenants/${tenantId}/uploads`),
-          orderBy("createdAt", "desc"),
-          limit(50)
-        );
-        const snap = await getDocs(q);
-        setUploads(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-      } catch (err) {
-        console.error("[ImportHealth] Failed to load uploads:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUploads();
-  }, [tenantId]);
+    fetchData();
+  }, [fetchData]);
+
+  // Match an upload log entry to its import by fileName + type
+  function findImportForUpload(upload) {
+    return imports.find(
+      (imp) => imp.fileName === upload.fileName && imp.type === upload.type
+    );
+  }
+
+  async function handleDelete(upload) {
+    const matchedImport = findImportForUpload(upload);
+    if (!matchedImport) return;
+
+    const confirmed = window.confirm(
+      `Delete "${upload.fileName}"? This will remove its data and rebuild your dashboards.`
+    );
+    if (!confirmed) return;
+
+    setDeleting(upload.id);
+    try {
+      await removeImport(matchedImport.id, upload.id);
+      // Refresh local state
+      setUploads((prev) => prev.filter((u) => u.id !== upload.id));
+      setImports((prev) => prev.filter((i) => i.id !== matchedImport.id));
+    } catch (err) {
+      console.error("[ImportHealth] Delete failed:", err);
+      alert("Failed to delete upload. Please try again.");
+    } finally {
+      setDeleting(null);
+    }
+  }
 
   // Group by data type, find latest for each
   const byType = {};
@@ -110,6 +152,8 @@ export default function ImportHealthDashboard() {
       </div>
     );
   }
+
+  const visibleUploads = showAll ? uploads : uploads.slice(0, 10);
 
   return (
     <div className="import-health">
@@ -181,17 +225,39 @@ export default function ImportHealthDashboard() {
         <div className="import-health__recent">
           <h4 className="import-health__recent-title">Recent Uploads</h4>
           <div className="import-health__recent-list">
-            {uploads.slice(0, 10).map((u) => (
-              <div key={u.id} className="import-health__recent-item">
-                <span className="import-health__recent-name">{u.fileName}</span>
-                <span className="import-health__recent-type">{u.type || "unknown"}</span>
-                <span className="import-health__recent-rows">
-                  {(u.rowCount || 0).toLocaleString()} rows
-                </span>
-                <span className="import-health__recent-date">{formatDate(u.createdAt)}</span>
-              </div>
-            ))}
+            {visibleUploads.map((u) => {
+              const hasImport = !!findImportForUpload(u);
+              const isDeleting = deleting === u.id;
+              return (
+                <div key={u.id} className="import-health__recent-item">
+                  <span className="import-health__recent-name">{u.fileName}</span>
+                  <span className="import-health__recent-type">{u.type || "unknown"}</span>
+                  <span className="import-health__recent-rows">
+                    {(u.rowCount || 0).toLocaleString()} rows
+                  </span>
+                  <span className="import-health__recent-date">{formatDate(u.createdAt)}</span>
+                  {canDeleteData && hasImport && (
+                    <button
+                      className="import-health__recent-delete"
+                      onClick={() => handleDelete(u)}
+                      disabled={isDeleting}
+                      title="Delete this upload and rebuild dashboards"
+                    >
+                      {isDeleting ? "..." : "\u00D7"}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
+          {uploads.length > 10 && (
+            <button
+              className="import-health__show-all"
+              onClick={() => setShowAll((prev) => !prev)}
+            >
+              {showAll ? "Show less" : `Show all ${uploads.length} uploads`}
+            </button>
+          )}
         </div>
       )}
     </div>
