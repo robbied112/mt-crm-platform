@@ -12,6 +12,7 @@ import { useData } from "../context/DataContext";
 import { useAuth } from "../context/AuthContext";
 import BlueprintRenderer from "./reports/BlueprintRenderer";
 import parseFile from "../utils/parseFile";
+import { autoDetectMapping, detectUploadType } from "../utils/semanticMapper";
 import { getFunctions, httpsCallable } from "firebase/functions";
 
 // ─── Upload Zone ─────────────────────────────────────────────────────────────
@@ -243,14 +244,18 @@ export default function AnalysisViewer() {
           return;
         }
 
+        // Detect type so analyzeUpload can route rows to the correct source bucket
+        const { mapping: autoMap } = autoDetectMapping(parsed.headers, parsed.rows);
+        const { type: detectedType } = detectUploadType(parsed.headers, parsed.rows, autoMap);
+
         // Save import with skipRebuild + skipAnalysis (batch pattern)
         await importDatasets(
           {}, // empty datasets (normalized model writes rows directly)
           "", // no summary
           {
             fileName: file.name,
-            type: "unknown",
-            mapping: {},
+            type: detectedType || "unknown",
+            mapping: autoMap || {},
             originalHeaders: parsed.headers,
             rowCount: parsed.rows.length,
           },
