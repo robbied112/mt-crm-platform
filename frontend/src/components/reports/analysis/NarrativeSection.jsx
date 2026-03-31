@@ -34,8 +34,10 @@ function parseNarrative(text) {
  * and wrap them in colored pill spans.
  */
 function parseMetrics(text, keyPrefix) {
-  // Match: optional sign, number (with optional commas/decimals), optional % or unit word
-  const metricRegex = /([+-]?\d[\d,]*\.?\d*)\s*(%|DOH\b|cases?\b|units?\b|pts\b|points\b|placements\b|accounts\b)/gi;
+  // Two patterns:
+  // 1. Any number + % or DOH (always pillify — these are unambiguous metrics)
+  // 2. Sign-prefixed or comma-formatted numbers + unit words (avoids bare "3 accounts")
+  const metricRegex = /([+-]?\d[\d,]*\.?\d*)\s*(%|DOH\b)|([+-]\d[\d,]*\.?\d*|\d{1,3}(?:,\d{3})+)\s*(cases?\b|units?\b|pts\b|points\b|placements\b|accounts\b)/gi;
 
   const parts = [];
   let lastIndex = 0;
@@ -48,7 +50,7 @@ function parseMetrics(text, keyPrefix) {
     }
 
     const fullMatch = match[0];
-    const numberPart = match[1];
+    const numberPart = match[1] || match[3] || "";
     const isNegative = numberPart.startsWith("-");
     const isPositive = numberPart.startsWith("+");
 
@@ -91,6 +93,7 @@ function formatRelativeTime(timestamp) {
   if (!timestamp) return null;
 
   const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+  if (isNaN(date.getTime())) return null;
   const now = new Date();
   const diffMs = now - date;
   const diffMins = Math.floor(diffMs / 60000);

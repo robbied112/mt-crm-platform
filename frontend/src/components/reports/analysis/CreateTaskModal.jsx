@@ -28,6 +28,14 @@ export default function CreateTaskModal({ action, onClose, onCreated }) {
 
   const modalRef = useRef(null);
   const firstInputRef = useRef(null);
+  const submittingRef = useRef(false);
+
+  // Lock body scroll while modal is open
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
 
   // Focus trap + Escape handler
   useEffect(() => {
@@ -65,6 +73,8 @@ export default function CreateTaskModal({ action, onClose, onCreated }) {
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setError("");
     setSubmitting(true);
 
@@ -82,6 +92,7 @@ export default function CreateTaskModal({ action, onClose, onCreated }) {
     } catch (err) {
       setError(err.message || "Failed to create task. Please try again.");
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   }, [createTask, title, dueDate, assignee, notes, action, onCreated]);

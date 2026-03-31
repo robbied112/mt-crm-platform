@@ -37,6 +37,7 @@ export default function AnalysisViewer() {
     if (blueprint && blueprint !== prevBlueprintRef.current && prevBlueprintRef.current) {
       setFadeIn(true);
       const timer = setTimeout(() => setFadeIn(false), 400);
+      prevBlueprintRef.current = blueprint;
       return () => clearTimeout(timer);
     }
     prevBlueprintRef.current = blueprint;
@@ -152,6 +153,7 @@ export default function AnalysisViewer() {
       } catch (err) {
         console.error("[AnalysisViewer] Analysis failed:", err);
         setError(err.message || "Analysis failed. Your data is saved, try again.");
+        setAnalysisSteps([]);
       } finally {
         setAnalyzing(false);
       }

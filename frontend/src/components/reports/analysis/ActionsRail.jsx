@@ -10,6 +10,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateTaskModal from "./CreateTaskModal";
 
+// Stable key for tracking created tasks (survives actions array changes)
+function actionKey(action) {
+  return `${action.priority || 0}:${action.text}`;
+}
+
 export default function ActionsRail({ actions }) {
   const navigate = useNavigate();
   const [taskModalAction, setTaskModalAction] = useState(null);
@@ -17,8 +22,8 @@ export default function ActionsRail({ actions }) {
 
   if (!actions?.length) return null;
 
-  const handleTaskCreated = (actionIndex) => {
-    setCreatedTasks((prev) => new Set([...prev, actionIndex]));
+  const handleTaskCreated = (key) => {
+    setCreatedTasks((prev) => new Set([...prev, key]));
     setTaskModalAction(null);
   };
 
@@ -26,8 +31,10 @@ export default function ActionsRail({ actions }) {
     <div className="actions-rail">
       <p className="actions-rail__label">DO NEXT</p>
       <ol className="actions-rail__list">
-        {actions.map((action, i) => (
-          <li key={i} className="actions-rail__item">
+        {actions.map((action, i) => {
+          const key = actionKey(action);
+          return (
+          <li key={key} className="actions-rail__item">
             <span className="actions-rail__badge" aria-label={`Priority ${action.priority || i + 1}`}>
               {action.priority || i + 1}
             </span>
@@ -37,14 +44,14 @@ export default function ActionsRail({ actions }) {
                 <p className="actions-rail__account">{action.relatedAccount}</p>
               )}
               <div className="actions-rail__ctas">
-                {createdTasks.has(i) ? (
+                {createdTasks.has(key) ? (
                   <span className="actions-rail__done" aria-label="Task created">
                     &#10003; Task created
                   </span>
                 ) : (
                   <button
                     className="actions-rail__cta"
-                    onClick={() => setTaskModalAction({ ...action, _index: i })}
+                    onClick={() => setTaskModalAction({ ...action, _key: key })}
                     type="button"
                   >
                     Create Task &rarr;
@@ -62,14 +69,15 @@ export default function ActionsRail({ actions }) {
               </div>
             </div>
           </li>
-        ))}
+          );
+        })}
       </ol>
 
       {taskModalAction && (
         <CreateTaskModal
           action={taskModalAction}
           onClose={() => setTaskModalAction(null)}
-          onCreated={() => handleTaskCreated(taskModalAction._index)}
+          onCreated={() => handleTaskCreated(taskModalAction._key)}
         />
       )}
     </div>
