@@ -15,11 +15,13 @@ const fmt = (n) =>
 export default function ProductDetail() {
   const { productId } = useParams();
   const navigate = useNavigate();
-  const { products, updateProduct, createProduct } = useCrm();
+  const { products, updateProduct, createProduct, deleteProduct } = useCrm();
   const { spendByWine } = useData();
 
   const [editMode, setEditMode] = useState(false);
   const [addVintage, setAddVintage] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const product = useMemo(
     () => products.find((p) => p.id === productId),
@@ -74,6 +76,22 @@ export default function ProductDetail() {
     await createProduct(data);
   };
 
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      // Cascade: delete child vintages first if this is a parent wine
+      if (isParentWine && childVintages.length > 0) {
+        await Promise.all(childVintages.map((v) => deleteProduct(v.id)));
+      }
+      await deleteProduct(productId);
+      navigate("/portfolio");
+    } catch (err) {
+      console.error("Delete failed:", err);
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
+
   return (
     <div className="product-detail">
       {/* Back nav */}
@@ -106,6 +124,9 @@ export default function ProductDetail() {
           )}
           <button className="btn btn-primary" onClick={() => setEditMode(true)}>
             Edit
+          </button>
+          <button className="btn btn-danger" onClick={() => setConfirmDelete(true)}>
+            Delete
           </button>
         </div>
       </div>
@@ -251,6 +272,35 @@ export default function ProductDetail() {
           onSave={handleCreateVintage}
           onClose={() => setAddVintage(false)}
         />
+      )}
+
+      {/* Delete Confirmation */}
+      {confirmDelete && (
+        <div className="modal-overlay" onClick={() => !deleting && setConfirmDelete(false)}>
+          <div className="modal-panel modal-panel--sm" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Delete Product</h2>
+              <button className="modal-close" onClick={() => setConfirmDelete(false)} disabled={deleting}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <p>
+                Permanently delete <strong>{product.displayName || product.name}</strong>?
+                {isParentWine && childVintages.length > 0 && (
+                  <span> This will also delete {childVintages.length} vintage{childVintages.length > 1 ? "s" : ""}.</span>
+                )}
+                {" "}This cannot be undone.
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setConfirmDelete(false)} disabled={deleting}>
+                Cancel
+              </button>
+              <button className="btn btn-danger" onClick={handleDelete} disabled={deleting}>
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
