@@ -304,6 +304,20 @@ function App() {
                 }
               />
 
+              {/* Static analytics routes — redirect to AI homepage when AI Analyst is on */}
+              {tenantConfig?.features?.aiAnalyst ? (
+                <>
+                  <Route path="/depletions" element={<Navigate to="/" replace />} />
+                  <Route path="/distributors" element={<Navigate to="/" replace />} />
+                  <Route path="/inventory" element={<Navigate to="/" replace />} />
+                  <Route path="/account-insights" element={<Navigate to="/" replace />} />
+                  <Route path="/opportunities" element={<Navigate to="/" replace />} />
+                  <Route path="/reorder" element={<Navigate to="/" replace />} />
+                  <Route path="/revenue" element={<Navigate to="/" replace />} />
+                  <Route path="/executive" element={<Navigate to="/" replace />} />
+                </>
+              ) : (
+                <>
               <Route
                 path="/depletions"
                 element={
@@ -426,19 +440,25 @@ function App() {
                   />
                 }
               />
+                </>
+              )}
 
               <Route
                 path="/pipeline"
                 element={<PipelineKanban />}
               />
 
-              {/* AI Reports */}
+              {/* AI Reports — redirect to homepage when AI Analyst is on (dashboard is embedded there) */}
               <Route
                 path="/reports"
                 element={
-                  <BlueprintProvider>
-                    <BlueprintRenderer />
-                  </BlueprintProvider>
+                  tenantConfig?.features?.aiAnalyst ? (
+                    <Navigate to="/" replace />
+                  ) : (
+                    <BlueprintProvider>
+                      <BlueprintRenderer />
+                    </BlueprintProvider>
+                  )
                 }
               />
 

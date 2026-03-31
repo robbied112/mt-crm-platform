@@ -447,6 +447,7 @@ function normalizeSourceType(fileType) {
     inventory_health: "inventory",
     inventory_snapshot: "inventory",
     quickbooks_revenue: "revenue",
+    quickbooks: "revenue",
     ar_aging: "revenue",
     ap_aging: "revenue",
     pipeline: "pipeline",

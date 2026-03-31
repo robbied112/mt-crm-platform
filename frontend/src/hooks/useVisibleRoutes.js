@@ -59,7 +59,7 @@ export default function useVisibleRoutes(routes, { isAdmin, userRole, availabili
     // AI Analyst mode: hide static analytics routes (replaced by AnalysisViewer homepage)
     const AI_ANALYST_HIDDEN_KEYS = new Set([
       "depletions", "distributors", "inventory", "account-insights",
-      "opportunities", "reorder", "revenue", "executive", "territory", "reports",
+      "opportunities", "reorder", "revenue", "executive", "territory", "ai-reports",
     ]);
 
     // Classify each route into a section bucket

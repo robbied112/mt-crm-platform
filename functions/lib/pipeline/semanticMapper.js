@@ -421,7 +421,16 @@ function detectQuickBooksFormat(headers) {
  */
 function detectUploadType(headers, rows, mapping) {
   const qb = detectQuickBooksFormat(headers);
-  if (qb.isQuickBooks) return { type: "quickbooks", subtype: qb.format };
+  if (qb.isQuickBooks) {
+    // Map QuickBooks subtypes to specific types that normalizeSourceType recognizes
+    const qbTypeMap = {
+      transaction_detail: "quickbooks_revenue",
+      sales_by_item: "quickbooks_revenue",
+      customer_report: "ar_aging",
+      profit_loss: "quickbooks_revenue",
+    };
+    return { type: qbTypeMap[qb.format] || "quickbooks_revenue", subtype: qb.format };
+  }
 
   const hasAcct = !!mapping.acct;
   const hasDist = !!mapping.dist;

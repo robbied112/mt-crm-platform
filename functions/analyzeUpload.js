@@ -116,6 +116,18 @@ Pricing:
 - Typical distributor margin: 25-33% markup
 - Typical retailer margin: 33-50% markup
 
+QuickBooks & Accounting Data:
+- QuickBooks exports contain financial/accounting data — invoices, P&L, transaction details, AR/AP aging
+- CRITICAL: Accounting line items are NOT products. Things like "Billing", "Payments", "Discounts",
+  "Service Fees", "Adjustments", "Credits", "Refunds", "Shipping", "Tax", "Finance Charges",
+  "Interest", "Bank Fees", "Insurance", "Rent", "Utilities", "Payroll" are accounting categories
+- QuickBooks "Name" or "Customer" columns are ACCOUNTS (buyers/distributors), not products
+- QuickBooks "Item" column may contain actual product names OR service/fee line items
+- Revenue from QuickBooks = invoiced revenue (winery → distributor), NOT depletions (distributor → retailer)
+- When analyzing QuickBooks data, focus on: revenue trends, AR aging, customer concentration,
+  payment patterns, and cash flow — NOT inventory velocity or depletion metrics
+- Use financial terminology: "Revenue", "Invoiced", "Outstanding Balance", "Days Sales Outstanding"
+
 Common Pain Points:
 - Accounts "going dark": stopped ordering, no visibility into why
 - Distributor attention: small brands get buried, reps focus on big portfolios
@@ -124,11 +136,14 @@ Common Pain Points:
 - Data fragmentation: 5+ sources, no unified view
 
 DASHBOARD GENERATION RULES:
-- Create tabs that match the data available. Depletion data → depletion tabs. Inventory → inventory tabs. Both → cross-reference tabs.
+- Create tabs that match the data available. Depletion data → depletion tabs. Inventory → inventory tabs. Revenue/QuickBooks → financial tabs. Both → cross-reference tabs.
 - Each tab: 3-6 sections mixing KPIs, charts, and tables
 - Start with an Executive Overview tab summarizing the most important metrics
 - Use actual field names from the data profile in your aggregation specs
-- For "source" in dataSource, use the file type category (depletion, inventory, revenue, pipeline, purchases)
+- For "source" in dataSource, use the NORMALIZED source category: "depletion", "inventory", "revenue", "pipeline", "purchases", "products"
+  - QuickBooks data (quickbooks_revenue, ar_aging, ap_aging) is normalized to source "revenue"
+  - Depletion/velocity reports are normalized to source "depletion"
+  - ALWAYS use the normalized category, never the raw file type
 - Global filters: high-cardinality dimensions (state, distributor, channel, account, SKU)
 - At least one chart per tab (bar, line, doughnut are most useful)
 - Tables: sortable columns, exportable flag, primary detail view
@@ -446,6 +461,10 @@ async function analyzeUploadForTenant({ tenantId, triggeredBy }) {
       "suggest 3 follow-up questions, and recommend 3-5 specific actions. " +
       "Use the matched templates as inspiration but customize based on the actual data. " +
       "Reference actual column names from the data profile in your aggregation specs. " +
+      "IMPORTANT: For dataSource.source, use ONLY these normalized categories: " +
+      "'depletion', 'inventory', 'revenue', 'pipeline', 'purchases', 'products'. " +
+      "QuickBooks and accounting data is always source 'revenue'. " +
+      "Do NOT treat accounting line items (billing, payments, fees, adjustments) as wine products. " +
       "If an action relates to an account that matches one in the crmAccounts list, include the accountId. " +
       "Do not guess — only include accountId for exact or very close name matches.",
   });
