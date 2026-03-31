@@ -13,8 +13,6 @@ import {
   serverTimestamp, onSnapshot,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
-import { buildNormalizedName } from "../utils/productNormalize";
-
 // ─── Helpers ──────────────────────────────────────────────────
 
 function tenantCol(tenantId, col) {
@@ -203,44 +201,6 @@ export async function deleteOpportunity(tenantId, id) {
   await deleteDoc(tenantDoc(tenantId, "opportunities", id));
 }
 
-// ─── Products (Wine Catalog) ──────────────────────────────────
-
-export async function loadProducts(tenantId) {
-  const q = query(tenantCol(tenantId, "products"), orderBy("name"));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-}
-
-export async function createProduct(tenantId, data) {
-  const clean = stripUndefined(data);
-  const ref = await addDoc(tenantCol(tenantId, "products"), {
-    ...clean,
-    normalizedName: buildNormalizedName(data.name),
-    displayName: data.displayName || data.name,
-    type: data.type || (data.vintage ? "vintage" : "nv"),
-    status: data.status || "active",
-    sourceNames: data.sourceNames || [data.name],
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-  return ref.id;
-}
-
-export async function updateProduct(tenantId, id, patch) {
-  const clean = stripUndefined(patch);
-  if (patch.name) {
-    clean.normalizedName = buildNormalizedName(patch.name);
-  }
-  await updateDoc(tenantDoc(tenantId, "products", id), {
-    ...clean,
-    updatedAt: serverTimestamp(),
-  });
-}
-
-export async function deleteProduct(tenantId, id) {
-  await deleteDoc(tenantDoc(tenantId, "products", id));
-}
-
 // ─── Delete All CRM Data ─────────────────────────────────────
 
 /**
@@ -280,6 +240,10 @@ export async function deleteAllCrmData(tenantId) {
     drainCollection("activityLog"),
     drainCollection("tasks"),
     drainCollection("opportunities"),
+    drainCollection("skus"),
+    drainCollection("masterProducts"),
+    drainCollection("producers"),
+    drainCollection("portfolios"),
     drainCollection("products"),
     drainCollection("wines"),
     drainCollection("pipeline"),
@@ -338,12 +302,4 @@ export function subscribeOpportunities(tenantId, callback, onError) {
   });
 }
 
-export function subscribeProducts(tenantId, callback, onError) {
-  const q = query(tenantCol(tenantId, "products"), orderBy("name"));
-  return onSnapshot(q, (snap) => {
-    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-  }, (err) => {
-    console.error("subscribeProducts error:", err);
-    if (onError) onError(err);
-  });
-}
+// Products subscription moved to productService.js (product hierarchy)

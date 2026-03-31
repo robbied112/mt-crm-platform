@@ -264,10 +264,42 @@ service cloud.firestore {
         allow write: if canWriteCrm(tenantId);
       }
 
-      // Products (wine catalog) scoped under tenant (viewers cannot write)
+      // Products (wine catalog) — legacy flat collection, read-only during migration
       match /products/{productId} {
         allow read: if isTenantMember(tenantId);
         allow write: if canWriteCrm(tenantId);
+      }
+
+      // ─── Product Hierarchy ─────────────────────────────────────────
+      // Canonical spine: producers/ → masterProducts/ → skus/
+      // Portfolio overlay: portfolios/ with producerIds[]
+
+      // Producers (wineries, estates, houses)
+      match /producers/{producerId} {
+        allow read: if isTenantMember(tenantId);
+        allow create, update: if isTenantManager(tenantId);
+        allow delete: if isTenantAdmin(tenantId);
+      }
+
+      // Master Products (wine/spirit identity, vintage-agnostic)
+      match /masterProducts/{productId} {
+        allow read: if isTenantMember(tenantId);
+        allow create, update: if isTenantManager(tenantId);
+        allow delete: if isTenantAdmin(tenantId);
+      }
+
+      // SKUs (specific vintage + bottle size + case pack)
+      match /skus/{skuId} {
+        allow read: if isTenantMember(tenantId);
+        allow create, update: if canWriteCrm(tenantId);
+        allow delete: if isTenantManager(tenantId);
+      }
+
+      // Portfolios (supplier books, custom lists)
+      match /portfolios/{portfolioId} {
+        allow read: if isTenantMember(tenantId);
+        allow create, update: if isTenantManager(tenantId);
+        allow delete: if isTenantAdmin(tenantId);
       }
 
       // Activity log scoped under tenant (viewers cannot write)

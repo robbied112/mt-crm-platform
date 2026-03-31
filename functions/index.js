@@ -14,6 +14,10 @@ const {
 const { parseBillbackPDF, extractWines } = require("./billback");
 const { matchProductsFromImport } = require("./productMatch");
 const { migrateWinesToProducts } = require("./migration");
+const {
+  onSkuCreated, onSkuDeleted,
+  onMasterProductCreated, onMasterProductDeleted,
+} = require("./productTriggers");
 const { comprehendReport, generateIntegrationPlan } = require("./comprehend");
 const {
   createCheckoutSession,
@@ -48,3 +52,7 @@ exports.validateInvite = validateInvite;
 exports.joinTeam = joinTeam;
 exports.sendInviteEmail = sendInviteEmail;
 exports.analyzeUpload = analyzeUpload;
+exports.onSkuCreated = onSkuCreated;
+exports.onSkuDeleted = onSkuDeleted;
+exports.onMasterProductCreated = onMasterProductCreated;
+exports.onMasterProductDeleted = onMasterProductDeleted;
