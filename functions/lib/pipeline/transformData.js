@@ -456,6 +456,20 @@ function transformQuickBooks(rows, mapping, qbFormat) {
     return true;
   };
 
+  // Accounting line items that should not become products in the portfolio
+  const _accountingPatterns = [
+    "tax item", "sales tax", "shipping", "discount", "adjustment",
+    "refund", "fee", "surcharge", "service charge", "finance charge",
+    "crv", "deposit", "redemption", "collection", "credit memo",
+    "payment", "write-off", "write off", "bad debt", "rounding",
+    "freight", "handling", "delivery charge", "convenience fee",
+    "processing fee", "restocking", "sales item",
+  ];
+  const _isAccountingItem = (name) => {
+    const lower = name.toLowerCase();
+    return _accountingPatterns.some(p => lower.includes(p));
+  };
+
   const productRows = rows.filter(isProductRow);
 
   // Build account data from product rows
@@ -513,10 +527,11 @@ function transformQuickBooks(rows, mapping, qbFormat) {
   const revenueResult = transformRevenue(syntheticRows, revMapping);
 
   // Extract unique product names for portfolio auto-creation
+  // Filter out QB accounting line items (adjustments, fees, CRV, etc.)
   const productNames = [...new Set(
     productRows
       .map(r => str(r[itemCol]))
-      .filter(name => name && name.toLowerCase() !== 'other')
+      .filter(name => name && name.toLowerCase() !== 'other' && !_isAccountingItem(name))
   )];
 
   // Calculate date range for monthly distribution
