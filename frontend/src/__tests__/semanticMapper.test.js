@@ -255,6 +255,6 @@ describe("detectUploadType", () => {
     const qbHeaders = ["Date", "Num", "Name", "Memo", "Account", "Debit", "Credit"];
     const qbRows = [{ Date: "01/15/2026", Num: "1001", Name: "Test", Memo: "", Account: "Sales", Debit: "", Credit: "100" }];
     const result = detectUploadType(qbHeaders, qbRows, {});
-    expect(result.type).toBe("quickbooks");
+    expect(result.type).toBe("quickbooks_revenue");
   });
 });
