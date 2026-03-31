@@ -221,6 +221,30 @@
 - **Files:** `frontend/src/components/MyTerritory.jsx` (extend with manager view), new `frontend/src/components/TeamRollup.jsx`
 - **Depends on:** Team model (done), territory filtering (done), views/ data (done)
 
+### TODO-402: Per-User Rate Limiting for AI Analysis
+- **What:** Add per-user rate limiting to the `analyzeUpload` Cloud Function. Cap at N analyses per hour per user to prevent abuse and runaway Claude API costs. Store counters in Firestore or use Firebase rate-limiting patterns.
+- **Why:** Without rate limiting, a single user (or bot) could trigger unlimited Claude API calls. Even at ~2K tokens per call, 100 rapid uploads = real money.
+- **Effort:** S (human: ~2 hours / CC: ~10 min)
+- **Priority:** P1
+- **Files:** `functions/analyzeUpload.js`
+- **Depends on:** AI Analyst (done)
+
+### TODO-403: Token Budget Guard for AI Analysis
+- **What:** Implement a token budget guard in `analyzeUpload.js`. Cap input tokens sent to Claude (e.g., truncate rows beyond a threshold). Monitor output token usage. Add logging for cost tracking per tenant.
+- **Why:** Large uploads could send massive payloads to Claude. Without a guard, a single 50K-row file could cost $5+ in one API call. Need predictable per-analysis cost ceiling.
+- **Effort:** S (human: ~2 hours / CC: ~10 min)
+- **Priority:** P1
+- **Files:** `functions/analyzeUpload.js`
+- **Depends on:** AI Analyst (done)
+
+### TODO-404: Full Raw-Data Chat v2
+- **What:** After validating that the lightweight "Ask CruFolio" chat (PR 3) gets real usage, build v2: pass actual row-level data to Claude for ad-hoc queries. User asks "which accounts in CA had declining depletions last quarter?" and gets a real answer from their data. Requires chunking strategy, context window management, and cost controls.
+- **Why:** Current Ask CruFolio (PR 3) only works with the existing analysis blueprint. Real power is letting users query their raw data conversationally. But validate demand first before building the expensive version.
+- **Effort:** L (human: ~2 weeks / CC: ~1 hour)
+- **Priority:** P2
+- **Files:** New Cloud Function, new frontend chat component
+- **Depends on:** PR 3 (Ask CruFolio chat) shipped and validated
+
 ---
 
 ## P2 — Phase 2: CRM + Polish
@@ -1085,15 +1109,8 @@
 - **Depends on:** TODO-110
 - **Supersedes:** TODO-098 (Dashboard Preview Before Import — narrower scope)
 
-### TODO-113: AI Insight Narration
-- **What:** New Cloud Function `generateInsightNarration` in comprehend.js. After import + rebuild, Claude Sonnet generates 2-3 sentence natural language summary: "Your CA depletions are up 12% MoM. Bevmo and Total Wine are fastest-growing. Three accounts haven't reordered in 30+ days." Stored in `tenants/{tenantId}/views/_narration`. Displayed as prominent card on dashboard. Quality gate: discard <50 char or generic responses. Sanitize input using existing `sanitizeForPrompt` helper.
-- **Why:** Turns data into advice. Makes CruFolio feel like an analyst, not a spreadsheet viewer. The "it knows my business" feature.
-- **Pros:** High perceived value. Low implementation cost. Uses existing summary infrastructure.
-- **Cons:** Claude API cost (~2K tokens per call). Cached in _narration doc, not regenerated until new import.
-- **Effort:** M (human: ~1 week / CC: ~30 min)
-- **Priority:** P1
-- **Files:** `functions/comprehend.js`, new `frontend/src/components/AIInsightCard.jsx`
-- **Depends on:** Nothing (can ship independently)
+### ~~TODO-113: AI Insight Narration~~ DONE
+- Implemented via NarrativeSection.jsx in v0.5.1.0. AI generates narrative briefings with bold formatting, metric pills, and natural language insights. Stored in blueprints collection, displayed in AnalysisViewer. Supersedes the original _narration approach with a richer structured output.
 
 ### ~~TODO-114: Progressive Disclosure Sidebar~~ DONE
 - `useVisibleRoutes.js` hook implemented. Sidebar progressively reveals routes based on data availability and subscription tier.

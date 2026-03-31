@@ -140,6 +140,8 @@ DASHBOARD GENERATION RULES:
 NARRATIVE RULES:
 - Lead with the most important finding in one punchy sentence
 - Be specific: name accounts, SKUs, distributors, states when the data shows them
+- Use **account names** and **SKU names** in bold markdown when mentioning specific entities
+- Include specific percentage changes (e.g., +47%, -12%) when referencing metrics
 - Suggest 3 follow-up questions the user would want to ask
 - Recommend 3-5 specific, actionable items (e.g., "Call Total Wine Pasadena buyer", "Check inventory at SGWS Houston")
 - Keep the narrative to 2-3 short paragraphs
@@ -340,6 +342,10 @@ const ANALYSIS_TOOL = {
               description: "Account name if action is account-specific, null otherwise",
               oneOf: [{ type: "string" }, { type: "null" }],
             },
+            accountId: {
+              description: "CRM account ID if this action relates to a known account. Only include if the account appears in the CRM accounts list provided.",
+              oneOf: [{ type: "string" }, { type: "null" }],
+            },
           },
           required: ["text", "priority"],
         },
@@ -401,7 +407,12 @@ async function analyzeUploadForTenant({ tenantId, triggeredBy }) {
     tabs: m.template.tabs,
   }));
 
-  // 4. Build user message with data profile + sample rows
+  // 4. Load CRM accounts for action matching
+  // TOKEN BUDGET: Monitor if CRM account list grows past 100 accounts (~500 tokens). See TODO-403.
+  const accountsSnap = await db.collection("tenants").doc(tenantId).collection("accounts").get();
+  const crmAccounts = accountsSnap.docs.map((d) => ({ id: d.id, name: d.data().name }));
+
+  // 5. Build user message with data profile + sample rows
   const userMessage = JSON.stringify({
     dataProfile: {
       imports: dataProfile.imports.map((imp) => ({
@@ -426,6 +437,7 @@ async function analyzeUploadForTenant({ tenantId, triggeredBy }) {
       })),
       crossFileJoins: dataProfile.crossFileJoins,
     },
+    crmAccounts,
     matchedTemplates,
     instructions:
       "Analyze this wine/spirits supplier's data. Generate a dashboard blueprint " +
@@ -433,10 +445,12 @@ async function analyzeUploadForTenant({ tenantId, triggeredBy }) {
       "Also write a brief narrative analysis highlighting the most important findings, " +
       "suggest 3 follow-up questions, and recommend 3-5 specific actions. " +
       "Use the matched templates as inspiration but customize based on the actual data. " +
-      "Reference actual column names from the data profile in your aggregation specs.",
+      "Reference actual column names from the data profile in your aggregation specs. " +
+      "If an action relates to an account that matches one in the crmAccounts list, include the accountId. " +
+      "Do not guess — only include accountId for exact or very close name matches.",
   });
 
-  // 5. Call Claude Sonnet (single combined call)
+  // 6. Call Claude Sonnet (single combined call)
   const apiKey = anthropicApiKey.value();
   const response = await callClaude({
     apiKey,
@@ -490,6 +504,7 @@ async function analyzeUploadForTenant({ tenantId, triggeredBy }) {
           text: a.text,
           priority: a.priority || i + 1,
           relatedAccount: a.relatedAccount || null,
+          accountId: a.accountId || null,
         })),
       },
       dataSources: rawImports.map((r) => ({ fileName: r.fileName, fileType: r.fileType })),

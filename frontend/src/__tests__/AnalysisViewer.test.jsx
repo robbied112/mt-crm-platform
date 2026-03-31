@@ -18,6 +18,10 @@ vi.mock("../context/AuthContext", () => ({
   useAuth: vi.fn(() => ({ currentUser: { email: "test@test.com" }, tenantId: "t1" })),
 }));
 
+vi.mock("../context/CrmContext", () => ({
+  useCrm: vi.fn(() => ({ createTask: vi.fn() })),
+}));
+
 vi.mock("../utils/parseFile", () => ({
   default: vi.fn(),
 }));
@@ -25,6 +29,10 @@ vi.mock("../utils/parseFile", () => ({
 vi.mock("firebase/functions", () => ({
   getFunctions: vi.fn(() => ({})),
   httpsCallable: vi.fn(() => vi.fn()),
+}));
+
+vi.mock("react-router-dom", () => ({
+  useNavigate: vi.fn(() => vi.fn()),
 }));
 
 // Mock BlueprintRenderer to keep tests focused on AnalysisViewer logic
@@ -62,16 +70,15 @@ function setup({ blueprintOverrides = {}, dataOverrides = {} } = {}) {
 }
 
 describe("AnalysisViewer", () => {
-  it("shows upload prompt when no blueprint exists", () => {
+  it("shows empty state when no blueprint exists", () => {
     setup();
     expect(screen.getByText("Your AI Wine Analyst")).toBeInTheDocument();
-    // Multiple "drop" texts exist (intro paragraph + upload zone), check the heading
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Your AI Wine Analyst");
   });
 
   it("shows skeleton when loading", () => {
     setup({ blueprintOverrides: { loading: true } });
-    expect(screen.getByText("Analyzing your data...")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toBeInTheDocument();
   });
 
   it("renders narrative section when blueprint has narrative", () => {
@@ -82,7 +89,7 @@ describe("AnalysisViewer", () => {
           tabs: [{ id: "t1", label: "Overview", sections: [] }],
           narrative: {
             segments: [
-              { type: "text", content: "Your depletions are up 12% in California." },
+              { type: "text", content: "California depletions surged this quarter." },
               { type: "text", content: "Total Wine remains your largest account." },
             ],
             suggestedQuestions: ["Which accounts are declining?", "Best SKU?"],
@@ -95,17 +102,16 @@ describe("AnalysisViewer", () => {
       },
     });
 
-    // Narrative
-    expect(screen.getByText("Your depletions are up 12% in California.")).toBeInTheDocument();
+    // Narrative hook line
+    expect(screen.getByText(/California depletions surged this quarter/)).toBeInTheDocument();
     expect(screen.getByText("Total Wine remains your largest account.")).toBeInTheDocument();
 
-    // Suggested questions
-    expect(screen.getByText("Which accounts are declining?")).toBeInTheDocument();
-    expect(screen.getByText("Best SKU?")).toBeInTheDocument();
+    // Suggested questions (now buttons)
+    expect(screen.getByRole("button", { name: /Which accounts are declining/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Best SKU/ })).toBeInTheDocument();
 
     // Actions
     expect(screen.getByText("Call Total Wine buyer")).toBeInTheDocument();
-    expect(screen.getByText("Total Wine")).toBeInTheDocument();
 
     // Data sources
     expect(screen.getByText("idig_ca.xlsx")).toBeInTheDocument();
@@ -114,19 +120,28 @@ describe("AnalysisViewer", () => {
     expect(screen.getByTestId("blueprint-renderer")).toBeInTheDocument();
   });
 
-  it("shows upload zone even when blueprint exists (for adding more files)", () => {
+  it("shows compact upload strip when blueprint exists", () => {
     setup({
       blueprintOverrides: {
         hasBlueprint: true,
         blueprint: {
           tabs: [],
-          narrative: { segments: [{ type: "text", content: "Analysis." }], suggestedQuestions: [], actions: [] },
+          narrative: {
+            segments: [{ type: "text", content: "Analysis." }],
+            suggestedQuestions: [],
+            actions: [],
+          },
           dataSources: [],
         },
       },
     });
 
-    expect(screen.getByText(/Drop your distributor reports here/)).toBeInTheDocument();
+    expect(screen.getByText("Add more reports")).toBeInTheDocument();
+  });
+
+  it("shows empty-state upload strip when no blueprint", () => {
+    setup();
+    expect(screen.getByText("Drop your first reports here")).toBeInTheDocument();
   });
 
   it("renders without narrative gracefully", () => {
@@ -135,13 +150,11 @@ describe("AnalysisViewer", () => {
         hasBlueprint: true,
         blueprint: {
           tabs: [{ id: "t1", label: "Overview", sections: [] }],
-          // No narrative field
           dataSources: [],
         },
       },
     });
 
-    // Should still render dashboard without crashing
     expect(screen.getByTestId("blueprint-renderer")).toBeInTheDocument();
   });
 });
