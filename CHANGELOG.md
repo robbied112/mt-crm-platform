@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.5.1.0] - 2026-03-30
+
+### Added
+- Narrative formatting with visual weight — AI-generated text now renders **bold** account/SKU names and metric pills (+47% green, -12% red, 38 DOH neutral) instead of flat text
+- Actions rail with CRM task creation — numbered priority actions from AI analysis with "Create Task" modal (pre-filled title, account, due date) and "View Account" deep link when account ID matches
+- Suggested questions as interactive buttons (wired to chat panel in PR 3)
+- Compact upload strip replacing full-width hero zone — "Add more reports" when data exists, "Drop your first reports here" when empty
+- Step-based analysis progress indicator replacing generic spinner — shows file count, detected type, pattern-finding, and chart-building steps with checkmarks
+- Re-upload banner with crossfade transition when adding new data to existing analysis
+- Warm empty state naming supported distributors (iDig, VIP, SGWS, Breakthru, RNDC)
+- Responsive breakpoints: desktop narrative+sidebar, tablet stacked, mobile single-column
+- 56 new tests across 8 test files (NarrativeSection, ActionsRail, CreateTaskModal, SuggestedQuestions, UploadStrip, AnalysisSkeleton, BlueprintContext, AnalysisViewer)
+
+### Changed
+- AnalysisViewer refactored from 357 lines of inline components to composition of 6 extracted sub-components with BEM CSS classes
+- AI prompt now instructs Claude to use **bold markdown** for entity names and include specific percentage changes in narrative
+- Actions schema includes optional `accountId` field — analyzeUpload loads CRM accounts and passes names+IDs to Claude for action matching
+
+### Fixed
+- BlueprintContext activeTab not resetting when re-uploading with different data — new blueprint with different tab IDs would try to render a stale tab reference
+
 ## [0.5.0.1] - 2026-03-30
 
 ### Fixed
