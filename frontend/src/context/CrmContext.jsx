@@ -1,18 +1,20 @@
 /**
  * CRM Context — provides accounts, contacts, activities, tasks,
- * opportunities, and products with real-time Firestore listeners and CRUD.
+ * and opportunities with real-time Firestore listeners and CRUD.
+ *
+ * Product data (producers, master products, SKUs, portfolios) has moved
+ * to ProductContext.jsx with lazy subscriptions.
  */
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import {
   subscribeAccounts, subscribeContacts, subscribeActivities, subscribeTasks,
-  subscribeOpportunities, subscribeProducts,
+  subscribeOpportunities,
   createAccount as _createAccount, updateAccount as _updateAccount, deleteAccount as _deleteAccount,
   createContact as _createContact, updateContact as _updateContact, deleteContact as _deleteContact,
   logActivity as _logActivity, deleteActivity as _deleteActivity,
   createTask as _createTask, updateTask as _updateTask, deleteTask as _deleteTask,
   createOpportunity as _createOpportunity, updateOpportunity as _updateOpportunity, deleteOpportunity as _deleteOpportunity,
-  createProduct as _createProduct, updateProduct as _updateProduct, deleteProduct as _deleteProduct,
   loadNotes, addNote as _addNote, deleteNote as _deleteNote,
 } from "../services/crmService";
 import TENANT_CONFIG from "../config/tenant";
@@ -33,7 +35,6 @@ export default function CrmProvider({ children }) {
   const [activities, setActivities] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
-  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Real-time listeners
@@ -45,7 +46,7 @@ export default function CrmProvider({ children }) {
 
     setLoading(true);
     let loadCount = 0;
-    const total = 6;
+    const total = 5;
     const checkLoaded = () => { if (++loadCount >= total) setLoading(false); };
 
     const unsubs = [
@@ -54,7 +55,6 @@ export default function CrmProvider({ children }) {
       subscribeActivities(tenantId, (data) => { setActivities(data); checkLoaded(); }, checkLoaded),
       subscribeTasks(tenantId, (data) => { setTasks(data); checkLoaded(); }, checkLoaded),
       subscribeOpportunities(tenantId, (data) => { setOpportunities(data); checkLoaded(); }, checkLoaded),
-      subscribeProducts(tenantId, (data) => { setProducts(data); checkLoaded(); }, checkLoaded),
     ];
 
     return () => unsubs.forEach((u) => u());
@@ -249,20 +249,6 @@ export default function CrmProvider({ children }) {
     return { newStage, accountPromoted };
   }, [tenantId, currentUser, opportunities, accounts, getStagesForType, oppTypes]);
 
-  // ─── Product CRUD ─────────────────────────────────────────
-
-  const createProduct = useCallback(async (data) => {
-    return _createProduct(tenantId, data);
-  }, [tenantId]);
-
-  const updateProduct = useCallback(async (id, patch) => {
-    return _updateProduct(tenantId, id, patch);
-  }, [tenantId]);
-
-  const deleteProduct = useCallback(async (id) => {
-    return _deleteProduct(tenantId, id);
-  }, [tenantId]);
-
   // ─── Notes (lazy-loaded per account) ──────────────────────
 
   const fetchNotes = useCallback(async (accountId) => {
@@ -280,6 +266,15 @@ export default function CrmProvider({ children }) {
   const deleteNote = useCallback(async (accountId, noteId) => {
     return _deleteNote(tenantId, accountId, noteId);
   }, [tenantId]);
+
+  // DEPRECATED: products moved to ProductContext. Empty array preserves
+  // backward compat for consumers not yet migrated (OpportunityForm,
+  // Sidebar badge, DataImport, ProductSheetReviewStep).
+  // These will be migrated to useProducts() in the Portfolio UI rewrite.
+  const products = [];
+  const createProduct = async () => { throw new Error("Use ProductContext for product CRUD"); };
+  const updateProduct = async () => { throw new Error("Use ProductContext for product CRUD"); };
+  const deleteProduct = async () => { throw new Error("Use ProductContext for product CRUD"); };
 
   const value = {
     accounts, contacts, activities, tasks, opportunities, products, loading,

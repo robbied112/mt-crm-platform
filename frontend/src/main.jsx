@@ -7,6 +7,7 @@ import AuthProvider from "./context/AuthContext";
 import DataProvider from "./context/DataContext";
 import CrmProvider from "./context/CrmContext";
 import TeamProvider from "./context/TeamContext";
+import ProductProvider from "./context/ProductContext";
 import PricingProvider from "./context/PricingContext";
 import UploadProvider from "./context/UploadContext";
 
@@ -17,13 +18,15 @@ createRoot(document.getElementById("root")).render(
         <AuthProvider>
           <DataProvider>
             <CrmProvider>
-              <TeamProvider>
-                <PricingProvider>
-                  <UploadProvider>
-                    <App />
-                  </UploadProvider>
-                </PricingProvider>
-              </TeamProvider>
+              <ProductProvider>
+                <TeamProvider>
+                    <PricingProvider>
+                    <UploadProvider>
+                      <App />
+                    </UploadProvider>
+                  </PricingProvider>
+                </TeamProvider>
+              </ProductProvider>
             </CrmProvider>
           </DataProvider>
         </AuthProvider>
