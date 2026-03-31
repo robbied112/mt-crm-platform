@@ -61,7 +61,7 @@ describe("useVisibleRoutes aiAnalyst feature flag", () => {
     expect(analyticsKeys).not.toContain("revenue");
     expect(analyticsKeys).not.toContain("executive");
     expect(analyticsKeys).not.toContain("territory");
-    expect(analyticsKeys).not.toContain("reports");
+    expect(analyticsKeys).not.toContain("ai-reports");
 
     // Homepage briefing should still be visible
     expect(analyticsKeys).toContain("briefing");
