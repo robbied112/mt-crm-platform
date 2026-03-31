@@ -1296,6 +1296,20 @@ tbody tr:hover {
   border-color: var(--accent2);
 }
 
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #b02a37;
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .btn-small {
   padding: 6px 10px;
   font-size: 12px;
