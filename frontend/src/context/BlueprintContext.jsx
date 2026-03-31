@@ -59,7 +59,7 @@ export function BlueprintProvider({ children }) {
           setBlueprint(bpData);
           // Set first tab as active if none selected
           if (bpData.tabs?.length > 0) {
-            setActiveTab((prev) => prev || bpData.tabs[0].id);
+            setActiveTab(bpData.tabs[0].id);
           }
         } else {
           setBlueprint(null);
