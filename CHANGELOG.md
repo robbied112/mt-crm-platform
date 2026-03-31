@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.5.1.1] - 2026-03-31
+
+### Fixed
+- Race condition in ActionsRail: "Task created" checkmarks now use stable keys instead of array indices, surviving blueprint updates
+- Double-submit guard on CreateTaskModal using synchronous ref check before async call
+- Crossfade ref staleness in AnalysisViewer: prevBlueprintRef now updates inside the fade branch
+- Analysis step indicators reset on error instead of showing stale progress
+- Metric pill regex tightened: bare numbers like "3 accounts" no longer pillified, only sign-prefixed (+5 accounts) or comma-formatted (1,200 cases) numbers match unit words
+- Invalid timestamp handling in formatRelativeTime returns null instead of "Invalid Date"
+- Drag-and-drop file type validation on UploadStrip filters to .csv/.xlsx/.xls/.tsv
+- UploadStrip onChange handler now respects disabled prop
+- Added aria-disabled attribute to UploadStrip for screen reader support
+- Body scroll lock when CreateTaskModal is open prevents background scrolling
+- CRM accounts query in analyzeUpload capped at 200 to prevent token budget blowout
+
 ## [0.5.1.0] - 2026-03-30
 
 ### Added

@@ -7,6 +7,15 @@
 
 import { useState, useCallback, useRef } from "react";
 
+const ALLOWED_EXTENSIONS = [".csv", ".xlsx", ".xls", ".tsv"];
+
+function filterValidFiles(files) {
+  return files.filter((f) => {
+    const ext = f.name.slice(f.name.lastIndexOf(".")).toLowerCase();
+    return ALLOWED_EXTENSIONS.includes(ext);
+  });
+}
+
 export default function UploadStrip({ onFiles, hasData, disabled }) {
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef(null);
@@ -14,9 +23,9 @@ export default function UploadStrip({ onFiles, hasData, disabled }) {
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     setDragOver(false);
-    if (!disabled && e.dataTransfer.files.length > 0) {
-      onFiles(Array.from(e.dataTransfer.files));
-    }
+    if (disabled) return;
+    const valid = filterValidFiles(Array.from(e.dataTransfer.files));
+    if (valid.length > 0) onFiles(valid);
   }, [onFiles, disabled]);
 
   const handleClick = () => {
@@ -47,6 +56,7 @@ export default function UploadStrip({ onFiles, hasData, disabled }) {
       role="button"
       tabIndex={0}
       aria-label="Upload distributor reports"
+      aria-disabled={disabled || undefined}
     >
       <span className="upload-strip__icon" aria-hidden="true">+</span>
       <span className="upload-strip__text">
@@ -63,7 +73,7 @@ export default function UploadStrip({ onFiles, hasData, disabled }) {
         accept=".csv,.xlsx,.xls,.tsv"
         multiple
         onChange={(e) => {
-          if (e.target.files.length > 0) onFiles(Array.from(e.target.files));
+          if (!disabled && e.target.files.length > 0) onFiles(Array.from(e.target.files));
           e.target.value = "";
         }}
         style={{ display: "none" }}

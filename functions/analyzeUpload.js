@@ -407,9 +407,9 @@ async function analyzeUploadForTenant({ tenantId, triggeredBy }) {
     tabs: m.template.tabs,
   }));
 
-  // 4. Load CRM accounts for action matching
-  // TOKEN BUDGET: Monitor if CRM account list grows past 100 accounts (~500 tokens). See TODO-403.
-  const accountsSnap = await db.collection("tenants").doc(tenantId).collection("accounts").get();
+  // 4. Load CRM accounts for action matching (capped to prevent token budget blowout)
+  const ACCOUNT_LIMIT = 200;
+  const accountsSnap = await db.collection("tenants").doc(tenantId).collection("accounts").limit(ACCOUNT_LIMIT).get();
   const crmAccounts = accountsSnap.docs.map((d) => ({ id: d.id, name: d.data().name }));
 
   // 5. Build user message with data profile + sample rows
