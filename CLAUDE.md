@@ -24,6 +24,10 @@ Browser (React + Vite)
   |     -> teamService.js
   |     -> tenants/{tenantId}/invites, users (by tenantId)
   |
+  +-- BlueprintContext
+  |     -> tenants/{tenantId}/reportBlueprints
+  |     -> real-time AI analysis results for uploaded files
+  |
   +-- Components / Routes
         -> dashboard tabs, CRM pages, settings, import UI, join page
 
@@ -59,7 +63,7 @@ Firebase
 frontend/
   src/
     components/   UI + route-level screens
-    context/      AuthContext, DataContext, CrmContext, TeamContext
+    context/      AuthContext, DataContext, CrmContext, TeamContext, BlueprintContext
     services/     Firestore CRUD, CRM CRUD, team service, demo data
     utils/        Shared pipeline re-exports and browser helpers
     config/       Firebase config, tenant terminology, roles
@@ -126,7 +130,7 @@ cd functions && npm run test:integration
 - Component exports are centralized through barrel files like `frontend/src/components/index.js`.
 - Tenant business terminology comes from `frontend/src/config/tenant.js` and `tenantConfig.userRole`.
 - Shared data logic should live in `packages/pipeline/src/` first, then be copied into `functions/lib/pipeline/`.
-- `DataContext` is the read model for dashboard data. `CrmContext` is the read/write model for account-level CRM data. `TeamContext` manages team members and invites.
+- `DataContext` is the read model for dashboard data. `CrmContext` is the read/write model for account-level CRM data. `TeamContext` manages team members and invites. `BlueprintContext` streams real-time AI analysis blueprints for the analyst feature.
 - `tenantId` comes from `AuthContext`; avoid hardcoding tenant IDs.
 - Role-based permissions are defined centrally in `config/roles.js`. Use `usePermissions()` hook to check capabilities.
 
@@ -284,6 +288,7 @@ tenants/{tenantId}/contacts/{contactId}
 tenants/{tenantId}/tasks/{taskId}
 tenants/{tenantId}/activityLog/{logId}
 tenants/{tenantId}/uploads/{uploadId}
+tenants/{tenantId}/reportBlueprints/{blueprintId}
 tenants/{tenantId}/pendingMatches/{matchId}
 tenants/{tenantId}/learnedMappings/{hash}
 tenants/{tenantId}/importConfigs/{hash}
