@@ -106,4 +106,18 @@ describe("CreateTaskModal", () => {
     const inputs = dialog.querySelectorAll("input, textarea, button");
     expect(inputs.length).toBeGreaterThan(0);
   });
+
+  it("closes on backdrop click", () => {
+    const { onClose } = renderModal();
+    const backdrop = document.querySelector(".create-task-modal__backdrop");
+    fireEvent.click(backdrop);
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it("disables submit button when title is empty", () => {
+    renderModal();
+    const titleInput = screen.getByLabelText("Title");
+    fireEvent.change(titleInput, { target: { value: "   " } });
+    expect(screen.getByRole("button", { name: "Create" })).toBeDisabled();
+  });
 });
