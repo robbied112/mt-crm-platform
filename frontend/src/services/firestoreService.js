@@ -249,6 +249,7 @@ export async function deleteAllData(tenantId) {
     deleteFlatCollection("uploadAudit"),
     deleteFlatCollection("pendingMatches"),
     deleteFlatCollection("pendingWineMatches"),
+    deleteFlatCollection("briefings"),
   ]);
 }
 
