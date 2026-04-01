@@ -1,18 +1,17 @@
 import { describe, it, expect, vi } from "vitest";
 import { computeRepMetrics, computeTerritoryMetrics } from "../components/TeamRollup";
 
-// Mock matchesUserTerritory
+// Mock matchesUserTerritory (3rd arg is territories config)
 vi.mock("../utils/territory", () => ({
-  matchesUserTerritory: (state, user) => {
+  matchesUserTerritory: (state, user, territories) => {
     if (user.territory === "all") return true;
-    const territories = user.territories || {};
-    const states = territories[user.territory] || [];
+    const states = (territories || {})[user.territory] || [];
     return states.some((s) => s.toLowerCase() === (state || "").toLowerCase());
   },
 }));
 
 describe("computeRepMetrics", () => {
-  const baseMember = { id: "u1", displayName: "Alice", email: "alice@test.com", territory: "all" };
+  const baseMember = { uid: "u1", displayName: "Alice", email: "alice@test.com", territory: "all" };
 
   it("returns empty array for empty members", () => {
     expect(computeRepMetrics([], [], [], [], [], {})).toEqual([]);

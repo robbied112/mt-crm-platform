@@ -24,11 +24,10 @@ function computeRepMetrics(members, distScorecard, reorderData, activities, task
   return members.map((member) => {
     const userObj = {
       territory: member.territory || "all",
-      territories: territories,
     };
 
-    // Filter scorecard rows by rep's territory
-    const repRows = distScorecard.filter((d) => matchesUserTerritory(d.st, userObj));
+    // Filter scorecard rows by rep's territory (pass territories as 3rd arg)
+    const repRows = distScorecard.filter((d) => matchesUserTerritory(d.st, userObj, territories));
     const totalCases = repRows.reduce((s, d) => s + (d.ce || 0), 0);
     const accountCount = repRows.length;
 
@@ -39,25 +38,26 @@ function computeRepMetrics(members, distScorecard, reorderData, activities, task
 
     // Overdue reorders in territory
     const overdueReorders = reorderData.filter(
-      (r) => r.days > r.cycle && r.cycle > 0 && matchesUserTerritory(r.st, userObj)
+      (r) => r.days > r.cycle && r.cycle > 0 && matchesUserTerritory(r.st, userObj, territories)
     ).length;
 
-    // Activity count (last 7 days)
+    // Activity count (last 7 days) — TeamContext uses .uid not .id
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     const weekAgoStr = weekAgo.toISOString().slice(0, 10);
+    const memberId = member.uid || member.id;
     const recentActivities = activities.filter(
-      (a) => a.loggedBy === member.id && a.date >= weekAgoStr
+      (a) => a.loggedBy === memberId && a.date >= weekAgoStr
     ).length;
 
     // Open tasks
     const openTasks = tasks.filter(
-      (t) => t.createdBy === member.id && t.status !== "completed" && t.status !== "cancelled"
+      (t) => t.createdBy === memberId && t.status !== "completed" && t.status !== "cancelled"
     ).length;
 
     // Last activity date
     const lastActivity = activities
-      .filter((a) => a.loggedBy === member.id)
+      .filter((a) => a.loggedBy === memberId)
       .sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
 
     return {
@@ -157,7 +157,7 @@ export default function TeamRollup() {
       .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
       .slice(0, 10)
       .map((a) => {
-        const member = members?.find((m) => m.id === a.loggedBy);
+        const member = members?.find((m) => (m.uid || m.id) === a.loggedBy);
         return { ...a, memberName: member?.displayName || a.loggedByName || "Unknown" };
       });
   }, [activities, members]);
