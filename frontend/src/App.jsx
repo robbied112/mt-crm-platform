@@ -40,6 +40,7 @@ import CommandPalette from "./components/CommandPalette";
 import DataGate from "./components/DataGate";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { WelcomeState } from "./components/EmptyState";
+import TeamRollup from "./components/TeamRollup";
 import UpgradeModal from "./components/UpgradeModal";
 import SubscriptionBanner from "./components/SubscriptionBanner";
 import useFilters from "./hooks/useFilters";
@@ -65,7 +66,7 @@ function App() {
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [upgradeContext, setUpgradeContext] = useState(null);
   const { filters, updateFilter, clearAll } = useFilters();
-  const { currentUser, logout, isAdmin, authError, loading: authLoading } = useAuth();
+  const { currentUser, logout, isAdmin, isManager, authError, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const {
     distScorecard,
@@ -285,6 +286,8 @@ function App() {
                 element={
                   !availability.hasAnyData ? (
                     <WelcomeState />
+                  ) : (isAdmin || isManager) ? (
+                    <TeamRollup />
                   ) : (
                     <MyTerritory
                       user={currentUser}
