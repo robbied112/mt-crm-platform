@@ -147,6 +147,14 @@ export function BlueprintProvider({ children }) {
     [computedData, activeTab, filters, blueprint]
   );
 
+  const isFallbackSection = useCallback(
+    (sectionId) => {
+      const tabData = computedData[activeTab];
+      return tabData?.fallbackSections?.includes(sectionId) || false;
+    },
+    [computedData, activeTab]
+  );
+
   const value = {
     blueprint,
     computedData,
@@ -156,6 +164,7 @@ export function BlueprintProvider({ children }) {
     filters,
     setFilters,
     getFilteredData,
+    isFallbackSection,
     hasBlueprint: !!blueprint,
   };
 

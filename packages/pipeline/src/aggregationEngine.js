@@ -224,7 +224,7 @@ function computeSection(dataSource, rawDataBySource) {
     ...(groupBy || []),
     ...(Array.isArray(aggregation) ? aggregation.map((a) => a.field) : aggregation?.field ? [aggregation.field] : []),
     ...(sort?.field ? [sort.field] : []),
-    ...(Array.isArray(filter) ? filter.map((f) => f.field) : []),
+    ...(Array.isArray(filter) ? filter.map((f) => f.field) : filter?.field ? [filter.field] : []),
   ];
   const sampleRow = rows[0];
   const fieldMap = sampleRow ? buildFieldMap(sampleRow, allFields) : {};
@@ -239,7 +239,7 @@ function computeSection(dataSource, rawDataBySource) {
   const resolvedSort = sort?.field ? { ...sort, field: fieldMap[sort.field] || sort.field } : sort;
   const resolvedFilter = Array.isArray(filter)
     ? filter.map((f) => ({ ...f, field: fieldMap[f.field] || f.field }))
-    : filter;
+    : filter?.field ? { ...filter, field: fieldMap[filter.field] || filter.field } : filter;
 
   // Apply filters
   if (resolvedFilter) {
@@ -279,11 +279,16 @@ function computeBlueprint(blueprint, rawDataBySource) {
   const result = {};
 
   for (const tab of blueprint.tabs || []) {
-    const tabData = { sections: {} };
+    const tabData = { sections: {}, fallbackSections: [] };
 
     for (const section of tab.sections || []) {
       if (section.dataSource) {
+        // Track whether this section will use _all fallback
+        const sourceRows = rawDataBySource[section.dataSource.source] || [];
         tabData.sections[section.id] = computeSection(section.dataSource, rawDataBySource);
+        if (sourceRows.length === 0 && tabData.sections[section.id].length > 0) {
+          tabData.fallbackSections.push(section.id);
+        }
       }
 
       // KPI rows have items with individual aggregations
@@ -291,8 +296,10 @@ function computeBlueprint(blueprint, rawDataBySource) {
         tabData.sections[section.id] = section.items.map((item) => {
           if (!item.aggregation) return { label: item.label, value: null };
           let rows = rawDataBySource[item.aggregation.source] || [];
+          let usedFallback = false;
           if (rows.length === 0 && rawDataBySource._all) {
             rows = rawDataBySource._all;
+            usedFallback = true;
           }
           const fn = AGG_FNS[item.aggregation.fn];
           if (!fn || rows.length === 0) return { label: item.label, value: 0, format: item.format || "number" };
@@ -303,15 +310,23 @@ function computeBlueprint(blueprint, rawDataBySource) {
             label: item.label,
             value: fn(values),
             format: item.format || "number",
+            approximate: usedFallback || undefined,
           };
         });
+        if (tabData.sections[section.id].some((k) => k.approximate)) {
+          tabData.fallbackSections.push(section.id);
+        }
       }
 
       // Grid sections have nested sub-sections
       if (section.type === "grid" && section.sections) {
         for (const sub of section.sections) {
           if (sub.dataSource) {
+            const subSourceRows = rawDataBySource[sub.dataSource.source] || [];
             tabData.sections[sub.id] = computeSection(sub.dataSource, rawDataBySource);
+            if (subSourceRows.length === 0 && tabData.sections[sub.id].length > 0) {
+              tabData.fallbackSections.push(sub.id);
+            }
           }
         }
       }

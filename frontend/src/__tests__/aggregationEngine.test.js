@@ -296,6 +296,146 @@ describe("buildDataProfile", () => {
   });
 });
 
+// ─── _all fallback ──────────────────────────────────────────────────────────
+
+describe("_all fallback", () => {
+  it("falls back to _all pool when requested source has no rows", () => {
+    const rawDataBySource = {
+      depletion: [],
+      _all: SAMPLE_ROWS,
+    };
+
+    const result = computeSection({
+      source: "depletion",
+      groupBy: ["dist"],
+      aggregation: [{ fn: "sum", field: "qty", as: "totalCE" }],
+    }, rawDataBySource);
+
+    expect(result.length).toBe(3);
+    expect(result.find((r) => r.dist === "SGW").totalCE).toBe(225);
+  });
+
+  it("tracks fallbackSections in computeBlueprint when _all is used", () => {
+    const blueprint = {
+      tabs: [{
+        id: "tab1",
+        sections: [{
+          id: "chart1",
+          type: "chart",
+          dataSource: {
+            source: "inventory",
+            groupBy: ["dist"],
+            aggregation: [{ fn: "sum", field: "qty", as: "totalCE" }],
+          },
+        }],
+      }],
+    };
+
+    const result = computeBlueprint(blueprint, { _all: SAMPLE_ROWS });
+    expect(result.tab1.fallbackSections).toContain("chart1");
+    expect(result.tab1.sections.chart1.length).toBe(3);
+  });
+
+  it("marks KPI items as approximate when using _all fallback", () => {
+    const blueprint = {
+      tabs: [{
+        id: "tab1",
+        sections: [{
+          id: "kpis",
+          type: "kpiRow",
+          items: [
+            { label: "Total CE", aggregation: { fn: "sum", field: "qty", source: "inventory" } },
+          ],
+        }],
+      }],
+    };
+
+    const result = computeBlueprint(blueprint, { _all: SAMPLE_ROWS });
+    expect(result.tab1.sections.kpis[0].approximate).toBe(true);
+    expect(result.tab1.sections.kpis[0].value).toBe(475);
+    expect(result.tab1.fallbackSections).toContain("kpis");
+  });
+
+  it("does not mark fallback when source rows exist", () => {
+    const blueprint = {
+      tabs: [{
+        id: "tab1",
+        sections: [{
+          id: "chart1",
+          type: "chart",
+          dataSource: {
+            source: "depletion",
+            groupBy: ["dist"],
+            aggregation: [{ fn: "sum", field: "qty", as: "totalCE" }],
+          },
+        }],
+      }],
+    };
+
+    const result = computeBlueprint(blueprint, { depletion: SAMPLE_ROWS, _all: SAMPLE_ROWS });
+    expect(result.tab1.fallbackSections).toEqual([]);
+  });
+});
+
+// ─── resolveField / buildFieldMap ───────────────────────────────────────────
+
+describe("case-insensitive field resolution", () => {
+  it("resolves fields with different casing", () => {
+    const rows = [{ Account: "Total Wine", QTY: 100 }];
+    const result = computeSection({
+      source: "depletion",
+      groupBy: ["account"],
+      aggregation: [{ fn: "sum", field: "qty", as: "totalCE" }],
+    }, { depletion: rows });
+
+    expect(result.length).toBe(1);
+    expect(result[0].Account).toBe("Total Wine");
+    expect(result[0].totalCE).toBe(100);
+  });
+
+  it("handles single-object filter with field resolution", () => {
+    const rows = [
+      { Account: "Total Wine", State: "CA", Qty: 100 },
+      { Account: "BevMo", State: "TX", Qty: 50 },
+    ];
+    const result = computeSection({
+      source: "depletion",
+      filter: { field: "state", op: "eq", value: "CA" },
+    }, { depletion: rows });
+
+    expect(result.length).toBe(1);
+    expect(result[0].Account).toBe("Total Wine");
+  });
+});
+
+// ─── grid sub-sections ──────────────────────────────────────────────────────
+
+describe("grid sub-section fallback tracking", () => {
+  it("tracks fallback for grid sub-sections using _all", () => {
+    const blueprint = {
+      tabs: [{
+        id: "tab1",
+        sections: [{
+          id: "grid1",
+          type: "grid",
+          sections: [{
+            id: "sub1",
+            dataSource: {
+              source: "inventory",
+              groupBy: ["dist"],
+              aggregation: [{ fn: "sum", field: "qty", as: "totalCE" }],
+            },
+          }],
+        }],
+      }],
+    };
+
+    const result = computeBlueprint(blueprint, { _all: SAMPLE_ROWS });
+    expect(result.tab1.fallbackSections).toContain("sub1");
+    expect(result.tab1.sections.sub1.length).toBe(3);
+  });
+});
+
 // ─── extractFilterValues ────────────────────────────────────────────────────
 
 describe("extractFilterValues", () => {
