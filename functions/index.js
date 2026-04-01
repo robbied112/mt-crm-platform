@@ -27,6 +27,7 @@ const {
 const { validateInvite, joinTeam } = require("./team");
 const { sendInviteEmail } = require("./email");
 const { analyzeUpload } = require("./analyzeUpload");
+const { askAnalyst } = require("./askAnalyst");
 const { generateWeeklyDigest } = require("./digest");
 
 exports.stripeWebhook = stripeWebhook;
@@ -53,6 +54,7 @@ exports.validateInvite = validateInvite;
 exports.joinTeam = joinTeam;
 exports.sendInviteEmail = sendInviteEmail;
 exports.analyzeUpload = analyzeUpload;
+exports.askAnalyst = askAnalyst;
 exports.onSkuCreated = onSkuCreated;
 exports.onSkuDeleted = onSkuDeleted;
 exports.onMasterProductCreated = onMasterProductCreated;

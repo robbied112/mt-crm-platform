@@ -26,21 +26,32 @@ describe("SuggestedQuestions", () => {
     expect(onAsk).toHaveBeenCalledWith("What is my DOH?");
   });
 
-  it("handles empty questions array gracefully", () => {
-    const { container } = render(<SuggestedQuestions questions={[]} onAsk={vi.fn()} />);
-    expect(container.firstChild).toBeNull();
+  it("renders input and submit for empty questions", () => {
+    render(<SuggestedQuestions questions={[]} onAsk={vi.fn()} />);
+    expect(screen.getByPlaceholderText(/type your own/i)).toBeInTheDocument();
   });
 
-  it("handles null questions gracefully", () => {
-    const { container } = render(<SuggestedQuestions questions={null} onAsk={vi.fn()} />);
-    expect(container.firstChild).toBeNull();
+  it("renders input and submit for null questions", () => {
+    render(<SuggestedQuestions questions={null} onAsk={vi.fn()} />);
+    expect(screen.getByPlaceholderText(/type your own/i)).toBeInTheDocument();
   });
 
-  it("renders multiple questions", () => {
+  it("renders question buttons plus custom input", () => {
     const questions = ["Q1?", "Q2?", "Q3?"];
     render(<SuggestedQuestions questions={questions} onAsk={vi.fn()} />);
 
+    // 3 question buttons + 1 submit button
     const buttons = screen.getAllByRole("button");
-    expect(buttons).toHaveLength(3);
+    expect(buttons).toHaveLength(4);
+  });
+
+  it("submits custom question via input", () => {
+    const onAsk = vi.fn();
+    render(<SuggestedQuestions questions={[]} onAsk={onAsk} />);
+
+    const input = screen.getByPlaceholderText(/type your own/i);
+    fireEvent.change(input, { target: { value: "Custom question?" } });
+    fireEvent.click(screen.getByRole("button", { name: /ask question/i }));
+    expect(onAsk).toHaveBeenCalledWith("Custom question?");
   });
 });
