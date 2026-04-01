@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.6.1.0] - 2026-04-01
+
+### Added
+- Ask Analyst Q&A — click a suggested question or type your own to chat with the AI Wine Analyst about your data, with multi-turn conversation history
+- Custom question input on suggested questions section — always visible, even when no AI-generated questions exist
+
+### Changed
+- Data profile caching — analyzeUpload now saves a slimmed data profile alongside the blueprint so follow-up questions load instantly instead of re-reading all imports
+- SuggestedQuestions always renders (no longer returns null for empty/null questions)
+
+### Fixed
+- Restored column mapping logic in analyzeUpload that was accidentally removed, fixing fallback template dashboards
+- History validation on askAnalyst: type checks, length caps (2000 chars), max 6 turns
+
 ## [0.6.0.0] - 2026-03-31
 
 ### Added
