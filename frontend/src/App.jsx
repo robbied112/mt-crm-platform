@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import "./styles/Global.css";
 import {
@@ -160,6 +160,14 @@ function App() {
   // Join page renders outside the normal auth flow — accessible to both
   // logged-in and unauthenticated users (they can sign up inline).
   const location = useLocation();
+
+  // Only show the global FilterBar on analytics pages that actually consume filters
+  const FILTER_PATHS = useMemo(() => new Set([
+    "/depletions", "/distributors", "/inventory", "/account-insights",
+    "/opportunities", "/reorder", "/billbacks", "/territory",
+  ]), []);
+  const showFilterBar = FILTER_PATHS.has(location.pathname);
+
   if (location.pathname.startsWith("/join/")) {
     return <JoinPage />;
   }
@@ -245,21 +253,23 @@ function App() {
               }}
             />
             <ExecutiveSummary />
-            <FilterBar
-              filters={filters}
-              onFilterChange={updateFilter}
-              onClearAll={clearAll}
-              regions={Object.values(tenantConfig.regionMap || {}).filter(
-                (v, i, a) => a.indexOf(v) === i
-              )}
-              states={[...new Set(distScorecard.map((d) => d.st).filter((s) => s && s !== "--"))].sort()}
-              reps={[]}
-              products={skuBreakdown.length > 0
-                ? skuBreakdown.map((s) => s.sku).filter(Boolean)
-                : (tenantConfig.productLines || [])
-              }
-              distributors={[...new Set(distScorecard.map((d) => d.name).filter(Boolean))]}
-            />
+            {showFilterBar && (
+              <FilterBar
+                filters={filters}
+                onFilterChange={updateFilter}
+                onClearAll={clearAll}
+                regions={Object.values(tenantConfig.regionMap || {}).filter(
+                  (v, i, a) => a.indexOf(v) === i
+                )}
+                states={[...new Set(distScorecard.map((d) => d.st).filter((s) => s && s !== "--"))].sort()}
+                reps={[]}
+                products={skuBreakdown.length > 0
+                  ? skuBreakdown.map((s) => s.sku).filter(Boolean)
+                  : (tenantConfig.productLines || [])
+                }
+                distributors={[...new Set(distScorecard.map((d) => d.name).filter(Boolean))]}
+              />
+            )}
           </div>
 
           {/* Page content */}
