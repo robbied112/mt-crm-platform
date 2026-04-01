@@ -38,6 +38,8 @@ export default function AnalysisViewer() {
   const [showDiff, setShowDiff] = useState(false);
   const [recoveryFile, setRecoveryFile] = useState(null);
   const prevBlueprintRef = useRef(blueprint);
+  const dataRef = useRef(dataCtx);
+  dataRef.current = dataCtx;
 
   // Detect new blueprint arrival for crossfade
   useEffect(() => {
@@ -56,11 +58,13 @@ export default function AnalysisViewer() {
       setRecoveryFile(null);
 
       // Snapshot current data for "What Changed" diff (TODO-014)
+      // Use ref to avoid stale closure — dataCtx may not be in dependency array
+      const ctx = dataRef.current;
       setPreviousData({
-        distScorecard: dataCtx.distScorecard,
-        reorderData: dataCtx.reorderData,
-        inventoryData: dataCtx.inventoryData,
-        revenueByChannel: dataCtx.revenueByChannel,
+        distScorecard: ctx.distScorecard,
+        reorderData: ctx.reorderData,
+        inventoryData: ctx.inventoryData,
+        revenueByChannel: ctx.revenueByChannel,
       });
 
       setAnalyzing(true);

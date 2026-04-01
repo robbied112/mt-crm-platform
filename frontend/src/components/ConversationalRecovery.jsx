@@ -55,14 +55,16 @@ export default function ConversationalRecovery({
   const [selectedType, setSelectedType] = useState(detectedType || "unknown");
   const [step, setStep] = useState("columns"); // "columns" | "type" | "confirming"
 
-  // Build the corrected mapping
+  // Build the corrected mapping — remap column headers to new fields
   const correctedMapping = useMemo(() => {
     const result = { ...(currentMapping || {}) };
-    for (const [field, column] of Object.entries(corrections)) {
-      if (column === "_skip") {
-        delete result[field];
-      } else {
-        result[field] = column;
+    for (const [originalField, newField] of Object.entries(corrections)) {
+      const columnHeader = (currentMapping || {})[originalField];
+      // Remove old field mapping
+      delete result[originalField];
+      // Add new field mapping (unless skipping)
+      if (newField !== "_skip" && columnHeader) {
+        result[newField] = columnHeader;
       }
     }
     return result;

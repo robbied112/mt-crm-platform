@@ -128,12 +128,12 @@ function TrendBadge({ value }) {
 export default function TeamRollup() {
   const navigate = useNavigate();
   const { userProfile } = useAuth();
-  const { distScorecard, reorderData, availability } = useData();
+  const { distScorecard, reorderData, availability, tenantConfig } = useData();
   const { activities, tasks } = useCrm();
   const { members } = useTeam();
 
-  // Get territories from tenant
-  const territories = userProfile?.territories || {};
+  // Get territories from tenant config (saved via TeamSetupWizard)
+  const territories = tenantConfig?.territories || {};
 
   const repMetrics = useMemo(
     () => computeRepMetrics(members || [], distScorecard || [], reorderData || [], activities || [], tasks || [], territories),
