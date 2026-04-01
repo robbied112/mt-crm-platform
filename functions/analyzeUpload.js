@@ -385,7 +385,11 @@ async function analyzeUploadForTenant({ tenantId, triggeredBy }) {
     return { status: "no_data", message: "No imports found. Upload a file first." };
   }
 
-  // 2. Load all import rows (reuse pattern from rebuild.js)
+  // 2. Load all import rows and apply mapping to normalize column names.
+  // Raw rows use original spreadsheet headers ("Distributor Name", "Cases", etc.)
+  // but templates and aggregation specs reference semantic field names ("dist", "qty").
+  // Applying the mapping here ensures both AI-generated and fallback blueprints
+  // can find data in computeSection.
   const rawImports = await Promise.all(
     importsSnap.docs.map(async (importDoc) => {
       const meta = importDoc.data();
@@ -394,14 +398,45 @@ async function analyzeUploadForTenant({ tenantId, triggeredBy }) {
         ["tenants", tenantId, "imports", importDoc.id],
         { adapter: firestoreAdapter, emptyValue: [], preferRows: true }
       );
+
+      // Apply mapping: { semanticField: originalColumnName } → rename row keys
+      const mapping = meta.mapping || {};
+      const hasMapping = Object.keys(mapping).length > 0;
+      let mappedRows = rows;
+      let headers = meta.originalHeaders || [];
+
+      if (hasMapping) {
+        // Build reverse lookup: originalColumnName → semanticField
+        const reverseMap = {};
+        for (const [semantic, original] of Object.entries(mapping)) {
+          if (typeof original === "string") reverseMap[original] = semantic;
+        }
+
+        mappedRows = rows.map((row) => {
+          const mapped = {};
+          for (const [key, value] of Object.entries(row)) {
+            const semanticKey = reverseMap[key];
+            if (semanticKey) {
+              mapped[semanticKey] = value;
+            }
+            // Keep original key too so no data is lost
+            mapped[key] = value;
+          }
+          return mapped;
+        });
+
+        // Include both semantic and original headers for the data profile
+        headers = [...new Set([...Object.keys(mapping), ...headers])];
+      }
+
       return {
         fileName: meta.fileName || importDoc.id,
         fileType: meta.type || "unknown",
         type: meta.type || "unknown",
-        headers: meta.originalHeaders || (meta.mapping ? Object.values(meta.mapping).filter((v) => typeof v === "string") : []),
+        headers,
         columnTypes: meta.columnTypes || {},
-        rows,
-        rowCount: rows.length,
+        rows: mappedRows,
+        rowCount: mappedRows.length,
       };
     })
   );
