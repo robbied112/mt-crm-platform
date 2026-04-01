@@ -48,6 +48,12 @@ Cloud Functions (Node 22)
     -> accounts.js
     -> sync.js
     -> stripe.js
+    -> billing.js
+    -> team.js
+    -> email.js
+    -> analyzeUpload.js
+    -> digest.js
+    -> comprehend.js
     -> helpers.js
 
 Firebase
@@ -78,6 +84,9 @@ functions/
   team.js        Invite validation + joinTeam (transactional)
   email.js       Invite emails via Resend API
   billing.js     Checkout + portal sessions
+  digest.js      Weekly digest generation + email delivery via Resend
+  analyzeUpload.js AI analysis pipeline for uploaded files
+  comprehend.js  AI report comprehension + integration planning
   helpers.js     Admin init, secrets, shared function helpers
   lib/pipeline/  Copy of packages/pipeline/src for deploy/runtime
 
@@ -236,6 +245,7 @@ users/{uid}
   managerId         (uid of reporting manager, optional)
   joinedAt
   invitedBy
+  digestOptOut      (boolean, opt out of weekly digest emails)
 
 tenants/{tenantId}
   companyName
@@ -295,6 +305,10 @@ tenants/{tenantId}/importConfigs/{hash}
 tenants/{tenantId}/syncState/{doc}
 tenants/{tenantId}/syncHistory/{doc}
 tenants/{tenantId}/rebuildHistory/{doc}
+tenants/{tenantId}/digests/{digestId}
+  text              AI-generated digest summary
+  weekOf            Human-readable week label
+  createdAt
 tenants/{tenantId}/secrets/{doc}  (server-only)
 ```
 
