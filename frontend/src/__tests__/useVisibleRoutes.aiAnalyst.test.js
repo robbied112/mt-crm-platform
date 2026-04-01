@@ -9,7 +9,7 @@ import useVisibleRoutes from "../hooks/useVisibleRoutes";
 const ROUTES = [
   { key: "briefing", path: "/", label: "Briefing", section: null },
   { key: "depletions", path: "/depletions", label: "Depletions", dataKey: "depletions", section: null },
-  { key: "distributors", path: "/distributors", label: "Distributors", dataKey: "distributorHealth", section: null },
+  { key: "distributor-detail", path: "/distributors", label: "Distributors", dataKey: "distributorHealth", section: null },
   { key: "inventory", path: "/inventory", label: "Inventory", dataKey: "inventory", section: null },
   { key: "account-insights", path: "/account-insights", label: "Account Insights", dataKey: "accounts", section: null },
   { key: "opportunities", path: "/opportunities", label: "Opportunities", dataKey: "opportunities", section: null },
@@ -53,7 +53,7 @@ describe("useVisibleRoutes aiAnalyst feature flag", () => {
 
     // Static analytics routes should be hidden
     expect(analyticsKeys).not.toContain("depletions");
-    expect(analyticsKeys).not.toContain("distributors");
+    expect(analyticsKeys).not.toContain("distributor-detail");
     expect(analyticsKeys).not.toContain("inventory");
     expect(analyticsKeys).not.toContain("account-insights");
     expect(analyticsKeys).not.toContain("opportunities");
@@ -99,7 +99,7 @@ describe("useVisibleRoutes aiAnalyst feature flag", () => {
 
     // All static analytics routes should be visible
     expect(analyticsKeys).toContain("depletions");
-    expect(analyticsKeys).toContain("distributors");
+    expect(analyticsKeys).toContain("distributor-detail");
     expect(analyticsKeys).toContain("inventory");
     expect(analyticsKeys).toContain("executive");
   });
