@@ -217,7 +217,8 @@ export async function deleteUploadLog(tenantId, uploadId) {
 // ─── Delete All Data ─────────────────────────────────────────
 
 /**
- * Delete all tenant data: datasets (data/ + views/), imports, uploads, and summary.
+ * Delete all tenant data: datasets (data/ + views/), imports, uploads, blueprints,
+ * digests, learned mappings, import configs, sync/rebuild history, and summary.
  * Does NOT delete config, accounts, contacts, tasks, activities, opportunities, or products
  * — those are handled by the caller via CrmContext.
  */
@@ -241,6 +242,23 @@ export async function deleteAllData(tenantId) {
     await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
   }
 
+  // Delete reportBlueprints with nested computedData/{tab}/rows/{chunk} subcollections
+  async function deleteBlueprints() {
+    const bpColRef = collection(db, "tenants", tenantId, "reportBlueprints");
+    const bpSnap = await getDocs(bpColRef);
+    await Promise.all(bpSnap.docs.map(async (bpDoc) => {
+      const cdRef = collection(db, "tenants", tenantId, "reportBlueprints", bpDoc.id, "computedData");
+      const cdSnap = await getDocs(cdRef);
+      await Promise.all(cdSnap.docs.map(async (cdDoc) => {
+        const rowsRef = collection(db, "tenants", tenantId, "reportBlueprints", bpDoc.id, "computedData", cdDoc.id, "rows");
+        const rowsSnap = await getDocs(rowsRef);
+        await Promise.all(rowsSnap.docs.map((r) => deleteDoc(r.ref)));
+        await deleteDoc(cdDoc.ref);
+      }));
+      await deleteDoc(bpDoc.ref);
+    }));
+  }
+
   await Promise.all([
     deleteChunkedCollection("data"),
     deleteChunkedCollection("views"),
@@ -250,6 +268,13 @@ export async function deleteAllData(tenantId) {
     deleteFlatCollection("pendingMatches"),
     deleteFlatCollection("pendingWineMatches"),
     deleteFlatCollection("briefings"),
+    deleteFlatCollection("digests"),
+    deleteFlatCollection("learnedMappings"),
+    deleteFlatCollection("importConfigs"),
+    deleteFlatCollection("syncState"),
+    deleteFlatCollection("syncHistory"),
+    deleteFlatCollection("rebuildHistory"),
+    deleteBlueprints(),
   ]);
 }
 

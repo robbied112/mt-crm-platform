@@ -270,6 +270,13 @@ describe("deleteAllData", () => {
     mockDocs.set("tenants/t1/uploadAudit/aud1", { action: "upload" });
     mockDocs.set("tenants/t1/pendingMatches/pm1", { status: "pending" });
     mockDocs.set("tenants/t1/pendingWineMatches/pwm1", { status: "pending" });
+    // Seed additional flat collections
+    mockDocs.set("tenants/t1/digests/d1", { text: "digest" });
+    mockDocs.set("tenants/t1/learnedMappings/lm1", { mapping: {} });
+    mockDocs.set("tenants/t1/importConfigs/ic1", { reportType: "depletion" });
+    mockDocs.set("tenants/t1/syncState/ss1", { lastSync: "2026-01-01" });
+    mockDocs.set("tenants/t1/syncHistory/sh1", { result: "ok" });
+    mockDocs.set("tenants/t1/rebuildHistory/rh1", { status: "done" });
 
     await deleteAllData("t1");
 
@@ -286,6 +293,31 @@ describe("deleteAllData", () => {
     expect(mockDocs.has("tenants/t1/uploadAudit/aud1")).toBe(false);
     expect(mockDocs.has("tenants/t1/pendingMatches/pm1")).toBe(false);
     expect(mockDocs.has("tenants/t1/pendingWineMatches/pwm1")).toBe(false);
+    // Additional flat collections should be gone
+    expect(mockDocs.has("tenants/t1/digests/d1")).toBe(false);
+    expect(mockDocs.has("tenants/t1/learnedMappings/lm1")).toBe(false);
+    expect(mockDocs.has("tenants/t1/importConfigs/ic1")).toBe(false);
+    expect(mockDocs.has("tenants/t1/syncState/ss1")).toBe(false);
+    expect(mockDocs.has("tenants/t1/syncHistory/sh1")).toBe(false);
+    expect(mockDocs.has("tenants/t1/rebuildHistory/rh1")).toBe(false);
+  });
+
+  it("deletes reportBlueprints with nested computedData and rows", async () => {
+    // Blueprint active pointer
+    mockDocs.set("tenants/t1/reportBlueprints/active", { blueprintId: "bp1" });
+    // Blueprint doc
+    mockDocs.set("tenants/t1/reportBlueprints/bp1", { tabs: [{ id: "exec" }] });
+    // Computed data tab
+    mockDocs.set("tenants/t1/reportBlueprints/bp1/computedData/exec", { chunked: true });
+    // Computed data rows
+    mockDocs.set("tenants/t1/reportBlueprints/bp1/computedData/exec/rows/0", { items: [{ v: 1 }] });
+
+    await deleteAllData("t1");
+
+    expect(mockDocs.has("tenants/t1/reportBlueprints/active")).toBe(false);
+    expect(mockDocs.has("tenants/t1/reportBlueprints/bp1")).toBe(false);
+    expect(mockDocs.has("tenants/t1/reportBlueprints/bp1/computedData/exec")).toBe(false);
+    expect(mockDocs.has("tenants/t1/reportBlueprints/bp1/computedData/exec/rows/0")).toBe(false);
   });
 
   it("succeeds when collections are already empty", async () => {
