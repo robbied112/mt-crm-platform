@@ -27,6 +27,7 @@ const {
 const { validateInvite, joinTeam } = require("./team");
 const { sendInviteEmail } = require("./email");
 const { analyzeUpload } = require("./analyzeUpload");
+const { generateWeeklyDigest } = require("./digest");
 
 exports.stripeWebhook = stripeWebhook;
 exports.aiMapper = aiMapper;
@@ -56,3 +57,4 @@ exports.onSkuCreated = onSkuCreated;
 exports.onSkuDeleted = onSkuDeleted;
 exports.onMasterProductCreated = onMasterProductCreated;
 exports.onMasterProductDeleted = onMasterProductDeleted;
+exports.generateWeeklyDigest = generateWeeklyDigest;

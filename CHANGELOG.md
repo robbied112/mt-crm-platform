@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.6.0.0] - 2026-03-31
+
+### Added
+- Import comparison diff ("What Changed") — after re-uploading data, a dismissible card highlights new/lost accounts, volume changes, overdue reorder shifts, inventory alerts, and revenue movement
+- Weekly digest email — scheduled Cloud Function (Sundays 6 AM Pacific) generates an AI-written summary of your week's data via Claude Sonnet and delivers it through Resend to all team members
+- Conversational error recovery — when the AI mapper is less than 70% confident on a column, a chat-style UI asks you to confirm uncertain mappings with sample data previews and dropdown corrections; learned mappings are saved for future auto-detection
+- Account-level dashboard metrics — volume trend, last order date, reorder status, and health score cards on every CRM account detail page, with fuzzy name matching against view data
+- Manager intelligence dashboard — team KPIs, per-rep performance table with territory filtering, territory comparison bars, AI-generated callouts (inactive reps, overdue clusters, territory gaps), and recent team activity feed
+
+### Fixed
+- HTML entity escaping on AI-generated digest email content to prevent trust boundary violations
+
 ## [0.5.1.1] - 2026-03-31
 
 ### Fixed
