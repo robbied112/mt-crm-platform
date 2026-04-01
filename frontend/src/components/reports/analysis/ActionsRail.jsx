@@ -20,7 +20,16 @@ export default function ActionsRail({ actions }) {
   const [taskModalAction, setTaskModalAction] = useState(null);
   const [createdTasks, setCreatedTasks] = useState(new Set());
 
-  if (!actions?.length) return null;
+  if (!actions?.length) {
+    return (
+      <div className="actions-rail actions-rail--empty">
+        <p className="actions-rail__label">DO NEXT</p>
+        <p className="actions-rail__empty-text">
+          Upload more data for personalized recommendations on your top accounts.
+        </p>
+      </div>
+    );
+  }
 
   const handleTaskCreated = (key) => {
     setCreatedTasks((prev) => new Set([...prev, key]));

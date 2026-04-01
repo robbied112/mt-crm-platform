@@ -108,7 +108,16 @@ function formatRelativeTime(timestamp) {
 }
 
 export default function NarrativeSection({ narrative, updatedAt }) {
-  if (!narrative?.segments?.length) return null;
+  if (!narrative?.segments?.length) {
+    return (
+      <div className="narrative-section narrative-section--empty" aria-live="polite">
+        <p className="narrative-section__label">AI ANALYSIS</p>
+        <p className="narrative-section__empty-text">
+          Your analyst is still processing your data. Upload more reports or check back shortly for insights.
+        </p>
+      </div>
+    );
+  }
 
   const hookLine = narrative.segments[0]?.content || "";
   const bodySegments = narrative.segments.slice(1);
