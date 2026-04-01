@@ -13,6 +13,7 @@ import LogActivityModal from "./LogActivityModal";
 import TaskForm from "./TaskForm";
 import OpportunityForm from "./OpportunityForm";
 import { formatCurrency } from "../utils/formatting";
+import AccountMetricsCard from "./AccountMetricsCard";
 
 const TABS = ["overview", "opportunities", "activity", "orders", "contacts", "tasks", "notes"];
 const STATUS_COLORS = { active: "badge-green", prospect: "badge-blue", inactive: "badge-yellow", churned: "badge-orange" };
@@ -129,6 +130,9 @@ export default function AccountDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Data-derived metrics (TODO-400) */}
+      <AccountMetricsCard accountName={account.name} />
 
       {/* Tabs */}
       <div className="tabs" style={{ marginTop: 16 }}>
