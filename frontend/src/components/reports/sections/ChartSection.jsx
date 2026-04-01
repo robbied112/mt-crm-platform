@@ -84,8 +84,9 @@ function buildChartConfig(section, data) {
 }
 
 export default function ChartSection({ section }) {
-  const { getFilteredData } = useBlueprint();
+  const { getFilteredData, isFallbackSection } = useBlueprint();
   const data = getFilteredData(section.id);
+  const approximate = isFallbackSection(section.id);
 
   const chartConfig = useMemo(
     () => buildChartConfig(section, data),
@@ -97,8 +98,9 @@ export default function ChartSection({ section }) {
       <div className="blueprint-section blueprint-section--chart blueprint-section--empty">
         <div className="chart-title">{section.title}</div>
         <p className="blueprint-no-data">
-          No data matched this chart.
-          {section.dataSource?.source ? ` Looking for "${section.dataSource.source}" data.` : ""}
+          {section.dataSource?.source
+            ? `This chart needs ${section.dataSource.source} data. Try uploading a report from your distributor portal.`
+            : "No matching data found. Upload more reports to populate this chart."}
         </p>
       </div>
     );
@@ -106,6 +108,11 @@ export default function ChartSection({ section }) {
 
   return (
     <div className="blueprint-section blueprint-section--chart">
+      {approximate && (
+        <span className="blueprint-approximate-badge" title="Using combined data sources — upload a matching report for precise results">
+          ~ approximate
+        </span>
+      )}
       <ChartPanel
         title={section.title}
         chartConfig={chartConfig}

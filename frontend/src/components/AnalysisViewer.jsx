@@ -40,6 +40,7 @@ export default function AnalysisViewer() {
   const [recoveryFile, setRecoveryFile] = useState(null);
   const [askQuestion, setAskQuestion] = useState(null);
   const [askKey, setAskKey] = useState(0);
+  const [completeSummary, setCompleteSummary] = useState(null);
   const prevBlueprintRef = useRef(blueprint);
   const dataRef = useRef(dataCtx);
   dataRef.current = dataCtx;
@@ -54,6 +55,13 @@ export default function AnalysisViewer() {
     }
     prevBlueprintRef.current = blueprint;
   }, [blueprint]);
+
+  // Auto-dismiss the complete summary card after 1.5s
+  useEffect(() => {
+    if (!completeSummary) return;
+    const timer = setTimeout(() => setCompleteSummary(null), 1600);
+    return () => clearTimeout(timer);
+  }, [completeSummary]);
 
   const handleFiles = useCallback(
     async (files) => {
@@ -197,6 +205,13 @@ export default function AnalysisViewer() {
         // Step 4 done — blueprint will arrive via real-time listener
         setAnalysisSteps((prev) => prev.map((s) => ({ ...s, done: true, active: false })));
 
+        // Flash summary card before revealing dashboard
+        setCompleteSummary({
+          fileCount: files.length,
+          totalRows,
+          type: lastType,
+        });
+
         // Show "What Changed" diff (TODO-014)
         setShowDiff(true);
       } catch (err) {
@@ -311,10 +326,18 @@ export default function AnalysisViewer() {
 
   return (
     <div className="analysis-viewer">
-      {/* Re-upload banner */}
-      {isReUpload && (
-        <div className="analysis-viewer__banner" role="status">
-          Re-analyzing with new data...
+      {/* Re-upload progress bar */}
+      {isReUpload && analysisSteps.length > 0 && (
+        <div className="analysis-viewer__progress" role="status">
+          <div className="analysis-viewer__progress-track">
+            <div
+              className="analysis-viewer__progress-fill"
+              style={{ width: `${(analysisSteps.filter((s) => s.done).length / analysisSteps.length) * 100}%` }}
+            />
+          </div>
+          <p className="analysis-viewer__progress-label">
+            {analysisSteps.find((s) => s.active)?.label || analysisSteps[analysisSteps.length - 1]?.label}
+          </p>
         </div>
       )}
 
@@ -326,6 +349,18 @@ export default function AnalysisViewer() {
       {/* Show skeleton only on first analysis (no existing blueprint) */}
       {analyzing && !hasBlueprint && <AnalysisSkeleton steps={analysisSteps} />}
 
+      {/* Analysis complete summary card */}
+      {completeSummary && (
+        <div className="analysis-viewer__complete-card" role="status">
+          <span className="analysis-viewer__complete-check">&#10003;</span>
+          <span className="analysis-viewer__complete-text">
+            Analyzed {completeSummary.fileCount} file{completeSummary.fileCount > 1 ? "s" : ""}{" "}
+            &middot; {completeSummary.totalRows.toLocaleString()} rows
+            {completeSummary.type !== "unknown" && ` \u00B7 ${completeSummary.type}`}
+          </span>
+        </div>
+      )}
+
       {/* "What Changed" diff (TODO-014) */}
       {showDiff && previousData && (
         <ImportDiffSummary
@@ -334,7 +369,10 @@ export default function AnalysisViewer() {
         />
       )}
 
-      {/* Narrative + sidebar layout */}
+      {/* Dashboard first — returning users want their charts */}
+      {hasBlueprint && !analyzing && <BlueprintRenderer />}
+
+      {/* Narrative + sidebar layout below dashboard */}
       {hasBlueprint && (
         <div
           className={`analysis-viewer__layout ${fadeIn ? "analysis-viewer__layout--fade" : ""}`}
@@ -363,9 +401,6 @@ export default function AnalysisViewer() {
           </div>
         </div>
       )}
-
-      {/* Dashboard — existing BlueprintRenderer, zero changes */}
-      {hasBlueprint && !analyzing && <BlueprintRenderer />}
     </div>
   );
 }
