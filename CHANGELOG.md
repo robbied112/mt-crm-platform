@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.6.2.0] - 2026-04-01
+
+### Added
+- Approximate data badges on charts and KPIs when the aggregation engine uses a fallback data source, so users know when numbers are estimates
+- Analysis complete summary card with smooth fade-out after re-upload finishes
+- Compact progress bar with step labels during re-upload analysis
+- Test coverage for aggregation engine fallback paths, fuzzy field resolution, and grid sub-sections (+7 tests)
+
+### Changed
+- Narrative section and Actions Rail redesigned with tighter visual hierarchy and clearer structure
+- Conversational Recovery component refined with improved card layout and better visual balance
+
+### Fixed
+- Single-object filter field names now resolved through case-insensitive matching (same as array filters)
+- Non-array filter field collection for fuzzy resolution in aggregation engine
+- Removed always-true guard in SuggestedQuestions that prevented default questions from rendering
+- Animation/timeout race on complete summary card (JS timeout now outlasts CSS fade)
+
 ## [0.6.1.0] - 2026-04-01
 
 ### Added
