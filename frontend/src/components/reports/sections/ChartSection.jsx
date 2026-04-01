@@ -96,7 +96,10 @@ export default function ChartSection({ section }) {
     return (
       <div className="blueprint-section blueprint-section--chart blueprint-section--empty">
         <div className="chart-title">{section.title}</div>
-        <p className="blueprint-no-data">No data available</p>
+        <p className="blueprint-no-data">
+          No data matched this chart.
+          {section.dataSource?.source ? ` Looking for "${section.dataSource.source}" data.` : ""}
+        </p>
       </div>
     );
   }

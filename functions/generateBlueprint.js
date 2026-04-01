@@ -422,15 +422,24 @@ async function generateFallbackBlueprint({ tenantId, rawImports, templateMatches
 /**
  * Build rawDataBySource from import rows, grouping by file type.
  * Keys are source types (depletion, inventory, etc).
+ * Also builds an _all pool so computeSection can fall back when source type
+ * detection was wrong or returned "unknown".
  */
 function buildRawDataBySource(rawImports) {
   const bySource = {};
+  const allRows = [];
   for (const imp of rawImports) {
     const source = normalizeSourceType(imp.fileType || imp.type || "unknown");
     if (!bySource[source]) bySource[source] = [];
     if (imp.rows) {
       bySource[source].push(...imp.rows);
+      allRows.push(...imp.rows);
     }
+  }
+  // _all pool: fallback when a blueprint references a source that doesn't match any import type.
+  // Only useful when there's a single source type or type detection returned "unknown".
+  if (allRows.length > 0) {
+    bySource._all = allRows;
   }
   return bySource;
 }
