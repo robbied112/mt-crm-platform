@@ -16,20 +16,27 @@ import UploadStrip from "./reports/analysis/UploadStrip";
 import AnalysisSkeleton from "./reports/analysis/AnalysisSkeleton";
 import SuggestedQuestions from "./reports/analysis/SuggestedQuestions";
 import ActionsRail from "./reports/analysis/ActionsRail";
+import ImportDiffSummary from "./ImportDiffSummary";
+import ConversationalRecovery from "./ConversationalRecovery";
 import parseFile from "../utils/parseFile";
 import { autoDetectMapping, detectUploadType } from "../utils/semanticMapper";
+import { saveLearnedMapping } from "../services/firestoreService";
 import { getFunctions, httpsCallable } from "firebase/functions";
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function AnalysisViewer() {
   const { blueprint, hasBlueprint, loading } = useBlueprint();
-  const { importDatasets } = useData();
+  const dataCtx = useData();
+  const { importDatasets } = dataCtx;
   const { tenantId } = useAuth();
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState("");
   const [analysisSteps, setAnalysisSteps] = useState([]);
   const [fadeIn, setFadeIn] = useState(false);
+  const [previousData, setPreviousData] = useState(null);
+  const [showDiff, setShowDiff] = useState(false);
+  const [recoveryFile, setRecoveryFile] = useState(null);
   const prevBlueprintRef = useRef(blueprint);
 
   // Detect new blueprint arrival for crossfade
@@ -46,6 +53,16 @@ export default function AnalysisViewer() {
   const handleFiles = useCallback(
     async (files) => {
       setError("");
+      setRecoveryFile(null);
+
+      // Snapshot current data for "What Changed" diff (TODO-014)
+      setPreviousData({
+        distScorecard: dataCtx.distScorecard,
+        reorderData: dataCtx.reorderData,
+        inventoryData: dataCtx.inventoryData,
+        revenueByChannel: dataCtx.revenueByChannel,
+      });
+
       setAnalyzing(true);
       setAnalysisSteps([
         {
@@ -84,10 +101,32 @@ export default function AnalysisViewer() {
 
           totalRows += parsed.rows.length;
 
-          // Detect type so analyzeUpload can route rows to the correct source bucket
-          const { mapping: autoMap } = autoDetectMapping(parsed.headers, parsed.rows);
+          // Detect type and check confidence for conversational recovery (TODO-120)
+          const { mapping: autoMap, confidence: mappingConfidence } = autoDetectMapping(parsed.headers, parsed.rows);
           const { type: detectedType } = detectUploadType(parsed.headers, parsed.rows, autoMap);
           lastType = detectedType || "unknown";
+
+          // Check for low-confidence columns
+          const uncertainColumns = Object.entries(mappingConfidence || {})
+            .filter(([, conf]) => conf < 0.70)
+            .map(([field, conf]) => ({
+              field,
+              column: autoMap?.[field] || field,
+              confidence: conf,
+            }));
+
+          if (uncertainColumns.length > 0 && files.length === 1) {
+            // Show conversational recovery UI for single-file uploads
+            setRecoveryFile({
+              file,
+              parsed,
+              uncertainColumns,
+              currentMapping: autoMap,
+              detectedType,
+            });
+            setAnalyzing(false);
+            return;
+          }
 
           // Save import with skipRebuild + skipAnalysis (batch pattern)
           await importDatasets(
@@ -150,6 +189,9 @@ export default function AnalysisViewer() {
 
         // Step 4 done — blueprint will arrive via real-time listener
         setAnalysisSteps((prev) => prev.map((s) => ({ ...s, done: true, active: false })));
+
+        // Show "What Changed" diff (TODO-014)
+        setShowDiff(true);
       } catch (err) {
         console.error("[AnalysisViewer] Analysis failed:", err);
         setError(err.message || "Analysis failed. Your data is saved, try again.");
@@ -161,13 +203,85 @@ export default function AnalysisViewer() {
     [importDatasets, tenantId],
   );
 
+  // Handle conversational recovery confirmation (TODO-120)
+  const handleRecoveryConfirm = useCallback(
+    async ({ mapping, type, corrections }) => {
+      if (!recoveryFile) return;
+      const { file, parsed } = recoveryFile;
+
+      // Save learned mapping for future auto-detection
+      if (tenantId && parsed.headers) {
+        saveLearnedMapping(tenantId, parsed.headers, mapping, type).catch(() => {});
+      }
+
+      // Import with corrected mapping
+      setRecoveryFile(null);
+      setAnalyzing(true);
+      setAnalysisSteps([
+        { label: `Importing ${file.name}...`, done: false, active: true },
+        { label: "Building analysis", done: false, active: false },
+      ]);
+
+      try {
+        await importDatasets(
+          {},
+          "",
+          {
+            fileName: file.name,
+            type: type || "unknown",
+            mapping: mapping || {},
+            originalHeaders: parsed.headers,
+            rowCount: parsed.rows.length,
+          },
+          { skipRebuild: true, skipAnalysis: true, rawRows: parsed.rows },
+        );
+
+        setAnalysisSteps((prev) =>
+          prev.map((s, i) =>
+            i === 0 ? { ...s, done: true, active: false } : i === 1 ? { ...s, active: true } : s
+          ),
+        );
+
+        const fns = getFunctions();
+        const analyzeUploadFn = httpsCallable(fns, "analyzeUpload");
+        await analyzeUploadFn({ tenantId });
+
+        setAnalysisSteps((prev) => prev.map((s) => ({ ...s, done: true, active: false })));
+        setShowDiff(true);
+      } catch (err) {
+        setError(err.message || "Import failed.");
+        setAnalysisSteps([]);
+      } finally {
+        setAnalyzing(false);
+      }
+    },
+    [recoveryFile, tenantId, importDatasets],
+  );
+
   const handleAsk = useCallback((question) => {
-    // PR 3 will wire this to chat panel
+    // TODO: wire to chat panel
     console.log("[AnalysisViewer] Question asked:", question);
   }, []);
 
   // Loading state
   if (loading) return <AnalysisSkeleton steps={[]} />;
+
+  // Conversational recovery (TODO-120)
+  if (recoveryFile && !analyzing) {
+    return (
+      <div className="analysis-viewer">
+        <ConversationalRecovery
+          fileName={recoveryFile.file.name}
+          uncertainColumns={recoveryFile.uncertainColumns}
+          currentMapping={recoveryFile.currentMapping}
+          detectedType={recoveryFile.detectedType}
+          sampleRows={recoveryFile.parsed.rows}
+          onConfirm={handleRecoveryConfirm}
+          onCancel={() => setRecoveryFile(null)}
+        />
+      </div>
+    );
+  }
 
   // No data yet — empty state
   if (!hasBlueprint && !analyzing) {
@@ -204,6 +318,14 @@ export default function AnalysisViewer() {
 
       {/* Show skeleton only on first analysis (no existing blueprint) */}
       {analyzing && !hasBlueprint && <AnalysisSkeleton steps={analysisSteps} />}
+
+      {/* "What Changed" diff (TODO-014) */}
+      {showDiff && previousData && (
+        <ImportDiffSummary
+          previousData={previousData}
+          onDismiss={() => { setShowDiff(false); setPreviousData(null); }}
+        />
+      )}
 
       {/* Narrative + sidebar layout */}
       {hasBlueprint && (
