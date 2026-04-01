@@ -1715,6 +1715,11 @@ Compliance:
 
 ## Completed
 
+- **TODO-014: Import Comparison Summary ("What Changed" Diff)** — Dismissible card after re-upload showing new/lost accounts, volume changes, overdue reorder shifts, inventory alerts, revenue movement. `ImportDiffSummary.jsx` with `computeDiff()` + 10 unit tests. **Completed:** v0.6.0.0 (2026-03-31)
+- **TODO-017: AI-Generated Weekly Digest Email** — Scheduled Cloud Function (`functions/digest.js`) running Sundays 6 AM Pacific. Claude Sonnet generates summary from views data, delivered via Resend. Saves digest history to Firestore. **Completed:** v0.6.0.0 (2026-03-31)
+- **TODO-120: Conversational Error Recovery** — Chat-style UI when mapper confidence < 70%. Shows uncertain columns with sample data, dropdown corrections, file type selection. Learned mappings saved for future auto-detection. `ConversationalRecovery.jsx` integrated into `AnalysisViewer.jsx`. **Completed:** v0.6.0.0 (2026-03-31)
+- **TODO-400: Account-Level Dashboard Metrics on CRM Pages** — Volume trend, last order, reorder status, health score cards on `AccountDetailPage`. Fuzzy name matching (exact, prefix, reverse prefix) against views data. `AccountMetricsCard.jsx` + 19 unit tests. **Completed:** v0.6.0.0 (2026-03-31)
+- **TODO-401: Manager Intelligence Dashboard** — Team KPIs, per-rep performance table with territory filtering, territory comparison bars, AI callouts, team activity feed. `TeamRollup.jsx` replaces `MyTerritory` for admin/manager roles. 10 unit tests. **Completed:** v0.6.0.0 (2026-03-31)
 - **TODO-048: Report Guide Content System** — Static config (`config/reportGuides.js`) with unified schema for 5 distributor systems + role-aware recommendations. **Completed:** v0.3.0.0 (2026-03-16)
 - **TODO-049: Setup Assistant Page** — Full `/setup` route with 5-step guided onboarding flow, role/distributor selection, report guides, upload launcher, data health tracking. Onboarding state persisted to Firestore. **Completed:** v0.3.0.0 (2026-03-16)
 - **TODO-050: Setup Progress Sidebar Card** — Persistent card in sidebar showing setup progress ("2/5 complete"), dismissable, with collapsed-mode badge. **Completed:** v0.3.0.0 (2026-03-16)
