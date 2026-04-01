@@ -448,6 +448,29 @@ async function analyzeUploadForTenant({ tenantId, triggeredBy }) {
 
   // 3. Build data profile and match templates
   const dataProfile = buildDataProfile(rawImports);
+
+  // Cache a slimmed data profile for askAnalyst (avoids re-reading all imports per question)
+  const cachedDataProfile = {
+    imports: dataProfile.imports.map((imp) => ({
+      fileName: imp.fileName,
+      fileType: imp.fileType,
+      rowCount: imp.rowCount,
+      columns: Object.fromEntries(
+        Object.entries(imp.columns).map(([header, col]) => [
+          header,
+          {
+            dataType: col.dataType,
+            cardinality: col.cardinality,
+            samples: col.samples?.slice(0, 5),
+            ...(col.min !== undefined
+              ? { min: col.min, max: col.max, mean: Math.round(col.mean * 100) / 100 }
+              : {}),
+          },
+        ])
+      ),
+    })),
+  };
+
   const templateMatches = matchTemplates(dataProfile);
   const matchedTemplates = templateMatches.slice(0, 3).map((m) => ({
     templateId: m.template.templateId,
@@ -531,6 +554,7 @@ async function analyzeUploadForTenant({ tenantId, triggeredBy }) {
       templateMatches,
       totalRows,
       triggeredBy,
+      cachedDataProfile,
     });
   } else {
     // 6. Compute dashboard data from Claude's blueprint
@@ -585,14 +609,18 @@ async function analyzeUploadForTenant({ tenantId, triggeredBy }) {
       );
     }
 
-    // Update active pointer
+    // Update active pointer + cache data profile for askAnalyst
     await db
       .collection("tenants")
       .doc(tenantId)
       .collection("reportBlueprints")
       .doc("active")
       .set(
-        { blueprintId, updatedAt: admin.firestore.FieldValue.serverTimestamp() },
+        {
+          blueprintId,
+          cachedDataProfile,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
         { merge: true }
       );
 
@@ -619,6 +647,7 @@ async function writeFallbackBlueprint({
   templateMatches,
   totalRows,
   triggeredBy,
+  cachedDataProfile,
 }) {
   // Combine top-matching template tabs
   const allTabs = [];
@@ -696,7 +725,11 @@ async function writeFallbackBlueprint({
     .collection("reportBlueprints")
     .doc("active")
     .set(
-      { blueprintId, updatedAt: admin.firestore.FieldValue.serverTimestamp() },
+      {
+        blueprintId,
+        cachedDataProfile: cachedDataProfile || null,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
       { merge: true }
     );
 

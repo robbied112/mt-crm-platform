@@ -16,6 +16,7 @@ import UploadStrip from "./reports/analysis/UploadStrip";
 import AnalysisSkeleton from "./reports/analysis/AnalysisSkeleton";
 import SuggestedQuestions from "./reports/analysis/SuggestedQuestions";
 import ActionsRail from "./reports/analysis/ActionsRail";
+import AskPanel from "./reports/analysis/AskPanel";
 import ImportDiffSummary from "./ImportDiffSummary";
 import ConversationalRecovery from "./ConversationalRecovery";
 import parseFile from "../utils/parseFile";
@@ -37,6 +38,8 @@ export default function AnalysisViewer() {
   const [previousData, setPreviousData] = useState(null);
   const [showDiff, setShowDiff] = useState(false);
   const [recoveryFile, setRecoveryFile] = useState(null);
+  const [askQuestion, setAskQuestion] = useState(null);
+  const [askKey, setAskKey] = useState(0);
   const prevBlueprintRef = useRef(blueprint);
   const dataRef = useRef(dataCtx);
   dataRef.current = dataCtx;
@@ -263,8 +266,8 @@ export default function AnalysisViewer() {
   );
 
   const handleAsk = useCallback((question) => {
-    // TODO: wire to chat panel
-    console.log("[AnalysisViewer] Question asked:", question);
+    setAskQuestion(question);
+    setAskKey((k) => k + 1);
   }, []);
 
   // Loading state
@@ -339,6 +342,11 @@ export default function AnalysisViewer() {
           <div className="analysis-viewer__main">
             <NarrativeSection narrative={narrative} updatedAt={blueprint?.updatedAt} />
             <SuggestedQuestions questions={narrative?.suggestedQuestions} onAsk={handleAsk} />
+            <AskPanel
+              key={askKey}
+              initialQuestion={askQuestion}
+              onQuestionAsked={() => setAskQuestion(null)}
+            />
           </div>
           <div className="analysis-viewer__sidebar">
             <ActionsRail actions={narrative?.actions} />
