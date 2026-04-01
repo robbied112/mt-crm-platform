@@ -453,11 +453,10 @@ function detectUploadType(headers, rows, mapping) {
 
   if (hasOH || mapping.doh) return { type: "inventory" };
   if (hasStage || mapping.estValue) return { type: "pipeline" };
-  if (hasAcct && hasDist && (hasQty || hasMonths || hasWeeks)) return { type: "depletion" };
-  if (hasAcct && hasDate && hasQty) return { type: "purchases" };
-  if (hasAcct && (hasQty || mapping.revenue)) return { type: "sales" };
 
-  // Product sheet detection: many product-descriptive columns, few transaction columns
+  // Product sheet detection: many product-descriptive columns, few transaction columns.
+  // Check early, before lenient depletion fallbacks, because product sheets
+  // can accidentally match "acct" via the "name" alias in autoDetectMapping.
   const productCols = ["sku", "category", "size"].filter((f) => !!mapping[f]).length;
   const headerLower = headers.map((h) => (h || "").toLowerCase().trim());
   const productHeaders = ["varietal", "grape", "appellation", "vintage", "region", "country",
@@ -468,6 +467,15 @@ function detectUploadType(headers, rows, mapping) {
   if ((productCols + productHeaderCount) >= 3 && transactionCols < 2) {
     return { type: "product_sheet" };
   }
+
+  // Depletion: acct+dist+qty is ideal, but acct+qty with months/weeks is also depletion
+  if (hasAcct && hasDist && (hasQty || hasMonths || hasWeeks)) return { type: "depletion" };
+  if (hasAcct && (hasMonths || hasWeeks)) return { type: "depletion" };
+  if (hasDist && (hasQty || hasMonths || hasWeeks)) return { type: "depletion" };
+  if (hasAcct && hasDate && hasQty) return { type: "purchases" };
+  if (hasAcct && (hasQty || mapping.revenue)) return { type: "sales" };
+  // Fallback: if we have quantity data with any dimension, treat as depletion
+  if (hasQty && (hasAcct || hasDist || hasSt)) return { type: "depletion" };
 
   return { type: "unknown" };
 }

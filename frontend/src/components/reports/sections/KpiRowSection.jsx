@@ -24,8 +24,12 @@ export default function KpiRowSection({ section }) {
   const { getFilteredData } = useBlueprint();
   const data = getFilteredData(section.id);
 
-  // Data is an array of { label, value, format } objects from computeBlueprint
-  const items = Array.isArray(data) ? data : section.items || [];
+  // Data is an array of { label, value, format } objects from computeBlueprint.
+  // Fall back to section.items so KPI labels still render even with zero data.
+  const computed = Array.isArray(data) && data.length > 0 ? data : null;
+  const items = computed || section.items || [];
+
+  if (items.length === 0) return null;
 
   return (
     <div className="blueprint-kpi-row">
@@ -33,7 +37,7 @@ export default function KpiRowSection({ section }) {
         <KpiCard
           key={item.label || i}
           label={item.label}
-          value={formatValue(item.value, item.format)}
+          value={computed ? formatValue(item.value, item.format) : "—"}
           subtext={item.subtext || ""}
         />
       ))}

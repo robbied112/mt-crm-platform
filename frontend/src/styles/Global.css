@@ -6241,6 +6241,34 @@ input:focus-visible,
   max-width: 400px;
 }
 
+.blueprint-diagnostic {
+  background: rgba(192, 123, 1, 0.08);
+  border: 1px solid rgba(192, 123, 1, 0.2);
+  border-radius: 7px;
+  padding: 12px 16px;
+  margin: 0 0 16px;
+}
+
+.blueprint-diagnostic__title {
+  font-family: 'Inter Tight', -apple-system, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #C07B01;
+  margin: 0 0 4px;
+}
+
+.blueprint-diagnostic__detail {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.blueprint-badge--template {
+  background: rgba(107, 30, 30, 0.08);
+  color: var(--text-secondary);
+}
+
 /* ============================================================
    ANALYSIS VIEWER — AI Wine Analyst
    ============================================================ */
