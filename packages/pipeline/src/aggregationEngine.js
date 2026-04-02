@@ -168,6 +168,31 @@ function sortRows(rows, sort) {
 }
 
 /**
+ * Build a case-insensitive field lookup for a row.
+ * Returns the actual key name in the row that matches the requested field.
+ */
+function resolveField(row, field) {
+  if (field in row) return field;
+  const lower = field.toLowerCase().trim();
+  for (const key of Object.keys(row)) {
+    if (key.toLowerCase().trim() === lower) return key;
+  }
+  return field; // Return original (will result in undefined value)
+}
+
+/**
+ * Build a field resolution map from a sample row.
+ * Maps requested field names to actual row keys (case-insensitive, trimmed).
+ */
+function buildFieldMap(sampleRow, requestedFields) {
+  const map = {};
+  for (const field of requestedFields) {
+    map[field] = resolveField(sampleRow, field);
+  }
+  return map;
+}
+
+/**
  * Compute data for a single section's dataSource spec.
  *
  * @param {object} dataSource - Blueprint section dataSource
@@ -179,32 +204,65 @@ function computeSection(dataSource, rawDataBySource) {
 
   const { source, groupBy, aggregation, sort, limit, filter } = dataSource;
 
-  // Select rows from the specified source
+  // Select rows from the specified source.
+  // Fallback: if the requested source has no rows, try _all (merged pool).
   let rows = rawDataBySource[source] || [];
-  if (rows.length === 0) return [];
+  if (rows.length === 0 && rawDataBySource._all) {
+    rows = rawDataBySource._all;
+    if (rows.length > 0) {
+      console.warn(`[aggregationEngine] Source "${source}" empty, using _all fallback (${rows.length} rows)`);
+    }
+  }
+  if (rows.length === 0) {
+    console.warn(`[aggregationEngine] No rows for source "${source}" — section will be empty`);
+    return [];
+  }
+
+  // Build field resolution map from a sample row for fuzzy field matching.
+  // This handles case mismatches between what Claude generates and actual column names.
+  const allFields = [
+    ...(groupBy || []),
+    ...(Array.isArray(aggregation) ? aggregation.map((a) => a.field) : aggregation?.field ? [aggregation.field] : []),
+    ...(sort?.field ? [sort.field] : []),
+    ...(Array.isArray(filter) ? filter.map((f) => f.field) : filter?.field ? [filter.field] : []),
+  ];
+  const sampleRow = rows[0];
+  const fieldMap = sampleRow ? buildFieldMap(sampleRow, allFields) : {};
+
+  // Remap field references using the resolution map
+  const resolvedGroupBy = groupBy?.map((f) => fieldMap[f] || f);
+  const resolvedAgg = aggregation
+    ? Array.isArray(aggregation)
+      ? aggregation.map((a) => ({ ...a, field: fieldMap[a.field] || a.field }))
+      : { ...aggregation, field: fieldMap[aggregation.field] || aggregation.field }
+    : null;
+  const resolvedSort = sort?.field ? { ...sort, field: fieldMap[sort.field] || sort.field } : sort;
+  const resolvedFilter = Array.isArray(filter)
+    ? filter.map((f) => ({ ...f, field: fieldMap[f.field] || f.field }))
+    : filter?.field ? { ...filter, field: fieldMap[filter.field] || filter.field } : filter;
 
   // Apply filters
-  if (filter) {
-    rows = applyFilters(rows, Array.isArray(filter) ? filter : [filter]);
+  if (resolvedFilter) {
+    rows = applyFilters(rows, Array.isArray(resolvedFilter) ? resolvedFilter : [resolvedFilter]);
   }
 
   // If no aggregation, just filter/sort/limit the raw rows
-  if (!aggregation) {
-    let result = sortRows(rows, sort);
+  if (!resolvedAgg) {
+    let result = sortRows(rows, resolvedSort);
     if (limit) result = result.slice(0, limit);
     return result;
   }
 
   // Group and aggregate
-  const groups = groupByFields(rows, groupBy);
+  const groups = groupByFields(rows, resolvedGroupBy);
   const aggregated = [];
 
   for (const [key, groupRows] of groups) {
-    aggregated.push(applyAggregations(key, groupRows, aggregation, groupBy));
+    aggregated.push(applyAggregations(key, groupRows, resolvedAgg, resolvedGroupBy));
   }
 
   // Sort and limit
-  let result = sortRows(aggregated, sort);
+  let result = sortRows(aggregated, resolvedSort);
   if (limit) result = result.slice(0, limit);
 
   return result;
@@ -221,34 +279,54 @@ function computeBlueprint(blueprint, rawDataBySource) {
   const result = {};
 
   for (const tab of blueprint.tabs || []) {
-    const tabData = { sections: {} };
+    const tabData = { sections: {}, fallbackSections: [] };
 
     for (const section of tab.sections || []) {
       if (section.dataSource) {
+        // Track whether this section will use _all fallback
+        const sourceRows = rawDataBySource[section.dataSource.source] || [];
         tabData.sections[section.id] = computeSection(section.dataSource, rawDataBySource);
+        if (sourceRows.length === 0 && tabData.sections[section.id].length > 0) {
+          tabData.fallbackSections.push(section.id);
+        }
       }
 
       // KPI rows have items with individual aggregations
       if (section.type === "kpiRow" && section.items) {
         tabData.sections[section.id] = section.items.map((item) => {
           if (!item.aggregation) return { label: item.label, value: null };
-          const rows = rawDataBySource[item.aggregation.source] || [];
+          let rows = rawDataBySource[item.aggregation.source] || [];
+          let usedFallback = false;
+          if (rows.length === 0 && rawDataBySource._all) {
+            rows = rawDataBySource._all;
+            usedFallback = true;
+          }
           const fn = AGG_FNS[item.aggregation.fn];
-          if (!fn || rows.length === 0) return { label: item.label, value: 0 };
-          const values = rows.map((r) => r[item.aggregation.field]);
+          if (!fn || rows.length === 0) return { label: item.label, value: 0, format: item.format || "number" };
+          // Resolve field name with fuzzy matching
+          const resolved = rows[0] ? resolveField(rows[0], item.aggregation.field) : item.aggregation.field;
+          const values = rows.map((r) => r[resolved]);
           return {
             label: item.label,
             value: fn(values),
             format: item.format || "number",
+            approximate: usedFallback || undefined,
           };
         });
+        if (tabData.sections[section.id].some((k) => k.approximate)) {
+          tabData.fallbackSections.push(section.id);
+        }
       }
 
       // Grid sections have nested sub-sections
       if (section.type === "grid" && section.sections) {
         for (const sub of section.sections) {
           if (sub.dataSource) {
+            const subSourceRows = rawDataBySource[sub.dataSource.source] || [];
             tabData.sections[sub.id] = computeSection(sub.dataSource, rawDataBySource);
+            if (subSourceRows.length === 0 && tabData.sections[sub.id].length > 0) {
+              tabData.fallbackSections.push(sub.id);
+            }
           }
         }
       }

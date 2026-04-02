@@ -37,8 +37,8 @@ export default function KpiRowSection({ section }) {
         <KpiCard
           key={item.label || i}
           label={item.label}
-          value={computed ? formatValue(item.value, item.format) : "—"}
-          subtext={item.subtext || ""}
+          value={computed ? (item.approximate ? `~${formatValue(item.value, item.format)}` : formatValue(item.value, item.format)) : "—"}
+          subtext={item.approximate ? "approximate" : item.subtext || ""}
         />
       ))}
     </div>

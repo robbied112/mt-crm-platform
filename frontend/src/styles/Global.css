@@ -6076,6 +6076,20 @@ input:focus-visible,
   height: 280px;
 }
 
+/* Approximate data badge — shown when _all fallback was used */
+.blueprint-approximate-badge {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: var(--warning);
+  background: rgba(192, 123, 1, 0.08);
+  border: 1px solid rgba(192, 123, 1, 0.2);
+  border-radius: 4px;
+  padding: 2px 8px;
+  margin-bottom: 8px;
+  cursor: help;
+}
+
 .blueprint-section--grid {
   display: grid;
   gap: 16px;
@@ -6317,6 +6331,63 @@ input:focus-visible,
   text-align: center;
 }
 
+/* Compact re-upload progress bar */
+.analysis-viewer__progress {
+  margin-bottom: 16px;
+}
+
+.analysis-viewer__progress-track {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.analysis-viewer__progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.analysis-viewer__progress-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+/* Analysis complete summary card */
+.analysis-viewer__complete-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  animation: av-complete-fade 1.5s ease forwards;
+}
+
+.analysis-viewer__complete-check {
+  color: var(--accent);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.analysis-viewer__complete-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+}
+
+@keyframes av-complete-fade {
+  0%, 60% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 .analysis-viewer__error {
   color: var(--red);
   font-size: 14px;
@@ -6407,6 +6478,24 @@ input:focus-visible,
   color: var(--text-dim);
   margin-top: 16px;
   font-family: 'Inter', sans-serif;
+}
+
+/* Narrative Empty State */
+.narrative-section__empty-text {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  font-family: 'Inter', sans-serif;
+  font-style: italic;
+}
+
+/* Actions Rail Empty State */
+.actions-rail--empty .actions-rail__empty-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  font-family: 'Inter', sans-serif;
+  font-style: italic;
 }
 
 /* Metric Pills */
@@ -7113,6 +7202,91 @@ input:focus-visible,
     width: 100%;
     justify-content: space-between;
   }
+
+  /* Blueprint dashboard responsive */
+  .blueprint-tab-bar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0;
+  }
+
+  .blueprint-tab-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .blueprint-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .blueprint-filter-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .blueprint-filter {
+    width: 100%;
+  }
+
+  .blueprint-filter__select {
+    width: 100%;
+  }
+
+  .blueprint-section--chart .chart-wrapper {
+    min-height: 250px;
+  }
+
+  .blueprint-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .blueprint-table {
+    min-width: 600px;
+  }
+
+  .blueprint-section--grid {
+    grid-template-columns: 1fr;
+  }
+
+  .blueprint-pagination {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .blueprint-pagination button {
+    width: 100%;
+  }
+
+  .blueprint-section-header {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .conv-recovery {
+    padding: 16px;
+  }
+
+  .conv-recovery__columns {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .blueprint-kpi-row {
+    grid-template-columns: 1fr;
+  }
+
+  .blueprint-dashboard {
+    padding: 0 8px;
+  }
+
+  .blueprint-title {
+    font-size: 24px;
+  }
 }
 
 /* ============================================================
@@ -7332,6 +7506,33 @@ input:focus-visible,
 .conv-recovery__confidence {
   font-size: 12px;
   font-weight: 600;
+}
+
+.conv-recovery__confidence--low {
+  color: var(--red);
+}
+
+.conv-recovery__confidence--medium {
+  color: var(--warning);
+}
+
+.conv-recovery__bubble-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.conv-recovery__bubble-subtitle {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 0;
+}
+
+.conv-recovery__filename {
+  color: var(--primary);
+}
+
+.conv-recovery__message--spaced {
+  margin-top: 16px;
 }
 
 .conv-recovery__samples {

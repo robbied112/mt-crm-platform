@@ -105,8 +105,8 @@ export default function ConversationalRecovery({
         <div className="conv-recovery__message">
           <div className="conv-recovery__avatar">AI</div>
           <div className="conv-recovery__bubble">
-            <p style={{ fontWeight: 600, marginBottom: 4 }}>Got it! Saving your corrections...</p>
-            <p style={{ color: "var(--text-dim)", fontSize: 13 }}>
+            <p className="conv-recovery__bubble-title">Got it! Saving your corrections...</p>
+            <p className="conv-recovery__bubble-subtitle">
               I'll remember this for next time.
             </p>
           </div>
@@ -121,10 +121,10 @@ export default function ConversationalRecovery({
       <div className="conv-recovery__message">
         <div className="conv-recovery__avatar">AI</div>
         <div className="conv-recovery__bubble">
-          <p style={{ fontWeight: 600, marginBottom: 8 }}>
-            I need a little help with <span style={{ color: "var(--primary)" }}>{fileName}</span>
+          <p className="conv-recovery__bubble-title">
+            I need a little help with <span className="conv-recovery__filename">{fileName}</span>
           </p>
-          <p style={{ fontSize: 13, color: "var(--text-dim)", marginBottom: 0 }}>
+          <p className="conv-recovery__bubble-subtitle">
             I'm not confident about {uncertainColumns.length} column{uncertainColumns.length > 1 ? "s" : ""}.
             Can you tell me what these are?
           </p>
@@ -139,9 +139,7 @@ export default function ConversationalRecovery({
             <div key={field} className="conv-recovery__column-card">
               <div className="conv-recovery__column-header">
                 <span className="conv-recovery__column-name">"{column}"</span>
-                <span className="conv-recovery__confidence" style={{
-                  color: confidence < 0.4 ? "#C53030" : "#C07B01",
-                }}>
+                <span className={`conv-recovery__confidence ${confidence < 0.4 ? "conv-recovery__confidence--low" : "conv-recovery__confidence--medium"}`}>
                   {Math.round(confidence * 100)}% sure
                 </span>
               </div>
@@ -169,10 +167,10 @@ export default function ConversationalRecovery({
       </div>
 
       {/* File type question */}
-      <div className="conv-recovery__message" style={{ marginTop: 16 }}>
+      <div className="conv-recovery__message conv-recovery__message--spaced">
         <div className="conv-recovery__avatar">AI</div>
         <div className="conv-recovery__bubble">
-          <p style={{ fontSize: 13, marginBottom: 8 }}>What type of report is this?</p>
+          <p className="conv-recovery__bubble-subtitle">What type of report is this?</p>
           <select
             className="conv-recovery__select conv-recovery__select--full"
             value={selectedType}

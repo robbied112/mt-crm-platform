@@ -8,8 +8,15 @@
 
 import { useState } from "react";
 
+const DEFAULT_QUESTIONS = [
+  "How are my top accounts performing?",
+  "Which distributors need attention?",
+  "What trends do you see in my data?",
+];
+
 export default function SuggestedQuestions({ questions, onAsk }) {
   const [customQ, setCustomQ] = useState("");
+  const displayQuestions = questions?.length > 0 ? questions : DEFAULT_QUESTIONS;
 
   const handleCustomSubmit = (e) => {
     e.preventDefault();
@@ -23,9 +30,8 @@ export default function SuggestedQuestions({ questions, onAsk }) {
     <div className="suggested-questions">
       <p className="suggested-questions__label">ASK ABOUT YOUR DATA</p>
 
-      {questions?.length > 0 && (
-        <div className="suggested-questions__list">
-          {questions.map((q, i) => (
+      <div className="suggested-questions__list">
+        {displayQuestions.map((q, i) => (
             <button
               key={i}
               className="suggested-questions__item"
@@ -36,8 +42,7 @@ export default function SuggestedQuestions({ questions, onAsk }) {
               <span className="suggested-questions__arrow" aria-hidden="true">&rarr;</span>
             </button>
           ))}
-        </div>
-      )}
+      </div>
 
       <form className="suggested-questions__custom" onSubmit={handleCustomSubmit}>
         <input

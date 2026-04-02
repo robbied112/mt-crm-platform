@@ -62,13 +62,13 @@ describe("ActionsRail", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
-  it("returns null for empty actions", () => {
-    const { container } = render(<ActionsRail actions={[]} />);
-    expect(container.firstChild).toBeNull();
+  it("renders empty state for empty actions", () => {
+    render(<ActionsRail actions={[]} />);
+    expect(screen.getByText(/Upload more data/)).toBeInTheDocument();
   });
 
-  it("returns null for null actions", () => {
-    const { container } = render(<ActionsRail actions={null} />);
-    expect(container.firstChild).toBeNull();
+  it("renders empty state for null actions", () => {
+    render(<ActionsRail actions={null} />);
+    expect(screen.getByText(/Upload more data/)).toBeInTheDocument();
   });
 });

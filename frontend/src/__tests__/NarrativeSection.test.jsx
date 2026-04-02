@@ -92,14 +92,14 @@ describe("NarrativeSection", () => {
     expect(screen.getByText(/This has/)).toBeInTheDocument();
   });
 
-  it("returns null for empty segments", () => {
-    const { container } = render(<NarrativeSection narrative={{ segments: [] }} />);
-    expect(container.firstChild).toBeNull();
+  it("renders empty state for empty segments", () => {
+    render(<NarrativeSection narrative={{ segments: [] }} />);
+    expect(screen.getByText(/still processing/)).toBeInTheDocument();
   });
 
-  it("returns null for null narrative", () => {
-    const { container } = render(<NarrativeSection narrative={null} />);
-    expect(container.firstChild).toBeNull();
+  it("renders empty state for null narrative", () => {
+    render(<NarrativeSection narrative={null} />);
+    expect(screen.getByText(/still processing/)).toBeInTheDocument();
   });
 
   it("shows timestamp with relative time", () => {
